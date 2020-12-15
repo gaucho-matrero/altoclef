@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "adris.altoclef.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "EntryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

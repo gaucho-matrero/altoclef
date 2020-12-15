@@ -1,0 +1,2 @@
+Acquire "artifacts.zip" from https://gitlab.com/CDAGaming/fabritone/-/jobs -> fabric/1.16.3.
+Unzip and move "baritone-1.6.1-dev.jar" to this folder.
