@@ -1,5 +1,8 @@
 package adris.altoclef.mixins;
 
+import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EntryMixin {
     @Inject(at = @At("HEAD"), method = "init()V")
     private void init(CallbackInfo info) {
-        System.out.println("ALTOCLEF: This line is printed by an example mod mixin!");
+        Debug.logMessage("Global Init");
+        AltoClef.getInstance().onInitializeLoad();
     }
 }
 
