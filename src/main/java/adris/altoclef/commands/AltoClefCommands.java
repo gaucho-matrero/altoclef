@@ -4,13 +4,13 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.PlayerInventorySlot;
 import net.minecraft.item.Items;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
+@SuppressWarnings({"unused", "unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
     private static void TEMP_TEST_FUNCTION(AltoClef mod) {
@@ -22,12 +22,14 @@ public class AltoClefCommands extends CommandList {
         ));
     }
 
-    public AltoClefCommands(CommandExecutor executor) throws Exception {
+    public AltoClefCommands(CommandExecutor executor) {
         super(executor,
             // List commands here
             new HelpCommand(),
             new StopCommand(),
             new TestCommand()
+            //new TestMoveInventoryCommand(),
+            //    new TestSwapInventoryCommand()
         );
     }
 
@@ -78,6 +80,45 @@ public class AltoClefCommands extends CommandList {
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
             TEMP_TEST_FUNCTION(mod);
+        }
+    }
+
+    static class TestMoveInventoryCommand extends Command {
+
+        public TestMoveInventoryCommand() throws Exception {
+            super("testmoveinv", "Test command to move items around in inventory",
+                    new Arg(Integer.class, "from"),
+                    new Arg(Integer.class, "to"),
+                    new Arg(Integer.class, "amount", 1, 2)
+            );
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws Exception {
+            int from = parser.Get(Integer.class);
+            int to = parser.Get(Integer.class);
+            int amount = parser.Get(Integer.class);
+
+            int moved = mod.getInventoryTracker().moveItems(new PlayerInventorySlot(from), new PlayerInventorySlot(to), amount);
+            Debug.logMessage("Successfully moved " + moved + " items.");
+        }
+    }
+    static class TestSwapInventoryCommand extends Command {
+
+        public TestSwapInventoryCommand() throws Exception {
+            super("testswapinv", "Test command to swap two slots in the inventory",
+                    new Arg(Integer.class, "slot1"),
+                    new Arg(Integer.class, "slot2")
+            );
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws Exception {
+            int slot1 = parser.Get(Integer.class);
+            int slot2 = parser.Get(Integer.class);
+
+            mod.getInventoryTracker().swapItems(new PlayerInventorySlot(slot1), new PlayerInventorySlot(slot2));
+            Debug.logMessage("Successfully swapped.");
         }
     }
 }

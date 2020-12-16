@@ -16,6 +16,7 @@ import baritone.api.event.events.ChatEvent;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 
 public class AltoClef implements ModInitializer {
 
@@ -72,7 +73,6 @@ public class AltoClef implements ModInitializer {
     // Every chat message can be interrupted by us
     public void onChat(ChatEvent e) {
         String line = e.getMessage();
-        System.out.println("LINE SENT: " + line);
         if (_commandExecutor.isClientCommand(line)) {
             e.cancel();
             try {
@@ -127,6 +127,7 @@ public class AltoClef implements ModInitializer {
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
+    public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
 
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);
