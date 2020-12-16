@@ -3,10 +3,13 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.GoalGetToPosition;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.Util;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalBlock;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.process.FollowProcess;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -26,8 +29,11 @@ public class PickupDroppedItemTask extends Task {
 
     private final TargetPredicate _targetPredicate = new TargetPredicate();
 
+    private Vec3d _itemGoal;
+
     public PickupDroppedItemTask(List<ItemTarget> itemTargets) {
         _itemTargets = itemTargets;
+        _itemGoal = null;
     }
 
     public PickupDroppedItemTask(Item item, int targetCount) {
@@ -41,20 +47,30 @@ public class PickupDroppedItemTask extends Task {
         // Config
         mod.getConfigState().push();
         mod.getConfigState().setFollowDistance(0);
+
+        // Reset baritone process
+        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), Util.toArray(ItemTarget.class, _itemTargets));
 
-        taskAssert(mod, closest != null, "Failed to find any items to pick up. Should have checked this condition earlier");
+        if (!taskAssert(mod, closest != null, "Failed to find any items to pick up. Should have checked this condition earlier")) {
+            return null;
+        }
 
-        //noinspection ConstantConditions
-        mod.getClientBaritone().getCustomGoalProcess().setGoal(new GoalBlock(closest.getBlockPos()));
+        setDebugState("FOUND: " + closest.getStack().getItem().getTranslationKey());
 
-        if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            mod.getClientBaritone().getCustomGoalProcess().path();
+        // These two lines must be paired in this order. path must be called once.
+        // Setting goal makes the goal process active, but not pathing! This is undesirable.
+        Vec3d goal = closest.getPos();
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() || _itemGoal == null || _itemGoal.squaredDistanceTo(goal) > 1) {
+            Debug.logMessage("(Pickup PATHING");
+            //mod.getClientBaritone().getCustomGoalProcess().path();
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(closest.getBlockPos()));//new GoalGetToPosition(goal));
+            _itemGoal = goal;
         }
 
         //mod.getClientBaritone().getFollowProcess().follow(_targetPredicate);
@@ -69,6 +85,9 @@ public class PickupDroppedItemTask extends Task {
         if (!(interruptTask instanceof PickupDroppedItemTask)) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             //_mod.getClientBaritone().getFollowProcess().cancel();
+            Debug.logMessage("(PICKUP TASK STOPPED)");
+        } else {
+            Debug.logMessage("(Interrupted by ANOTHER pickup task)");
         }
     }
 
@@ -110,8 +129,9 @@ public class PickupDroppedItemTask extends Task {
                 for (ItemTarget target : _itemTargets) {
                     // If we already have this item, ignore it
                     if (_mod.getInventoryTracker().targetReached(target)) continue;
+
                     // Match for item
-                    if (target.item.equals(iEntity.getStack().getItem())) {
+                    if (target.matches(iEntity.getStack().getItem())) {
                         return true;
                     }
                 }

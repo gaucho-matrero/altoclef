@@ -1,6 +1,7 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.util.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
 import baritone.Baritone;
 import net.minecraft.client.MinecraftClient;
@@ -23,30 +24,37 @@ public class EntityTracker extends Tracker {
         super(manager);
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, Collection<ItemTarget> targets) {
-        return getClosestItemDrop(position, ItemTarget.getItemArray(_mod, targets));
+    public ItemEntity getClosestItemDrop(Vec3d position, Item ...items) {
+        ItemTarget[] tempTargetList = new ItemTarget[items.length];
+        for (int i = 0; i < items.length; ++i) {
+            tempTargetList[i] = new ItemTarget(items[i], 9999999);
+        }
+        return getClosestItemDrop(position, tempTargetList);
+        //return getClosestItemDrop(position, ItemTarget.getItemArray(_mod, targets));
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, Item ...items) {
+    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget ...targets) {
         ensureUpdated();
-        if (items.length == 0) {
+        if (targets.length == 0) {
             Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
             return null;
         }
-        if (!itemDropped(items)) {
-            Debug.logError("You forgot to check for whether item (example): " + items[0].getTranslationKey() + " was dropped before finding its drop location.");
+        if (!itemDropped(targets)) {
+            Debug.logError("You forgot to check for whether item (example): " + targets[0].getMatches()[0].getTranslationKey() + " was dropped before finding its drop location.");
             return null;
         }
 
         ItemEntity closestEntity = null;
         float minCost = Float.POSITIVE_INFINITY;
-        for (Item item : items) {
-            if (!itemDropped(item)) continue;
-            for (ItemEntity entity : _itemDropLocations.get(item)) {
-                float cost = (float) position.squaredDistanceTo(entity.getPos());
-                if (cost < minCost) {
-                    minCost = cost;
-                    closestEntity = entity;
+        for (ItemTarget target : targets) {
+            for (Item item : target.getMatches()) {
+                if (!itemDropped(item)) continue;
+                for (ItemEntity entity : _itemDropLocations.get(item)) {
+                    float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
+                    if (cost < minCost) {
+                        minCost = cost;
+                        closestEntity = entity;
+                    }
                 }
             }
         }
@@ -57,6 +65,13 @@ public class EntityTracker extends Tracker {
         ensureUpdated();
         for(Item item : items) {
             if (_itemDropLocations.containsKey(item)) return true;
+        }
+        return false;
+    }
+
+    public boolean itemDropped(ItemTarget ...targets) {
+        for (ItemTarget target : targets) {
+            if (itemDropped(target.getMatches())) return true;
         }
         return false;
     }

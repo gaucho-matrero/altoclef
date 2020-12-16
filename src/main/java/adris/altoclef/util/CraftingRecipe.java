@@ -18,7 +18,7 @@ public class CraftingRecipe {
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
-    private Set<Integer> _mustMatch = new HashSet<>();
+    private final Set<Integer> _mustMatch = new HashSet<>();
 
     private CraftingRecipe() {}
 
@@ -115,10 +115,31 @@ public class CraftingRecipe {
         return result;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof CraftingRecipe) {
+            CraftingRecipe other = (CraftingRecipe) o;
+            if (other._shapeless != _shapeless) return false;
+            if (other._height != _height) return false;
+            if (other._width != _width) return false;
+            if (other._mustMatch.size() != _mustMatch.size()) return false;
+            if (other._slots.length != _slots.length) return false;
+            // TODO: mustMatch equality?
+            for (int i = 0; i < _slots.length; ++i) {
+                if (!other._slots[i].equals(_slots[i])) return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
 
     public static class CraftingSlot {
         private final List<Item> _targetItems = new ArrayList<>();
 
+        public CraftingSlot(ItemTarget target) {
+            this(target.getMatches());
+        }
         public CraftingSlot(Item ...items) {
             Collections.addAll(_targetItems, items);
         }
@@ -154,13 +175,6 @@ public class CraftingRecipe {
             return Objects.hash(_targetItems);
         }
     }
-
-    // Multi-meaning items that might be useful
-    public static CraftingSlot PLANKS = new CraftingSlot(Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS, Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS);
-    public static CraftingSlot LOG = new CraftingSlot(Items.ACACIA_LOG, Items.BIRCH_LOG, Items.DARK_OAK_LOG, Items.OAK_LOG, Items.JUNGLE_LOG, Items.SPRUCE_LOG);
-    public static CraftingSlot WOOL = new CraftingSlot(Items.WHITE_WOOL, Items.BLACK_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.CYAN_WOOL, Items.GRAY_WOOL, Items.GREEN_WOOL, Items.LIGHT_BLUE_WOOL, Items.LIGHT_GRAY_WOOL, Items.LIME_WOOL, Items.MAGENTA_WOOL, Items.ORANGE_WOOL, Items.PINK_WOOL, Items.PURPLE_WOOL, Items.RED_WOOL, Items.YELLOW_WOOL);
-    public static CraftingSlot BED = new CraftingSlot(Items.WHITE_BED, Items.BLACK_BED, Items.BLUE_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.GREEN_BED, Items.LIGHT_BLUE_BED, Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED, Items.PINK_BED, Items.PURPLE_BED, Items.RED_BED, Items.YELLOW_BED);
-    public static CraftingSlot CARPET = new CraftingSlot(Items.WHITE_CARPET, Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET, Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET, Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET);
 
     public static CraftingSlot EMPTY = new CraftingSlot();
 }

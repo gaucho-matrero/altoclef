@@ -43,6 +43,12 @@ public class ConfigState {
             current().throwawayItems.remove(item);
         }
     }
+    public void removeThrowawayItems(ItemTarget ...targets) {
+        // Just to be safe we remove ALL items that we may want to use.
+        for (ItemTarget target : targets) {
+            removeThrowawayItems(target.getMatches());
+        }
+    }
 
     /// Stack management
     public void push() {

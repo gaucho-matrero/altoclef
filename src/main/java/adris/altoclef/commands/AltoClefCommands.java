@@ -3,11 +3,17 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.MineAndCollectTask;
+import adris.altoclef.tasks.PickupDroppedItemTask;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.PlayerInventorySlot;
+import adris.altoclef.util.TaskCatalogue;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unused", "unchecked", "rawtypes"})
@@ -15,11 +21,26 @@ public class AltoClefCommands extends CommandList {
 
     private static void TEMP_TEST_FUNCTION(AltoClef mod) {
         //mod.runUserTask();
+        TaskCatalogue.getItemTask("log", 5);
+        TaskCatalogue.getItemTask("planks", 4);
+        TaskCatalogue.getItemTask("log", 5);
         Debug.logMessage("Running test...");
+
+        //Task userTask = new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(ItemTarget.PLANKS, 5)));
+        Task userTask = new MineAndCollectTask(
+                Arrays.asList(new ItemTarget(Items.DIRT, 5),
+                        new ItemTarget(ItemTarget.PLANKS, 5)));
+
+        //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(new BlockPos(0, 64, 0)));
+
+        mod.runUserTask(userTask);
+        /*
         mod.runUserTask(new MineAndCollectTask(
                 Arrays.asList(new ItemTarget(Items.DIRT, 5),
-                        new ItemTarget(Items.OAK_LOG, 5))
+                        new ItemTarget(ItemTarget.PLANKS, 5))
         ));
+         */
+
     }
 
     public AltoClefCommands(CommandExecutor executor) {

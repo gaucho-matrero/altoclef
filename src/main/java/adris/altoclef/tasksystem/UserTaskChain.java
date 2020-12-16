@@ -50,8 +50,8 @@ public class UserTaskChain extends TaskChain {
     }
 
     private void onFinish(AltoClef mod) {
-        _mainTask = null;
         mod.getTaskRunner().disable();
         Debug.logMessage("User task FINISHED");
+        _mainTask = null;
     }
 }

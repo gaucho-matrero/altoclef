@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.Util;
 import net.minecraft.item.Item;
 
 import java.util.Collections;
@@ -19,17 +20,16 @@ public abstract class ResourceTask extends Task {
         this(Collections.singletonList(new ItemTarget(item, targetCount)));
     }
 
+
     @Override
     public boolean isFinished(AltoClef mod) {
-        ItemTarget[] targets = new ItemTarget[_itemTargets.size()];
-        _itemTargets.toArray(targets);
-        return mod.getInventoryTracker().targetReached(targets);
+        return mod.getInventoryTracker().targetReached(Util.toArray(ItemTarget.class, _itemTargets));
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
-        mod.getConfigState().removeThrowawayItems(ItemTarget.getItemArray(mod, _itemTargets));
+        mod.getConfigState().removeThrowawayItems(Util.toArray(ItemTarget.class, _itemTargets));
         onResourceStart(mod);
     }
 
@@ -38,12 +38,7 @@ public abstract class ResourceTask extends Task {
 
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
-            Item[] items = new Item[_itemTargets.size()];
-            for (int i = 0; i < items.length; ++i) {
-                items[i] = _itemTargets.get(i).item;
-            }
-
-            if (mod.getEntityTracker().itemDropped(items)) {
+            if (mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
                 setDebugState("Going to dropped items...");
                 return new PickupDroppedItemTask(_itemTargets);
             }

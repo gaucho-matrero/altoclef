@@ -58,12 +58,13 @@ public abstract class Task {
         _first = true;
     }
 
-    protected void taskAssert(AltoClef mod, boolean condition, String message) {
+    protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
         if (!condition && !_failed) {
             Debug.logError("Task assertion failed: " + message);
             stop(mod);
             _failed = true;
         }
+        return condition;
     }
 
     protected void stop(AltoClef mod) {

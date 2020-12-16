@@ -5,6 +5,8 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.Timer;
+import adris.altoclef.util.Util;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.PathingCommand;
@@ -38,9 +40,12 @@ public class MineAndCollectTask extends ResourceTask {
     private static final float STOP_MINING_ITEM_DROP_IS_CLOSE_ENOUGH_THRESHOLD = 20f;
     private static final float KEEP_MINING_THRESHOLD = 6;
 
+    private PathingCommand _cachedCommand = null;
+
+    private Timer _mineCheck = new Timer(10.0);
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-
     }
 
     @Override
@@ -51,21 +56,33 @@ public class MineAndCollectTask extends ResourceTask {
 
         ClientPlayerEntity player = mod.getPlayer();
 
-        Item[] items = ItemTarget.getItemArray(mod, _itemTargets);
-
-        if (!mod.getEntityTracker().itemDropped(items)) {
+        if (!mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
             // I mean, yeah we should avoid picking up since no items were found.
             return true;
         }
 
-        ItemEntity closestDrop = mod.getEntityTracker().getClosestItemDrop(player.getPos(), items);
+        ItemEntity closestDrop = mod.getEntityTracker().getClosestItemDrop(player.getPos(), Util.toArray(ItemTarget.class, _itemTargets));
 
         // Get mining heuristic
         MineProcess mineProc = mod.getClientBaritone().getMineProcess();
+
         if (mineProc == null) return false;
-        PathingCommand c = mineProc.onTick(false, false);
-        if (c == null) return false;
-        Goal goal = c.goal;
+
+        if (_mineCheck.elapsed()) {
+
+            _mineCheck.reset();
+
+            Debug.logMessage("CHECK MINE PROCESS");
+            try {
+                onResourceTick(mod);
+                _cachedCommand = mineProc.onTick(false, true);
+                mineProc.cancel();
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }
+        if (_cachedCommand == null) return false;
+        Goal goal = _cachedCommand.goal;
         if (goal == null) return false;
         double playerMineCost = goal.heuristic(player.getBlockPos());
 
@@ -85,7 +102,7 @@ public class MineAndCollectTask extends ResourceTask {
             // Calculate target
             int target = 0;
             for (ItemTarget t : _itemTargets) {
-                if (ItemTarget.itemEquals(item, t.item)) {
+                if (t.matches(item)) {
                     target = t.targetCount;
                     break;
                 }
@@ -105,20 +122,24 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        setDebugState("Mining...");
         // Mine
         List<BlockOptionalMeta> boms = new ArrayList<>();
 
+        StringBuilder state = new StringBuilder();
+        state.append(" ----- ");
         for (ItemTarget target : _itemTargets) {
             if (mod.getInventoryTracker().targetReached(target)) continue;
-            Item item = target.item;
-            Block block = Block.getBlockFromItem(item);
-            BlockOptionalMeta bom = new BlockOptionalMeta(block);
-            boms.add(bom);
+            state.append("Need ").append(target.toString()).append(" ----- ");
+            for (Item item : target.getMatches()) {
+                Block block = Block.getBlockFromItem(item);
+                BlockOptionalMeta bom = new BlockOptionalMeta(block);
+                boms.add(bom);
+            }
         }
+        setDebugState(state.toString());
 
         if (!miningCorrectBlocks(mod, boms)) {
-            Debug.logInternal("NEW SET OF BLOCKS!");
+            Debug.logInternal("NEW SET OF BLOCKS TO MINE!");
 
             BlockOptionalMeta[] bomsArray = new BlockOptionalMeta[boms.size()];
             boms.toArray(bomsArray);

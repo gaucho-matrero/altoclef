@@ -42,12 +42,28 @@ public class InventoryTracker extends Tracker {
         if (!hasItem(item)) return 0;
         return _itemCounts.get(item);
     }
+    public int getItemCount(ItemTarget target) {
+        int sum = 0;
+        for (Item match : target.getMatches()) {
+            sum += getItemCount(match);
+        }
+        return sum;
+
+    }
+    public int getMaxItemCount(ItemTarget target) {
+        int max = 0;
+        for (Item match : target.getMatches()) {
+            int count = getItemCount(match);
+            if (count > max) max = count;
+        }
+        return max;
+    }
 
     public boolean targetReached(ItemTarget ...targets) {
         ensureUpdated();
 
         for(ItemTarget target : targets) {
-            if (getItemCount(target.item) < target.targetCount) {
+            if (getItemCount(target) < target.targetCount) {
                 return false;
             }
         }
