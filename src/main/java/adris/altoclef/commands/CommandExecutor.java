@@ -12,11 +12,11 @@ public class CommandExecutor {
 
     private String _commandPrefix;
 
-    private HashMap<String, Command> _commandSheet = new HashMap<String, Command>();
+    private final HashMap<String, Command> _commandSheet = new HashMap<>();
 
-    public CommandExecutor(String commandPrefix, AltoClef mod) {
-        _commandPrefix = commandPrefix;
+    public CommandExecutor(AltoClef mod, String commandPrefix) {
         _mod = mod;
+        _commandPrefix = commandPrefix;
     }
 
     public void RegisterNewCommand(Command command) throws InvalidKeyException {
@@ -27,8 +27,7 @@ public class CommandExecutor {
     }
 
     public boolean isClientCommand(String line) {
-        // or in C#, line.BeginsWith(_commandPrefix). This works too.
-        return line.length() >= _commandPrefix.length() && line.substring(0, _commandPrefix.length()).equals(_commandPrefix);
+        return line.startsWith(_commandPrefix);
     }
 
     public void Execute(String line) throws Exception {

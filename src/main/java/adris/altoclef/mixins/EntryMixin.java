@@ -11,10 +11,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TitleScreen.class)
 public class EntryMixin {
+
+    private static boolean _initialized = false;
+
     @Inject(at = @At("HEAD"), method = "init()V")
     private void init(CallbackInfo info) {
-        Debug.logMessage("Global Init");
-        AltoClef.getInstance().onInitializeLoad();
+        if (!_initialized) {
+            _initialized = true;
+            Debug.logMessage("Global Init");
+            AltoClef.getInstance().onInitializeLoad();
+        }
     }
 }
 

@@ -7,7 +7,8 @@
   ],
   "client": [
     "EntryMixin",
-    "ChatMixin"
+    "ChatMixin",
+    "ClientTickMixin"
   ],
   "injectors": {
     "defaultRequire": 1
