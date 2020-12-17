@@ -34,6 +34,10 @@ public class MineAndCollectTask extends ResourceTask {
     public MineAndCollectTask(Item item, int targetCount) {
         super(item, targetCount);
     }
+    // Am lazy
+    public MineAndCollectTask(Item item) {
+        super(item, 99999999);
+    }
 
     private BlockPos _cachedTargetMineBlock;
 

@@ -25,7 +25,7 @@ public class Arg<T> extends ArgBase {
     private boolean _showDefault;
 
     // Regular Constructor
-    public Arg(Class<T> type, String name) throws Exception {
+    public Arg(Class<T> type, String name) throws CommandException {
         _name = name;
         // I really hate java
         _tType = type;
@@ -41,20 +41,20 @@ public class Arg<T> extends ArgBase {
         } else {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
             if ( !IsInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class) ) {
-                throw new Exception("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+                throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
             }
         }
         }
 
         // Constructor with default value
-        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws Exception {
+        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
             this(type, name);
             _hasDefault = true;
             Default = defaultValue;
             _minArgCountToUseDefault = minArgCountToUseDefault;
             _showDefault = showDefault;
         }
-        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws Exception {
+        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
             this(type, name, defaultValue, minArgCountToUseDefault, true);
         }
 
@@ -97,13 +97,13 @@ public class Arg<T> extends ArgBase {
         return false;
     }
 
-    private void ParseErrorCheck(boolean good, Object value, String type) throws Exception {
+    private void ParseErrorCheck(boolean good, Object value, String type) throws CommandException {
         if (!good)
-            throw new Exception("Failed to parse the following argument into type " +  type + ": " + value + ".");
+            throw new CommandException("Failed to parse the following argument into type " +  type + ": " + value + ".");
     }
 
 
-    private <V> V ParseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws Exception {
+    private <V> V ParseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
         // If enum, check from our cached enum dictionary.
         if ( isEnum() ) {
         unit = unit.toLowerCase();
@@ -114,7 +114,7 @@ public class Arg<T> extends ArgBase {
             res.append("|");
         }
         res.delete(res.length() - 1, res.length()); // Remove the last "|"
-        throw new Exception("Invalid argument found: {unit}. Accepted values are: {res}");
+        throw new CommandException("Invalid argument found: {unit}. Accepted values are: {res}");
         }
         return GetConverted(vType, _enumValues.get(unit));
         }
@@ -201,11 +201,11 @@ public class Arg<T> extends ArgBase {
         return GetConverted(vType,  result.ToArray() );
         }
          */
-        throw new Exception("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+        throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
         }
 
         @Override
-        public Object ParseUnit ( String unit, String[] unitPlusRemainder ) throws Exception
+        public Object ParseUnit ( String unit, String[] unitPlusRemainder ) throws CommandException
         {
             return ParseUnitUtil(_tType, unit, unitPlusRemainder);
         }

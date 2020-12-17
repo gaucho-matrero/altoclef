@@ -21,7 +21,7 @@ public abstract class ArgBase {
     //public abstract Object ParseUnit ( String unit, String[] unitPlusRemainder );
 
     @SuppressWarnings("unchecked")
-    public <V> V ParseUnit(String unit, String[] unitPlusRemainder) throws Exception {
+    public <V> V ParseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
         // Fuck java
         Class<V> vType = (Class<V>)
                 ((ParameterizedType)getClass()

@@ -19,7 +19,7 @@ public abstract class Command {
         parser = new ArgParser(args);
     }
 
-    public void Run(AltoClef mod, String line) throws Exception {
+    public void Run(AltoClef mod, String line) throws CommandException {
         _mod = mod;
         parser.LoadArgs(line);
         Call(mod, parser);
@@ -45,7 +45,7 @@ public abstract class Command {
         Debug.logError(message.toString());
     }
 
-    protected abstract void Call(AltoClef mod, ArgParser parser) throws Exception;
+    protected abstract void Call(AltoClef mod, ArgParser parser) throws CommandException;
 
     public String getName() {
         return _name;

@@ -16,8 +16,11 @@ public abstract class ResourceTask extends Task {
     public ResourceTask(List<ItemTarget> itemTargets) {
         _itemTargets = itemTargets;
     }
+    public ResourceTask(ItemTarget target) {
+        this(Collections.singletonList(target));
+    }
     public ResourceTask(Item item, int targetCount) {
-        this(Collections.singletonList(new ItemTarget(item, targetCount)));
+        this(new ItemTarget(item, targetCount));
     }
 
 

@@ -30,7 +30,7 @@ public class CommandExecutor {
         return line.startsWith(_commandPrefix);
     }
 
-    public void Execute(String line) throws Exception {
+    public void Execute(String line) throws CommandException {
         if (!isClientCommand(line)) return;
         line = line.substring(_commandPrefix.length());
         Command c = GetCommand(line);
@@ -40,13 +40,13 @@ public class CommandExecutor {
             {
                 c.Run(_mod, line);
             }
-            catch (Exception ae)
+            catch (CommandException ae)
             {
-                throw new Exception(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
+                throw new CommandException(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
             }
         }
     }
-    private Command GetCommand(String line) throws Exception {
+    private Command GetCommand(String line) throws CommandException {
 
         if (line.length() != 0)
         {
@@ -59,7 +59,7 @@ public class CommandExecutor {
 
             if (!_commandSheet.containsKey(command))
             {
-                throw new Exception("Command " + command + " does not exist.");
+                throw new CommandException("Command " + command + " does not exist.");
             }
 
             return _commandSheet.get(command);

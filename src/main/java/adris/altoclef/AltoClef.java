@@ -1,6 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.commands.AltoClefCommands;
+import adris.altoclef.commands.CommandException;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -77,7 +78,7 @@ public class AltoClef implements ModInitializer {
             e.cancel();
             try {
                 _commandExecutor.Execute(line);
-            } catch (Exception ex) {
+            } catch (CommandException ex) {
                 Debug.logWarning(ex.getMessage());
                 //ex.printStackTrace();
             }

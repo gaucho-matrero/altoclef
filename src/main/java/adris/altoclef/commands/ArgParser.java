@@ -31,13 +31,13 @@ public class ArgParser {
     }
 
     // Get the next argument.
-    public <T> T Get(Class<T> type) throws Exception {
+    public <T> T Get(Class<T> type) throws CommandException {
 
         if ( argCounter >= _args.length ) {
-            throw new Exception("You tried grabbing more arguments than you had... Bad move.");
+            throw new CommandException("You tried grabbing more arguments than you had... Bad move.");
         }
         if ( argUnits.length > _args.length ) {
-            throw new Exception(String.format("Too many arguments provided %d. The maximum is %d.", argUnits.length, _args.length));
+            throw new CommandException(String.format("Too many arguments provided %d. The maximum is %d.", argUnits.length, _args.length));
         }
 
         // Current values from arrays
@@ -54,7 +54,7 @@ public class ArgParser {
         }
 
         if ( unitCounter >= argUnits.length ) {
-            throw new Exception(String.format("Not enough arguments supplied: You supplied %d.", argUnits.length));
+            throw new CommandException(String.format("Not enough arguments supplied: You supplied %d.", argUnits.length));
         }
 
         String unit = argUnits[unitCounter];

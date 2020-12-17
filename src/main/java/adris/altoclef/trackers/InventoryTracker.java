@@ -2,21 +2,18 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
 import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.InventorySlot;
+import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.PlayerInventorySlot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class InventoryTracker extends Tracker {
 
@@ -48,7 +45,6 @@ public class InventoryTracker extends Tracker {
             sum += getItemCount(match);
         }
         return sum;
-
     }
     public int getMaxItemCount(ItemTarget target) {
         int max = 0;
@@ -57,6 +53,13 @@ public class InventoryTracker extends Tracker {
             if (count > max) max = count;
         }
         return max;
+    }
+
+    public Collection<Integer> getInventorySlotsWithItem(Item item) {
+        if (_itemSlots.containsKey(item)) {
+            return _itemSlots.get(item);
+        }
+        return Collections.emptyList();
     }
 
     public boolean targetReached(ItemTarget ...targets) {
@@ -70,51 +73,143 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
-    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
+    private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
         ensureUpdated();
+
+        HashMap<Integer, Integer> craftSlotToInventorySlot = new HashMap<>();
 
         // Matching
         List<CraftingRecipe.CraftingSlot> matchingSlots = new ArrayList<>(recipe.mustMatchCount());
 
-        for (int i = 0; i < recipe.getSlotCount(); ++i) {
-            CraftingRecipe.CraftingSlot slot = recipe.getSlot(i);
+        // How many of each item we used
+        HashMap<Item, Integer> usedUp = new HashMap<>();
 
-            if (recipe.mustMatch(i)) {
+        for (int craftPos = 0; craftPos < recipe.getSlotCount(); ++craftPos) {
+            CraftingRecipe.CraftingSlot slot = recipe.getSlot(craftPos);
+            if (slot.isEmpty()) continue;
+
+            boolean mustMatchItem = recipe.mustMatch(craftPos);
+            if (mustMatchItem) {
                 matchingSlots.add(slot);
             }
 
             boolean foundItem = false;
             // Make sure we have at least one of the requirements
             for (Item item : slot.getTargetItems()) {
-                if (hasItem(item)) {
-                    foundItem = true;
+                if (!usedUp.containsKey(item)) {
+                    usedUp.put(item, 0);
                 }
+
+                Debug.logMessage("Check: " + item.getTranslationKey());
+
+                // "Spread Down" our items
+                int toSkip = usedUp.get(item);
+                Debug.logMessage("Start toSkip = " + toSkip);
+
+                for (int invSlotPosition : getInventorySlotsWithItem(item)) {
+                    ItemStack stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
+
+                    Debug.logMessage("(exists in slot " + invSlotPosition + ")");
+
+                    if (toSkip >= stack.getCount()) {
+                        toSkip -= stack.getCount();
+                    } else {
+                        foundItem = true;
+                        Debug.logMessage("Found one in inv slot " + invSlotPosition);
+                        toSkip = 0;
+                        // Use one up but only if we can use it straight away.
+                        if (!mustMatchItem) {
+                            craftSlotToInventorySlot.put(craftPos, invSlotPosition);
+                            usedUp.put(item, usedUp.get(item) + 1);
+                        }
+                        break;
+                    }
+                }
+                if (toSkip != 0) {
+                    Debug.logWarning("TEMP A: " + toSkip);
+                    // We ran out of spaces.
+                    return null;
+                }
+
+                // We found an item for THIS slot, keep moving.
+                if (foundItem) {
+                    break;
+                }
+
+                /*
+                int amountLeft = getItemCount(item) - usedUp.get(item);
+                if (amountLeft > 0) {
+                    foundItem = true;
+                    // Use one up but only if we can use it straight away.
+                    if (!mustMatchItem) {
+                        inventoryToSlot.put()
+                        usedUp.put(item, usedUp.get(item) + 1);
+                    }
+                }
+                 */
             }
             if (!foundItem) {
+                Debug.logWarning("TEMP B");
                 // Failure to find item required for this slot.
-                return false;
+                return null;
             }
         }
 
         // Now handle matching
-        if (!matchingSlots.isEmpty()) {
-            CraftingRecipe.CraftingSlot first = matchingSlots.get(0);
+        if (!recipe.getMustMatchCollection().isEmpty()) {
+            CraftingRecipe.CraftingSlot exampleFirst = matchingSlots.get(0);
             int requiredCount = recipe.mustMatchCount();
-            for (Item item : first.getTargetItems()) {
+            for (Item item : exampleFirst.getTargetItems()) {
                 // We found an item that fits that match.
-                if (getItemCount(item) >= requiredCount) {
-                    return true;
+                // At this point, `usedUp` reflects how many items we DEFINITELY used.
+                int itemsRemaining = getItemCount(item) - usedUp.get(item);
+                if (itemsRemaining >= requiredCount) {
+                    // "Spread down" just like we did the items above.
+                    int toSkip = usedUp.get(item);
+
+                    Iterator<Integer> matchingSlotIterator = recipe.getMustMatchCollection().iterator();
+
+                    for (int invSlotPosition : getInventorySlotsWithItem(item)) {
+                        ItemStack stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
+
+                        if (toSkip > stack.getCount()) {
+                            toSkip -= stack.getCount();
+                        } else {
+                            if (!matchingSlotIterator.hasNext()) {
+                                // We exhausted our matching slot requirements. We're done!
+                                return craftSlotToInventorySlot;
+                            }
+                            int index = matchingSlotIterator.next();
+                            Debug.logWarning("Matching found one: " + invSlotPosition + " -> " + index);
+                            craftSlotToInventorySlot.put(index, invSlotPosition);
+                            usedUp.put(item, usedUp.get(item) + 1);
+                        }
+                    }
+                    if (toSkip != 0) {
+                        Debug.logWarning("TEMP C");
+                        // We ran out of spaces.
+                        return null;
+                    }
+
+                    return craftSlotToInventorySlot;
                 }
             }
+            Debug.logWarning("TEMP D");
             // No combination of all items matching
-            return false;
+            return null;
         }
 
         // We passed through the rings of fire
-        return true;
+        return craftSlotToInventorySlot;
+
     }
 
-    public ItemStack clickSlot(InventorySlot slot, int mouseButton, SlotActionType type) {
+    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
+        ensureUpdated();
+        return getRecipeMapping(recipe) != null;
+    }
+
+    public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
@@ -124,13 +219,13 @@ public class InventoryTracker extends Tracker {
 
         return _mod.getController().clickSlot(syncId, slot.getWindowSlot(), mouseButton, type, player);
     }
-    public ItemStack clickSlot(InventorySlot slot, int mouseButton) {
+    public ItemStack clickSlot(Slot slot, int mouseButton) {
         return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
     }
-    public ItemStack clickSlot(InventorySlot slot, SlotActionType type) {
+    public ItemStack clickSlot(Slot slot, SlotActionType type) {
         return clickSlot(slot, 0, type);
     }
-    public ItemStack clickSlot(InventorySlot slot) {
+    public ItemStack clickSlot(Slot slot) {
         return clickSlot(slot, 0);
     }
 
@@ -140,7 +235,7 @@ public class InventoryTracker extends Tracker {
      * @param amount How many to move
      * @return       The number of items successfully transported
      */
-    public int moveItems(InventorySlot from, InventorySlot to, int amount) {
+    public int moveItems(Slot from, Slot to, int amount) {
         to.ensureWindowOpened();
 
         ItemStack fromStack = getItemStackInSlot(from);
@@ -187,7 +282,7 @@ public class InventoryTracker extends Tracker {
         return dropped;
     }
 
-    public void swapItems(InventorySlot slot1, InventorySlot slot2) {
+    public void swapItems(Slot slot1, Slot slot2) {
 
         // Pick up slot1
         clickSlot(slot1);
@@ -202,7 +297,70 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    private ItemStack getItemStackInSlot(InventorySlot slot) {
+    // Crafts a recipe. Returns whether it succeeded.
+    public boolean craftInstant(CraftingRecipe recipe) {
+
+        boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+
+        if (recipe.isBig() && !bigCrafting) {
+            Debug.logWarning("Tried crafting a 3x3 recipe without a crafting table. Sadly this won't work.");
+            return false;
+        }
+
+        // Get the position of each item we will use for crafting. Map player inventory/window Slot => crafting slot
+        HashMap<Integer, Integer> craftPositionToInvSlot = getRecipeMapping(recipe);
+
+        if (craftPositionToInvSlot == null) {
+            Debug.logWarning("Unable to craft");
+            return false;
+        }
+
+        List<Pair<Slot, Slot>> moveSlotToCraftSlot = new ArrayList<>();
+
+        for (int craftPos : craftPositionToInvSlot.keySet()) {
+            Slot itemSlot;
+            Slot craftSlot;
+            int invSlot = craftPositionToInvSlot.get(craftPos);
+            Debug.logMessage("WHAT? " + invSlot + " -> " + craftPos);
+            if (bigCrafting) {
+                // Craft in table
+                itemSlot = new CraftingTableInventorySlot(invSlot);
+                craftSlot = CraftingTableSlot.getInputSlot(craftPos);
+            } else {
+                // Craft in window
+                itemSlot = new PlayerInventorySlot(invSlot);
+                craftSlot = PlayerSlot.getCraftInputSlot(craftPos);
+            }
+            moveSlotToCraftSlot.add(new Pair<>(itemSlot, craftSlot));
+        }
+
+        // Move everything
+        for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
+            // moveItems( item slot, craft slot)
+            if (moveItems(movement.getLeft(), movement.getRight(), 1) != 1) {
+                Debug.logWarning("Failed to move item from slot " + movement.getLeft() + " to slot " + movement.getRight());
+                return false;
+            }
+        }
+
+        // Receive output
+        Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+        // TODO: This should be only one call, but it's two. The latter is a temporary fix too.
+        clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
+        clickSlot(outputSlot, 0, SlotActionType.SWAP);
+
+        // Grab back TODO: This shouldn't be necessary
+        for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
+            Slot craftSlot = movement.getRight();
+            clickSlot(craftSlot, 0, SlotActionType.PICKUP);
+            clickSlot(craftSlot, 0, SlotActionType.QUICK_MOVE);
+        }
+
+        setDirty();
+        return true;
+    }
+
+    private ItemStack getItemStackInSlot(Slot slot) {
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;

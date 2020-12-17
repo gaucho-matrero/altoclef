@@ -49,6 +49,8 @@ public class CraftingRecipe {
         return _mustMatch.contains(index);
     }
 
+    public Collection<Integer> getMustMatchCollection() { return _mustMatch; }
+
     public int mustMatchCount() {
         return _mustMatch.size();
     }
@@ -79,16 +81,25 @@ public class CraftingRecipe {
         return this;
     }
 
-    public static CraftingRecipe newShapedRecipe(CraftingSlot[] slots) {
+    public static CraftingRecipe newShapedRecipe(Item[][] items) {
+        return newShapedRecipe(createSlots(items));
+    }
+    private static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
+        return newShapedRecipe(createSlots(slots));
+    }
+
+    private static CraftingRecipe newShapedRecipe(CraftingSlot[] slots) {
         if (slots.length != 4 && slots.length != 9) {
             Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
             return null;
         }
-        for (CraftingSlot slot : slots) {
+        /*
+        for (ItemTarget slot : slots) {
             if (slot == null) {
-                Debug.logError("Null crafting slot detected. Use CraftingRecipe.EMPTY!");
+                Debug.logError("Null crafting slot detected. Use ItemTarget.EMPTY!");
             }
         }
+         */
         CraftingRecipe result = new CraftingRecipe();
         result._slots = slots;
         if (slots.length == 4) {
@@ -103,15 +114,30 @@ public class CraftingRecipe {
         return result;
     }
 
-    public static CraftingRecipe newShapelessRecipe(CraftingSlot[] slots) {
+    public static CraftingRecipe newShapelessRecipe(ItemTarget[] slots) {
         if (slots.length > 9) {
             Debug.logError("Invalid shapeless crafting recipe, must have at most 9 slots. Size given: " + slots.length);
             return null;
         }
         CraftingRecipe result = new CraftingRecipe();
-        result._slots = slots;
+        result._slots = createSlots(slots);
         result._shapeless = true;
 
+        return result;
+    }
+
+    private static CraftingSlot[] createSlots(ItemTarget[] slots) {
+        CraftingSlot[] result = new CraftingSlot[slots.length];
+        for (int i = 0; i < slots.length; ++i) {
+            result[i] = new CraftingSlot(slots[i]);
+        }
+        return result;
+    }
+    private static CraftingSlot[] createSlots(Item[][] slots) {
+        CraftingSlot[] result = new CraftingSlot[slots.length];
+        for (int i = 0; i < slots.length; ++i) {
+            result[i] = new CraftingSlot(slots[i]);
+        }
         return result;
     }
 
@@ -141,7 +167,9 @@ public class CraftingRecipe {
             this(target.getMatches());
         }
         public CraftingSlot(Item ...items) {
-            Collections.addAll(_targetItems, items);
+            if (items != null) {
+                Collections.addAll(_targetItems, items);
+            }
         }
 
         public boolean matches(Item item) {

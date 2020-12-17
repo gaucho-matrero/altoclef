@@ -1,23 +1,17 @@
 
-package adris.altoclef.util;
+package adris.altoclef.util.slots;
 
-import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import baritone.utils.accessor.IPlayerControllerMP;
-import net.fabricmc.loader.game.MinecraftGameProvider;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.MinecraftClientGame;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.server.MinecraftServer;
 
-public class PlayerInventorySlot extends InventorySlot {
-    public PlayerInventorySlot(int windowSlot) {
-        super(windowSlot);
+public class PlayerSlot extends Slot {
+    public PlayerSlot(int windowSlot) {
+        this(windowSlot, false);
+        if (windowSlot == 0) {
+            Debug.logMessage("TEMP: " + this + ", WAT: " + windowSlot);
+        }
+    }
+    protected PlayerSlot(int slot, boolean inventory) {
+        super(slot, inventory);
     }
 
     @Override
@@ -56,4 +50,14 @@ public class PlayerInventorySlot extends InventorySlot {
         MinecraftClient.getInstance().openScreen(screen);
          */
     }
+
+    public static PlayerSlot getCraftInputSlot(int x, int y) {
+        return getCraftInputSlot(y * 2 + x);
+    }
+    public static PlayerSlot getCraftInputSlot(int index) {
+        index += 1;
+        return new PlayerSlot(index);
+    }
+
+    public static final PlayerSlot CRAFT_OUTPUT_SLOT = new PlayerSlot(0);
 }

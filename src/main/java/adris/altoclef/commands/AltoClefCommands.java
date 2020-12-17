@@ -3,17 +3,15 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.MineAndCollectTask;
-import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.PlayerInventorySlot;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.TaskCatalogue;
-import baritone.api.pathing.goals.GoalGetToBlock;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unused", "unchecked", "rawtypes"})
@@ -21,12 +19,30 @@ public class AltoClefCommands extends CommandList {
 
     private static void TEMP_TEST_FUNCTION(AltoClef mod) {
         //mod.runUserTask();
+        /*
         TaskCatalogue.getItemTask("log", 5);
         TaskCatalogue.getItemTask("planks", 4);
         TaskCatalogue.getItemTask("log", 5);
+         */
         Debug.logMessage("Running test...");
 
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(
+                new Item[][]{
+                        ItemTarget.PLANKS, null,
+                        ItemTarget.PLANKS, null
+                        //new Item[] {Items.OAK_PLANKS}, null,
+                        //new Item[] {Items.OAK_PLANKS}, null
+                }
+        );
+
+        if (mod.getInventoryTracker().craftInstant(recipe)) {
+            Debug.logMessage("Craft Success!");
+        } else {
+            Debug.logWarning("Craft failed.");
+        }
+
         //Task userTask = new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(ItemTarget.PLANKS, 5)));
+        /*
         Task userTask = new MineAndCollectTask(
                 Arrays.asList(new ItemTarget(Items.DIRT, 5),
                         new ItemTarget(ItemTarget.PLANKS, 5)));
@@ -115,18 +131,18 @@ public class AltoClefCommands extends CommandList {
         }
 
         @Override
-        protected void Call(AltoClef mod, ArgParser parser) throws Exception {
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
             int from = parser.Get(Integer.class);
             int to = parser.Get(Integer.class);
             int amount = parser.Get(Integer.class);
 
-            int moved = mod.getInventoryTracker().moveItems(new PlayerInventorySlot(from), new PlayerInventorySlot(to), amount);
+            int moved = mod.getInventoryTracker().moveItems(new PlayerSlot(from), new PlayerSlot(to), amount);
             Debug.logMessage("Successfully moved " + moved + " items.");
         }
     }
     static class TestSwapInventoryCommand extends Command {
 
-        public TestSwapInventoryCommand() throws Exception {
+        public TestSwapInventoryCommand() throws CommandException {
             super("testswapinv", "Test command to swap two slots in the inventory",
                     new Arg(Integer.class, "slot1"),
                     new Arg(Integer.class, "slot2")
@@ -134,11 +150,11 @@ public class AltoClefCommands extends CommandList {
         }
 
         @Override
-        protected void Call(AltoClef mod, ArgParser parser) throws Exception {
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
             int slot1 = parser.Get(Integer.class);
             int slot2 = parser.Get(Integer.class);
 
-            mod.getInventoryTracker().swapItems(new PlayerInventorySlot(slot1), new PlayerInventorySlot(slot2));
+            mod.getInventoryTracker().swapItems(new PlayerSlot(slot1), new PlayerSlot(slot2));
             Debug.logMessage("Successfully swapped.");
         }
     }
