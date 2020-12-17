@@ -69,7 +69,7 @@ public class PickupDroppedItemTask extends Task {
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive() || _itemGoal == null || _itemGoal.squaredDistanceTo(goal) > 1) {
             Debug.logMessage("(Pickup PATHING");
             //mod.getClientBaritone().getCustomGoalProcess().path();
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(closest.getBlockPos()));//new GoalGetToPosition(goal));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToPosition(closest.getPos()));//new GoalGetToPosition(goal));
             _itemGoal = goal;
         }
 

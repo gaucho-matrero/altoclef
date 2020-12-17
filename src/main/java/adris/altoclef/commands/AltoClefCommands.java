@@ -3,6 +3,7 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.MineAndCollectTask;
+import adris.altoclef.tasks.resources.CollectPlanksTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -10,6 +11,7 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.TaskCatalogue;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import sun.security.util.ArrayUtil;
 
 import java.util.Arrays;
 
@@ -26,6 +28,7 @@ public class AltoClefCommands extends CommandList {
          */
         Debug.logMessage("Running test...");
 
+        /*
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(
                 new Item[][]{
                         ItemTarget.PLANKS, null,
@@ -40,29 +43,17 @@ public class AltoClefCommands extends CommandList {
         } else {
             Debug.logWarning("Craft failed.");
         }
-
-        //Task userTask = new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(ItemTarget.PLANKS, 5)));
-        /*
-        Task userTask = new MineAndCollectTask(
-                Arrays.asList(new ItemTarget(Items.DIRT, 5),
-                        new ItemTarget(ItemTarget.PLANKS, 5)));
-
-        //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(new BlockPos(0, 64, 0)));
-
-        mod.runUserTask(userTask);
-        /*
-        mod.runUserTask(new MineAndCollectTask(
-                Arrays.asList(new ItemTarget(Items.DIRT, 5),
-                        new ItemTarget(ItemTarget.PLANKS, 5))
-        ));
          */
+
+        mod.runUserTask(new CollectPlanksTask(20));
 
     }
 
-    public AltoClefCommands(CommandExecutor executor) {
+    public AltoClefCommands(CommandExecutor executor) throws CommandException {
         super(executor,
             // List commands here
             new HelpCommand(),
+            new GetCommand(),
             new StopCommand(),
             new TestCommand()
             //new TestMoveInventoryCommand(),
@@ -105,6 +96,30 @@ public class AltoClefCommands extends CommandList {
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
             mod.getTaskRunner().disable();
+        }
+    }
+
+    static class GetCommand extends Command {
+
+        public GetCommand() throws CommandException {
+            super("get", "Get an item/resource",
+                    new Arg(String.class, "name"),
+                    new Arg(Integer.class, "count", 1, 1));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String resourceName = parser.Get(String.class);
+            int count = parser.Get(Integer.class);
+
+            Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
+            if (targetTask == null) {
+                Debug.logWarning("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.");
+                Debug.logWarning("Here's a list of everything we can get for you though:");
+                Debug.logWarning(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
+            } else {
+                mod.runUserTask(targetTask);
+            }
         }
     }
 

@@ -5,9 +5,10 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.TaskCatalogue;
 import net.minecraft.item.Item;
 
-import java.util.Optional;
+import java.util.HashMap;
 
 public class CraftInInventoryTask extends ResourceTask {
 
@@ -17,7 +18,6 @@ public class CraftInInventoryTask extends ResourceTask {
         super(target);
         _recipe = recipe;
     }
-
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
@@ -64,20 +64,35 @@ public class CraftInInventoryTask extends ResourceTask {
         return toCraftingDebugStringName() + " " + _recipe;
     }
 
-    // virtual
+    // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
+
+        // TODO: Cache this instead of doing it every frame.
+        HashMap<String, Integer> catalogueCount = new HashMap<String, Integer>();
+
         // Default, just go through the recipe slots and collect the first one.
         for (int i = 0; i < _recipe.getSlotCount(); ++i) {
-            CraftingRecipe.CraftingSlot slot = _recipe.getSlot(i);
-            if (slot.getTargetItems().size() > 1) {
+            ItemTarget slot = _recipe.getSlot(i);
+            if (!slot.isCatalogueItem()) {
                 Debug.logWarning("Recipe collection for recipe " + _recipe + " slot " + i
-                        + " has multiple options, picking the first. Please define an explicit"
+                        + " is not catalogued. Please define an explicit"
                         + " collectRecipeSubTask() function for this task."
                 );
+            } else {
+                String targetName = slot.getCatalogueName();
+                if (!catalogueCount.containsKey(targetName)) {
+                    catalogueCount.put(targetName, 0);
+                }
+                catalogueCount.put(targetName, catalogueCount.get(targetName) + 1);
             }
-            Optional<Item> item = slot.getTargetItems().stream().findFirst();
-            if (item.isPresent()) {
-                item.get();
+        }
+
+        // (Cache this with the above stuff!!)
+        for (String catalogueName : catalogueCount.keySet()) {
+            int count = catalogueCount.get(catalogueName);
+            ItemTarget target = new ItemTarget(TaskCatalogue.getItemMatches(catalogueName), count);
+            if (!mod.getInventoryTracker().targetReached(target)) {
+                return TaskCatalogue.getItemTask(catalogueName, count);
             }
         }
 

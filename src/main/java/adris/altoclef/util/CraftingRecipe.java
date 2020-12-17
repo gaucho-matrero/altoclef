@@ -9,7 +9,7 @@ import java.util.*;
 
 public class CraftingRecipe {
 
-    private CraftingSlot[] _slots;
+    private ItemTarget[] _slots;
 
     private int _width, _height;
 
@@ -22,7 +22,7 @@ public class CraftingRecipe {
 
     private CraftingRecipe() {}
 
-    public CraftingSlot getSlot(int index) {
+    public ItemTarget getSlot(int index) {
         return _slots[index];
     }
 
@@ -68,8 +68,8 @@ public class CraftingRecipe {
                 continue;
             }
 
-            CraftingSlot currentSlot = _slots[index];
-            CraftingSlot prevSlot = _slots[prev];
+            ItemTarget currentSlot = _slots[index];
+            ItemTarget prevSlot = _slots[prev];
             // Assert they are the same
             if (!currentSlot.equals(prevSlot)) {
                 Debug.logError("Invalid \"Matching Slots\" provided. They are not the same: Slot " + index + " vs Slot " + prev);
@@ -84,11 +84,8 @@ public class CraftingRecipe {
     public static CraftingRecipe newShapedRecipe(Item[][] items) {
         return newShapedRecipe(createSlots(items));
     }
-    private static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
-        return newShapedRecipe(createSlots(slots));
-    }
 
-    private static CraftingRecipe newShapedRecipe(CraftingSlot[] slots) {
+    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
         if (slots.length != 4 && slots.length != 9) {
             Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
             return null;
@@ -114,6 +111,7 @@ public class CraftingRecipe {
         return result;
     }
 
+    /*
     public static CraftingRecipe newShapelessRecipe(ItemTarget[] slots) {
         if (slots.length > 9) {
             Debug.logError("Invalid shapeless crafting recipe, must have at most 9 slots. Size given: " + slots.length);
@@ -125,18 +123,19 @@ public class CraftingRecipe {
 
         return result;
     }
+     */
 
-    private static CraftingSlot[] createSlots(ItemTarget[] slots) {
-        CraftingSlot[] result = new CraftingSlot[slots.length];
+    private static ItemTarget[] createSlots(ItemTarget[] slots) {
+        ItemTarget[] result = new ItemTarget[slots.length];
         for (int i = 0; i < slots.length; ++i) {
-            result[i] = new CraftingSlot(slots[i]);
+            result[i] = slots[i];
         }
         return result;
     }
-    private static CraftingSlot[] createSlots(Item[][] slots) {
-        CraftingSlot[] result = new CraftingSlot[slots.length];
+    private static ItemTarget[] createSlots(Item[][] slots) {
+        ItemTarget[] result = new ItemTarget[slots.length];
         for (int i = 0; i < slots.length; ++i) {
-            result[i] = new CraftingSlot(slots[i]);
+            result[i] = new ItemTarget(slots[i]);
         }
         return result;
     }
@@ -159,14 +158,25 @@ public class CraftingRecipe {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "CraftingRecipe{" +
+                "_slots=" + Arrays.toString(_slots) +
+                ", _width=" + _width +
+                ", _height=" + _height +
+                ", _shapeless=" + _shapeless +
+                ", _mustMatch=" + _mustMatch +
+                '}';
+    }
 
-    public static class CraftingSlot {
+    /*
+    public static class ItemTarget {
         private final List<Item> _targetItems = new ArrayList<>();
 
-        public CraftingSlot(ItemTarget target) {
+        public ItemTarget(ItemTarget target) {
             this(target.getMatches());
         }
-        public CraftingSlot(Item ...items) {
+        public ItemTarget(Item ...items) {
             if (items != null) {
                 Collections.addAll(_targetItems, items);
             }
@@ -190,7 +200,7 @@ public class CraftingRecipe {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            CraftingSlot other = (CraftingSlot) o;
+            ItemTarget other = (ItemTarget) o;
             if (_targetItems.size() != other._targetItems.size()) return false;
             for (int i = 0; i < _targetItems.size(); ++i) {
                 if (!ItemTarget.itemEquals(_targetItems.get(i), other._targetItems.get(i))) return false;
@@ -203,6 +213,7 @@ public class CraftingRecipe {
             return Objects.hash(_targetItems);
         }
     }
+     */
 
-    public static CraftingSlot EMPTY = new CraftingSlot();
+    //public static ItemTarget EMPTY = new ItemTarget();
 }

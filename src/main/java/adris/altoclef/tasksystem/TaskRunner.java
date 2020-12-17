@@ -1,6 +1,8 @@
 package adris.altoclef.tasksystem;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import baritone.api.BaritoneAPI;
 
 import java.util.ArrayList;
 
@@ -45,6 +47,11 @@ public class TaskRunner {
             chain.stop(_mod);
         }
         _active = false;
+
+        // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
+        _mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
+
+        Debug.logMessage("Stopped");
     }
 
 }

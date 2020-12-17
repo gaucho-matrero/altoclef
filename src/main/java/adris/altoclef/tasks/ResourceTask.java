@@ -23,7 +23,6 @@ public abstract class ResourceTask extends Task {
         this(new ItemTarget(item, targetCount));
     }
 
-
     @Override
     public boolean isFinished(AltoClef mod) {
         return mod.getInventoryTracker().targetReached(Util.toArray(ItemTarget.class, _itemTargets));

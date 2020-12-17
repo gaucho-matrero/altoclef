@@ -21,6 +21,8 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class MineAndCollectTask extends ResourceTask {
@@ -29,6 +31,10 @@ public class MineAndCollectTask extends ResourceTask {
 
     public MineAndCollectTask(List<ItemTarget> itemTargets) {
         super(itemTargets);
+    }
+
+    public MineAndCollectTask(ItemTarget target) {
+        this(Collections.singletonList(target));
     }
 
     public MineAndCollectTask(Item item, int targetCount) {

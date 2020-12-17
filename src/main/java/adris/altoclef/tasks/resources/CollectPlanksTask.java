@@ -11,7 +11,6 @@ import jdk.internal.loader.Resource;
 import net.minecraft.item.Item;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 public class CollectPlanksTask extends CraftInInventoryTask {
 
