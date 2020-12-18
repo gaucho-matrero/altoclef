@@ -151,7 +151,8 @@ public class CraftingRecipe {
             if (other._slots.length != _slots.length) return false;
             // TODO: mustMatch equality?
             for (int i = 0; i < _slots.length; ++i) {
-                if (!other._slots[i].equals(_slots[i])) return false;
+                if ( (other._slots[i] == null) != (_slots[i] == null) ) return false;
+                if (_slots[i] != null && !other._slots[i].equals(_slots[i])) return false;
             }
             return true;
         }

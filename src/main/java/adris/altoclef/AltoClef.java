@@ -6,18 +6,22 @@ import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.UserTaskChain;
+import adris.altoclef.trackers.BlockTracker;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.ConfigState;
+import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import baritone.api.event.events.ChatEvent;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.util.math.BlockPos;
 
 public class AltoClef implements ModInitializer {
 
@@ -35,6 +39,7 @@ public class AltoClef implements ModInitializer {
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
     private ConfigState _configState;
+    private BaritoneCustom _baritoneCustom;
 
     // Task chains
     private UserTaskChain _userTaskChain;
@@ -42,6 +47,7 @@ public class AltoClef implements ModInitializer {
     // Trackers
     private InventoryTracker _inventoryTracker;
     private EntityTracker _entityTracker;
+    private BlockTracker _blockTracker;
 
     @Override
     public void onInitialize() {
@@ -60,6 +66,7 @@ public class AltoClef implements ModInitializer {
         _taskRunner = new TaskRunner(this);
         _trackerManager = new TrackerManager(this);
         _configState = new ConfigState(this);
+        _baritoneCustom = new BaritoneCustom(this, (Baritone)BaritoneAPI.getProvider().getPrimaryBaritone());
 
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
@@ -67,6 +74,7 @@ public class AltoClef implements ModInitializer {
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);
         _entityTracker = new EntityTracker(_trackerManager);
+        _blockTracker = new BlockTracker(_trackerManager);
 
         initializeCommands();
     }
@@ -91,6 +99,21 @@ public class AltoClef implements ModInitializer {
         _taskRunner.tick();
     }
 
+    // Block tracking
+    public void onBlockAdd(BlockState newBlock, BlockPos pos) {
+        //Debug.logMessage("NEW BLOCK: " + newBlock.getBlock().getTranslationKey());
+        _blockTracker.onBlockPlace(pos, newBlock);
+    }
+    public void onBlockRemove(BlockState oldBlock, BlockPos pos) {
+        //Debug.logMessage("POOF BLOCK: " + newBlock.getBlock().getTranslationKey());
+        _blockTracker.onBlockRemove(pos, oldBlock);
+    }
+    public void onBlockChange(BlockState oldBlock, BlockState newBlock, BlockPos pos) {
+        //Debug.logMessage("CHANGE BLOCK: " + oldBlock.getBlock().getTranslationKey() + " -> " + newBlock.getBlock().getTranslationKey());
+        _blockTracker.onBlockRemove(pos, oldBlock);
+        _blockTracker.onBlockPlace(pos, newBlock);
+    }
+
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
@@ -103,18 +126,23 @@ public class AltoClef implements ModInitializer {
 
     /// GETTERS AND SETTERS
 
+    // Main handlers access
     public CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
     public TaskRunner getTaskRunner() {
         return _taskRunner;
     }
-    public UserTaskChain getUserTaskChain() { return _userTaskChain; }
+    //public UserTaskChain getUserTaskChain() { return _userTaskChain; }
     public ConfigState getConfigState() { return _configState; }
+    public BaritoneCustom getCustomBaritone() {return _baritoneCustom; }
 
+    // Trackers access
     public InventoryTracker getInventoryTracker() { return _inventoryTracker; }
     public EntityTracker getEntityTracker() { return _entityTracker; }
+    public BlockTracker getBlockTracker() { return _blockTracker; }
 
+    // Baritone access
     public Baritone getClientBaritone() {
         if (getPlayer() == null) {
             return null;
@@ -125,11 +153,13 @@ public class AltoClef implements ModInitializer {
         return Baritone.settings();
     }
 
+    // Minecraft access
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
     public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
 
+    // Extra control
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);
     }

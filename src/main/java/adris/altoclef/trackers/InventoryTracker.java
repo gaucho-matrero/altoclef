@@ -2,6 +2,8 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
 import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.TaskCatalogue;
 import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.client.MinecraftClient;
@@ -9,6 +11,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
@@ -34,17 +37,32 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
         return _itemCounts.containsKey(item);
     }
+    public boolean hasItem(Item ...items) {
+        ensureUpdated();
+        for (Item item : items) {
+            if (hasItem(item)) return true;
+        }
+        return false;
+    }
+    public boolean hasItem(String catalogueName) {
+        Item[] items = TaskCatalogue.getItemMatches(catalogueName);
+        return hasItem(items);
+    }
     public int getItemCount(Item item) {
         ensureUpdated();
         if (!hasItem(item)) return 0;
         return _itemCounts.get(item);
     }
-    public int getItemCount(ItemTarget target) {
+    public int getItemCount(Item ...items) {
         int sum = 0;
-        for (Item match : target.getMatches()) {
+        for (Item match : items) {
             sum += getItemCount(match);
         }
         return sum;
+
+    }
+    public int getItemCount(ItemTarget target) {
+        return getItemCount(target.getMatches());
     }
     public int getMaxItemCount(ItemTarget target) {
         int max = 0;
@@ -73,7 +91,29 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
+    public boolean miningRequirementMet(MiningRequirement requirement) {
+        switch (requirement) {
+            case HAND:
+                return true;
+            case WOOD:
+                return hasItem(Items.WOODEN_PICKAXE) || hasItem(Items.STONE_PICKAXE) || hasItem(Items.IRON_PICKAXE) || hasItem(Items.GOLDEN_PICKAXE) || hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
+            case STONE:
+                return hasItem(Items.STONE_PICKAXE) || hasItem(Items.IRON_PICKAXE) || hasItem(Items.GOLDEN_PICKAXE) || hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
+            case IRON:
+                return hasItem(Items.IRON_PICKAXE) || hasItem(Items.GOLDEN_PICKAXE) || hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
+            case DIAMOND:
+                return hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
+            default:
+                Debug.logError("You missed a spot");
+                return false;
+        }
+    }
+
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
+        return getRecipeMapping(recipe, 1);
+    }
+
+    private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe, int count) {
         ensureUpdated();
 
         HashMap<Integer, Integer> craftSlotToInventorySlot = new HashMap<>();
@@ -95,7 +135,7 @@ public class InventoryTracker extends Tracker {
                 matchingSlots.add(slot);
             }
 
-            boolean foundItem = false;
+            boolean slotSatisfied = false;
             // Make sure we have at least one of the requirements
             for (Item item : slot.getMatches()) {
                 if (!usedUp.containsKey(item)) {
@@ -106,6 +146,7 @@ public class InventoryTracker extends Tracker {
 
                 // "Spread Down" our items
                 int toSkip = usedUp.get(item);
+                int toFind = count;
                 //Debug.logMessage("Start toSkip = " + toSkip);
 
                 for (int invSlotPosition : getInventorySlotsWithItem(item)) {
@@ -114,27 +155,38 @@ public class InventoryTracker extends Tracker {
                     //Debug.logMessage("(exists in slot " + invSlotPosition + ")");
 
                     if (toSkip >= stack.getCount()) {
+                        // We skip through this stack
                         toSkip -= stack.getCount();
                     } else {
-                        foundItem = true;
                         //Debug.logMessage("Found one in inv slot " + invSlotPosition);
                         toSkip = 0;
-                        // Use one up but only if we can use it straight away.
-                        if (!mustMatchItem) {
-                            craftSlotToInventorySlot.put(craftPos, invSlotPosition);
-                            usedUp.put(item, usedUp.get(item) + 1);
+                        for (int used = 0; used < count; ++used) {
+                            toFind -= stack.getCount();
+                            if (toFind < 0) toFind = 0;
+                            if (!mustMatchItem) {
+                                // Use one up but only if we can use it straight away (not if we're expecting a matching)
+                                usedUp.put(item, usedUp.get(item) + 1);
+                                if (toFind == 0) {
+                                    // Only keep track of the final item, as the mapping pertains to ONE recipe.
+                                    craftSlotToInventorySlot.put(craftPos, invSlotPosition);
+                                    slotSatisfied = true;
+                                }
+                            }
                         }
-                        break;
+                        // Stop when we've found enough items to fill this slot ("count" checks for multiple times a recipe)
+                        if (toFind == 0) {
+                            break;
+                        }
                     }
                 }
+                // We ran out of items
                 if (toSkip != 0) {
-                    Debug.logWarning("TEMP A: " + toSkip);
-                    // We ran out of spaces.
+                    //Debug.logWarning("TEMP A: " + toSkip);
                     return null;
                 }
 
-                // We found an item for THIS slot, keep moving.
-                if (foundItem) {
+                // We found all items for THIS slot/satisfied it.
+                if (slotSatisfied) {
                     break;
                 }
 
@@ -150,17 +202,18 @@ public class InventoryTracker extends Tracker {
                 }
                  */
             }
-            if (!foundItem) {
-                Debug.logWarning("TEMP B");
+            if (!slotSatisfied) {
+                //Debug.logWarning("TEMP B");
                 // Failure to find item required for this slot.
                 return null;
             }
         }
 
+        // TODO: Debug the hell out of this.
         // Now handle matching
         if (!recipe.getMustMatchCollection().isEmpty()) {
             ItemTarget exampleFirst = matchingSlots.get(0);
-            int requiredCount = recipe.mustMatchCount();
+            int requiredCount = recipe.mustMatchCount() * count;
             for (Item item : exampleFirst.getMatches()) {
                 // We found an item that fits that match.
                 // At this point, `usedUp` reflects how many items we DEFINITELY used.
@@ -188,7 +241,7 @@ public class InventoryTracker extends Tracker {
                         }
                     }
                     if (toSkip != 0) {
-                        Debug.logWarning("TEMP C");
+                        //Debug.logWarning("TEMP C");
                         // We ran out of spaces.
                         return null;
                     }
@@ -196,7 +249,7 @@ public class InventoryTracker extends Tracker {
                     return craftSlotToInventorySlot;
                 }
             }
-            Debug.logWarning("TEMP D");
+            //Debug.logWarning("TEMP D");
             // No combination of all items matching
             return null;
         }
@@ -205,10 +258,13 @@ public class InventoryTracker extends Tracker {
         return craftSlotToInventorySlot;
 
     }
-
     public boolean hasRecipeMaterials(CraftingRecipe recipe) {
+        return hasRecipeMaterials(recipe, 1);
+    }
+
+    public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
         ensureUpdated();
-        return getRecipeMapping(recipe) != null;
+        return getRecipeMapping(recipe, count) != null;
     }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
@@ -302,6 +358,8 @@ public class InventoryTracker extends Tracker {
     // Crafts a recipe. Returns whether it succeeded.
     public boolean craftInstant(CraftingRecipe recipe) {
 
+        Debug.logInternal("CRAFTING... " + recipe);
+
         boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
 
         if (recipe.isBig() && !bigCrafting) {
@@ -323,7 +381,7 @@ public class InventoryTracker extends Tracker {
             Slot itemSlot;
             Slot craftSlot;
             int invSlot = craftPositionToInvSlot.get(craftPos);
-            Debug.logMessage("WHAT? " + invSlot + " -> " + craftPos);
+            //Debug.logMessage("WHAT? " + invSlot + " -> " + craftPos);
             if (bigCrafting) {
                 // Craft in table
                 itemSlot = new CraftingTableInventorySlot(invSlot);
@@ -339,8 +397,9 @@ public class InventoryTracker extends Tracker {
         // Move everything
         for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
             // moveItems( item slot, craft slot)
-            if (moveItems(movement.getLeft(), movement.getRight(), 1) != 1) {
-                Debug.logWarning("Failed to move item from slot " + movement.getLeft() + " to slot " + movement.getRight());
+            int moved = moveItems(movement.getLeft(), movement.getRight(), 1);
+            if (moved != 1) {
+                Debug.logWarning("Failed to move item from slot " + movement.getLeft() + " to slot " + movement.getRight() + ". Moved " + moved);
                 return false;
             }
         }

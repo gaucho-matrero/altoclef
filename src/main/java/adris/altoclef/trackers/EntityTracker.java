@@ -1,18 +1,15 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
-import adris.altoclef.util.BaritoneHelper;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
-import baritone.Baritone;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -50,6 +47,9 @@ public class EntityTracker extends Tracker {
             for (Item item : target.getMatches()) {
                 if (!itemDropped(item)) continue;
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
+
+                    if (!ItemTarget.itemEquals(entity.getStack().getItem(), item)) continue;
+
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
                     if (cost < minCost) {
                         minCost = cost;

@@ -2,15 +2,21 @@ package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.MineAndCollectTask;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.resources.CollectPlanksTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.TaskCatalogue;
+import baritone.api.utils.BlockOptionalMeta;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import sun.security.util.ArrayUtil;
 
 import java.util.Arrays;
@@ -19,34 +25,71 @@ import java.util.Arrays;
 @SuppressWarnings({"unused", "unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
-    private static void TEMP_TEST_FUNCTION(AltoClef mod) {
+    private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
-        /*
-        TaskCatalogue.getItemTask("log", 5);
-        TaskCatalogue.getItemTask("planks", 4);
-        TaskCatalogue.getItemTask("log", 5);
-         */
         Debug.logMessage("Running test...");
 
         /*
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(
-                new Item[][]{
-                        ItemTarget.PLANKS, null,
-                        ItemTarget.PLANKS, null
-                        //new Item[] {Items.OAK_PLANKS}, null,
-                        //new Item[] {Items.OAK_PLANKS}, null
+        mod.getBlockTracker().trackBlock(Blocks.CRAFTING_TABLE);
+        BlockPos target = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos());
+
+        mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(target, true);
+        */
+        //mod.runUserTask(new PickupDroppedItemTask(Arrays.asList(new ItemTarget(ItemTarget.LOG))));
+        //mod.runUserTask(new MineAndCollectTask(Arrays.asList(new ItemTarget(ItemTarget.LOG))));
+        ItemTarget B = new ItemTarget("planks");
+        ItemTarget s = new ItemTarget("stick");
+        ItemTarget o = null;
+        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe(new ItemTarget[]{B, B, B, o, s, o, o, s, o});
+        ItemTarget targetItem = new ItemTarget(Items.WOODEN_PICKAXE, 1);
+        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe(new ItemTarget[]{ o, B, o, o, B, o, o, s, o});
+        ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
+
+
+        if (arg.equals("")) {
+            //mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
+            mod.runUserTask(new CraftInTableTask(targetItem, testRecipe));
+
+        } else if (arg.equals("both")) {
+            mod.runUserTask(new CraftInTableTask(
+                    Arrays.asList(new RecipeTarget(targetItem2, testRecipe2), new RecipeTarget(targetItem, testRecipe))
+            ));
+        } else if (arg.equals("place")) {
+            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(Blocks.CRAFTING_TABLE);
+            schematic.reset();
+
+            Vec3i origin = mod.getPlayer().getBlockPos();
+            mod.getClientBaritone().getBuilderProcess().build("Place crafting table nearby", schematic, origin);
+        } else if (arg.equals("placereal")) {
+            mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
+        } else if (arg.equals("craft")) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        for (int i = 5; i > 0; --i) {
+                            Debug.logMessage(i + "...");
+                            Thread.sleep(1000, 0);
+                        }
+                        Debug.logMessage("DOING THE THING");
+                        mod.getInventoryTracker().craftInstant(testRecipe);
+                        Thread.sleep(1000, 0);
+                        mod.getInventoryTracker().craftInstant(testRecipe2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-        );
-
-        if (mod.getInventoryTracker().craftInstant(recipe)) {
-            Debug.logMessage("Craft Success!");
-        } else {
-            Debug.logWarning("Craft failed.");
+            }.start();
+        } else if (arg.equals("table")) {
+            mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
         }
-         */
 
-        mod.runUserTask(new CollectPlanksTask(20));
+        //mod.getBlockTracker().trackBlock(Blocks.CRAFTING_TABLE);
+        //BlockPos target = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos());
 
+        //mod.runUserTask(new GetToBlockTask(target, true));
+
+        //mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
     }
 
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
@@ -125,13 +168,13 @@ public class AltoClefCommands extends CommandList {
 
     static class TestCommand extends Command {
 
-        public TestCommand() {
-            super("test", "Generic command for testing");
+        public TestCommand() throws CommandException {
+            super("test", "Generic command for testing", new Arg(String.class, "extra", "", 0));
         }
 
         @Override
-        protected void Call(AltoClef mod, ArgParser parser) {
-            TEMP_TEST_FUNCTION(mod);
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            TEMP_TEST_FUNCTION(mod, parser.Get(String.class));
         }
     }
 

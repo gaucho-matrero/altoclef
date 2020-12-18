@@ -2,8 +2,10 @@ package adris.altoclef.util;
 
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.resources.CollectCobblestoneTask;
 import adris.altoclef.tasks.resources.CollectPlanksTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.item.Item;
@@ -22,15 +24,24 @@ public class TaskCatalogue {
     static {
         {
             String p = "planks";
+            String s = "stick";
             String o = null;
 
             put("planks", ItemTarget.PLANKS, simple(CollectPlanksTask.class));
-            put("stick", Items.STICK, shapedRecipe2x2(Items.STICK, p, p, o, o));
+            put("stick", Items.STICK, shapedRecipe2x2(Items.STICK, p, o, p, o));
             put("log", ItemTarget.LOG, mine(ItemTarget.LOG));
             put("dirt", Items.DIRT, mine(Items.DIRT, Items.GRASS_BLOCK, Items.GRASS_PATH));
             put("crafting_table", Items.CRAFTING_TABLE, shapedRecipe2x2(Items.CRAFTING_TABLE, p, p, p, p));
-            put("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, shapedRecipe2x2(Items.CRAFTING_TABLE, o, o, p, p));
-            put("wooden_button", ItemTarget.WOOD_BUTTON, shapedRecipe2x2(Items.CRAFTING_TABLE, p, o, o, o));
+            put("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, shapedRecipe2x2(ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p));
+            put("wooden_button", ItemTarget.WOOD_BUTTON, shapedRecipe2x2(ItemTarget.WOOD_BUTTON, p, o, o, o));
+
+            // TODO: Neat function to map Pickaxe, Axe, Shovel, Sword, Hoe, etc...
+            put("wooden_pickaxe", Items.WOODEN_PICKAXE, shapedRecipe3x3(Items.WOODEN_PICKAXE, p, p, p, o, s, o, o, s, o));
+            put("cobblestone", Items.COBBLESTONE, simple(CollectCobblestoneTask.class));
+            {
+                String c = "cobblestone";
+                put("stone_pickaxe", Items.STONE_PICKAXE, shapedRecipe3x3(Items.STONE_PICKAXE, c, c, c, o, s, o, o, s, o));
+            }
         }
     };
 
@@ -57,7 +68,6 @@ public class TaskCatalogue {
     }
 
     public static ResourceTask getItemTask(String name, int count) {
-        Debug.logMessage("GET: " + name);
 
         if (!_nameToResourceTask.containsKey(name)) {
             return null;
@@ -87,9 +97,7 @@ public class TaskCatalogue {
     }
     private static <T> TaskFactory shapedRecipe3x3(Item[] target, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)});
-        // TODO: CraftInCraftingTable
-        assert false;
-        return new TaskFactory(CraftInInventoryTask.class, target, recipe);
+        return new TaskFactory(CraftInTableTask.class, target, recipe);
     }
     private static <T> TaskFactory shapedRecipe2x2(Item target, String s0, String s1, String s2, String s3) {
         return shapedRecipe2x2(new Item[]{target}, s0, s1, s2, s3);

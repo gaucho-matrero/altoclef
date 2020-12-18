@@ -49,7 +49,7 @@ public abstract class Task {
 
     protected void stop(AltoClef mod, Task interruptTask) {
         onStop(mod, interruptTask);
-        Debug.logInternal("Task STOP: " + this.toString());
+        Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
 
         if (_sub != null && !_sub.failed()) {
             _sub.stop(mod, interruptTask);
@@ -92,7 +92,7 @@ public abstract class Task {
     // interruptTask = null if the task stopped cleanly
     protected abstract void onStop(AltoClef mod, Task interruptTask);
 
-    protected abstract boolean isEqual(Task other);
+    protected abstract boolean isEqual(Task obj);
 
 
     protected abstract String toDebugString();

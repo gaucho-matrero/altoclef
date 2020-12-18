@@ -105,7 +105,7 @@ public class ItemTarget {
     }
 
     public static boolean itemEquals(Item item1, Item item2) {
-        return Item.getRawId(item1) == Item.getRawId(item2);
+        return item1.equals(item2);//Item.getRawId(item1) == Item.getRawId(item2);
     }
 
     public static Item[] PLANKS = new Item[]{ Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS, Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS};

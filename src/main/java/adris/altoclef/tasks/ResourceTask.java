@@ -1,11 +1,13 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.Util;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.Item;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public abstract class ResourceTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
+        //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
         return mod.getInventoryTracker().targetReached(Util.toArray(ItemTarget.class, _itemTargets));
     }
 

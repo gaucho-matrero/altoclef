@@ -66,37 +66,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-
-        // TODO: Cache this instead of doing it every frame.
-        HashMap<String, Integer> catalogueCount = new HashMap<String, Integer>();
-
-        // Default, just go through the recipe slots and collect the first one.
-        for (int i = 0; i < _recipe.getSlotCount(); ++i) {
-            ItemTarget slot = _recipe.getSlot(i);
-            if (!slot.isCatalogueItem()) {
-                Debug.logWarning("Recipe collection for recipe " + _recipe + " slot " + i
-                        + " is not catalogued. Please define an explicit"
-                        + " collectRecipeSubTask() function for this task."
-                );
-            } else {
-                String targetName = slot.getCatalogueName();
-                if (!catalogueCount.containsKey(targetName)) {
-                    catalogueCount.put(targetName, 0);
-                }
-                catalogueCount.put(targetName, catalogueCount.get(targetName) + 1);
-            }
-        }
-
-        // (Cache this with the above stuff!!)
-        for (String catalogueName : catalogueCount.keySet()) {
-            int count = catalogueCount.get(catalogueName);
-            ItemTarget target = new ItemTarget(TaskCatalogue.getItemMatches(catalogueName), count);
-            if (!mod.getInventoryTracker().targetReached(target)) {
-                return TaskCatalogue.getItemTask(catalogueName, count);
-            }
-        }
-
-        return null;
+        return new CollectRecipeCataloguedResourcesTask(_recipe);
     }
 
     protected String toCraftingDebugStringName() {

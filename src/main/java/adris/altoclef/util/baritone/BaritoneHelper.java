@@ -1,4 +1,4 @@
-package adris.altoclef.util;
+package adris.altoclef.util.baritone;
 
 import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.util.math.Vec3d;

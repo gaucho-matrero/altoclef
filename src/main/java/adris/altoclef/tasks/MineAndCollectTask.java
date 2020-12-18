@@ -3,16 +3,14 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.BaritoneHelper;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.Timer;
-import adris.altoclef.util.Util;
+import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalYLevel;
 import baritone.api.process.PathingCommand;
 import baritone.api.utils.BlockOptionalMeta;
-import baritone.api.utils.BlockOptionalMetaLookup;
-import baritone.api.utils.BlockUtils;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -21,7 +19,6 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,21 +26,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     private List<BlockOptionalMeta> _targetBoms = new ArrayList<>();
 
-    public MineAndCollectTask(List<ItemTarget> itemTargets) {
-        super(itemTargets);
-    }
-
-    public MineAndCollectTask(ItemTarget target) {
-        this(Collections.singletonList(target));
-    }
-
-    public MineAndCollectTask(Item item, int targetCount) {
-        super(item, targetCount);
-    }
-    // Am lazy
-    public MineAndCollectTask(Item item) {
-        super(item, 99999999);
-    }
+    private MiningRequirement _requirement;
 
     private BlockPos _cachedTargetMineBlock;
 
@@ -53,6 +36,25 @@ public class MineAndCollectTask extends ResourceTask {
     private PathingCommand _cachedCommand = null;
 
     private Timer _mineCheck = new Timer(10.0);
+
+    public MineAndCollectTask(List<ItemTarget> itemTargets, MiningRequirement requirement) {
+        super(itemTargets);
+        _requirement = requirement;
+    }
+
+    public MineAndCollectTask(ItemTarget target, MiningRequirement requirement) {
+        this(Collections.singletonList(target), requirement);
+    }
+
+    public MineAndCollectTask(Item item, int targetCount, MiningRequirement requirement) {
+        super(item, targetCount);
+        _requirement = requirement;
+    }
+    // Am lazy
+    public MineAndCollectTask(Item item, MiningRequirement requirement) {
+        super(item, 99999999);
+        _requirement = requirement;
+    }
 
     @Override
     protected void onResourceStart(AltoClef mod) {
@@ -132,6 +134,12 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
+
+        // If we don't have the proper tool, satisfy it.
+        if (!mod.getInventoryTracker().miningRequirementMet(_requirement)) {
+            return new SatisfyMiningRequirementTask(_requirement);
+        }
+
         // Mine
         List<BlockOptionalMeta> boms = new ArrayList<>();
 
@@ -149,7 +157,7 @@ public class MineAndCollectTask extends ResourceTask {
         setDebugState(state.toString());
 
         if (!miningCorrectBlocks(mod, boms)) {
-            Debug.logInternal("NEW SET OF BLOCKS TO MINE!");
+            Debug.logInternal("NEW SET OF BLOCKS TO MINE");
 
             BlockOptionalMeta[] bomsArray = new BlockOptionalMeta[boms.size()];
             boms.toArray(bomsArray);
@@ -190,7 +198,7 @@ public class MineAndCollectTask extends ResourceTask {
             BlockOptionalMeta us = _targetBoms.get(i);
             BlockOptionalMeta them = targetBoms.get(i);
             if (!us.matches(them.getBlock())) return false;
-            if (!us.matches(them.getAnyBlockState())) return false;
+            //if (!us.matches(them.getAnyBlockState())) return false;
         }
         return true;
     }

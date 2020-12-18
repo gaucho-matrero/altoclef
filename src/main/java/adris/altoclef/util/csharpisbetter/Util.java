@@ -1,4 +1,7 @@
-package adris.altoclef.util;
+package adris.altoclef.util.csharpisbetter;
+
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -11,6 +14,10 @@ public interface Util {
         T[] result = (T[]) Array.newInstance(type, collection.size());
         collection.toArray(result);
         return result;
+    }
+
+    static Vec3d toVec3d(BlockPos pos) {
+        return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     }
 
 }

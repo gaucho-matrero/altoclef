@@ -1,4 +1,4 @@
-package adris.altoclef.util;//
+package adris.altoclef.util.baritone;//
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
 //
