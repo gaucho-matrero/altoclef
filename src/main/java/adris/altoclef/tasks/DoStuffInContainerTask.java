@@ -53,7 +53,6 @@ public abstract class DoStuffInContainerTask extends Task {
 
         // If we're placing, keep on placing.
         if (_placeTask.isActive() && !_placeTask.isFinished(mod)) {
-            Debug.logInternal("foof");
             return _placeTask;
         }
 
@@ -71,8 +70,6 @@ public abstract class DoStuffInContainerTask extends Task {
         BlockPos nearest = mod.getBlockTracker().getNearestTracking(currentPos);
         if (nearest != null) {
             costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, Util.toVec3d(nearest));
-        } else {
-            //Debug.logWarning("FAILED TO FIND CONTAINER!");
         }
 
         if (costToWalk > getCostToMakeNew(mod)) {

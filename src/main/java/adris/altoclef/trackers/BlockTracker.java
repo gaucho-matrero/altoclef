@@ -91,7 +91,7 @@ public class BlockTracker extends Tracker {
     }
 
     public void onBlockPlace(BlockPos pos, BlockState state) {
-        Debug.logMessage("BLOCK PLACED:::::: " + state.getBlock().getTranslationKey());
+        //Debug.logMessage("BLOCK PLACED:::::: " + state.getBlock().getTranslationKey());
         _cache.addBlock(state.getBlock(), pos);
         _onBlockPlace.invoke(new Pair<>(pos, state));
     }
