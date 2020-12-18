@@ -6,6 +6,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.TaskCatalogue;
 import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
+import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.schematic.ISchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,6 +30,12 @@ public class PlaceBlockNearbyTask extends Task {
 
     private BlockPos _placed;
 
+    private final Timer _placeTimeout = new Timer(5.0);
+
+    private boolean _placing = false;
+
+    private final Task _wanderTask = new TimeoutWanderTask(2);
+
     public PlaceBlockNearbyTask(Block toPlace) {
         _toPlace = toPlace;
     }
@@ -39,28 +46,49 @@ public class PlaceBlockNearbyTask extends Task {
         _finished = false;
         _placed = null;
 
-        Debug.logMessage("PLACEBLOCK START " + this);
+        _placing = false;
 
-        // Guess we gotta use pairs to pack things. Can't wait for eventually when I need to send three or more arguments.
-        _onPlace = (Pair<BlockPos, BlockState> blockStateBlockPosPair) -> {
-            if (blockStateBlockPosPair.getRight().getBlock().is(_toPlace)) {
-                // Our target block has been placed somewhere.
-                onFinishPlacing(blockStateBlockPosPair.getLeft());
-            }
-        };
-
-        mod.getBlockTracker().getOnBlockPlace().addListener(_onPlace);
-
-        PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(_toPlace);
-        schematic.reset();
-
-        Vec3i origin = mod.getPlayer().getBlockPos();
-        mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace.getTranslationKey() + " nearby", schematic, origin);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
         // Baritone takes care of this.
+
+        // If we're wandering, keep wandering.
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _placing = false;
+            return _wanderTask;
+        }
+
+        if (!_placing) {
+            _placeTimeout.reset();
+            _placing = true;
+
+            Debug.logMessage("PLACEBLOCK START " + this);
+
+            // Guess we gotta use pairs to pack things. Can't wait for eventually when I need to send three or more arguments.
+            _onPlace = (Pair<BlockPos, BlockState> blockStateBlockPosPair) -> {
+                if (blockStateBlockPosPair.getRight().getBlock().is(_toPlace)) {
+                    // Our target block has been placed somewhere.
+                    onFinishPlacing(blockStateBlockPosPair.getLeft());
+                }
+            };
+
+            mod.getBlockTracker().getOnBlockPlace().addListener(_onPlace);
+
+            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(_toPlace);
+            schematic.reset();
+
+            Vec3i origin = mod.getPlayer().getBlockPos();
+            mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace.getTranslationKey() + " nearby", schematic, origin);
+        }
+
+        // We're placing. Handle timeout and start wandering.
+        if (_placeTimeout.elapsed()) {
+            Debug.logMessage("PLACE TIMEOUT. Wandering.");
+            return _wanderTask;
+        }
+
         return null;
     }
 
@@ -68,6 +96,7 @@ public class PlaceBlockNearbyTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().getOnBlockPlace().removeListener(_onPlace);
         _mod.getClientBaritone().getBuilderProcess().onLostControl();
+        _placing = false;
     }
 
     @Override
