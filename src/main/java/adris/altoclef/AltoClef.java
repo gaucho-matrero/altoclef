@@ -11,6 +11,7 @@ import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.ConfigState;
+import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
@@ -40,6 +41,7 @@ public class AltoClef implements ModInitializer {
     private TrackerManager _trackerManager;
     private ConfigState _configState;
     private BaritoneCustom _baritoneCustom;
+    private PlayerExtraController _extraController;
 
     // Task chains
     private UserTaskChain _userTaskChain;
@@ -67,6 +69,7 @@ public class AltoClef implements ModInitializer {
         _trackerManager = new TrackerManager(this);
         _configState = new ConfigState(this);
         _baritoneCustom = new BaritoneCustom(this, (Baritone)BaritoneAPI.getProvider().getPrimaryBaritone());
+        _extraController = new PlayerExtraController(this);
 
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
@@ -113,6 +116,9 @@ public class AltoClef implements ModInitializer {
         _blockTracker.onBlockRemove(pos, oldBlock);
         _blockTracker.onBlockPlace(pos, newBlock);
     }
+    public void onBlockBreaking(BlockPos pos, double progress) {
+        _extraController.onBlockBreak(pos, progress);
+    }
 
     private void initializeCommands() {
         try {
@@ -158,7 +164,7 @@ public class AltoClef implements ModInitializer {
         return MinecraftClient.getInstance().player;
     }
     public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
-
+    public PlayerExtraController getControllerExtras() {return _extraController; }
     // Extra control
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);

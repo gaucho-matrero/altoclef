@@ -15,6 +15,8 @@ public class CraftingRecipe {
 
     private boolean _shapeless;
 
+    private String _shortName;
+
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
@@ -82,10 +84,16 @@ public class CraftingRecipe {
     }
 
     public static CraftingRecipe newShapedRecipe(Item[][] items) {
-        return newShapedRecipe(createSlots(items));
+        return newShapedRecipe(null, items);
+    }
+    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
+        return newShapedRecipe(null, slots);
+    }
+    public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items) {
+        return newShapedRecipe(shortName, createSlots(items));
     }
 
-    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
+    public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots) {
         if (slots.length != 4 && slots.length != 9) {
             Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
             return null;
@@ -98,6 +106,7 @@ public class CraftingRecipe {
         }
          */
         CraftingRecipe result = new CraftingRecipe();
+        result._shortName = shortName;
         result._slots = slots;
         if (slots.length == 4) {
             result._width = 2;
@@ -161,13 +170,18 @@ public class CraftingRecipe {
 
     @Override
     public String toString() {
-        return "CraftingRecipe{" +
-                "_slots=" + Arrays.toString(_slots) +
-                ", _width=" + _width +
-                ", _height=" + _height +
-                ", _shapeless=" + _shapeless +
-                ", _mustMatch=" + _mustMatch +
-                '}';
+        String name = "CraftingRecipe{";
+            if (_shortName != null) {
+                name += "craft " + _shortName;
+            } else {
+                name += "_slots=" + Arrays.toString(_slots) +
+                        ", _width=" + _width +
+                        ", _height=" + _height +
+                        ", _shapeless=" + _shapeless +
+                        ", _mustMatch=" + _mustMatch;
+            }
+            name += "}";
+            return name;
     }
 
     /*

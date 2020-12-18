@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.TaskCatalogue;
 import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
@@ -32,6 +33,9 @@ public abstract class DoStuffInContainerTask extends Task {
 
     private PlaceBlockNearbyTask _placeTask;
 
+    // Introduce a delay after placing to wait for the server to catch up.
+    //private Timer _postPlaceTimer = new Timer(0.5f);
+
     public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
         _containerBlock = containerBlock;
         _containerCatalogueName = containerCatalogueName;
@@ -47,7 +51,14 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        // If we're placing, keep on placing.
+        if (_placeTask.isActive() && !_placeTask.isFinished(mod)) {
+            Debug.logInternal("foof");
+            return _placeTask;
+        }
+
         if (isContainerOpen(mod)) {
+            Debug.logInternal("OPEN");
             return containerSubTask(mod);
         }
 
@@ -68,6 +79,9 @@ public abstract class DoStuffInContainerTask extends Task {
 
             // Get if we don't have...
             if (!mod.getInventoryTracker().hasItem(_containerCatalogueName)) {
+                //Debug.logInternal("GRABBING " + _containerCatalogueName);
+                //Debug.logInternal("Cause " + costToWalk + " > " + getCostToMakeNew(mod));
+                //Debug.logInternal("(from " + currentPos + " to " + Util.toVec3d(nearest));
                 return TaskCatalogue.getItemTask(_containerCatalogueName, 1);
             }
 

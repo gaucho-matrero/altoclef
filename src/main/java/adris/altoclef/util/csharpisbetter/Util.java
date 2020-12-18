@@ -17,6 +17,7 @@ public interface Util {
     }
 
     static Vec3d toVec3d(BlockPos pos) {
+        if (pos == null) return null;
         return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     }
 

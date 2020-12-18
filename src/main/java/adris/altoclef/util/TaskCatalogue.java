@@ -18,29 +18,29 @@ import java.util.HashMap;
 
 public class TaskCatalogue {
 
-    /// DEFINE RESOURCE TASKS HERE
     private static HashMap<String, Item[]> _nameToItemMatches = new HashMap<String, Item[]>();
     private static HashMap<String, TaskFactory> _nameToResourceTask = new HashMap<String, TaskFactory>();
     static {
+        /// DEFINE RESOURCE TASKS HERE
         {
             String p = "planks";
             String s = "stick";
             String o = null;
 
-            put("planks", ItemTarget.PLANKS, simple(CollectPlanksTask.class));
-            put("stick", Items.STICK, shapedRecipe2x2(Items.STICK, p, o, p, o));
-            put("log", ItemTarget.LOG, mine(ItemTarget.LOG));
-            put("dirt", Items.DIRT, mine(Items.DIRT, Items.GRASS_BLOCK, Items.GRASS_PATH));
-            put("crafting_table", Items.CRAFTING_TABLE, shapedRecipe2x2(Items.CRAFTING_TABLE, p, p, p, p));
-            put("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, shapedRecipe2x2(ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p));
-            put("wooden_button", ItemTarget.WOOD_BUTTON, shapedRecipe2x2(ItemTarget.WOOD_BUTTON, p, o, o, o));
+            simple("planks", ItemTarget.PLANKS, CollectPlanksTask.class);
+            shapedRecipe2x2("stick", Items.STICK, p, o, p, o);
+            mine("log", ItemTarget.LOG);
+            mine("dirt", new Item[]{Items.DIRT}, Items.GRASS_BLOCK, Items.GRASS_PATH);
+            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, p, p, p, p);
+            shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p);
+            shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, p, o, o, o);
 
             // TODO: Neat function to map Pickaxe, Axe, Shovel, Sword, Hoe, etc...
-            put("wooden_pickaxe", Items.WOODEN_PICKAXE, shapedRecipe3x3(Items.WOODEN_PICKAXE, p, p, p, o, s, o, o, s, o));
-            put("cobblestone", Items.COBBLESTONE, simple(CollectCobblestoneTask.class));
+            shapedRecipe3x3("wooden_pickaxe", Items.WOODEN_PICKAXE, p, p, p, o, s, o, o, s, o);
+            simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
             {
                 String c = "cobblestone";
-                put("stone_pickaxe", Items.STONE_PICKAXE, shapedRecipe3x3(Items.STONE_PICKAXE, c, c, c, o, s, o, o, s, o));
+                shapedRecipe3x3("stone_pickaxe", Items.STONE_PICKAXE, c, c, c, o, s, o, o, s, o);
             }
         }
     };
@@ -49,9 +49,9 @@ public class TaskCatalogue {
         _nameToResourceTask.put(name, factory);
         _nameToItemMatches.put(name, matches);
     }
-    private static void put(String name, Item match, TaskFactory factory) {
+    /*private static void put(String name, Item match, TaskFactory factory) {
         put(name, new Item[]{match}, factory);
-    }
+    }*/
 
     /*
     static ResourceTask getItemTask(Item item, int count) {
@@ -81,29 +81,32 @@ public class TaskCatalogue {
         return _nameToResourceTask.keySet();
     }
 
-    private static <T> TaskFactory simple(Class<T> type) {
-        return new TaskFactory(type);
+    private static <T> void simple(String name, Item[] matches, Class<T> type) {
+        put(name, matches, new TaskFactory(type));
     }
-    private static <T> TaskFactory mine(Item ...target) {
-        return new TaskFactory(MineAndCollectTask.class, target);
+    private static <T> void simple(String name, Item matches, Class<T> type) {
+        simple(name, new Item[] {matches}, type);
     }
-    private static <T> TaskFactory mine(Item target) {
-        return mine(new Item[]{target});
+    private static <T> void mine(String name, Item[] matches, Item ...target) {
+        put(name, matches, new TaskFactory(MineAndCollectTask.class, target));
+    }
+    private static <T> void mine(String name, Item[] matches, Item target) {
+        mine(name, matches, new Item[]{target});
     }
 
-    private static <T> TaskFactory shapedRecipe2x2(Item[] target, String s0, String s1, String s2, String s3) {
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)});
-        return new TaskFactory(CraftInInventoryTask.class, target, recipe);
+    private static <T> void shapedRecipe2x2(String name, Item[] matches, String s0, String s1, String s2, String s3) {
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)});
+        put(name, matches, new TaskFactory(CraftInInventoryTask.class, matches, recipe));
     }
-    private static <T> TaskFactory shapedRecipe3x3(Item[] target, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)});
-        return new TaskFactory(CraftInTableTask.class, target, recipe);
+    private static <T> void shapedRecipe3x3(String name, Item[] matches, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)});
+        put(name, matches, new TaskFactory(CraftInTableTask.class, matches, recipe));
     }
-    private static <T> TaskFactory shapedRecipe2x2(Item target, String s0, String s1, String s2, String s3) {
-        return shapedRecipe2x2(new Item[]{target}, s0, s1, s2, s3);
+    private static <T> void shapedRecipe2x2(String name, Item match, String s0, String s1, String s2, String s3) {
+        shapedRecipe2x2(name, new Item[]{match}, s0, s1, s2, s3);
     }
-    private static <T> TaskFactory shapedRecipe3x3(Item target, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        return shapedRecipe3x3(new Item[]{target}, s0, s1, s2, s3, s4, s5, s6, s7, s8);
+    private static <T> void shapedRecipe3x3(String name, Item match, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+        shapedRecipe3x3(name, new Item[]{match}, s0, s1, s2, s3, s4, s5, s6, s7, s8);
     }
 
     private static ItemTarget t(String cataloguedName) {

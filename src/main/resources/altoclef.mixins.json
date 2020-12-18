@@ -4,12 +4,13 @@
   "package": "adris.altoclef.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ClientBlockBreakMixin"
   ],
   "client": [
-    "EntryMixin",
+    "BlockStateMixin",
     "ChatMixin",
     "ClientTickMixin",
-    "BlockStateMixin"
+    "EntryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

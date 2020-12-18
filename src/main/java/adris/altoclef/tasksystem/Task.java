@@ -13,9 +13,12 @@ public abstract class Task {
 
     private boolean _failed = false;
 
+    private boolean _active = false;
+
     public void tick(AltoClef mod) {
         if (_first) {
             Debug.logInternal("Task START: " + this.toString());
+            _active = true;
             onStart(mod);
             _first = false;
             _failed = false;
@@ -56,6 +59,7 @@ public abstract class Task {
         }
 
         _first = true;
+        _active = false;
     }
 
     protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
@@ -82,6 +86,8 @@ public abstract class Task {
     public boolean isFinished(AltoClef mod) {
         return false;
     }
+
+    public boolean isActive() {return _active;}
 
     public boolean failed() {return _failed;}
 

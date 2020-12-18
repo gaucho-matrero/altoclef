@@ -146,7 +146,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         this.baritone.getLookBehavior().updateTarget((Rotation)reachable.get(), true);
         this.baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-        System.out.println(this.ctx.player().playerScreenHandler);
+        //System.out.println(this.ctx.player().playerScreenHandler);
         if (!(this.ctx.player().currentScreenHandler instanceof PlayerScreenHandler)) {
             return true;
         }

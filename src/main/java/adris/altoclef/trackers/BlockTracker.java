@@ -152,11 +152,14 @@ public class BlockTracker extends Tracker {
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
         public BlockPos getNearest(Block block, Vec3d position) {
-            if (!anyFound(block)) return null;
+            if (!anyFound(block)) {
+                Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
+                return null;
+            }
             BlockPos closest = null;
             double minScore = Double.POSITIVE_INFINITY;
 
-            List<BlockPos> blockList = _cachedBlocks.get(block);
+            List<BlockPos> blockList = getKnownLocations(block);
 
             int toPurge = blockList.size() - _cutoffSize;
 
@@ -168,6 +171,7 @@ public class BlockTracker extends Tracker {
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (blockIsInvalid(block, pos)) {
+                    Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
                     it.remove();
                     continue;
                 }
@@ -218,15 +222,22 @@ public class BlockTracker extends Tracker {
             // I'm bored
             ClientWorld zaWarudo = MinecraftClient.getInstance().world;
             // No world, therefore we don't assume block is invalid.
-            if (zaWarudo == null) return false;
+            if (zaWarudo == null) {
+                Debug.logInternal("(failed worldcheck)");
+                return false;
+            }
             try {
                 if (zaWarudo.isAir(pos) && !block.is(Blocks.AIR)) {
                     // This tracked block is air when it doesn't think it should.
+                    Debug.logInternal("(failed aircheck)");
                     return true;
                 }
                 // It might be OK to remove this. Will have to test.
                 //noinspection deprecation
-                if (!zaWarudo.isChunkLoaded(pos)) return false;
+                if (!zaWarudo.isChunkLoaded(pos)) {
+                    Debug.logInternal("(failed chunkcheck)");
+                    return false;
+                }
                 BlockState state = zaWarudo.getBlockState(pos);
                 return !state.getBlock().is(block);
             } catch (NullPointerException e) {
@@ -235,5 +246,4 @@ public class BlockTracker extends Tracker {
             }
         }
     }
-
 }

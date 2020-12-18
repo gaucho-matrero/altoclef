@@ -3,6 +3,9 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.progresscheck.DistanceProgressChecker;
+import adris.altoclef.util.progresscheck.IProgressChecker;
+import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
@@ -17,7 +20,10 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +32,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     private List<BlockOptionalMeta> _targetBoms = new ArrayList<>();
 
-    private MiningRequirement _requirement;
+    private final MiningRequirement _requirement;
 
     private BlockPos _cachedTargetMineBlock;
 
@@ -35,11 +41,15 @@ public class MineAndCollectTask extends ResourceTask {
 
     private PathingCommand _cachedCommand = null;
 
-    private Timer _mineCheck = new Timer(10.0);
+    private final Timer _mineCheck = new Timer(10.0);
+
+    private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
+    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(5, 0.1f);
 
     public MineAndCollectTask(List<ItemTarget> itemTargets, MiningRequirement requirement) {
         super(itemTargets);
         _requirement = requirement;
+
     }
 
     public MineAndCollectTask(ItemTarget target, MiningRequirement requirement) {
@@ -58,6 +68,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+
     }
 
     @Override
@@ -166,8 +177,41 @@ public class MineAndCollectTask extends ResourceTask {
             mod.getClientBaritone().getMineProcess().mine(bomsArray);
 
             _targetBoms = boms;
+
+            _mineProgressChecker.reset();
+            _distanceProgressChecker.reset(mod.getPlayer().getPos());
         }
 
+        boolean failed = false;
+        boolean mining = mod.getController().isBreakingBlock();
+
+        if (mining) {
+            double progress = mod.getControllerExtras().getBreakingBlockProgress();
+            _mineProgressChecker.setProgress(progress);
+            if (_mineProgressChecker.failed()) {
+                Debug.logMessage("Failed to mine block. Blacklisting.");
+                failed = true;
+            }
+            // Reset other checker (independent, one blocks another)
+            _distanceProgressChecker.reset(mod.getPlayer().getPos());
+        } else {
+            _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
+            if (_distanceProgressChecker.failed()) {
+                Debug.logMessage("Failed to make progress moving to our block. Blacklisting.");
+                failed = true;
+            }
+            // Reset other checker (independent, one blocks another)
+            _mineProgressChecker.reset();
+        }
+        if (failed) {
+            try {
+                blacklistCurrentTarget(mod);
+            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
+                // oof
+                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly :(");
+                e.printStackTrace();
+            }
+        }
         return null;
     }
 
@@ -201,6 +245,46 @@ public class MineAndCollectTask extends ResourceTask {
             //if (!us.matches(them.getAnyBlockState())) return false;
         }
         return true;
+    }
+
+    /*
+    private void addToMineProcessBlacklist(AltoClef mod, BlockPos block) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        // This object will be used for access
+        //UserClass userClassObj = new UserClass();
+        MineProcess proc = mod.getClientBaritone().getMineProcess();
+        // Single Field Access
+        Field f = MineProcess.class.getDeclaredField("blacklist");
+        // Set flag true for accessing private field
+        f.setAccessible(true);
+        Object list = f.get(proc);
+
+        Method addItem = list.getClass().getDeclaredMethod("add", Object.class);
+        addItem.setAccessible(true);
+        addItem.invoke(list, block);
+    }
+     */
+
+    private void blacklistCurrentTarget(AltoClef mod) throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException {
+        // This object will be used for access
+        //UserClass userClassObj = new UserClass();
+        MineProcess proc = mod.getClientBaritone().getMineProcess();
+        Field blacklistField = MineProcess.class.getDeclaredField("blacklist");
+        blacklistField.setAccessible(true);
+        Field knownField = MineProcess.class.getDeclaredField("knownOreLocations");
+        knownField.setAccessible(true);
+
+        List<BlockPos> blackList = (List<BlockPos>) blacklistField.get(proc);
+        List<BlockPos> knownLocations = (List<BlockPos>) knownField.get(proc);
+
+        blackList.addAll(knownLocations);
+        knownLocations.clear();
+
+        /*
+        Method addItem = list.getClass().getDeclaredMethod("add", Object.class);
+        addItem.setAccessible(true);
+        addItem.invoke(list, block);
+         */
+
     }
 
 }

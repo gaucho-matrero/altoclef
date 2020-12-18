@@ -11,14 +11,19 @@ public class Debug {
         System.out.println("ALTO CLEF: " + message);
     }
 
-    public static void logMessage(String message) {
+    public static void logMessage(String message, boolean prefix) {
         if (MinecraftClient.getInstance().player != null) {
-            String msg = "\u00A72\u00A7l\u00A7o[Alto Clef] \u00A7r" + message;
-            MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
+            if (prefix) {
+                message = "\u00A72\u00A7l\u00A7o[Alto Clef] \u00A7r" + message;
+            }
+            MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
         } else {
             logInternal(message);
         }
+    }
+    public static void logMessage(String message) {
+        logMessage(message, true);
     }
 
     public static void logWarning(String message) {
@@ -31,10 +36,7 @@ public class Debug {
     }
 
     public static void logError(String message) {
-        StringBuilder stacktrace = new StringBuilder();
-        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            stacktrace.append(ste.toString());
-        }
+        String stacktrace = getStack(2);
         System.err.println(message);
         System.err.println("at:");
         System.err.println(stacktrace);
@@ -43,5 +45,19 @@ public class Debug {
             MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
         }
+    }
+
+    public static void logStack() {
+        logInternal("STACKTRACE: \n" + getStack(2));
+    }
+
+    private static String getStack(int toSkip) {
+        StringBuilder stacktrace = new StringBuilder();
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            if (toSkip-- <= 0) {
+                stacktrace.append(ste.toString()).append("\n");
+            }
+        }
+        return stacktrace.toString();
     }
 }

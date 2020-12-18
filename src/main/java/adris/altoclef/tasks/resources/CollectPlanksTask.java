@@ -16,6 +16,7 @@ import java.util.Arrays;
 public class CollectPlanksTask extends CraftInInventoryTask {
 
     private static final CraftingRecipe PLANK_RECIPE = CraftingRecipe.newShapedRecipe(
+            "planks",
             new Item[][]{
                 ItemTarget.LOG, null,
                 null, null

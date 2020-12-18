@@ -40,9 +40,9 @@ public class AltoClefCommands extends CommandList {
         ItemTarget B = new ItemTarget("planks");
         ItemTarget s = new ItemTarget("stick");
         ItemTarget o = null;
-        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe(new ItemTarget[]{B, B, B, o, s, o, o, s, o});
+        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe("wooden_pickaxe",new ItemTarget[]{B, B, B, o, s, o, o, s, o});
         ItemTarget targetItem = new ItemTarget(Items.WOODEN_PICKAXE, 1);
-        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe(new ItemTarget[]{ o, B, o, o, B, o, o, s, o});
+        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe("wooden_sword",new ItemTarget[]{ o, B, o, o, B, o, o, s, o});
         ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
 
 

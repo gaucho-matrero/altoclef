@@ -10,6 +10,10 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import jdk.internal.loader.Resource;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.screen.CraftingScreenHandler;
 
 import java.util.ArrayList;
@@ -65,7 +69,9 @@ public class CraftInTableTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+        // Close the crafting table screen
+        mod.getPlayer().closeScreen();
+        //mod.getControllerExtras().closeCurrentContainer();
     }
 
     @Override
@@ -158,7 +164,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         boolean succeeded = false;
         for (RecipeTarget target : _targets) {
             if (i == _craftCount) {
+                Debug.logInternal("CRAFT... " + target.getRecipe());
                 if (craftInstant(mod, target.getRecipe())) {
+                    Debug.logInternal("     ... Success!");
                     succeeded = true;
                 }
             }

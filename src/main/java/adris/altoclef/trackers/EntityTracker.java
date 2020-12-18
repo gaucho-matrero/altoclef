@@ -17,6 +17,8 @@ public class EntityTracker extends Tracker {
 
     private HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
 
+    private List<Vec3d> _blacklist = new ArrayList<>();
+
     public EntityTracker(TrackerManager manager) {
         super(manager);
     }
@@ -47,7 +49,7 @@ public class EntityTracker extends Tracker {
             for (Item item : target.getMatches()) {
                 if (!itemDropped(item)) continue;
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
-
+                    if (isBlackListed(entity)) continue;
                     if (!ItemTarget.itemEquals(entity.getStack().getItem(), item)) continue;
 
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
@@ -60,11 +62,37 @@ public class EntityTracker extends Tracker {
         }
         return closestEntity;
     }
+    private boolean isBlackListed(Entity entity) {
+        if (entity == null) return false;
+        return isBlackListed(entity.getPos());
+    }
+    private boolean isBlackListed(Vec3d pos) {
+        for (Vec3d item : _blacklist) {
+            double distSq = pos.squaredDistanceTo(item);
+            if (distSq < 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void blacklist(Vec3d position) {
+        _blacklist.add(position);
+    }
+
+    public void clearBlacklist() {
+        _blacklist.clear();
+    }
 
     public boolean itemDropped(Item ...items) {
         ensureUpdated();
         for(Item item : items) {
-            if (_itemDropLocations.containsKey(item)) return true;
+            if (_itemDropLocations.containsKey(item)) {
+                // Find a non-blacklisted item
+                for (ItemEntity entity : _itemDropLocations.get(item)) {
+                    if (!isBlackListed(entity)) return true;
+                }
+            }
         }
         return false;
     }

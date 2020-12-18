@@ -16,6 +16,8 @@ public class ItemTarget {
 
     private String _catalogueName = null;
 
+    private boolean _infinite = false;
+
     public ItemTarget(Item[] items, int targetCount) {
         _itemMatches = items;
         this.targetCount = targetCount;
@@ -32,7 +34,7 @@ public class ItemTarget {
     }
 
     public ItemTarget(String catalogueName) {
-        this(catalogueName, 99999999);
+        this(catalogueName, 99999999); _infinite = true;
     }
 
     public ItemTarget(Item item, int targetCount) {
@@ -41,9 +43,11 @@ public class ItemTarget {
 
     public ItemTarget(Item[] items) {
         this(items, 9999999);
+        _infinite = true;
     }
     public ItemTarget(Item item) {
         this(item, 9999999);
+        _infinite = true;
     }
     public Item[] getMatches() {
         return _itemMatches;
@@ -67,7 +71,12 @@ public class ItemTarget {
     public boolean equals(Object obj) {
         if (obj instanceof ItemTarget) {
             ItemTarget other = (ItemTarget) obj;
-            if (targetCount != other.targetCount) return false;
+            if (_infinite) {
+                if (!other._infinite) return false;
+            } else {
+                // Neither are infinite
+                if (targetCount != other.targetCount) return false;
+            }
             if ((_itemMatches == null) != (other._itemMatches == null)) return false;
             boolean isNull = (_itemMatches == null);
             if (isNull) return true;
@@ -99,7 +108,9 @@ public class ItemTarget {
             }
             result.append("]");
         }
-        result.append(" x ").append(targetCount);
+        if (!_infinite && !isEmpty()) {
+            result.append(" x ").append(targetCount);
+        }
 
         return result.toString();
     }

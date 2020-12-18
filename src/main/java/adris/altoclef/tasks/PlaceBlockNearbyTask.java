@@ -97,7 +97,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     private void onFinishPlacing(BlockPos placed) {
         _finished = true;
-        //Debug.logMessage("TARGET BLOCK PLACED!");
+        Debug.logMessage("TARGET BLOCK PLACED!");
         _mod.getClientBaritone().getBuilderProcess().onLostControl();
         _placed = placed;
     }

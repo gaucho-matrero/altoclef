@@ -3,6 +3,9 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.progresscheck.IProgressChecker;
+import adris.altoclef.util.progresscheck.LinearProgressChecker;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalGetToPosition;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -25,9 +28,12 @@ public class PickupDroppedItemTask extends Task {
 
     private Vec3d _itemGoal;
 
+    private IProgressChecker _progressChecker;
+
     public PickupDroppedItemTask(List<ItemTarget> itemTargets) {
         _itemTargets = itemTargets;
         _itemGoal = null;
+        _progressChecker = new LinearProgressChecker(7.0, 0.1);
     }
 
     public PickupDroppedItemTask(Item item, int targetCount) {
@@ -44,12 +50,28 @@ public class PickupDroppedItemTask extends Task {
 
         // Reset baritone process
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+
+        _progressChecker.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), Util.toArray(ItemTarget.class, _itemTargets));
+        Vec3d playerPos = mod.getPlayer().getPos();
+
+        boolean isPathing = _itemGoal != null;
+        if (isPathing) {
+            // Update blacklist if we're not making good progress.
+            double progress = BaritoneHelper.calculateGenericHeuristic(playerPos, _itemGoal);
+            _progressChecker.setProgress(progress);
+            if (_progressChecker.failed()) {
+                mod.getEntityTracker().blacklist(_itemGoal);
+                Debug.logMessage("Failed to get to " + _itemGoal + ", adding to blacklist.");
+                return null;
+            }
+        }
+
+        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(playerPos, Util.toArray(ItemTarget.class, _itemTargets));
 
         if (!taskAssert(mod, closest != null, "Failed to find any items to pick up. Should have checked this condition earlier")) {
             return null;
@@ -60,11 +82,12 @@ public class PickupDroppedItemTask extends Task {
         // These two lines must be paired in this order. path must be called once.
         // Setting goal makes the goal process active, but not pathing! This is undesirable.
         Vec3d goal = closest.getPos();
-        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() || _itemGoal == null || _itemGoal.squaredDistanceTo(goal) > 1) {
-            Debug.logMessage("(Pickup PATHING");
+        if (!isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
+            Debug.logMessage("(Pickup PATHING: " + !mod.getClientBaritone().getCustomGoalProcess().isActive() + ", " + _itemGoal + ", " + goal );
             //mod.getClientBaritone().getCustomGoalProcess().path();
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToPosition(closest.getPos()));//new GoalGetToPosition(goal));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToPosition(goal));//new GoalGetToPosition(goal));
             _itemGoal = goal;
+            _progressChecker.reset();
         }
 
         //mod.getClientBaritone().getFollowProcess().follow(_targetPredicate);
