@@ -55,10 +55,10 @@ public class AltoClefCommands extends CommandList {
                     Arrays.asList(new RecipeTarget(targetItem2, testRecipe2), new RecipeTarget(targetItem, testRecipe))
             ));
         } else if (arg.equals("place")) {
-            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(Blocks.CRAFTING_TABLE);
+            BlockPos origin = mod.getPlayer().getBlockPos();
+            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(origin, Blocks.CRAFTING_TABLE);
             schematic.reset();
 
-            Vec3i origin = mod.getPlayer().getBlockPos();
             mod.getClientBaritone().getBuilderProcess().build("Place crafting table nearby", schematic, origin);
         } else if (arg.equals("placereal")) {
             mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));

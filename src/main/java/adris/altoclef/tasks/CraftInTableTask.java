@@ -70,7 +70,7 @@ public class CraftInTableTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
-        mod.getPlayer().closeScreen();
+        mod.getPlayer().closeHandledScreen();
         //mod.getControllerExtras().closeCurrentContainer();
     }
 

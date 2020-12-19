@@ -2,6 +2,7 @@ package adris.altoclef.mixins;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import com.sun.tools.javac.api.ClientCodeWrapper;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
+@Deprecated
 @Mixin(AbstractBlock.class)
 public final class BlockStateMixin {
     @Inject(
@@ -24,6 +26,7 @@ public final class BlockStateMixin {
             at = @At("HEAD")
     )
     private void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify, CallbackInfo ci) {
+        /*
         boolean placedNew = (oldState.isAir() || oldState.getBlock() instanceof FluidBlock) && !state.isAir();
         boolean brokenNew = state.isAir() && !oldState.isAir();
 
@@ -42,5 +45,6 @@ public final class BlockStateMixin {
             // A replacement was done.
             AltoClef.getInstance().onBlockChange(oldState, state, pos);
         }
+         */
     }
 }

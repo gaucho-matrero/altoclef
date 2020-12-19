@@ -102,20 +102,6 @@ public class AltoClef implements ModInitializer {
         _taskRunner.tick();
     }
 
-    // Block tracking
-    public void onBlockAdd(BlockState newBlock, BlockPos pos) {
-        //Debug.logMessage("NEW BLOCK: " + newBlock.getBlock().getTranslationKey());
-        _blockTracker.onBlockPlace(pos, newBlock);
-    }
-    public void onBlockRemove(BlockState oldBlock, BlockPos pos) {
-        //Debug.logMessage("POOF BLOCK: " + newBlock.getBlock().getTranslationKey());
-        _blockTracker.onBlockRemove(pos, oldBlock);
-    }
-    public void onBlockChange(BlockState oldBlock, BlockState newBlock, BlockPos pos) {
-        //Debug.logMessage("CHANGE BLOCK: " + oldBlock.getBlock().getTranslationKey() + " -> " + newBlock.getBlock().getTranslationKey());
-        _blockTracker.onBlockRemove(pos, oldBlock);
-        _blockTracker.onBlockPlace(pos, newBlock);
-    }
     public void onBlockBreaking(BlockPos pos, double progress) {
         _extraController.onBlockBreak(pos, progress);
     }

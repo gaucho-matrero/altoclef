@@ -38,9 +38,6 @@ public class BlockTracker extends Tracker {
         super(manager);
     }
 
-    private Action<Pair<BlockPos, BlockState>> _onBlockPlace = new Action<>();
-    private Action<BlockPos> _onBlockRemove = new Action<>();
-
     @Override
     protected void updateState() {
         if (shouldUpdate()) {
@@ -88,23 +85,6 @@ public class BlockTracker extends Tracker {
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(new BlockOptionalMeta(_currentlyTracking));
         List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, knownBlocks, Collections.emptyList(), Collections.emptyList());
         _cache.addBlocks(_currentlyTracking, found);
-    }
-
-    public void onBlockPlace(BlockPos pos, BlockState state) {
-        //Debug.logMessage("BLOCK PLACED:::::: " + state.getBlock().getTranslationKey());
-        _cache.addBlock(state.getBlock(), pos);
-        _onBlockPlace.invoke(new Pair<>(pos, state));
-    }
-    public void onBlockRemove(BlockPos pos, BlockState oldState) {
-        _cache.removeBlock(oldState.getBlock(), pos);
-        _onBlockRemove.invoke(pos);
-    }
-
-    public Action<Pair<BlockPos, BlockState>> getOnBlockPlace() {
-        return _onBlockPlace;
-    }
-    public Action<BlockPos> getOnBlockRemove() {
-        return _onBlockRemove;
     }
 
     static class PosCache {

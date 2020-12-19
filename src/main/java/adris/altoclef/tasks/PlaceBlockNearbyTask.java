@@ -10,6 +10,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.schematic.ISchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
@@ -35,6 +36,8 @@ public class PlaceBlockNearbyTask extends Task {
     private boolean _placing = false;
 
     private final Task _wanderTask = new TimeoutWanderTask(2);
+
+    private PlaceBlockNearbySchematic _schematic;
 
     public PlaceBlockNearbyTask(Block toPlace) {
         _toPlace = toPlace;
@@ -74,17 +77,31 @@ public class PlaceBlockNearbyTask extends Task {
                 }
             };
 
-            mod.getBlockTracker().getOnBlockPlace().addListener(_onPlace);
+            //mod.getBlockTracker().getOnBlockPlace().addListener(_onPlace);
 
-            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(_toPlace);
-            schematic.reset();
+            BlockPos origin = mod.getPlayer().getBlockPos();
 
-            Vec3i origin = mod.getPlayer().getBlockPos();
-            mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace.getTranslationKey() + " nearby", schematic, origin);
+            _schematic = new PlaceBlockNearbySchematic(origin, _toPlace);
+            _schematic.reset();
+
+            mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace.getTranslationKey() + " nearby", _schematic, origin);
+        }
+
+        // We're placing. Check if we successfully placed the block.
+        if (_schematic.foundSpot()) {
+            BlockPos shouldBePlacedHere = _schematic.getFoundSpot();
+            assert MinecraftClient.getInstance().world != null;
+            BlockState state = MinecraftClient.getInstance().world.getBlockState(shouldBePlacedHere);
+            Debug.logMessage("(delete this lol) TARGET POS: " + shouldBePlacedHere + ", " + (state != null? state.getBlock().getTranslationKey() : "(null)"));
+            if (state != null && state.getBlock().is(_toPlace)) {
+                // We good!
+                onFinishPlacing(shouldBePlacedHere);
+                return null;
+            }
         }
 
         // We're placing. Handle timeout and start wandering.
-        if (_placeTimeout.elapsed()) {
+        if (!_finished && _placeTimeout.elapsed()) {
             Debug.logMessage("PLACE TIMEOUT. Wandering.");
             return _wanderTask;
         }
@@ -94,7 +111,6 @@ public class PlaceBlockNearbyTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().getOnBlockPlace().removeListener(_onPlace);
         _mod.getClientBaritone().getBuilderProcess().onLostControl();
         _placing = false;
     }

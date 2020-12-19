@@ -18,14 +18,24 @@ public class PlaceBlockNearbySchematic extends AbstractSchematic {
     private BlockPos _targetPos;
     private BlockState _targetPlace;
 
-    public PlaceBlockNearbySchematic(Block blockToPlace) {
+    private BlockPos _origin;
+
+    public PlaceBlockNearbySchematic(BlockPos origin, Block blockToPlace) {
         super(RANGE, RANGE, RANGE);
+        _origin = origin;
         _blockToPlace = blockToPlace;
         _done = false;
     }
 
     public void reset() {
         _done = false;
+    }
+
+    public boolean foundSpot() {
+        return _done;
+    }
+    public BlockPos getFoundSpot() {
+        return _origin.add(_targetPos);
     }
 
     // No restrictions.
@@ -40,6 +50,8 @@ public class PlaceBlockNearbySchematic extends AbstractSchematic {
         if (blockState.getBlock().is(_blockToPlace)) {
             System.out.println("PlaceBlockNearbySchematic (already exists)");
             _done = true;
+            _targetPlace = blockState;
+            _targetPos = new BlockPos(x, y, z);
         }
         if (_done) {
             if (_targetPos.getX() == x && _targetPos.getY() == y && _targetPos.getZ() == z) {
