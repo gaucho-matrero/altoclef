@@ -39,13 +39,18 @@ public class MineAndCollectTask extends ResourceTask {
 
     private static final float STOP_MINING_ITEM_DROP_IS_CLOSE_ENOUGH_THRESHOLD = 20f;
     private static final float KEEP_MINING_THRESHOLD = 6;
+    private static final int DISTANCE_FAIL_TOO_MUCH_COUNT = 3;
+
+    private List<BlockPos> _cachedBlacklist = new ArrayList<>();
 
     private PathingCommand _cachedCommand = null;
 
     private final Timer _mineCheck = new Timer(10.0);
-
     private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
-    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(5, 0.1f);
+    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.2f);
+
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(100);
+    private int _distanceFailCounter = 0;
 
     public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
@@ -76,6 +81,8 @@ public class MineAndCollectTask extends ResourceTask {
         // If I try to mine diamonds, it will stop and grab every egg on the ground.
         mod.getConfigState().push();
         mod.getConfigState().setMineScanDroppedItems(false);
+        _cachedBlacklist.clear();
+        _distanceFailCounter = 0;
     }
 
     @Override
@@ -154,6 +161,10 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            return _wanderTask;
+        }
+
         // If we don't have the proper tool, satisfy it.
         if (!mod.getInventoryTracker().miningRequirementMet(_requirement)) {
             setDebugState("Getting tool: " + _requirement);
@@ -184,11 +195,19 @@ public class MineAndCollectTask extends ResourceTask {
 
             mod.getClientBaritone().getMineProcess().cancel();
             mod.getClientBaritone().getMineProcess().mine(bomsArray);
+            // Re-update blacklist
+            try {
+                addToProcBlacklistRaw(mod, _cachedBlacklist);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #2) :(");
+                e.printStackTrace();
+            }
 
             _targetBoms = boms;
 
             _mineProgressChecker.reset();
             _distanceProgressChecker.reset(mod.getPlayer().getPos());
+            Debug.logInternal("Starting to mine.");
         }
 
         boolean failed = false;
@@ -208,6 +227,13 @@ public class MineAndCollectTask extends ResourceTask {
             if (_distanceProgressChecker.failed()) {
                 Debug.logMessage("Failed to make progress moving to our block. Blacklisting.");
                 failed = true;
+                // If we've failed too much, wander.
+                _distanceFailCounter++;
+                if (_distanceFailCounter >= DISTANCE_FAIL_TOO_MUCH_COUNT) {
+                    Debug.logMessage("Failed too much, Going somewhere else.");
+                    _distanceFailCounter = 0;
+                    return _wanderTask;
+                }
             }
             // Reset other checker (independent, one blocks another)
             _mineProgressChecker.reset();
@@ -217,7 +243,7 @@ public class MineAndCollectTask extends ResourceTask {
                 blacklistCurrentTarget(mod);
             } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
                 // oof
-                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly :(");
+                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #1) :(");
                 e.printStackTrace();
             }
         }
@@ -279,15 +305,13 @@ public class MineAndCollectTask extends ResourceTask {
         // This object will be used for access
         //UserClass userClassObj = new UserClass();
         MineProcess proc = mod.getClientBaritone().getMineProcess();
-        Field blacklistField = MineProcess.class.getDeclaredField("blacklist");
-        blacklistField.setAccessible(true);
         Field knownField = MineProcess.class.getDeclaredField("knownOreLocations");
         knownField.setAccessible(true);
 
-        List<BlockPos> blackList = (List<BlockPos>) blacklistField.get(proc);
         List<BlockPos> knownLocations = (List<BlockPos>) knownField.get(proc);
 
-        blackList.addAll(knownLocations);
+        addToProcBlacklistRaw(mod, knownLocations);
+
         knownLocations.clear();
 
         /*
@@ -295,7 +319,19 @@ public class MineAndCollectTask extends ResourceTask {
         addItem.setAccessible(true);
         addItem.invoke(list, block);
          */
+    }
 
+    private void addToProcBlacklistRaw(AltoClef mod, List<BlockPos> toAdd) throws NoSuchFieldException, IllegalAccessException {
+        MineProcess proc = mod.getClientBaritone().getMineProcess();
+        Field blacklistField = MineProcess.class.getDeclaredField("blacklist");
+        blacklistField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<BlockPos> blackList = (List<BlockPos>) blacklistField.get(proc);
+        blackList.addAll(toAdd);
+
+        _cachedBlacklist.clear();
+        _cachedBlacklist.addAll(blackList);
+        Debug.logInternal("SIZE: " + _cachedBlacklist.size());
     }
 
 }

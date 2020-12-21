@@ -76,8 +76,7 @@ public abstract class DoStuffInContainerTask extends Task {
         } else {
             // Track nearest container
             // TODO: hmmmmm... this shouldn't be necessary.
-            mod.getBlockTracker().trackBlock(_containerBlock);
-            nearest = mod.getBlockTracker().getNearestTracking(currentPos);
+            nearest = mod.getBlockTracker().getNearestTracking(currentPos, _containerBlock);
         }
         if (nearest == null) {
             // If all else fails, try using our placed task

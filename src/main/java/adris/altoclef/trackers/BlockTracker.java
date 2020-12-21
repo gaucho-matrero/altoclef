@@ -32,7 +32,9 @@ public class BlockTracker extends Tracker {
 
     private final Timer _timer = new Timer(5.0);
 
-    private Block _currentlyTracking = null;
+    private Map<Block, Integer> _trackingBlocks = new HashMap<>();
+
+    //private Block _currentlyTracking = null;
 
     public BlockTracker(TrackerManager manager) {
         super(manager);
@@ -46,12 +48,20 @@ public class BlockTracker extends Tracker {
     }
 
     public void trackBlock(Block block) {
-        _currentlyTracking = block;
+        if (!_trackingBlocks.containsKey(block)) {
+            _trackingBlocks.put(block, 0);
+        }
+        _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
     }
 
     public void stopTracking(Block block) {
-        if (block == null || block.is(_currentlyTracking)) {
-            _currentlyTracking = null;
+        if (_trackingBlocks.containsKey(block)) {
+            int current = _trackingBlocks.get(block);
+            if (current == 0) {
+                Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
+            } else {
+                _trackingBlocks.put(block, current - 1);
+            }
         }
     }
 
@@ -61,22 +71,18 @@ public class BlockTracker extends Tracker {
         }
     }
 
-    private boolean isTrackingBlock() {
-        return _currentlyTracking != null;
-    }
-
-    public BlockPos getNearestTracking(Vec3d pos) {
-        if (!isTrackingBlock()) {
-            Debug.logWarning("BlockTracker: Not tracking anything right now...");
+    public BlockPos getNearestTracking(Vec3d pos, Block block) {
+        if (!_trackingBlocks.containsKey(block)) {
+            Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
             return null;
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return _cache.getNearest(_currentlyTracking, pos);
+        return _cache.getNearest(block, pos);
     }
 
     private boolean shouldUpdate() {
-        return isTrackingBlock() && _timer.elapsed();
+        return _timer.elapsed();
     }
     private void update() {
         _timer.reset();
@@ -85,12 +91,22 @@ public class BlockTracker extends Tracker {
     }
 
     private void rescanWorld() {
-        Debug.logMessage("Rescanning world for " + _currentlyTracking.getTranslationKey() + "... Hopefully not dummy slow.");
+        Debug.logMessage("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
         CalculationContext ctx = new CalculationContext(_mod.getClientBaritone());
-        List<BlockPos> knownBlocks = _cache.getKnownLocations(_currentlyTracking);
-        BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(new BlockOptionalMeta(_currentlyTracking));
+        Block[] blocksToScan = new Block[_trackingBlocks.size()];
+        _trackingBlocks.keySet().toArray(blocksToScan);
+        List<BlockPos> knownBlocks = _cache.getKnownLocations(blocksToScan);
+        BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
         List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, knownBlocks, Collections.emptyList(), Collections.emptyList());
-        _cache.addBlocks(_currentlyTracking, found);
+
+        if (MinecraftClient.getInstance().world != null) {
+            for (BlockPos pos : found) {
+                Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+                if (_trackingBlocks.containsKey(block)) {
+                    _cache.addBlock(block, pos);
+                }
+            }
+        }
     }
 
     // Checks whether it would be WRONG to say "at pos the block is block"
@@ -140,11 +156,15 @@ public class BlockTracker extends Tracker {
             return _cachedBlocks.containsKey(block);
         }
 
-        public List<BlockPos> getKnownLocations(Block block) {
-            if (!anyFound(block)) {
-                return Collections.emptyList();
+        public List<BlockPos> getKnownLocations(Block ...blocks) {
+            List<BlockPos> result = new ArrayList<>();
+            for (Block block : blocks) {
+                List<BlockPos> found = _cachedBlocks.get(block);
+                if (found != null) {
+                    result.addAll(found);
+                }
             }
-            return _cachedBlocks.get(block);
+            return result;
         }
 
         public void removeBlock(Block block, BlockPos pos) {

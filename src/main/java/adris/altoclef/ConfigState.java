@@ -110,7 +110,6 @@ public class ConfigState {
             throwawayItems.addAll(s.acceptableThrowawayItems.value);
             followOffsetDistance = s.followOffsetDistance.value;
             mineScanDroppedItems = s.mineScanDroppedItems.value;
-
         }
 
         /**
