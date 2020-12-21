@@ -102,7 +102,8 @@ public class MineAndCollectTask extends ResourceTask {
 
             _mineCheck.reset();
 
-            Debug.logMessage("CHECK MINE PROCESS");
+            setDebugState("CHECK for drops...");
+            //Debug.logMessage("CHECK MINE PROCESS");
             try {
                 onResourceTick(mod);
                 _cachedCommand = mineProc.onTick(false, true);
@@ -155,6 +156,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         // If we don't have the proper tool, satisfy it.
         if (!mod.getInventoryTracker().miningRequirementMet(_requirement)) {
+            setDebugState("Getting tool: " + _requirement);
             return new SatisfyMiningRequirementTask(_requirement);
         }
 
@@ -175,7 +177,7 @@ public class MineAndCollectTask extends ResourceTask {
         setDebugState(state.toString());
 
         if (!miningCorrectBlocks(mod, boms)) {
-            Debug.logInternal("NEW SET OF BLOCKS TO MINE");
+            //Debug.logMessage("New set of blocks to mine...");
 
             BlockOptionalMeta[] bomsArray = new BlockOptionalMeta[boms.size()];
             boms.toArray(bomsArray);

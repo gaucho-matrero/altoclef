@@ -15,7 +15,8 @@ public abstract class Task {
 
     private boolean _active = false;
 
-    public void tick(AltoClef mod) {
+    public void tick(AltoClef mod, TaskChain parentChain) {
+        parentChain.addTaskToChain(this);
         if (_first) {
             Debug.logInternal("Task START: " + this.toString());
             _active = true;
@@ -39,7 +40,7 @@ public abstract class Task {
             }
 
             // Run our child
-            _sub.tick(mod);
+            _sub.tick(mod, parentChain);
         } else {
             // We are null
             if (_sub != null) {
@@ -77,9 +78,11 @@ public abstract class Task {
 
     protected void setDebugState(String state) {
         if (!_debugState.equals(state)) {
-            Debug.logMessage(toString() + ": " + state);
+            _debugState = state;
+            Debug.logInternal(toString());
+        } else {
+            _debugState = state;
         }
-        _debugState = state;
     }
 
     // Virtual
@@ -104,6 +107,6 @@ public abstract class Task {
 
     @Override
     public String toString() {
-        return "<" + toDebugString() + ">";
+        return "<" + toDebugString() + "> " + _debugState;
     }
 }

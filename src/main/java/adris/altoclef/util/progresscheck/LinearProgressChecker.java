@@ -11,6 +11,7 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
     private final Timer _timer;
 
     private double _lastProgress;
+    private double _currentProgress;
 
     private boolean _first;
 
@@ -24,6 +25,7 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
 
     @Override
     public void setProgress(Double progress) {
+        _currentProgress = progress;
         if (_timer.elapsed()) {
             if (!_first) {
                 double improvement = progress - _lastProgress;
@@ -33,8 +35,8 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
             }
             _first = false;
             _timer.reset();
+            _lastProgress = progress;
         }
-        _lastProgress = progress;
     }
 
     @Override
@@ -43,8 +45,9 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
     }
 
     public void reset() {
-        _first = true;
+        //_first = true;
         _failed = false;
         _timer.reset();
+        _lastProgress = _currentProgress;
     }
 }

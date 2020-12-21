@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.FurnaceScreenHandler;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
@@ -38,7 +39,10 @@ public class StaticMixinHookups {
         _mod.onClientTick();
     }
 
-        // Every chat message can be interrupted by us
+    public static void onClientRenderOverlay(MatrixStack stack) {_mod.onClientRenderOverlay(stack);}
+
+
+    // Every chat message can be interrupted by us
     public static void onChat(ChatEvent e) {
         String line = e.getMessage();
         if (_mod.getCommandExecutor().isClientCommand(line)) {

@@ -127,9 +127,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 }
             }
             if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
-                /*if (_currentFurnace != null) {
-                    Debug.logMessage("Need " + neededMaterials.targetCount + ", input materials=" + _currentFurnace.materials.getCount() + ", output has=" + _currentFurnace.output.getCount() + ", target has=" + mod.getInventoryTracker().getItemCount(_target.getItem()));
-                }*/
+                setDebugState("Collecting materials");
                 return getMaterialTask(neededMaterials);
             }
             // Check for fuel.
@@ -139,7 +137,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
             }
             if (fuelNeeded > mod.getInventoryTracker().getTotalFuel()) {
-                Debug.logMessage("Not enough fuel. Has " + mod.getInventoryTracker().getTotalFuel());
+                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + mod.getInventoryTracker().getTotalFuel());
                 return new CollectFuelTask(fuelNeeded);
             }
 

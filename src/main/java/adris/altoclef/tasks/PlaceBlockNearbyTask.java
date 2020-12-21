@@ -57,6 +57,7 @@ public class PlaceBlockNearbyTask extends Task {
 
         // If we're wandering, keep wandering.
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            setDebugState("Timed out: Wandering");
             _placing = false;
             return _wanderTask;
         }
@@ -87,6 +88,7 @@ public class PlaceBlockNearbyTask extends Task {
 
         // We're placing. Check if we successfully placed the block.
         if (_schematic.foundSpot()) {
+            setDebugState("Spot found!");
             BlockPos shouldBePlacedHere = _schematic.getFoundSpot();
             assert MinecraftClient.getInstance().world != null;
             BlockState state = MinecraftClient.getInstance().world.getBlockState(shouldBePlacedHere);
@@ -96,6 +98,8 @@ public class PlaceBlockNearbyTask extends Task {
                 onFinishPlacing(shouldBePlacedHere);
                 return null;
             }
+        } else {
+            setDebugState("Placing...");
         }
 
         // We're placing. Handle timeout and start wandering.
@@ -140,7 +144,6 @@ public class PlaceBlockNearbyTask extends Task {
 
     private void onFinishPlacing(BlockPos placed) {
         _finished = true;
-        Debug.logMessage("PlaceBlock TARGET BLOCK PLACED! " + placed);
         _placed = placed;
         _mod.getClientBaritone().getBuilderProcess().onLostControl();
         _mod.getBlockTracker().addBlock(_toPlace, placed);

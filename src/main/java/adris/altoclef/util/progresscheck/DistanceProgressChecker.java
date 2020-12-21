@@ -1,5 +1,6 @@
 package adris.altoclef.util.progresscheck;
 
+import adris.altoclef.Debug;
 import net.minecraft.util.math.Vec3d;
 
 public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
@@ -9,15 +10,18 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     private IProgressChecker<Double> _distanceChecker;
 
-    public DistanceProgressChecker(double timeout, double minDistanceToMake) {
-        _distanceChecker = new LinearProgressChecker(timeout, minDistanceToMake);
+    public DistanceProgressChecker(double timeout, IProgressChecker<Double> distanceChecker) {
+        _distanceChecker = distanceChecker;
         reset();
+    }
+    public DistanceProgressChecker(double timeout, double minDistanceToMake) {
+        this(timeout, new LinearProgressChecker(timeout, minDistanceToMake));
     }
 
     @Override
-    public void setProgress(Vec3d progress) {
-        double delta = progress.distanceTo(_start);
-        _prevPos = progress;
+    public void setProgress(Vec3d position) {
+        double delta = position.distanceTo(_start);
+        _prevPos = position;
         _distanceChecker.setProgress(delta);
     }
 

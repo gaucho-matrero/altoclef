@@ -62,6 +62,7 @@ public class PickupDroppedItemTask extends Task {
 
         boolean isPathing = _itemGoal != null;
         if (isPathing) {
+            setDebugState("Going to " + _itemGoal);
             // Update blacklist if we're not making good progress.
             double progress = BaritoneHelper.calculateGenericHeuristic(playerPos, _itemGoal);
             _progressChecker.setProgress(progress);
@@ -78,20 +79,17 @@ public class PickupDroppedItemTask extends Task {
             return null;
         }
 
-        setDebugState("FOUND: " + (closest.getStack() != null? closest.getStack().getItem().getTranslationKey() : " (nothing)"));
+//        setDebugState("FOUND: " + (closest.getStack() != null? closest.getStack().getItem().getTranslationKey() : " (nothing)"));
 
         // These two lines must be paired in this order. path must be called once.
         // Setting goal makes the goal process active, but not pathing! This is undesirable.
         Vec3d goal = closest.getPos();
-        if (!isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
-            Debug.logMessage("(Pickup PATHING: " + !mod.getClientBaritone().getCustomGoalProcess().isActive() + ", " + _itemGoal + ", " + goal );
-            //mod.getClientBaritone().getCustomGoalProcess().path();
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() || !isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
+            Debug.logInternal("Pickup: Restarting goal process");
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToPosition(goal));//new GoalGetToPosition(goal));
             _itemGoal = goal;
             _progressChecker.reset();
         }
-
-        //mod.getClientBaritone().getFollowProcess().follow(_targetPredicate);
 
         return null;
     }
@@ -103,9 +101,6 @@ public class PickupDroppedItemTask extends Task {
         if (!(interruptTask instanceof PickupDroppedItemTask)) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             //_mod.getClientBaritone().getFollowProcess().cancel();
-            Debug.logMessage("(PICKUP TASK STOPPED)");
-        } else {
-            Debug.logMessage("(Interrupted by ANOTHER pickup task)");
         }
     }
 

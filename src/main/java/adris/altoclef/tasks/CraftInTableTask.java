@@ -119,6 +119,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // Collect recipe materials first
         for(RecipeTarget target : _targets) {
             if (!mod.getInventoryTracker().hasRecipeMaterials(target.getRecipe())) {
+                setDebugState("Collecting materials");
                 return new CollectRecipeCataloguedResourcesTask(target.getRecipe());
             }
         }
@@ -131,16 +132,13 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         if (obj instanceof DoCraftInTableTask) {
             DoCraftInTableTask other = (DoCraftInTableTask) obj;
 
-            //Debug.logInternal("1");
             if (other._targets.size() != _targets.size()) return false;
-            //Debug.logInternal("2");
             for (int i = 0; i < _targets.size(); ++i) {
                 if (!other._targets.get(i).getRecipe().equals(_targets.get(i).getRecipe())) {
                     //Debug.logInternal(other._targets.get(i).getRecipe() + " != " + _targets.get(i).getRecipe());
                     return false;
                 }
             }
-            //Debug.logInternal("3");
             return true;
         }
         return false;
@@ -164,9 +162,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         boolean succeeded = false;
         for (RecipeTarget target : _targets) {
             if (i == _craftCount) {
-                Debug.logInternal("CRAFT... " + target.getRecipe());
+                setDebugState("Crafting: " + target.getRecipe());
                 if (craftInstant(mod, target.getRecipe())) {
-                    Debug.logInternal("     ... Success!");
                     succeeded = true;
                 }
             }
@@ -186,21 +183,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
-        return 1000000000;
-        /*
         // TODO: If we have an axe, lower the cost.
         if (mod.getInventoryTracker().hasItem(ItemTarget.LOG) || mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
-            return 25;
+            return 150;
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
-        return 100;
-
-         */
+        return 300;
     }
 
     private boolean craftInstant(AltoClef mod, CraftingRecipe recipe) {
-        Debug.logMessage("CRAFTING: " + recipe);
         if (!mod.getInventoryTracker().craftInstant(recipe)) {
             Debug.logWarning("Failed to craft recipe: " + recipe);
             return false;

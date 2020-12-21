@@ -72,7 +72,6 @@ public abstract class DoStuffInContainerTask extends Task {
 
         if (override != null && !BlockTracker.blockIsInvalid(_containerBlock, override)) {
             // We have an override so go there instead.
-            //Debug.logInternal("(delete me) OVERRIDE: " + override);
             nearest = override;
         } else {
             // Track nearest container
@@ -82,10 +81,8 @@ public abstract class DoStuffInContainerTask extends Task {
         }
         if (nearest == null) {
             // If all else fails, try using our placed task
-            //Debug.logInternal("(delete me) (not found) " + _placeTask.getPlaced());
             nearest = _placeTask.getPlaced();
             if (nearest != null && BlockTracker.blockIsInvalid(_containerBlock, nearest)) {
-                //Debug.logInternal("(delete me) TOOF");
                 nearest = null;
             }
         }
@@ -133,11 +130,8 @@ public abstract class DoStuffInContainerTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof DoStuffInContainerTask) {
             DoStuffInContainerTask other = (DoStuffInContainerTask) obj;
-            //Debug.logInternal("A");
             if (!other._containerBlock.is(_containerBlock)) return false;
-            //Debug.logInternal("B");
             if (!other._containerCatalogueName.equals(_containerCatalogueName)) return false;
-            //Debug.logInternal("C");
             return isSubTaskEqual(other);
         }
         return false;

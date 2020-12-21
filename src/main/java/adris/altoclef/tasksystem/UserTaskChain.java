@@ -22,11 +22,11 @@ public class UserTaskChain extends TaskChain {
         if ((_stopOnFinish && _mainTask.isFinished(mod)) || _mainTask.failed()) {
             onFinish(mod);
         } else {
-            _mainTask.tick(mod);
+            _mainTask.tick(mod, this);
         }
     }
 
-    public void stop(AltoClef mod) {
+    public void onStop(AltoClef mod) {
         if (isActive()) {
             _mainTask.stop(mod);
         }
@@ -41,6 +41,11 @@ public class UserTaskChain extends TaskChain {
     @Override
     public boolean isActive() {
         return _mainTask != null;
+    }
+
+    @Override
+    public String getName() {
+        return "User Tasks";
     }
 
     public void runTask(AltoClef mod, Task task) {

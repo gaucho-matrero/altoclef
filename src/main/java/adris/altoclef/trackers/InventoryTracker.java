@@ -466,11 +466,9 @@ public class InventoryTracker extends Tracker {
     public int moveItemToSlot(ItemTarget toMove, Slot moveTo) {
         for (Item item : toMove.getMatches()) {
             if (getItemCount(item) >= toMove.targetCount) {
-                Debug.logMessage("(DEBUG TEMP) had " + getItemCount(item) + " " + item.getTranslationKey());
                 return moveItemToSlot(item, toMove.targetCount, moveTo);
             }
         }
-        Debug.logMessage("(DEBUG TEMP) did not have any items");
         return 0;
     }
     // These names aren't confusing

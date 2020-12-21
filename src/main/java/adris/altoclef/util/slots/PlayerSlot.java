@@ -6,9 +6,6 @@ import adris.altoclef.Debug;
 public class PlayerSlot extends Slot {
     public PlayerSlot(int windowSlot) {
         this(windowSlot, false);
-        if (windowSlot == 0) {
-            Debug.logMessage("TEMP: " + this + ", WAT: " + windowSlot);
-        }
     }
     protected PlayerSlot(int slot, boolean inventory) {
         super(slot, inventory);

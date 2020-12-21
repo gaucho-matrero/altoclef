@@ -2,7 +2,6 @@ package adris.altoclef.tasksystem;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import baritone.api.BaritoneAPI;
 
 import java.util.ArrayList;
 
@@ -11,6 +10,8 @@ public class TaskRunner {
     private ArrayList<TaskChain> _chains = new ArrayList<>();
     private AltoClef _mod;
     private boolean _active;
+
+    private TaskChain _cachedCurrentTaskChain = null;
 
     public TaskRunner(AltoClef mod) {
         _mod = mod;
@@ -30,6 +31,7 @@ public class TaskRunner {
                 maxChain = chain;
             }
         }
+        _cachedCurrentTaskChain = maxChain;
         if (maxChain != null) {
             maxChain.tick(_mod);
         }
@@ -52,6 +54,10 @@ public class TaskRunner {
         _mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
 
         Debug.logMessage("Stopped");
+    }
+
+    public TaskChain getCurrentTaskChain() {
+        return _cachedCurrentTaskChain;
     }
 
 }

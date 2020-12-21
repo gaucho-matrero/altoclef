@@ -20,7 +20,6 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        Debug.logMessage("STARTING GETTOBLOCK");
         mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
         _running = true;
     }
@@ -33,7 +32,6 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        Debug.logMessage("stopping GETTOBLOCK");
         _running = false;
         mod.getCustomBaritone().getInteractWithBlockPositionProcess().onLostControl();
     }

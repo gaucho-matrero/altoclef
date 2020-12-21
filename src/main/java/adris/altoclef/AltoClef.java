@@ -5,6 +5,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.UserTaskChain;
 import adris.altoclef.trackers.*;
+import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
@@ -14,6 +15,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
 
 import java.lang.reflect.Field;
@@ -37,6 +39,9 @@ public class AltoClef implements ModInitializer {
     private EntityTracker _entityTracker;
     private BlockTracker _blockTracker;
     private ContainerTracker _containerTracker;
+
+    // Renderers
+    private CommandStatusOverlay _commandStatusOverlay;
 
     @Override
     public void onInitialize() {
@@ -67,6 +72,9 @@ public class AltoClef implements ModInitializer {
         _blockTracker = new BlockTracker(_trackerManager);
         _containerTracker = new ContainerTracker(this, _trackerManager);
 
+        // Renderers
+        _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
+
         initializeCommands();
     }
 
@@ -74,6 +82,10 @@ public class AltoClef implements ModInitializer {
     public void onClientTick() {
         _trackerManager.tick();
         _taskRunner.tick();
+    }
+
+    public void onClientRenderOverlay(MatrixStack matrixStack) {
+        _commandStatusOverlay.render(matrixStack);
     }
 
     // List all command sources here.
