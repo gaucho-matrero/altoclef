@@ -10,6 +10,7 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -152,6 +153,17 @@ public class InventoryTracker extends Tracker {
     public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
         ensureUpdated();
         return getRecipeMapping(recipe, count) != null;
+    }
+
+    public boolean isArmorEquipped(Item item) {
+        if (item instanceof ArmorItem) {
+            ArmorItem armor = (ArmorItem) item;
+            Slot slot = PlayerSlot.getEquipSlot(armor.getSlotType());
+            ItemStack target = getItemStackInSlot(slot);
+            return target.getItem().equals(item);
+        }
+        Debug.logWarning("Non armor item provided, it is not equipped: " + item.getTranslationKey());
+        return false;
     }
 
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {

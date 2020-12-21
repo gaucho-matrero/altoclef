@@ -1,10 +1,8 @@
 package adris.altoclef;
 
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.resources.CollectCobblestoneTask;
 import adris.altoclef.tasks.resources.CollectPlanksTask;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -18,7 +16,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class TaskCatalogue {
@@ -57,13 +54,13 @@ public class TaskCatalogue {
 
             tools("iron", "iron_ingot", Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_HOE);
             tools("golden", "gold_ingot", Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD, Items.GOLDEN_AXE, Items.GOLDEN_HOE);
-            armour("iron", "iron_ingot", Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS);
-            armour("golden", "gold_ingot", Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
+            armor("iron", "iron_ingot", Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS);
+            armor("golden", "gold_ingot", Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
 
             mine("diamond", MiningRequirement.IRON, Blocks.DIAMOND_ORE, Items.DIAMOND);
 
             tools("diamond", "diamond", Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_HOE);
-            armour("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
+            armor("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
 
             shapedRecipe2x2("torch", Items.TORCH, "coal", o, s, o);
 
@@ -168,14 +165,14 @@ public class TaskCatalogue {
         shapedRecipe3x3(toolMaterialName + "_hoe", hoeItem, m, m, o, o, s, o, o, s, o);
     }
 
-    private static void armour(String armourMaterialName, String material, Item helmetItem, Item chestplateItem, Item leggingsItem, Item bootsItem) {
+    private static void armor(String armorMaterialName, String material, Item helmetItem, Item chestplateItem, Item leggingsItem, Item bootsItem) {
         String o = null;
         //noinspection UnnecessaryLocalVariable
         String m = material;
-        shapedRecipe3x3(armourMaterialName + "_helmet", helmetItem, m, m, m, m, o, m, o, o, o);
-        shapedRecipe3x3(armourMaterialName + "_chestplate", chestplateItem, m, o, m, m, m, m, m, m, m);
-        shapedRecipe3x3(armourMaterialName + "_leggings", leggingsItem, m, m, m, m, o, m, m, o, m);
-        shapedRecipe3x3(armourMaterialName + "_boots", bootsItem, o, o, o, m, o, m, m, o, m);
+        shapedRecipe3x3(armorMaterialName + "_helmet", helmetItem, m, m, m, m, o, m, o, o, o);
+        shapedRecipe3x3(armorMaterialName + "_chestplate", chestplateItem, m, o, m, m, m, m, m, m, m);
+        shapedRecipe3x3(armorMaterialName + "_leggings", leggingsItem, m, m, m, m, o, m, m, o, m);
+        shapedRecipe3x3(armorMaterialName + "_boots", bootsItem, o, o, o, m, o, m, m, o, m);
     }
 
     private static void alias(String newName, String original) {

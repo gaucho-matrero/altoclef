@@ -50,41 +50,8 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new CraftInTableTask(targetItem, testRecipe));
 
                 break;
-            case "both":
-                mod.runUserTask(new CraftInTableTask(
-                        Arrays.asList(new RecipeTarget(targetItem2, testRecipe2), new RecipeTarget(targetItem, testRecipe))
-                ));
-                break;
-            case "place":
-                BlockPos origin = mod.getPlayer().getBlockPos();
-                PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(origin, Blocks.CRAFTING_TABLE);
-                schematic.reset();
-
-                mod.getClientBaritone().getBuilderProcess().build("Place crafting table nearby", schematic, origin);
-                break;
-            case "placereal":
-                mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
-                break;
-            case "craft":
-                new Thread(() -> {
-                    try {
-                        for (int i = 5; i > 0; --i) {
-                            Debug.logMessage(i + "...");
-                            Thread.sleep(1000, 0);
-                        }
-                        Debug.logMessage("DOING THE THING");
-                        assert testRecipe != null;
-                        mod.getInventoryTracker().craftInstant(testRecipe);
-                        Thread.sleep(1000, 0);
-                        assert testRecipe2 != null;
-                        mod.getInventoryTracker().craftInstant(testRecipe2);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-                break;
-            case "table":
-                mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
+            case "stacked":
+                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings"));
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget(Items.IRON_INGOT, 4);

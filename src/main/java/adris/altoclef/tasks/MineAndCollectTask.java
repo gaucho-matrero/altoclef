@@ -190,6 +190,8 @@ public class MineAndCollectTask extends ResourceTask {
         if (!miningCorrectBlocks(mod, boms)) {
             //Debug.logMessage("New set of blocks to mine...");
 
+            boolean wasRunningBefore = mod.getClientBaritone().getMineProcess().isActive();
+
             BlockOptionalMeta[] bomsArray = new BlockOptionalMeta[boms.size()];
             boms.toArray(bomsArray);
 
@@ -205,8 +207,10 @@ public class MineAndCollectTask extends ResourceTask {
 
             _targetBoms = boms;
 
-            _mineProgressChecker.reset();
-            _distanceProgressChecker.reset(mod.getPlayer().getPos());
+            if (wasRunningBefore) {
+                _mineProgressChecker.reset();
+                _distanceProgressChecker.reset(mod.getPlayer().getPos());
+            }
             Debug.logInternal("Starting to mine.");
         }
 
