@@ -3,9 +3,9 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.TaskCatalogue;
+import adris.altoclef.TaskCatalogue;
+import adris.altoclef.trackers.BlockTracker;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
@@ -33,6 +33,8 @@ public abstract class DoStuffInContainerTask extends Task {
 
     private PlaceBlockNearbyTask _placeTask;
 
+    private BlockPos _cachedContainerPosition = null;
+
     // Introduce a delay after placing to wait for the server to catch up.
     //private Timer _postPlaceTimer = new Timer(0.5f);
 
@@ -57,22 +59,45 @@ public abstract class DoStuffInContainerTask extends Task {
         }
 
         if (isContainerOpen(mod)) {
-            Debug.logInternal("OPEN");
             return containerSubTask(mod);
         }
 
         // infinity if such a container does not exist.
         double costToWalk = Double.POSITIVE_INFINITY;
 
-        // TODO: hmmmmm... this shouldn't be necessary.
-        mod.getBlockTracker().trackBlock(_containerBlock);
+        BlockPos nearest;
+
         Vec3d currentPos = mod.getPlayer().getPos();
-        BlockPos nearest = mod.getBlockTracker().getNearestTracking(currentPos);
+        BlockPos override = overrideContainerPosition(mod);
+
+        if (override != null && !BlockTracker.blockIsInvalid(_containerBlock, override)) {
+            // We have an override so go there instead.
+            //Debug.logInternal("(delete me) OVERRIDE: " + override);
+            nearest = override;
+        } else {
+            // Track nearest container
+            // TODO: hmmmmm... this shouldn't be necessary.
+            mod.getBlockTracker().trackBlock(_containerBlock);
+            nearest = mod.getBlockTracker().getNearestTracking(currentPos);
+        }
+        if (nearest == null) {
+            // If all else fails, try using our placed task
+            //Debug.logInternal("(delete me) (not found) " + _placeTask.getPlaced());
+            nearest = _placeTask.getPlaced();
+            if (nearest != null && BlockTracker.blockIsInvalid(_containerBlock, nearest)) {
+                //Debug.logInternal("(delete me) TOOF");
+                nearest = null;
+            }
+        }
         if (nearest != null) {
             costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, Util.toVec3d(nearest));
         }
 
         if (costToWalk > getCostToMakeNew(mod)) {
+            // It's cheaper to make a new one, or our only option.
+
+            // We're no longer going to our previous container.
+            _cachedContainerPosition = null;
 
             // Get if we don't have...
             if (!mod.getInventoryTracker().hasItem(_containerCatalogueName)) {
@@ -86,8 +111,17 @@ public abstract class DoStuffInContainerTask extends Task {
             return _placeTask;
         }
 
+        _cachedContainerPosition = nearest;
+
         // Walk to it and open it
         return new GetToBlockTask(nearest, true);
+    }
+
+    // Virtual
+    protected BlockPos overrideContainerPosition(AltoClef mod) { return null; }
+
+    protected BlockPos getTargetContainerPosition() {
+        return _cachedContainerPosition;
     }
 
     @Override

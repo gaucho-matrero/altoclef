@@ -1,25 +1,23 @@
-package adris.altoclef.commands;
+package adris.altoclef;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.resources.CollectPlanksTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.slots.PlayerSlot;
-import adris.altoclef.util.TaskCatalogue;
-import baritone.api.utils.BlockOptionalMeta;
+import adris.altoclef.TaskCatalogue;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import sun.security.util.ArrayUtil;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unused", "unchecked", "rawtypes"})
@@ -46,42 +44,53 @@ public class AltoClefCommands extends CommandList {
         ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
 
 
-        if (arg.equals("")) {
-            //mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
-            mod.runUserTask(new CraftInTableTask(targetItem, testRecipe));
+        switch (arg) {
+            case "":
+                //mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
+                mod.runUserTask(new CraftInTableTask(targetItem, testRecipe));
 
-        } else if (arg.equals("both")) {
-            mod.runUserTask(new CraftInTableTask(
-                    Arrays.asList(new RecipeTarget(targetItem2, testRecipe2), new RecipeTarget(targetItem, testRecipe))
-            ));
-        } else if (arg.equals("place")) {
-            BlockPos origin = mod.getPlayer().getBlockPos();
-            PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(origin, Blocks.CRAFTING_TABLE);
-            schematic.reset();
+                break;
+            case "both":
+                mod.runUserTask(new CraftInTableTask(
+                        Arrays.asList(new RecipeTarget(targetItem2, testRecipe2), new RecipeTarget(targetItem, testRecipe))
+                ));
+                break;
+            case "place":
+                BlockPos origin = mod.getPlayer().getBlockPos();
+                PlaceBlockNearbySchematic schematic = new PlaceBlockNearbySchematic(origin, Blocks.CRAFTING_TABLE);
+                schematic.reset();
 
-            mod.getClientBaritone().getBuilderProcess().build("Place crafting table nearby", schematic, origin);
-        } else if (arg.equals("placereal")) {
-            mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
-        } else if (arg.equals("craft")) {
-            new Thread() {
-                @Override
-                public void run() {
+                mod.getClientBaritone().getBuilderProcess().build("Place crafting table nearby", schematic, origin);
+                break;
+            case "placereal":
+                mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
+                break;
+            case "craft":
+                new Thread(() -> {
                     try {
                         for (int i = 5; i > 0; --i) {
                             Debug.logMessage(i + "...");
                             Thread.sleep(1000, 0);
                         }
                         Debug.logMessage("DOING THE THING");
+                        assert testRecipe != null;
                         mod.getInventoryTracker().craftInstant(testRecipe);
                         Thread.sleep(1000, 0);
+                        assert testRecipe2 != null;
                         mod.getInventoryTracker().craftInstant(testRecipe2);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-            }.start();
-        } else if (arg.equals("table")) {
-            mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
+                }).start();
+                break;
+            case "table":
+                mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
+                break;
+            case "smelt":
+                ItemTarget target = new ItemTarget(Items.IRON_INGOT, 4);
+                ItemTarget material = new ItemTarget(Items.IRON_ORE, 4);
+                mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
+                break;
         }
 
         //mod.getBlockTracker().trackBlock(Blocks.CRAFTING_TABLE);
@@ -155,13 +164,13 @@ public class AltoClefCommands extends CommandList {
             String resourceName = parser.Get(String.class);
             int count = parser.Get(Integer.class);
 
-            Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
-            if (targetTask == null) {
+            if (TaskCatalogue.taskExists(resourceName)) {
+                Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
+                mod.runUserTask(targetTask);
+            } else {
                 Debug.logWarning("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.");
                 Debug.logWarning("Here's a list of everything we can get for you though:");
                 Debug.logWarning(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
-            } else {
-                mod.runUserTask(targetTask);
             }
         }
     }

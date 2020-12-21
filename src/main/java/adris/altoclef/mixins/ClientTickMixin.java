@@ -1,6 +1,6 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.AltoClef;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,6 +16,6 @@ public final class ClientTickMixin {
             cancellable = true
     )
     private void clientTick(CallbackInfo ci) {
-        AltoClef.getInstance().onClientTick();
+        StaticMixinHookups.onClientTick();
     }
 }

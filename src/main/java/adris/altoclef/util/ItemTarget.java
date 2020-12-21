@@ -1,14 +1,10 @@
 package adris.altoclef.util;
 
-import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import sun.util.resources.ext.CalendarData_en_IE;
 
 public class ItemTarget {
     private Item[] _itemMatches;
@@ -49,6 +45,15 @@ public class ItemTarget {
         this(item, 9999999);
         _infinite = true;
     }
+
+    public ItemTarget(ItemTarget toCopy) {
+        _itemMatches = new Item[toCopy._itemMatches.length];
+        System.arraycopy(toCopy._itemMatches, 0, _itemMatches,  0, toCopy._itemMatches.length);
+        _catalogueName = toCopy._catalogueName;
+        targetCount = toCopy.targetCount;
+        _infinite = toCopy._infinite;
+    }
+
     public Item[] getMatches() {
         return _itemMatches;
     }

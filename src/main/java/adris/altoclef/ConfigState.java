@@ -1,7 +1,8 @@
-package adris.altoclef.util;
+package adris.altoclef;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.ItemTarget;
 import baritone.api.Settings;
 import net.minecraft.item.Item;
 
@@ -34,20 +35,34 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void setMineScanDroppedItems(boolean value) {
+        current().mineScanDroppedItems = value;
+        current().applyState();
+    }
+
     public void addThrowawayItems(Item ...items) {
         Collections.addAll(current().throwawayItems, items);
     }
+
     public void removeThrowawayItems(Item ...items) {
         // No removeAll huh. Nice one Java.
         for (Item item : items) {
             current().throwawayItems.remove(item);
         }
+        current().applyState();
     }
-    public void removeThrowawayItems(ItemTarget ...targets) {
+    public void removeThrowawayItems(ItemTarget...targets) {
         // Just to be safe we remove ALL items that we may want to use.
         for (ItemTarget target : targets) {
             removeThrowawayItems(target.getMatches());
         }
+        current().applyState();
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean isProtected(Item item) {
+        // For now nothing is protected.
+        return false;//current().throwawayItems.contains(item);
     }
 
     /// Stack management
@@ -71,6 +86,7 @@ public class ConfigState {
         /// Params
         public double followOffsetDistance;
         public List<Item> throwawayItems = new ArrayList<>();
+        public boolean mineScanDroppedItems;
 
         public State() {
             Settings s = _mod.getClientBaritoneSettings();
@@ -93,6 +109,7 @@ public class ConfigState {
             throwawayItems.clear();
             throwawayItems.addAll(s.acceptableThrowawayItems.value);
             followOffsetDistance = s.followOffsetDistance.value;
+            mineScanDroppedItems = s.mineScanDroppedItems.value;
 
         }
 
@@ -103,6 +120,7 @@ public class ConfigState {
             s.acceptableThrowawayItems.value.clear();
             s.acceptableThrowawayItems.value.addAll(throwawayItems);
             s.followOffsetDistance.value = followOffsetDistance;
+            s.mineScanDroppedItems.value = mineScanDroppedItems;
         }
     }
 }

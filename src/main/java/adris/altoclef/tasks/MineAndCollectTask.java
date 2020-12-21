@@ -20,15 +20,16 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MineAndCollectTask extends ResourceTask {
+
+    private List<Block> _blocksToMine;
 
     private List<BlockOptionalMeta> _targetBoms = new ArrayList<>();
 
@@ -46,29 +47,35 @@ public class MineAndCollectTask extends ResourceTask {
     private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
     private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(5, 0.1f);
 
-    public MineAndCollectTask(List<ItemTarget> itemTargets, MiningRequirement requirement) {
+    public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
         _requirement = requirement;
-
+        _blocksToMine = blocksToMine;
     }
 
-    public MineAndCollectTask(ItemTarget target, MiningRequirement requirement) {
-        this(Collections.singletonList(target), requirement);
+    public MineAndCollectTask(ItemTarget target, Block[] blocksToMine, MiningRequirement requirement) {
+        this(Collections.singletonList(target), Arrays.asList(blocksToMine), requirement);
+    }
+    public MineAndCollectTask(List<ItemTarget> blocksToMine, MiningRequirement requirement) {
+        this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
     }
 
-    public MineAndCollectTask(Item item, int targetCount, MiningRequirement requirement) {
-        super(item, targetCount);
-        _requirement = requirement;
-    }
-    // Am lazy
-    public MineAndCollectTask(Item item, MiningRequirement requirement) {
-        super(item, 99999999);
-        _requirement = requirement;
+    private static List<Block> itemTargetToBlockList(List<ItemTarget> targets) {
+        List<Block> result = new ArrayList<>(targets.size());
+        for (ItemTarget target : targets) {
+            for(Item item : target.getMatches()) {
+                result.add(Block.getBlockFromItem(item));
+            }
+        }
+        return result;
     }
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        // Baritone is buggy here. For example:
+        // If I try to mine diamonds, it will stop and grab every egg on the ground.
+        mod.getConfigState().push();
+        mod.getConfigState().setMineScanDroppedItems(false);
     }
 
     @Override
@@ -157,14 +164,14 @@ public class MineAndCollectTask extends ResourceTask {
         StringBuilder state = new StringBuilder();
         state.append(" ----- ");
         for (ItemTarget target : _itemTargets) {
-            if (mod.getInventoryTracker().targetReached(target)) continue;
+            if (mod.getInventoryTracker().targetMet(target)) continue;
             state.append("Need ").append(target.toString()).append(" ----- ");
-            for (Item item : target.getMatches()) {
-                Block block = Block.getBlockFromItem(item);
+            for (Block block : _blocksToMine) {
                 BlockOptionalMeta bom = new BlockOptionalMeta(block);
                 boms.add(bom);
             }
         }
+
         setDebugState(state.toString());
 
         if (!miningCorrectBlocks(mod, boms)) {
@@ -218,6 +225,7 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getMineProcess().cancel();
+        mod.getConfigState().pop();
     }
 
     @Override
@@ -264,6 +272,7 @@ public class MineAndCollectTask extends ResourceTask {
     }
      */
 
+    @SuppressWarnings("unchecked")
     private void blacklistCurrentTarget(AltoClef mod) throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException {
         // This object will be used for access
         //UserClass userClassObj = new UserClass();

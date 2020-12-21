@@ -1,39 +1,25 @@
 package adris.altoclef;
 
-import adris.altoclef.commands.AltoClefCommands;
-import adris.altoclef.commands.CommandException;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.UserTaskChain;
-import adris.altoclef.trackers.BlockTracker;
-import adris.altoclef.trackers.EntityTracker;
-import adris.altoclef.trackers.InventoryTracker;
-import adris.altoclef.trackers.TrackerManager;
-import adris.altoclef.util.ConfigState;
+import adris.altoclef.trackers.*;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
-import baritone.api.event.events.ChatEvent;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.ClientConnection;
+
+import java.lang.reflect.Field;
+import java.util.Objects;
 
 public class AltoClef implements ModInitializer {
-
-    // Singleton pattern.
-    // PLEASE AVOID RELYING ON THIS! The only place
-    // where this is used is mixins. Later this will be removed entirely
-    // once I figure out how to initialize mixins non-statically.
-    private static AltoClef _instance;
-    public static AltoClef getInstance() {
-        return _instance;
-    }
 
     // Central Managers
     private CommandExecutor _commandExecutor;
@@ -50,13 +36,14 @@ public class AltoClef implements ModInitializer {
     private InventoryTracker _inventoryTracker;
     private EntityTracker _entityTracker;
     private BlockTracker _blockTracker;
+    private ContainerTracker _containerTracker;
 
     @Override
     public void onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
-        // As such, nothing will be loaded here.
-        _instance = this;
+        // As such, nothing will be loaded here but basic initialization.
+        StaticMixinHookups.hookupMod(this);
     }
 
     public void onInitializeLoad() {
@@ -78,22 +65,9 @@ public class AltoClef implements ModInitializer {
         _inventoryTracker = new InventoryTracker(_trackerManager);
         _entityTracker = new EntityTracker(_trackerManager);
         _blockTracker = new BlockTracker(_trackerManager);
+        _containerTracker = new ContainerTracker(this, _trackerManager);
 
         initializeCommands();
-    }
-
-    // Every chat message can be interrupted by us
-    public void onChat(ChatEvent e) {
-        String line = e.getMessage();
-        if (_commandExecutor.isClientCommand(line)) {
-            e.cancel();
-            try {
-                _commandExecutor.Execute(line);
-            } catch (CommandException ex) {
-                Debug.logWarning(ex.getMessage());
-                //ex.printStackTrace();
-            }
-        }
     }
 
     // Client tick
@@ -102,10 +76,7 @@ public class AltoClef implements ModInitializer {
         _taskRunner.tick();
     }
 
-    public void onBlockBreaking(BlockPos pos, double progress) {
-        _extraController.onBlockBreak(pos, progress);
-    }
-
+    // List all command sources here.
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
@@ -133,6 +104,7 @@ public class AltoClef implements ModInitializer {
     public InventoryTracker getInventoryTracker() { return _inventoryTracker; }
     public EntityTracker getEntityTracker() { return _entityTracker; }
     public BlockTracker getBlockTracker() { return _blockTracker; }
+    public ContainerTracker getContainerTracker() {return _containerTracker;}
 
     // Baritone access
     public Baritone getClientBaritone() {
@@ -143,6 +115,17 @@ public class AltoClef implements ModInitializer {
     }
     public Settings getClientBaritoneSettings() {
         return Baritone.settings();
+    }
+
+    public int getTicks() {
+        try {
+            ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
+            Field tickField = ClientConnection.class.getDeclaredField("ticks");
+            tickField.setAccessible(true);
+            return tickField.getInt(con);
+        } catch (NoSuchFieldException | NullPointerException | IllegalAccessException e) {
+            return 0;
+        }
     }
 
     // Minecraft access

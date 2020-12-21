@@ -16,7 +16,7 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     @Override
     public void setProgress(Vec3d progress) {
-        double delta = progress.distanceTo(_start) - _prevPos.distanceTo(_start);
+        double delta = progress.distanceTo(_start);
         _prevPos = progress;
         _distanceChecker.setProgress(delta);
     }

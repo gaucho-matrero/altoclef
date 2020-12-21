@@ -3,7 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.TaskCatalogue;
+import adris.altoclef.TaskCatalogue;
 
 public class SatisfyMiningRequirementTask extends Task {
 
@@ -29,9 +29,9 @@ public class SatisfyMiningRequirementTask extends Task {
             case STONE:
                 return TaskCatalogue.getItemTask("stone_pickaxe", 1);
             case IRON:
-                break;
+                return TaskCatalogue.getItemTask("iron_pickaxe", 1);
             case DIAMOND:
-                break;
+                return TaskCatalogue.getItemTask("diamond_pickaxe", 1);
         }
         return null;
     }

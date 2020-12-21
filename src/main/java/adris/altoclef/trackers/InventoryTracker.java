@@ -3,25 +3,31 @@ package adris.altoclef.trackers;
 import adris.altoclef.Debug;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.TaskCatalogue;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class InventoryTracker extends Tracker {
 
     private HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
+
+    private static Map<Item, Integer> _fuelTimeMap = null;
 
     private int _emptySlots = 0;
 
@@ -61,9 +67,11 @@ public class InventoryTracker extends Tracker {
         return sum;
 
     }
+
     public int getItemCount(ItemTarget target) {
         return getItemCount(target.getMatches());
     }
+
     public int getMaxItemCount(ItemTarget target) {
         int max = 0;
         for (Item match : target.getMatches()) {
@@ -73,14 +81,17 @@ public class InventoryTracker extends Tracker {
         return max;
     }
 
-    public Collection<Integer> getInventorySlotsWithItem(Item item) {
-        if (_itemSlots.containsKey(item)) {
-            return _itemSlots.get(item);
+    public List<Integer> getInventorySlotsWithItem(Item ...items) {
+        List<Integer> result = new ArrayList<>();
+        for (Item item : items) {
+            if (_itemSlots.containsKey(item)) {
+                result.addAll(_itemSlots.get(item));
+            }
         }
-        return Collections.emptyList();
+        return result;
     }
 
-    public boolean targetReached(ItemTarget ...targets) {
+    public boolean targetMet(ItemTarget ...targets) {
         ensureUpdated();
 
         for(ItemTarget target : targets) {
@@ -107,6 +118,40 @@ public class InventoryTracker extends Tracker {
                 Debug.logError("You missed a spot");
                 return false;
         }
+    }
+
+    public double getTotalFuel(boolean includeThrowawayProtected) {
+        double total = 0;
+        for (Item item : _itemCounts.keySet()) {
+            if (includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
+                total += getFuelAmount(item) * _itemCounts.get(item);
+            }
+        }
+        return total;
+    }
+    public double getTotalFuel() {
+        return getTotalFuel(false);
+    }
+    public List<Item> getFuelItems() {
+        List<Item> fuel = new ArrayList<>();
+        for (Item item : _itemCounts.keySet()) {
+            if (!_mod.getConfigState().isProtected(item)) {
+                if (isFuel(item)) {
+                    fuel.add(item);
+                }
+            }
+        }
+        return fuel;
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
+        return hasRecipeMaterials(recipe, 1);
+    }
+
+    public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
+        ensureUpdated();
+        return getRecipeMapping(recipe, count) != null;
     }
 
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
@@ -258,16 +303,9 @@ public class InventoryTracker extends Tracker {
         return craftSlotToInventorySlot;
 
     }
-    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
-        return hasRecipeMaterials(recipe, 1);
-    }
-
-    public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
-        ensureUpdated();
-        return getRecipeMapping(recipe, count) != null;
-    }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
+        setDirty();
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
@@ -355,6 +393,10 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    public void grabItem(Slot slot) {
+        clickSlot(slot, 1, SlotActionType.QUICK_MOVE);
+    }
+
     // Crafts a recipe. Returns whether it succeeded.
     public boolean craftInstant(CraftingRecipe recipe) {
 
@@ -421,7 +463,86 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
-    private ItemStack getItemStackInSlot(Slot slot) {
+    public int moveItemToSlot(ItemTarget toMove, Slot moveTo) {
+        for (Item item : toMove.getMatches()) {
+            if (getItemCount(item) >= toMove.targetCount) {
+                Debug.logMessage("(DEBUG TEMP) had " + getItemCount(item) + " " + item.getTranslationKey());
+                return moveItemToSlot(item, toMove.targetCount, moveTo);
+            }
+        }
+        Debug.logMessage("(DEBUG TEMP) did not have any items");
+        return 0;
+    }
+    // These names aren't confusing
+    public int moveItemToSlot(Item toMove, int moveCount, Slot moveTo) {
+        List<Integer> itemSlots = getInventorySlotsWithItem(toMove);
+        int needsToMove = moveCount;
+        for (Integer slotIndex : itemSlots) {
+            if (needsToMove <= 0) break;
+            Slot current = Slot.getFromInventory(slotIndex);
+            ItemStack stack = getItemStackInSlot(current);
+            //Debug.logMessage("(DEBUG ONLY) index=" + slotIndex + ", " + stack.getItem().getTranslationKey() + ", " + stack.getCount());
+            int moveSize = stack.getCount();
+            if (moveSize > needsToMove) {
+                moveSize = needsToMove;
+            }
+            //Debug.logMessage("MOVING: " + current + " -> " + moveTo);
+            needsToMove -= moveItems(current, moveTo, moveSize);
+        }
+        return moveCount - needsToMove;
+    }
+
+    private static Map<Item, Integer> getFuelTimeMap() {
+        if (_fuelTimeMap == null) {
+            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
+        }
+        return _fuelTimeMap;
+    }
+
+    public static double getFuelAmount(ItemStack ...stacks) {
+        double total = 0;
+        for (ItemStack stack : stacks) {
+            if (getFuelTimeMap().containsKey(stack.getItem())) {
+                total += stack.getCount() * getFuelAmount(stack.getItem());
+            }
+        }
+        return total;
+    }
+    public static double getFuelAmount(Item ...items) {
+        double total = 0;
+        for (Item item : items) {
+            if (getFuelTimeMap().containsKey(item)) {
+                int timeTicks = getFuelTimeMap().get(item);
+                // 300 ticks of wood -> 1.5 operations
+                // 200 ticks -> 1 operation
+                total += (double) timeTicks / 200.0;
+            }
+        }
+        return total;
+    }
+
+    public static boolean isFuel(Item item) {
+        return getFuelTimeMap().containsKey(item);
+    }
+
+    public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
+        try {
+            Field propertyField = AbstractFurnaceScreenHandler.class.getDeclaredField("propertyDelegate");
+            propertyField.setAccessible(true);
+
+            PropertyDelegate propertyDelegate = (PropertyDelegate) propertyField.get(handler);
+            return (double)propertyDelegate.get(0) / 200.0;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
+        return (double) handler.getCookProgress() / 24.0;
+    }
+
+
+    public ItemStack getItemStackInSlot(Slot slot) {
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;

@@ -1,18 +1,16 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.TaskCatalogue;
-import net.minecraft.item.Item;
-
-import java.util.HashMap;
+import adris.altoclef.util.csharpisbetter.Timer;
 
 public class CraftInInventoryTask extends ResourceTask {
 
     private CraftingRecipe _recipe;
+
+    private Timer _craftTimer = new Timer(0.5);
 
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
         super(target);
@@ -35,7 +33,11 @@ public class CraftInInventoryTask extends ResourceTask {
             return collectRecipeSubTask(mod);
         }
 
-        craftInstant(mod, _recipe);
+        // Delay our crafting so the server has time to give us our item back.
+        if (_craftTimer.elapsed()) {
+            _craftTimer.reset();
+            craftInstant(mod, _recipe);
+        }
 
         return null;
     }

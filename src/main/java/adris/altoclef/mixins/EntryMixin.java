@@ -1,8 +1,7 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import net.minecraft.client.MinecraftClient;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.screen.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +18,7 @@ public class EntryMixin {
         if (!_initialized) {
             _initialized = true;
             Debug.logMessage("Global Init");
-            AltoClef.getInstance().onInitializeLoad();
+            StaticMixinHookups.onInitializeLoad();
         }
     }
 }

@@ -28,7 +28,7 @@ public class PickupDroppedItemTask extends Task {
 
     private Vec3d _itemGoal;
 
-    private IProgressChecker _progressChecker;
+    private IProgressChecker<Double> _progressChecker;
 
     public PickupDroppedItemTask(List<ItemTarget> itemTargets) {
         _itemTargets = itemTargets;
@@ -54,6 +54,7 @@ public class PickupDroppedItemTask extends Task {
         _progressChecker.reset();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected Task onTick(AltoClef mod) {
 
@@ -77,7 +78,7 @@ public class PickupDroppedItemTask extends Task {
             return null;
         }
 
-        setDebugState("FOUND: " + closest.getStack().getItem().getTranslationKey());
+        setDebugState("FOUND: " + (closest.getStack() != null? closest.getStack().getItem().getTranslationKey() : " (nothing)"));
 
         // These two lines must be paired in this order. path must be called once.
         // Setting goal makes the goal process active, but not pathing! This is undesirable.
@@ -145,7 +146,7 @@ public class PickupDroppedItemTask extends Task {
                 ItemEntity iEntity = (ItemEntity) entity;
                 for (ItemTarget target : _itemTargets) {
                     // If we already have this item, ignore it
-                    if (_mod.getInventoryTracker().targetReached(target)) continue;
+                    if (_mod.getInventoryTracker().targetMet(target)) continue;
 
                     // Match for item
                     if (target.matches(iEntity.getStack().getItem())) {

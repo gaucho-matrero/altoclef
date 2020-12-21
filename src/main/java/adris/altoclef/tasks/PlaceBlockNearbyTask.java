@@ -4,16 +4,13 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.TaskCatalogue;
 import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.schematic.ISchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 
 import java.util.function.Consumer;
 
@@ -21,7 +18,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     // This would've been nice
     // Action<BlockPos, Block>
-    private Consumer<Pair<BlockPos, BlockState>> _onPlace;
+    //private Consumer<Pair<BlockPos, BlockState>> _onPlace;
 
     private Block _toPlace;
 
@@ -50,6 +47,7 @@ public class PlaceBlockNearbyTask extends Task {
         _placed = null;
 
         _placing = false;
+        Debug.logInternal("PlaceBlock START!");
 
     }
 
@@ -67,8 +65,7 @@ public class PlaceBlockNearbyTask extends Task {
             _placeTimeout.reset();
             _placing = true;
 
-            Debug.logMessage("PLACEBLOCK START " + this);
-
+            /*
             // Guess we gotta use pairs to pack things. Can't wait for eventually when I need to send three or more arguments.
             _onPlace = (Pair<BlockPos, BlockState> blockStateBlockPosPair) -> {
                 if (blockStateBlockPosPair.getRight().getBlock().is(_toPlace)) {
@@ -76,6 +73,7 @@ public class PlaceBlockNearbyTask extends Task {
                     onFinishPlacing(blockStateBlockPosPair.getLeft());
                 }
             };
+             */
 
             //mod.getBlockTracker().getOnBlockPlace().addListener(_onPlace);
 
@@ -92,7 +90,7 @@ public class PlaceBlockNearbyTask extends Task {
             BlockPos shouldBePlacedHere = _schematic.getFoundSpot();
             assert MinecraftClient.getInstance().world != null;
             BlockState state = MinecraftClient.getInstance().world.getBlockState(shouldBePlacedHere);
-            Debug.logMessage("(delete this lol) TARGET POS: " + shouldBePlacedHere + ", " + (state != null? state.getBlock().getTranslationKey() : "(null)"));
+            //Debug.logMessage("(delete this lol) TARGET POS: " + shouldBePlacedHere + ", " + (state != null? state.getBlock().getTranslationKey() : "(null)"));
             if (state != null && state.getBlock().is(_toPlace)) {
                 // We good!
                 onFinishPlacing(shouldBePlacedHere);
@@ -102,7 +100,7 @@ public class PlaceBlockNearbyTask extends Task {
 
         // We're placing. Handle timeout and start wandering.
         if (!_finished && _placeTimeout.elapsed()) {
-            Debug.logMessage("PLACE TIMEOUT. Wandering.");
+            Debug.logMessage("PlaceBlock PLACE TIMEOUT. Wandering.");
             return _wanderTask;
         }
 
@@ -142,9 +140,10 @@ public class PlaceBlockNearbyTask extends Task {
 
     private void onFinishPlacing(BlockPos placed) {
         _finished = true;
-        Debug.logMessage("TARGET BLOCK PLACED!");
-        _mod.getClientBaritone().getBuilderProcess().onLostControl();
+        Debug.logMessage("PlaceBlock TARGET BLOCK PLACED! " + placed);
         _placed = placed;
+        _mod.getClientBaritone().getBuilderProcess().onLostControl();
+        _mod.getBlockTracker().addBlock(_toPlace, placed);
     }
 
 }

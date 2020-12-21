@@ -1,9 +1,7 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
+import adris.altoclef.StaticMixinHookups;
 import baritone.api.event.events.ChatEvent;
-import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +18,7 @@ public final class ChatMixin {
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
         ChatEvent event = new ChatEvent(msg);
-        AltoClef.getInstance().onChat(event);
+        StaticMixinHookups.onChat(event);
         if (event.isCancelled()) {
             ci.cancel();
         }

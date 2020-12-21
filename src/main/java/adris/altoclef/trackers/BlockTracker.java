@@ -55,6 +55,12 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    public void addBlock(Block block, BlockPos pos) {
+        if (!blockIsInvalid(block, pos)) {
+            _cache.addBlock(block, pos);
+        }
+    }
+
     private boolean isTrackingBlock() {
         return _currentlyTracking != null;
     }
@@ -86,6 +92,37 @@ public class BlockTracker extends Tracker {
         List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, knownBlocks, Collections.emptyList(), Collections.emptyList());
         _cache.addBlocks(_currentlyTracking, found);
     }
+
+    // Checks whether it would be WRONG to say "at pos the block is block"
+    // Returns true if wrong, false if correct OR undetermined/unsure.
+    public static boolean blockIsInvalid(Block block, BlockPos pos) {
+        // I'm bored
+        ClientWorld zaWarudo = MinecraftClient.getInstance().world;
+        // No world, therefore we don't assume block is invalid.
+        if (zaWarudo == null) {
+            Debug.logInternal("(failed worldcheck)");
+            return false;
+        }
+        try {
+            if (zaWarudo.isAir(pos) && !block.is(Blocks.AIR)) {
+                // This tracked block is air when it doesn't think it should.
+                Debug.logInternal("(failed aircheck)");
+                return true;
+            }
+            // It might be OK to remove this. Will have to test.
+            //noinspection deprecation
+            if (!zaWarudo.isChunkLoaded(pos)) {
+                Debug.logInternal("(failed chunkcheck)");
+                return false;
+            }
+            BlockState state = zaWarudo.getBlockState(pos);
+            return !state.getBlock().is(block);
+        } catch (NullPointerException e) {
+            // Probably out of chunk. This means we can't judge its state.
+            return false;
+        }
+    }
+
 
     static class PosCache {
         private HashMap<Block, List<BlockPos>> _cachedBlocks = new HashMap<>();
@@ -196,34 +233,5 @@ public class BlockTracker extends Tracker {
             return closest;
         }
 
-        // Checks whether it would be WRONG to say "at pos the block is block"
-        // Returns true if wrong, false if correct OR undetermined/unsure.
-        private static boolean blockIsInvalid(Block block, BlockPos pos) {
-            // I'm bored
-            ClientWorld zaWarudo = MinecraftClient.getInstance().world;
-            // No world, therefore we don't assume block is invalid.
-            if (zaWarudo == null) {
-                Debug.logInternal("(failed worldcheck)");
-                return false;
-            }
-            try {
-                if (zaWarudo.isAir(pos) && !block.is(Blocks.AIR)) {
-                    // This tracked block is air when it doesn't think it should.
-                    Debug.logInternal("(failed aircheck)");
-                    return true;
-                }
-                // It might be OK to remove this. Will have to test.
-                //noinspection deprecation
-                if (!zaWarudo.isChunkLoaded(pos)) {
-                    Debug.logInternal("(failed chunkcheck)");
-                    return false;
-                }
-                BlockState state = zaWarudo.getBlockState(pos);
-                return !state.getBlock().is(block);
-            } catch (NullPointerException e) {
-                // Probably out of chunk. This means we can't judge its state.
-                return false;
-            }
-        }
     }
 }

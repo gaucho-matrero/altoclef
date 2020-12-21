@@ -100,7 +100,6 @@ public abstract class Task {
 
     protected abstract boolean isEqual(Task obj);
 
-
     protected abstract String toDebugString();
 
     @Override

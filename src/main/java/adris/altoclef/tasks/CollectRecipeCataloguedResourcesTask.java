@@ -5,10 +5,9 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.TaskCatalogue;
+import adris.altoclef.TaskCatalogue;
 
 import java.util.HashMap;
-import java.util.List;
 
 // Collects everything that's catalogued for a recipe.
 public class CollectRecipeCataloguedResourcesTask extends Task {
@@ -27,7 +26,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         // TODO: Cache this instead of doing it every frame.
-        HashMap<String, Integer> catalogueCount = new HashMap<String, Integer>();
+        HashMap<String, Integer> catalogueCount = new HashMap<>();
 
         // Default, just go through the recipe slots and collect the first one.
         for (int i = 0; i < _recipe.getSlotCount(); ++i) {
@@ -51,7 +50,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
         for (String catalogueName : catalogueCount.keySet()) {
             int count = catalogueCount.get(catalogueName);
             ItemTarget target = new ItemTarget(TaskCatalogue.getItemMatches(catalogueName), count);
-            if (!mod.getInventoryTracker().targetReached(target)) {
+            if (!mod.getInventoryTracker().targetMet(target)) {
                 return TaskCatalogue.getItemTask(catalogueName, count);
             }
         }
