@@ -25,6 +25,12 @@ public class CraftingTableSlot extends Slot {
         return windowSlot - 1;
     }
 
+    @Override
+    protected String getName() {
+        return "CraftingTable";
+    }
+
+
     public static CraftingTableSlot getInputSlot(int x, int y) {
         return getInputSlot(y * 3 + x);
     }

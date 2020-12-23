@@ -26,6 +26,11 @@ public class FurnaceSlot extends Slot {
         return windowSlot + 6;
     }
 
+    @Override
+    protected String getName() {
+        return "Furnace";
+    }
+
     public static final FurnaceSlot INPUT_SLOT_FUEL = new FurnaceSlot(1);
     public static final FurnaceSlot INPUT_SLOT_MATERIALS = new FurnaceSlot(0);
     public static final FurnaceSlot OUTPUT_SLOT = new FurnaceSlot(2);

@@ -49,7 +49,7 @@ public class MineAndCollectTask extends ResourceTask {
     private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
     private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.2f);
 
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(100);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
     private int _distanceFailCounter = 0;
 
     public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
@@ -83,6 +83,9 @@ public class MineAndCollectTask extends ResourceTask {
         mod.getConfigState().setMineScanDroppedItems(false);
         _cachedBlacklist.clear();
         _distanceFailCounter = 0;
+
+        _distanceProgressChecker.reset(mod.getPlayer().getPos());
+        _mineProgressChecker.reset();
     }
 
     @Override
@@ -162,6 +165,9 @@ public class MineAndCollectTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _distanceProgressChecker.reset(mod.getPlayer().getPos());
+            _mineProgressChecker.reset();
+            setDebugState("Wandering...");
             return _wanderTask;
         }
 
@@ -223,6 +229,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (_mineProgressChecker.failed()) {
                 Debug.logMessage("Failed to mine block. Blacklisting.");
                 failed = true;
+                _mineProgressChecker.reset();
             }
             // Reset other checker (independent, one blocks another)
             _distanceProgressChecker.reset(mod.getPlayer().getPos());
@@ -238,6 +245,7 @@ public class MineAndCollectTask extends ResourceTask {
                     _distanceFailCounter = 0;
                     return _wanderTask;
                 }
+                _distanceProgressChecker.reset(mod.getPlayer().getPos());
             }
             // Reset other checker (independent, one blocks another)
             _mineProgressChecker.reset();
@@ -335,7 +343,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         _cachedBlacklist.clear();
         _cachedBlacklist.addAll(blackList);
-        Debug.logInternal("SIZE: " + _cachedBlacklist.size());
+        //Debug.logInternal("SIZE: " + _cachedBlacklist.size());
     }
 
 }

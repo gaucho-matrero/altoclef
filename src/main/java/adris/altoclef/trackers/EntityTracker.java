@@ -50,7 +50,7 @@ public class EntityTracker extends Tracker {
                 if (!itemDropped(item)) continue;
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
                     if (isBlackListed(entity)) continue;
-                    if (!ItemTarget.itemEquals(entity.getStack().getItem(), item)) continue;
+                    if (!entity.getStack().getItem().equals(item)) continue;
 
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
                     if (cost < minCost) {

@@ -1,5 +1,7 @@
 package adris.altoclef.util;
 
+import java.util.Objects;
+
 public class RecipeTarget {
 
     private CraftingRecipe _recipe;
@@ -15,5 +17,26 @@ public class RecipeTarget {
     }
     public ItemTarget getItem() {
         return _item;
+    }
+
+    @Override
+    public String toString() {
+        return "RecipeTarget{" +
+                "_recipe=" + _recipe +
+                ", _item=" + _item +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RecipeTarget that = (RecipeTarget) o;
+        return _recipe.equals(that._recipe) && _item.equals(that._item);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_recipe, _item);
     }
 }

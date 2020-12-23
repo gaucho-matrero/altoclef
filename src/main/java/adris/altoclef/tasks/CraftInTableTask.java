@@ -7,14 +7,10 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
-import jdk.internal.loader.Resource;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.screen.CraftingScreenHandler;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +83,10 @@ public class CraftInTableTask extends ResourceTask {
     protected String toDebugStringName() {
         return _craftTask.toDebugString();
     }
+
+    public List<RecipeTarget> getRecipeTargets() {
+        return _targets;
+    }
 }
 
 
@@ -116,6 +116,15 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
+        _targets.toArray(targetArray);
+        if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
+            setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+            return new CollectRecipeCataloguedResourcesTask(targetArray);
+        } else {
+            setDebugState("craft HAS have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+        }
+        /*
         // Collect recipe materials first
         for(RecipeTarget target : _targets) {
             if (!mod.getInventoryTracker().hasRecipeMaterials(target.getRecipe())) {
@@ -123,6 +132,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 return new CollectRecipeCataloguedResourcesTask(target.getRecipe());
             }
         }
+         */
 
         return super.onTick(mod);
     }

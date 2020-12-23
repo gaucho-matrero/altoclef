@@ -22,7 +22,7 @@ public class Timer {
         _prevTime = currentTime();
     }
 
-    private double currentTime() {
+    public static double currentTime() {
         return (double) System.currentTimeMillis() / 1000.0;
     }
 }

@@ -5,7 +5,9 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
+import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.FurnaceScreenHandler;
@@ -16,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Keeps track of items that are in containers. Uses the blocktracker to verify container existance.
@@ -29,6 +30,9 @@ public class ContainerTracker extends Tracker {
     private final FurnaceMap _furnaceMap;
 
     private final Timer _updateTimer = new Timer(10);
+
+    // We can't get the contents of the screen until the server ticks once.
+    private Screen _awaitingScreen = null;
 
     public ContainerTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
@@ -53,9 +57,26 @@ public class ContainerTracker extends Tracker {
         }
     }
 
+    public void onScreenOpenFirstTick(Screen screen) {
+        _awaitingScreen = screen;
+    }
+
+    public void onServerTick() {
+        if (_awaitingScreen != null) {
+            if (_awaitingScreen instanceof FurnaceScreen) {
+                onFurnaceScreenOpen(((FurnaceScreen) _awaitingScreen).getScreenHandler());
+            } else if (_awaitingScreen instanceof GenericContainerScreen) {
+                onChestScreenOpen(((GenericContainerScreen) _awaitingScreen).getScreenHandler());
+            }
+            //_awaitingScreen = null;
+        }
+
+    }
+
     public void onScreenClose() {
         _chestMap.onScreenClose();
         _furnaceMap.onScreenClose();
+        _awaitingScreen = null;
     }
 
     public void onFurnaceScreenOpen(FurnaceScreenHandler screenHandler) {
@@ -160,6 +181,7 @@ public class ContainerTracker extends Tracker {
         public void updateContainer(BlockPos pos, FurnaceScreenHandler screenHandler) {
             // Keep track of the items at this block.
 
+
             if (!_blockData.containsKey(pos)) {
                 _blockData.put(pos, new FurnaceData());
             }
@@ -173,7 +195,9 @@ public class ContainerTracker extends Tracker {
                     fuel = screenHandler.getSlot(fuelSlot).getStack(),
                     output = screenHandler.getSlot(outputSlot).getStack();
 
-            dat.fuel = InventoryTracker.getFuelAmount(fuel);
+            //Debug.logMessage("CONTAINER UPDATE: " + materials.getItem().getTranslationKey() + " x " + materials.getCount());
+
+            dat.fuelStored = InventoryTracker.getFuelAmount(fuel);
             dat.materials = materials;
             dat.output = output;
 
@@ -188,9 +212,9 @@ public class ContainerTracker extends Tracker {
             int currentTicks = _mod.getTicks();
             dat._tickExpectedEnd = currentTicks + remainingTicks;
 
-            double fuelNeededToBurnAll = dat.materials.getCount() - dat.fuel;
-            // This Considers: Fuel in the hood + progress
-            fuelNeededToBurnAll -= InventoryTracker.getFurnaceFuel(screenHandler) + InventoryTracker.getFurnaceCookPercent(screenHandler);
+            double fuelNeededToBurnAll = dat.materials.getCount() - dat.fuelStored;
+            // This Considers: Fuel in the hood + progress (progress aka "da arrow" should be considered as stored fuel, so it's ADDED to the total and not added)
+            fuelNeededToBurnAll -= InventoryTracker.getFurnaceFuel(screenHandler) - InventoryTracker.getFurnaceCookPercent(screenHandler);
             dat._fuelNeededToBurnMaterials = fuelNeededToBurnAll;
 
             //Debug.logMessage("Furnace updated. Has " + materials.getItem().getTranslationKey() + " as its materials.");
@@ -213,6 +237,7 @@ public class ContainerTracker extends Tracker {
                 if (!toDelete.materials.isEmpty()) {
                     Item item = toDelete.materials.getItem();
                     if (_materialMap.containsKey(item)) {
+                        //Debug.logMessage("CONTAINER DELETE: " + pos);
                         _materialMap.get(item).remove(pos);
                     } else {
                         Debug.logWarning("Inconsistent tracking of FurnaceMap for item " + item.getTranslationKey() + ". Please report this bug!");
@@ -224,7 +249,7 @@ public class ContainerTracker extends Tracker {
     }
 
     public static class FurnaceData {
-        public double fuel;
+        public double fuelStored;
         public ItemStack materials;
         public ItemStack output;
 

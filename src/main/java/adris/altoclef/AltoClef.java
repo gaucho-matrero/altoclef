@@ -12,7 +12,10 @@ import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.java.games.input.Keyboard;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.MinecraftClientGame;
+import net.minecraft.client.input.KeyboardInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
@@ -80,6 +83,9 @@ public class AltoClef implements ModInitializer {
 
     // Client tick
     public void onClientTick() {
+        // TODO: should this go here?
+        _containerTracker.onServerTick();
+
         _trackerManager.tick();
         _taskRunner.tick();
     }

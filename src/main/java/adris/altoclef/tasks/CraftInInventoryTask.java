@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 
 public class CraftInInventoryTask extends ResourceTask {
@@ -68,7 +69,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-        return new CollectRecipeCataloguedResourcesTask(_recipe);
+        return new CollectRecipeCataloguedResourcesTask(new RecipeTarget(_itemTargets.get(0), _recipe));
     }
 
     protected String toCraftingDebugStringName() {

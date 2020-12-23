@@ -9,10 +9,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.function.Consumer;
 
 public class PlaceBlockNearbyTask extends Task {
 
@@ -28,7 +25,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     private BlockPos _placed;
 
-    private final Timer _placeTimeout = new Timer(5.0);
+    private final Timer _placeTimer = new Timer(5.0);
 
     private boolean _placing = false;
 
@@ -63,7 +60,7 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         if (!_placing) {
-            _placeTimeout.reset();
+            _placeTimer.reset();
             _placing = true;
 
             /*
@@ -103,7 +100,7 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         // We're placing. Handle timeout and start wandering.
-        if (!_finished && _placeTimeout.elapsed()) {
+        if (!_finished && _placeTimer.elapsed()) {
             Debug.logMessage("PlaceBlock PLACE TIMEOUT. Wandering.");
             return _wanderTask;
         }

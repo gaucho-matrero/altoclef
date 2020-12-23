@@ -20,6 +20,10 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     @Override
     public void setProgress(Vec3d position) {
+        if (_start == null) {
+            _start = position;
+            return;
+        }
         double delta = position.distanceTo(_start);
         _prevPos = position;
         _distanceChecker.setProgress(delta);

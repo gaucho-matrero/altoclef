@@ -10,7 +10,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
-import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.*;
 import adris.altoclef.TaskCatalogue;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -43,29 +43,33 @@ public class AltoClefCommands extends CommandList {
         CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe("wooden_sword",new ItemTarget[]{ o, B, o, o, B, o, o, s, o});
         ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
 
-
         switch (arg) {
             case "":
-                //mod.runUserTask(TaskCatalogue.getItemTask("crafting_table", 1));
-                mod.runUserTask(new CraftInTableTask(targetItem, testRecipe));
-
+                mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
+                break;
+            case "place":
+                new Thread(() -> {
+                    try {
+                        for (int i = 3; i > 0; --i) {
+                            Debug.logMessage(i + "...");
+                            Thread.sleep(1000, 0);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(0), FurnaceSlot.INPUT_SLOT_MATERIALS, 3);
+                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(1), FurnaceSlot.INPUT_SLOT_FUEL, 3);
+                }).start();
                 break;
             case "stacked":
-                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings"));
+                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;
             case "smelt":
-                ItemTarget target = new ItemTarget(Items.IRON_INGOT, 4);
-                ItemTarget material = new ItemTarget(Items.IRON_ORE, 4);
+                ItemTarget target = new ItemTarget("iron_ingot", 4);
+                ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
                 break;
         }
-
-        //mod.getBlockTracker().trackBlock(Blocks.CRAFTING_TABLE);
-        //BlockPos target = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos());
-
-        //mod.runUserTask(new GetToBlockTask(target, true));
-
-        //mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE));
     }
 
     public AltoClefCommands(CommandExecutor executor) throws CommandException {

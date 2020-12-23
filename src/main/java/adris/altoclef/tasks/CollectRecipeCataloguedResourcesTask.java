@@ -6,16 +6,19 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.util.RecipeTarget;
+import net.minecraft.item.Item;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.HashMap;
 
 // Collects everything that's catalogued for a recipe.
 public class CollectRecipeCataloguedResourcesTask extends Task {
 
-    private CraftingRecipe _recipe;
+    private RecipeTarget[] _targets;
 
-    public CollectRecipeCataloguedResourcesTask(CraftingRecipe recipe) {
-        _recipe = recipe;
+    public CollectRecipeCataloguedResourcesTask(RecipeTarget ...targets) {
+        _targets = targets;
     }
 
     @Override
@@ -25,35 +28,44 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        // TODO: Cache this instead of doing it every frame.
+        // TODO: Cache this once instead of doing it every frame.
+
         HashMap<String, Integer> catalogueCount = new HashMap<>();
 
-        // Default, just go through the recipe slots and collect the first one.
-        for (int i = 0; i < _recipe.getSlotCount(); ++i) {
-            ItemTarget slot = _recipe.getSlot(i);
-            if (slot == null || slot.isEmpty()) continue;
-            if (!slot.isCatalogueItem()) {
-                Debug.logWarning("Recipe collection for recipe " + _recipe + " slot " + i
-                        + " is not catalogued. Please define an explicit"
-                        + " collectRecipeSubTask() function for this task."
-                );
-            } else {
-                String targetName = slot.getCatalogueName();
-                if (!catalogueCount.containsKey(targetName)) {
-                    catalogueCount.put(targetName, 0);
+        for (RecipeTarget target : _targets) {
+            // Ignore this recipe if we have its item.
+            if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
+
+            CraftingRecipe recipe = target.getRecipe();
+            // Default, just go through the recipe slots and collect the first one.
+            for (int i = 0; i < recipe.getSlotCount(); ++i) {
+                ItemTarget slot = recipe.getSlot(i);
+                if (slot == null || slot.isEmpty()) continue;
+                if (!slot.isCatalogueItem()) {
+                    Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
+                            + " is not catalogued. Please define an explicit"
+                            + " collectRecipeSubTask() function for this task."
+                    );
+                } else {
+                    String targetName = slot.getCatalogueName();
+                    if (!catalogueCount.containsKey(targetName)) {
+                        catalogueCount.put(targetName, 0);
+                    }
+                    catalogueCount.put(targetName, catalogueCount.get(targetName) + 1);
                 }
-                catalogueCount.put(targetName, catalogueCount.get(targetName) + 1);
+            }
+
+            // (Cache this with the above stuff!!)
+            for (String catalogueName : catalogueCount.keySet()) {
+                int count = catalogueCount.get(catalogueName);
+                ItemTarget itemTarget = new ItemTarget(catalogueName, count);
+                if (!mod.getInventoryTracker().targetMet(itemTarget)) {
+                    setDebugState("Getting " + itemTarget);
+                    return TaskCatalogue.getItemTask(catalogueName, count);
+                }
             }
         }
 
-        // (Cache this with the above stuff!!)
-        for (String catalogueName : catalogueCount.keySet()) {
-            int count = catalogueCount.get(catalogueName);
-            ItemTarget target = new ItemTarget(TaskCatalogue.getItemMatches(catalogueName), count);
-            if (!mod.getInventoryTracker().targetMet(target)) {
-                return TaskCatalogue.getItemTask(catalogueName, count);
-            }
-        }
         return null;
     }
 
@@ -67,13 +79,17 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectRecipeCataloguedResourcesTask) {
             CollectRecipeCataloguedResourcesTask other = (CollectRecipeCataloguedResourcesTask) obj;
-            return other._recipe.equals(_recipe);
+            if (other._targets.length != _targets.length) return false;
+            for (int i = 0; i < _targets.length; ++i) {
+                if (!other._targets[i].equals(_targets[i])) return false;
+            }
+            return true;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Collect Recipe Resources: " + _recipe;
+        return "Collect Recipe Resources: " + ArrayUtils.toString(_targets);
     }
 }

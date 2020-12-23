@@ -29,7 +29,7 @@ public class GoalGetToPosition implements Goal, IGoalRenderPos {
     }
 
     public boolean isInGoal(int x, int y, int z) {
-        double thresh = 0.5f;
+        double thresh = 1.1f;
         return Math.abs(x - this.x) < thresh && Math.abs(y - this.y) < thresh && Math.abs(z - this.z) < thresh;
     }
 

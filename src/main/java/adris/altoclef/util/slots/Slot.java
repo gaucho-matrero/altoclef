@@ -16,8 +16,10 @@ import net.minecraft.screen.ScreenHandler;
 // Player Inventory Slots (used to grab inventory items only):
 //      https://minecraft.gamepedia.com/Inventory
 public abstract class Slot {
-    private int _inventorySlot;
-    private int _windowSlot;
+    private final int _inventorySlot;
+    private final int _windowSlot;
+
+    private final boolean _isInventory;
 
     enum ContainerType {
         PLAYER,
@@ -28,6 +30,7 @@ public abstract class Slot {
     }
 
     public Slot(int slot, boolean inventory) {
+        _isInventory = inventory;
         if (inventory) {
             _inventorySlot = slot;
             _windowSlot = inventorySlotToWindowSlot(slot);
@@ -87,12 +90,15 @@ public abstract class Slot {
         if (screen instanceof CraftingScreen) {
             return ContainerType.CRAFTING_TABLE;
         }
+        Debug.logInternal("SCREEN: " + screen);
         return ContainerType.PLAYER;
     }
 
+    protected abstract String getName();
+
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "{" +
+        return getName() + (_isInventory? "InventorySlot" : "Slot") +  "{" +
                 "inventory slot = " + _inventorySlot +
                 ", window slot = " + getWindowSlot() +
                 '}';

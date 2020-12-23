@@ -110,6 +110,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected boolean isContainerOpen(AltoClef mod) {
+            //Debug.logMessage("FURNACE OPEN? " + open);
             return (mod.getPlayer().currentScreenHandler instanceof FurnaceScreenHandler);
         }
 
@@ -122,17 +123,20 @@ public class SmeltInFurnaceTask extends ResourceTask {
             if (_currentFurnace != null) {
                 if (neededMaterials.matches(_currentFurnace.materials.getItem())) {
                     neededMaterials.targetCount -= _currentFurnace.materials.getCount();
-                    neededMaterials.targetCount -= _currentFurnace.output.getCount();
-                    neededMaterials.targetCount -= mod.getInventoryTracker().getItemCount(_target.getItem());
-                }
+                }// else {
+                    //Debug.logMessage("Material does NOT match " + _currentFurnace.materials.getItem().getTranslationKey());
+                //}
+                //Debug.logMessage("Material Matches: %d - (%d + %d + %d)", neededMaterials.targetCount, _currentFurnace.materials.getCount(), _currentFurnace.output.getCount(), mod.getInventoryTracker().getItemCount(_target.getItem()));
+                neededMaterials.targetCount -= _currentFurnace.output.getCount();
+                neededMaterials.targetCount -= mod.getInventoryTracker().getItemCount(_target.getItem());
             }
             if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
-                setDebugState("Collecting materials");
+                setDebugState("Collecting materials: " + neededMaterials);
                 return getMaterialTask(neededMaterials);
             }
             // Check for fuel.
             // If fuel is already in the furnace, we need less of it.
-            double fuelNeeded = _target.getMaterial().targetCount;
+            double fuelNeeded = _target.getMaterial().targetCount - mod.getInventoryTracker().getItemCount(_target.getItem());
             if (_currentFurnace != null) {
                 fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
             }
@@ -218,6 +222,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Re-update furnace tracking since we moved some things around.
             mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
 
+            setDebugState("Smelting...");
             return null;
         }
 

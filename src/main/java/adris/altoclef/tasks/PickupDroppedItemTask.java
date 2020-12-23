@@ -9,6 +9,8 @@ import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalGetToPosition;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
+import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalTwoBlocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
@@ -69,6 +71,8 @@ public class PickupDroppedItemTask extends Task {
             if (_progressChecker.failed()) {
                 mod.getEntityTracker().blacklist(_itemGoal);
                 Debug.logMessage("Failed to get to " + _itemGoal + ", adding to blacklist.");
+                // Cancel so we re-path
+                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 return null;
             }
         }
@@ -84,11 +88,15 @@ public class PickupDroppedItemTask extends Task {
         // These two lines must be paired in this order. path must be called once.
         // Setting goal makes the goal process active, but not pathing! This is undesirable.
         Vec3d goal = closest.getPos();
-        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() || !isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
+        boolean wasActive = mod.getClientBaritone().getCustomGoalProcess().isActive();
+        if (!wasActive || !isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
             Debug.logInternal("Pickup: Restarting goal process");
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToPosition(goal));//new GoalGetToPosition(goal));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(closest.getBlockPos()));//new GoalGetToPosition(goal));//new GoalGetToPosition(goal));
             _itemGoal = goal;
-            _progressChecker.reset();
+            // If this check isn't here, the check will NEVER fail if the goal process fails frequently.
+            if (wasActive) {
+                _progressChecker.reset();
+            }
         }
 
         return null;

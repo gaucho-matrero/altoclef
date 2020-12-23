@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.FurnaceScreenHandler;
 import net.minecraft.screen.GenericContainerScreenHandler;
@@ -60,15 +61,14 @@ public class StaticMixinHookups {
         _mod.getControllerExtras().onBlockBreak(pos, progress);
     }
 
-    public static void onScreenOpen(Screen screen) {
-        if (screen instanceof FurnaceScreen) {
-            _mod.getContainerTracker().onFurnaceScreenOpen(((FurnaceScreen) screen).getScreenHandler());
-        } else if (screen instanceof GenericContainerScreen) {
-            _mod.getContainerTracker().onChestScreenOpen(((GenericContainerScreen) screen).getScreenHandler());
-        } else if (screen == null) {
+    public static void onScreenOpenBegin(Screen screen) {
+        if (screen == null) {
             _mod.getContainerTracker().onScreenClose();
         }
+    }
 
+    public static void onScreenOpenEnd(Screen screen) {
+        _mod.getContainerTracker().onScreenOpenFirstTick(screen);
     }
 
     public static void onBlockInteract(BlockHitResult hitResult, BlockState blockState) {

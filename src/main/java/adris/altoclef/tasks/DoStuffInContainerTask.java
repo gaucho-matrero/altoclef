@@ -55,6 +55,7 @@ public abstract class DoStuffInContainerTask extends Task {
 
         // If we're placing, keep on placing.
         if (_placeTask.isActive() && !_placeTask.isFinished(mod)) {
+            setDebugState("Placing container");
             return _placeTask;
         }
 
@@ -100,6 +101,7 @@ public abstract class DoStuffInContainerTask extends Task {
                 //Debug.logInternal("GRABBING " + _containerCatalogueName);
                 //Debug.logInternal("Cause " + costToWalk + " > " + getCostToMakeNew(mod));
                 //Debug.logInternal("(from " + currentPos + " to " + Util.toVec3d(nearest));
+                setDebugState("Getting container item");
                 return TaskCatalogue.getItemTask(_containerCatalogueName, 1);
             }
 
@@ -110,6 +112,7 @@ public abstract class DoStuffInContainerTask extends Task {
         _cachedContainerPosition = nearest;
 
         // Walk to it and open it
+        setDebugState("Walking to container... " + nearest);
         return new GetToBlockTask(nearest, true);
     }
 

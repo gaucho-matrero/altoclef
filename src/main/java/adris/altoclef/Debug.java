@@ -11,6 +11,10 @@ public class Debug {
         System.out.println("ALTO CLEF: " + message);
     }
 
+    public static void logInternal(String format, Object ...args) {
+        logInternal(String.format(format, args));
+    }
+
     public static void logMessage(String message, boolean prefix) {
         if (MinecraftClient.getInstance().player != null) {
             if (prefix) {
@@ -26,6 +30,10 @@ public class Debug {
         logMessage(message, true);
     }
 
+    public static void logMessage(String format, Object ...args) {
+        logMessage(String.format(format, args));
+    }
+
     public static void logWarning(String message) {
         logInternal("WARNING: " + message);
         if (MinecraftClient.getInstance().player != null) {
@@ -33,6 +41,10 @@ public class Debug {
             MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
         }
+    }
+
+    public static void logWarning(String format, Object ...args) {
+        logWarning(String.format(format, args));
     }
 
     public static void logError(String message) {
@@ -45,6 +57,10 @@ public class Debug {
             MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
         }
+    }
+
+    public static void logError(String format, Object ...args) {
+        logError(String.format(format, args));
     }
 
     public static void logStack() {

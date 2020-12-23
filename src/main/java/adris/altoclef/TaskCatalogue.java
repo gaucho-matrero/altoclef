@@ -105,6 +105,11 @@ public class TaskCatalogue {
         TaskFactory creator = _nameToResourceTask.get(name);
         return creator.createResourceTask(name, count);
     }
+
+    public static ResourceTask getItemTask(ItemTarget target) {
+        return getItemTask(target.getCatalogueName(), target.targetCount);
+    }
+
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
     }

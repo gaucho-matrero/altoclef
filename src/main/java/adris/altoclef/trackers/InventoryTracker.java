@@ -4,6 +4,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -145,6 +146,31 @@ public class InventoryTracker extends Tracker {
         return fuel;
     }
 
+    public boolean hasRecipeMaterials(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
+        for (RecipeTarget target : targets) {
+            CraftingRecipe recipe = target.getRecipe();
+            ItemTarget itemTarget = target.getItem();
+            // If we already have the item, we're good.
+            if (targetMet(itemTarget)) continue;
+            // Check for mapping
+            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, 1);
+            if (mapping == null) return false;
+            // Indicate we've used this item.
+            for (int invSlot : mapping.values()) {
+                Item item = getItemStackInSlot(Slot.getFromInventory(invSlot)).getItem();
+                if (!usedCount.containsKey(item)) {
+                    usedCount.put(item, 0);
+                }
+                usedCount.put(item, usedCount.get(item) + 1);
+            }
+        }
+        return true;
+    }
+
+    public boolean hasRecipeMaterials(RecipeTarget...targets) {
+        return hasRecipeMaterials(new HashMap<>(), targets);
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasRecipeMaterials(CraftingRecipe recipe) {
         return hasRecipeMaterials(recipe, 1);
@@ -152,7 +178,7 @@ public class InventoryTracker extends Tracker {
 
     public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
         ensureUpdated();
-        return getRecipeMapping(recipe, count) != null;
+        return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }
 
     public boolean isArmorEquipped(Item item) {
@@ -167,10 +193,10 @@ public class InventoryTracker extends Tracker {
     }
 
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
-        return getRecipeMapping(recipe, 1);
+        return getRecipeMapping(Collections.emptyMap(), recipe, 1);
     }
 
-    private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe, int count) {
+    private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
         ensureUpdated();
 
         HashMap<Integer, Integer> craftSlotToInventorySlot = new HashMap<>();
@@ -181,20 +207,29 @@ public class InventoryTracker extends Tracker {
         // How many of each item we used
         HashMap<Item, Integer> usedUp = new HashMap<>();
 
+        // Fill in if we have items already used
+        for(Item item : alreadyUsed.keySet()) {
+            // This can be replaced with a one liner since duplicate keys won't ever exist.
+            if (!usedUp.containsKey(item)) {
+                usedUp.put(item, 0);
+            }
+            usedUp.put(item, usedUp.get(item) + alreadyUsed.get(item));
+        }
+
         for (int craftPos = 0; craftPos < recipe.getSlotCount(); ++craftPos) {
-            ItemTarget slot = recipe.getSlot(craftPos);
-            if (slot == null || slot.isEmpty()) continue;
+            ItemTarget craftTarget = recipe.getSlot(craftPos);
+            if (craftTarget == null || craftTarget.isEmpty()) continue;
 
             //Debug.logMessage(craftPos + " => " + slot);
 
             boolean mustMatchItem = recipe.mustMatch(craftPos);
             if (mustMatchItem) {
-                matchingSlots.add(slot);
+                matchingSlots.add(craftTarget);
             }
 
             boolean slotSatisfied = false;
             // Make sure we have at least one of the requirements
-            for (Item item : slot.getMatches()) {
+            for (Item item : craftTarget.getMatches()) {
                 if (!usedUp.containsKey(item)) {
                     usedUp.put(item, 0);
                 }
@@ -370,7 +405,7 @@ public class InventoryTracker extends Tracker {
 
         // Drop
         if (amount >= pickedUp.getCount()) {
-            // We don't have enough/exactly enough, drop everything there
+            // We don't have enough/we have exactly enough, drop everything here
 
             clickSlot(to);
             //Debug.logMessage("Dropped it all from slot " + to.getWindowSlot());
@@ -454,6 +489,7 @@ public class InventoryTracker extends Tracker {
             int moved = moveItems(movement.getLeft(), movement.getRight(), 1);
             if (moved != 1) {
                 Debug.logWarning("Failed to move item from slot " + movement.getLeft() + " to slot " + movement.getRight() + ". Moved " + moved);
+                Debug.logStack();
                 return false;
             }
         }
@@ -490,6 +526,7 @@ public class InventoryTracker extends Tracker {
         for (Integer slotIndex : itemSlots) {
             if (needsToMove <= 0) break;
             Slot current = Slot.getFromInventory(slotIndex);
+            //Debug.logStack();
             ItemStack stack = getItemStackInSlot(current);
             //Debug.logMessage("(DEBUG ONLY) index=" + slotIndex + ", " + stack.getItem().getTranslationKey() + ", " + stack.getCount());
             int moveSize = stack.getCount();

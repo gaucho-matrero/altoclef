@@ -11,7 +11,6 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
 
 import org.apache.commons.lang3.ArrayUtils;
-import sun.security.util.ArrayUtil;
 
 public class EquipArmorTask extends Task {
 
@@ -30,13 +29,21 @@ public class EquipArmorTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        ItemTarget[] targets = new ItemTarget[_toEquip.length];
+        int i = 0;
+        boolean armorMet = true;
         for (String armor : _toEquip) {
-            // TODO: Merge tasks with resource task multiple group thing
             ItemTarget target = new ItemTarget(armor, 1);
+            targets[i] = target;
             if (!mod.getInventoryTracker().targetMet(target)) {
-                setDebugState("Getting " + armor);
-                return TaskCatalogue.getItemTask(armor, 1);
+                armorMet = false;
             }
+            ++i;
+        }
+        if (!armorMet) {
+            setDebugState("Obtaining armor");
+            return new CataloguedResourceTask(targets);
         }
 
         setDebugState("Equipping armor");

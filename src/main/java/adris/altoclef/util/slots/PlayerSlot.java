@@ -82,4 +82,10 @@ public class PlayerSlot extends Slot {
     public static final PlayerSlot ARMOR_BOOTS_SLOT = new PlayerSlot(8);
 
     public static final PlayerSlot OFFHAND_SLOT = new PlayerSlot(45);
+
+    @Override
+    protected String getName() {
+        return "Player";
+    }
+
 }
