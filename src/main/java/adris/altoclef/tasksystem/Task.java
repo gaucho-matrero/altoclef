@@ -72,7 +72,7 @@ public abstract class Task {
         return condition;
     }
 
-    protected void stop(AltoClef mod) {
+    public void stop(AltoClef mod) {
         stop(mod,null);
     }
 

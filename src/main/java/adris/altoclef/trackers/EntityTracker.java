@@ -3,27 +3,39 @@ package adris.altoclef.trackers;
 import adris.altoclef.Debug;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
+import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+@SuppressWarnings("rawtypes")
 public class EntityTracker extends Tracker {
 
-    private HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
+    private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
 
-    private List<Vec3d> _blacklist = new ArrayList<>();
+    private final List<Vec3d> _blacklist = new ArrayList<>();
+
+    private final HashMap<Class, List<MobEntity>> _mobMap = new HashMap<>();
+
+    private final List<Entity> _closeEntities = new ArrayList<>();
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
     }
 
     public ItemEntity getClosestItemDrop(Vec3d position, Item ...items) {
+        ensureUpdated();
         ItemTarget[] tempTargetList = new ItemTarget[items.length];
         for (int i = 0; i < items.length; ++i) {
             tempTargetList[i] = new ItemTarget(items[i], 9999999);
@@ -98,19 +110,45 @@ public class EntityTracker extends Tracker {
     }
 
     public boolean itemDropped(ItemTarget ...targets) {
+        ensureUpdated();
         for (ItemTarget target : targets) {
             if (itemDropped(target.getMatches())) return true;
         }
         return false;
     }
 
+    public boolean mobFound(Class type) {
+        return _mobMap.containsKey(type);
+    }
+
+    public <T extends MobEntity> List<T> getTrackedMobs(Class<T> type) {
+        ensureUpdated();
+        if (!mobFound(type)) {
+            return Collections.emptyList();
+        }
+        //noinspection unchecked
+        return (List<T>) _mobMap.get(type);
+    }
+
+    public List<Entity> getCloseEntities() {
+        ensureUpdated();
+        return _closeEntities;
+    }
+
     @Override
     protected void updateState() {
         _itemDropLocations.clear();
+        _mobMap.clear();
+        _closeEntities.clear();
         if (MinecraftClient.getInstance().world == null) return;
 
         // Loop through all entities and track 'em
         for(Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+
+            if (_mod.getControllerExtras().inRange(entity)) {
+                _closeEntities.add(entity);
+            }
+
             if (entity instanceof ItemEntity) {
                 ItemEntity ientity = (ItemEntity) entity;
                 Item droppedItem = ientity.getStack().getItem();
@@ -119,6 +157,20 @@ public class EntityTracker extends Tracker {
                     _itemDropLocations.put(droppedItem, new ArrayList<>());
                 }
                 _itemDropLocations.get(droppedItem).add(ientity);
+            } else if (entity instanceof MobEntity) {
+                MobEntity mob = (MobEntity) entity;
+                Class type = entity.getClass();
+
+                if (!_mobMap.containsKey(type)) {
+                    _mobMap.put(type, new ArrayList<>());
+                }
+                _mobMap.get(type).add(mob);
+
+                /*
+                if (mob instanceof HostileEntity) {
+                    HostileEntity hostile = (HostileEntity) mob;
+                }
+                 */
             }
         }
     }

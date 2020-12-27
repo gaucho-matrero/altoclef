@@ -45,6 +45,10 @@ public class AltoClefCommands extends CommandList {
 
         switch (arg) {
             case "":
+                // Idle
+                mod.runUserTask(new IdleTask());
+                break;
+            case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
             case "place":

@@ -27,7 +27,7 @@ public abstract class TaskChain {
 
     protected abstract void onTick(AltoClef mod);
 
-    public abstract float getPriority();
+    public abstract float getPriority(AltoClef mod);
 
     public abstract boolean isActive();
 

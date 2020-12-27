@@ -3,7 +3,8 @@ package adris.altoclef;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.tasksystem.UserTaskChain;
+import adris.altoclef.tasksystem.chains.MobDefenseChain;
+import adris.altoclef.tasksystem.chains.UserTaskChain;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.util.PlayerExtraController;
@@ -12,10 +13,7 @@ import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
-import net.java.games.input.Keyboard;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.MinecraftClientGame;
-import net.minecraft.client.input.KeyboardInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
@@ -68,6 +66,7 @@ public class AltoClef implements ModInitializer {
 
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
+        new MobDefenseChain(_taskRunner);
 
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);

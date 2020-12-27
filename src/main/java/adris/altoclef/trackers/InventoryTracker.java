@@ -242,7 +242,14 @@ public class InventoryTracker extends Tracker {
                 //Debug.logMessage("Start toSkip = " + toSkip);
 
                 for (int invSlotPosition : getInventorySlotsWithItem(item)) {
-                    ItemStack stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
+                    ItemStack stack;
+                    try {
+                        stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
+                    } catch (Exception e) {
+                        Debug.logWarning("Inventory solt " + invSlotPosition + " invalid for some reason...");
+                        // Failed.
+                        continue;
+                    }
 
                     //Debug.logMessage("(exists in slot " + invSlotPosition + ")");
 

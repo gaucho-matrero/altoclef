@@ -25,7 +25,7 @@ public class TaskRunner {
         float maxPriority = Float.NEGATIVE_INFINITY;
         for(TaskChain chain : _chains) {
             if (!chain.isActive()) continue;
-            float priority = chain.getPriority();
+            float priority = chain.getPriority(_mod);
             if (priority > maxPriority) {
                 maxPriority = priority;
                 maxChain = chain;

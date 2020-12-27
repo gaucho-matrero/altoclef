@@ -2,6 +2,7 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
 public class PlayerExtraController {
@@ -12,6 +13,8 @@ public class PlayerExtraController {
 
     private BlockPos _blockBreakPos;
     private double _blockBreakProgress;
+
+    private static final double INTERACT_RANGE = 6;
 
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
@@ -27,6 +30,16 @@ public class PlayerExtraController {
     }
     public double getBreakingBlockProgress() {
         return _blockBreakProgress;
+    }
+
+    public boolean inRange(Entity entity) {
+        return _mod.getPlayer().isInRange(entity, INTERACT_RANGE);
+    }
+
+    public void attack(Entity entity) {
+        if (inRange(entity)) {
+            _mod.getController().attackEntity(_mod.getPlayer(), entity);
+        }
     }
 
 }
