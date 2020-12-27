@@ -60,6 +60,10 @@ public abstract class Slot {
     protected abstract int windowSlotToInventorySlot(int windowSlot);
 
     public static Slot getFromInventory(int inventorySlot) {
+        // -1 means cursor.
+        if (inventorySlot == -1) {
+            return new CursorInventorySlot();
+        }
         switch (getCurrentType()) {
             case PLAYER:
                 return new PlayerInventorySlot(inventorySlot);

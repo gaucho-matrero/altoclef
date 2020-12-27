@@ -354,6 +354,11 @@ public class InventoryTracker extends Tracker {
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
         setDirty();
 
+        if (slot.getWindowSlot() == -1) {
+            Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
+            return null;
+        }
+
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
             return null;
@@ -388,17 +393,29 @@ public class InventoryTracker extends Tracker {
             return 0;
         }
 
+        boolean moveFromCursor = slotIsCursor(from);
+
         ItemStack toStack = getItemStackInSlot(to);
         if (toStack != null && !toStack.isEmpty()) {
             if (!toStack.isItemEqual(fromStack)) {
                 //Debug.logMessage("To was occupied, moved it elsewhere.");
                 // We have stuff in our target slot. Move it out somewhere.
                 clickSlot(to, SlotActionType.QUICK_MOVE);
+                // If we're moving from a cursor slot, the cursor slot should already be moved to "to" after clicking.
+                if (moveFromCursor) {
+                    return getItemStackInSlot(from).getCount();
+                }
             }
         }
 
         // Pickup
-        ItemStack pickedUp = clickSlot(from);
+        ItemStack pickedUp;
+        if (moveFromCursor) {
+            // our item is already picked up.
+            pickedUp = getItemStackInSlot(from);
+        } else {
+            pickedUp = clickSlot(from);
+        }
         //Debug.logMessage("Picked Up " + pickedUp.getCount() + " from slot " + from.getWindowSlot());
 
         int dropped;
@@ -428,7 +445,9 @@ public class InventoryTracker extends Tracker {
     public void swapItems(Slot slot1, Slot slot2) {
 
         // Pick up slot1
-        clickSlot(slot1);
+        if (!slotIsCursor(slot1)) {
+            clickSlot(slot1);
+        }
         // Pick up slot2
         ItemStack placed = clickSlot(slot2);
 
@@ -436,7 +455,9 @@ public class InventoryTracker extends Tracker {
 
         // If slot 2 is not empty, move it back to slot 1
         if (placed != null && !placed.isEmpty()) {
-            clickSlot(slot1);
+            if (!slotIsCursor(slot1)) {
+                clickSlot(slot1);
+            }
         }
     }
 
@@ -594,8 +615,16 @@ public class InventoryTracker extends Tracker {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;
 
+        if (slotIsCursor(slot)) {
+            return player.inventory.getCursorStack();
+        }
+
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         return player.currentScreenHandler.getSlot(slot.getWindowSlot()).getStack();
+    }
+
+    private static boolean slotIsCursor(Slot slot) {
+        return slot instanceof CursorInventorySlot;
     }
 
     @Override
@@ -610,10 +639,19 @@ public class InventoryTracker extends Tracker {
         }
         PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
 
-        for (int slot = 0; slot < inventory.size(); ++slot) {
-            ItemStack stack = inventory.getStack(slot);
+        for (int slot = -1; slot < inventory.size(); ++slot) {
+            boolean isCursorStack = (slot == -1);
+            ItemStack stack;
+            if (isCursorStack) {
+                // Add our cursor stack as well to the list.
+                stack = inventory.getCursorStack();
+            } else {
+                stack = inventory.getStack(slot);
+            }
             if (stack.isEmpty()) {
-                _emptySlots++;
+                if (!isCursorStack) {
+                    _emptySlots++;
+                }
                 continue;
             }
             Item item = stack.getItem();
@@ -627,5 +665,6 @@ public class InventoryTracker extends Tracker {
             _itemCounts.put(item, _itemCounts.get(item) + count);
             _itemSlots.get(item).add(slot);
         }
+
     }
 }
