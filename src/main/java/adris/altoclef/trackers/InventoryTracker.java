@@ -307,8 +307,6 @@ public class InventoryTracker extends Tracker {
                 return null;
             }
         }
-
-        // TODO: Debug the hell out of this.
         // Now handle matching
         if (!recipe.getMustMatchCollection().isEmpty()) {
             ItemTarget exampleFirst = matchingSlots.get(0);
@@ -528,7 +526,7 @@ public class InventoryTracker extends Tracker {
         clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         clickSlot(outputSlot, 0, SlotActionType.SWAP);
 
-        // Grab back TODO: This shouldn't be necessary
+        // Grab back. This shouldn't be necessary
         for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
             Slot craftSlot = movement.getRight();
             clickSlot(craftSlot, 0, SlotActionType.PICKUP);

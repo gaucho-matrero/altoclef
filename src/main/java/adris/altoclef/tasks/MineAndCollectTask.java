@@ -284,7 +284,6 @@ public class MineAndCollectTask extends ResourceTask {
         if (!p.isActive()) return false;
 
         // Our target boms much match
-        // TODO: Make something more thorough. Consider what happens when there are different types of stone...
         if (_targetBoms.size() != targetBoms.size()) return false;
         for (int i = 0; i < _targetBoms.size(); ++i) {
             BlockOptionalMeta us = _targetBoms.get(i);

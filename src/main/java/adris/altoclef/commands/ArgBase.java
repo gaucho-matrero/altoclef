@@ -10,7 +10,7 @@ public abstract class ArgBase {
     protected <V> V GetConverted (Class<V> vType, Object ob )
     {
         try {
-            // TODO: Conversion function?
+            //noinspection unchecked
             return (V) ob;
         } catch ( Exception e) {
             throw new IllegalArgumentException("Tried to convert the following object to type {typeof(V)} and failed: {ob}. This is probably an internal problem, contact the dev!");
