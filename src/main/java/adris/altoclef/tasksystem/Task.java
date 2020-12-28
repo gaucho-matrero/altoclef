@@ -51,6 +51,12 @@ public abstract class Task {
         }
     }
 
+    public void reset() {
+        _first = true;
+        _active = true;
+        _failed = false;
+    }
+
     protected void stop(AltoClef mod, Task interruptTask) {
         onStop(mod, interruptTask);
         Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
@@ -108,5 +114,13 @@ public abstract class Task {
     @Override
     public String toString() {
         return "<" + toDebugString() + "> " + _debugState;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Task) {
+            return isEqual((Task) obj);
+        }
+        return false;
     }
 }

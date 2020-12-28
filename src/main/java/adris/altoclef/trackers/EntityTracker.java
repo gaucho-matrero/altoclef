@@ -1,8 +1,11 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
+import baritone.process.MineProcess;
 import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -11,9 +14,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +36,8 @@ public class EntityTracker extends Tracker {
     private final HashMap<Class, List<MobEntity>> _mobMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
+
+    private final List<CachedProjectile> _projectiles = new ArrayList<>();
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
@@ -135,11 +144,17 @@ public class EntityTracker extends Tracker {
         return _closeEntities;
     }
 
+    public List<CachedProjectile> getProjectiles() {
+        ensureUpdated();
+        return _projectiles;
+    }
+
     @Override
-    protected void updateState() {
+    protected synchronized void updateState() {
         _itemDropLocations.clear();
         _mobMap.clear();
         _closeEntities.clear();
+        _projectiles.clear();
         if (MinecraftClient.getInstance().world == null) return;
 
         // Loop through all entities and track 'em
@@ -171,6 +186,26 @@ public class EntityTracker extends Tracker {
                     HostileEntity hostile = (HostileEntity) mob;
                 }
                  */
+            } else if (entity instanceof ProjectileEntity) {
+                CachedProjectile proj = new CachedProjectile();
+                ProjectileEntity projEntity = (ProjectileEntity)entity;
+
+                boolean inGround = false;
+                // Get projectile "inGround" variable
+                try {
+                    Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
+                    inGroundField.setAccessible(true);
+                    inGround = inGroundField.getBoolean(projEntity);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+
+                if (!inGround) {
+                    proj.position = projEntity.getPos();
+                    proj.velocity = projEntity.getVelocity();
+                    proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
+                    _projectiles.add(proj);
+                }
             }
         }
     }

@@ -2,17 +2,26 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.DodgeProjectilesTask;
 import adris.altoclef.tasks.RunAwayFromCreepersTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.ProjectileUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
 public class MobDefenseChain extends SingleTaskChain {
+
+    private static final double CREEPER_KEEP_DISTANCE = 10;
+    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 4;
+    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 15;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -21,13 +30,22 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        // Force field
         doForceField(mod);
 
+        // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
-            Debug.logMessage("RUNNING AWAY!");
-            setTask(new RunAwayFromCreepersTask(10));
+            //Debug.logMessage("RUNNING AWAY!");
+            setTask(new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE));
             return 50 + blowingUp.getClientFuseTime(1) * 50;
+        }
+
+        // Dodge projectiles
+        if (isProjectileClose(mod)) {
+            //Debug.logMessage("DODGING");
+            setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
+            return 65;
         }
 
         return 0;
@@ -35,11 +53,16 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private void doForceField(AltoClef mod) {
         // Hit all hostiles close to us.
-        for(Entity entity : mod.getEntityTracker().getCloseEntities()) {
-            if (entity instanceof HostileEntity) {
-                // TODO: Check if angerable
-                mod.getControllerExtras().attack(entity);
+        List<Entity> entities = mod.getEntityTracker().getCloseEntities();
+        try {
+            for (Entity entity : entities) {
+                if (entity instanceof HostileEntity) {
+                    // TODO: Check if angerable
+                    mod.getControllerExtras().attack(entity);
+                }
             }
+        } catch (Exception e) {
+            Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
         }
     }
 
@@ -66,6 +89,28 @@ public class MobDefenseChain extends SingleTaskChain {
             return target;
         }
         return target;
+    }
+
+    private boolean isProjectileClose(AltoClef mod) {
+        List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
+
+        try {
+            for (CachedProjectile projectile : projectiles) {
+                Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
+
+                Vec3d delta = mod.getPlayer().getPos().subtract(expectedHit);
+
+                //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
+
+                double horizontalDistance = Math.sqrt(delta.x*delta.x + delta.z*delta.z);
+                double verticalDistance = delta.y;
+
+                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) return true;
+            }
+        } catch (ConcurrentModificationException e) {
+            Debug.logWarning("Weird exception caught and ignored while checking for nearby projectiles.");
+        }
+        return false;
     }
 
     public static double getCreeperSafety(CreeperEntity creeper) {

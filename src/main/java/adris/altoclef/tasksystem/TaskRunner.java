@@ -31,6 +31,9 @@ public class TaskRunner {
                 maxChain = chain;
             }
         }
+        if (_cachedCurrentTaskChain != null && maxChain != _cachedCurrentTaskChain) {
+            _cachedCurrentTaskChain.onInterrupt(_mod, maxChain);
+        }
         _cachedCurrentTaskChain = maxChain;
         if (maxChain != null) {
             maxChain.tick(_mod);

@@ -25,6 +25,8 @@ public abstract class TaskChain {
 
     protected abstract void onStop(AltoClef mod);
 
+    public abstract void onInterrupt(AltoClef mod, TaskChain other);
+
     protected abstract void onTick(AltoClef mod);
 
     public abstract float getPriority(AltoClef mod);

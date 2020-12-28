@@ -3,32 +3,15 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalRunAwayFromCreepers;
+import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.mob.MobEntity;
 
-public class RunAwayFromCreepersTask extends Task {
+public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
     private final double _distanceToRun;
 
     public RunAwayFromCreepersTask(double distance) {
         _distanceToRun = distance;
-    }
-
-    @Override
-    protected void onStart(AltoClef mod) {
-        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-        if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAwayFromCreepers(mod, _distanceToRun));
-        }
-        return null;
-    }
-
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
 
     @SuppressWarnings("RedundantIfStatement")
@@ -46,5 +29,10 @@ public class RunAwayFromCreepersTask extends Task {
     @Override
     protected String toDebugString() {
         return "Run " + _distanceToRun + " blocks away from creepers";
+    }
+
+    @Override
+    protected Goal newGoal(AltoClef mod) {
+        return new GoalRunAwayFromCreepers(mod, _distanceToRun);
     }
 }

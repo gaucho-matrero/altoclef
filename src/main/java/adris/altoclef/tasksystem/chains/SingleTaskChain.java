@@ -12,6 +12,8 @@ public abstract class SingleTaskChain extends TaskChain {
     protected Task _mainTask = null;
     private final Stopwatch _taskStopwatch = new Stopwatch();
 
+    private boolean _interrupted = false;
+
     public SingleTaskChain(TaskRunner runner) {
         super(runner);
     }
@@ -20,21 +22,31 @@ public abstract class SingleTaskChain extends TaskChain {
     protected void onTick(AltoClef mod) {
         if (!isActive()) return;
 
-        if ((_mainTask.isFinished(mod)) || _mainTask.failed()) {
-            onTaskFinish(mod);
-        } else {
-            _mainTask.tick(mod, this);
+        if (_interrupted) {
+            _interrupted = false;
+            if (_mainTask != null) {
+                _mainTask.reset();
+            }
+        }
+
+        if (_mainTask != null) {
+            if ((_mainTask.isFinished(mod)) || _mainTask.failed()) {
+                onTaskFinish(mod);
+            } else {
+                _mainTask.tick(mod, this);
+            }
         }
     }
 
     protected void onStop(AltoClef mod) {
         if (isActive() && _mainTask != null) {
             _mainTask.stop(mod);
+            _mainTask = null;
         }
     }
 
     public void setTask(Task task) {
-        _mainTask = task;
+        if (_mainTask == null || !_mainTask.equals(task)) _mainTask = task;
     }
 
 
@@ -44,4 +56,14 @@ public abstract class SingleTaskChain extends TaskChain {
     }
 
     protected abstract void onTaskFinish(AltoClef mod);
+
+    @Override
+    public void onInterrupt(AltoClef mod, TaskChain other) {
+        Debug.logInternal("Chain Interrupted: " + this.toString() + " by " + other);
+        // Stop our task. When we're started up again, let our task know we need to run.
+        _interrupted = true;
+        if (_mainTask != null && _mainTask.isActive()) {
+            _mainTask.stop(mod);
+        }
+    }
 }
