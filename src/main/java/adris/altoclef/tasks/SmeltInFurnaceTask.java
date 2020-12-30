@@ -11,8 +11,11 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.progresscheck.IProgressChecker;
+import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -94,6 +97,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // When we're expected to run out of fuel.
         private int _runOutOfFuelExpectedTick;
 
+        private IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
+
+
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, "furnace");
             _target = target;
@@ -132,6 +138,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
                 setDebugState("Collecting materials: " + neededMaterials);
+                _smeltProgressChecker.reset();
                 return getMaterialTask(neededMaterials);
             }
             // Check for fuel.
@@ -142,6 +149,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             if (fuelNeeded > mod.getInventoryTracker().getTotalFuel()) {
                 setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + mod.getInventoryTracker().getTotalFuel());
+                _smeltProgressChecker.reset();
                 return new CollectFuelTask(fuelNeeded);
             }
 
@@ -216,6 +224,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             if (!outputSlot.isEmpty()) {
                 mod.getInventoryTracker().grabItem(FurnaceSlot.OUTPUT_SLOT);
+                _smeltProgressChecker.reset();
                 //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
             }
 
@@ -223,6 +232,16 @@ public class SmeltInFurnaceTask extends ResourceTask {
             mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
 
             setDebugState("Smelting...");
+
+            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent(handler));
+
+            // If we made no progress
+            if (_smeltProgressChecker.failed()) {
+                Debug.logMessage("Smelting failed, hopefully re-opening the container will fix this.");
+                mod.getPlayer().closeHandledScreen();
+                _smeltProgressChecker.reset();
+            }
+
             return null;
         }
 
