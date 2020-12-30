@@ -8,23 +8,21 @@ import adris.altoclef.util.ItemTarget;
 import baritone.process.MineProcess;
 import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
+import net.minecraft.screen.AbstractFurnaceScreenHandler;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 public class EntityTracker extends Tracker {
@@ -211,10 +209,8 @@ public class EntityTracker extends Tracker {
                             }
                         }
 
-                        // TODO: if closeEnough, check if mob is Angerable + ANGRY at player.
-
                         //Debug.logInternal("TARGET: " + hostile.is);
-                        if (closeEnough) {
+                        if (closeEnough && isAngryAtPlayer(hostile)) {
                             _hostiles.add(hostile);
                         }
                     }
@@ -247,5 +243,19 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
+    }
+
+    public static boolean isAngryAtPlayer(HostileEntity hostile) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (hostile instanceof EndermanEntity) {
+            EndermanEntity enderman = (EndermanEntity) hostile;
+            return enderman.isAngryAt(player) && enderman.isAngry();
+        }
+        if (hostile instanceof ZombifiedPiglinEntity) {
+            ZombifiedPiglinEntity zombie = (ZombifiedPiglinEntity) hostile;
+            // Will ALWAYS be false.
+            return zombie.hasAngerTime() && zombie.isAngryAt(player);
+        }
+        return true;
     }
 }

@@ -6,6 +6,7 @@ import adris.altoclef.tasks.DodgeProjectilesTask;
 import adris.altoclef.tasks.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import net.minecraft.client.MinecraftClient;
@@ -75,8 +76,9 @@ public class MobDefenseChain extends SingleTaskChain {
         try {
             for (Entity entity : entities) {
                 if (entity instanceof HostileEntity) {
-                    // TODO: Check if angerable
-                    mod.getControllerExtras().attack(entity);
+                    if (EntityTracker.isAngryAtPlayer((HostileEntity) entity)) {
+                        mod.getControllerExtras().attack(entity);
+                    }
                 }
             }
         } catch (Exception e) {
