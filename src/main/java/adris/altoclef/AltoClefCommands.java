@@ -4,6 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.misc.PlaceSignTask;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ButtonsEverywhereTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -16,6 +19,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -72,6 +79,24 @@ public class AltoClefCommands extends CommandList {
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
+                break;
+            case "sign":
+                mod.runUserTask(new PlaceSignTask(mod.getPlayer().getBlockPos().add(5, 0, 1),"chigga was here yo"));
+                break;
+            case "deadmeme":
+                File file = new File("test.txt");
+                try {
+                    FileReader reader = new FileReader(file);
+                    mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "many":
+                mod.runUserTask(TaskCatalogue.getItemTask("sign", 32));
+                break;
+            case "buttons":
+                mod.runUserTask(new ButtonsEverywhereTask());
                 break;
         }
     }
