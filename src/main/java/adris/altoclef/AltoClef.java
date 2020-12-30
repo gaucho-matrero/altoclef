@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.tasksystem.chains.DeathMenuChain;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
 import adris.altoclef.tasksystem.chains.UserTaskChain;
 import adris.altoclef.trackers.*;
@@ -67,6 +68,7 @@ public class AltoClef implements ModInitializer {
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
         new MobDefenseChain(_taskRunner);
+        new DeathMenuChain(_taskRunner);
 
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);
@@ -78,6 +80,8 @@ public class AltoClef implements ModInitializer {
         _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
 
         initializeCommands();
+
+        initializeBaritoneSettings();
     }
 
     // Client tick
@@ -91,6 +95,19 @@ public class AltoClef implements ModInitializer {
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
         _commandStatusOverlay.render(matrixStack);
+    }
+
+    private void initializeBaritoneSettings() {
+        // Let baritone move items to hotbar to use them
+        getClientBaritoneSettings().allowInventory.value = true;
+        // Pretty safe, minor risk.
+        getClientBaritoneSettings().allowDiagonalAscend.value = true;
+        // Reduces a bit of far rendering to save FPS
+        getClientBaritoneSettings().fadePath.value = true;
+        // Don't let baritone scan dropped items, we handle that ourselves.
+        getClientBaritoneSettings().mineScanDroppedItems.value = false;
+        // Don't let baritone wait for drops, we handle that ourselves.
+        getClientBaritoneSettings().mineDropLoiterDurationMSThanksLouca.value = 0L;
     }
 
     // List all command sources here.
@@ -154,5 +171,10 @@ public class AltoClef implements ModInitializer {
     // Extra control
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);
+    }
+
+    // Are we in game (playing in a server/world)
+    public boolean inGame() {
+        return getPlayer() != null;
     }
 }

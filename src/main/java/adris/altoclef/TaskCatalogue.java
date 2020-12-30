@@ -37,6 +37,8 @@ public class TaskCatalogue {
             shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p);
             shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, p, o, o, o);
 
+            shapedRecipe3x3("sign", ItemTarget.WOOD_SIGN, p, p, p, p, p, p, o, s, o);
+
             tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
             {

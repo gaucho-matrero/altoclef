@@ -8,46 +8,39 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public class PlaceBlockNearbySchematic extends AbstractSchematic {
+public class PlaceBlockSchematic extends AbstractSchematic {
 
-    private static final int RANGE = 10;
+    private static final int RANGE = 1;
 
     private boolean _done;
     private final Block[] _blockToPlace;
-
-    private BlockPos _targetPos;
     private BlockState _targetPlace;
-
-    private BlockPos _origin;
 
     private boolean _skipIfAlreadyThere;
 
-    public PlaceBlockNearbySchematic(BlockPos origin, Block[] blocksToPlace, boolean skipIfAlreadyThere) {
+    public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
-        _origin = origin;
         _blockToPlace = blocksToPlace;
         _done = false;
-        _targetPos = null;
         _targetPlace = null;
         _skipIfAlreadyThere = skipIfAlreadyThere;
     }
-    public PlaceBlockNearbySchematic(BlockPos origin, Block[] blocksToPlace) {
-        this(origin, blocksToPlace, true);
+    public PlaceBlockSchematic(Block[] blocksToPlace) {
+        this(blocksToPlace, true);
     }
 
-    public PlaceBlockNearbySchematic(BlockPos origin, Block blockToPlace) {
-        this(origin, new Block[] {blockToPlace});
+    public PlaceBlockSchematic(Block blockToPlace) {
+        this(new Block[] {blockToPlace});
     }
 
+    /*
     public void reset() {
-        _targetPos = null;
+        _targetPlace = null;
     }
+     */
 
     public boolean foundSpot() {
-        return _targetPos != null;
-    }
-    public BlockPos getFoundSpot() {
-        return _targetPos;
+        return _targetPlace != null;
     }
 
     // No restrictions.
@@ -58,30 +51,29 @@ public class PlaceBlockNearbySchematic extends AbstractSchematic {
 
     @Override
     public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> list) {
+        // Only place at the origin.
+        if (x != 0 || y != 0 || z != 0) {
+            return blockState;
+        }
         // If a block already exists there, place it.
         if (_skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
             System.out.println("PlaceBlockNearbySchematic (already exists)");
             _targetPlace = blockState;
-            _targetPos = _origin.add(new BlockPos(x, y, z));
         }
-        boolean isDone = (_targetPos != null);
+        boolean isDone = (_targetPlace != null);
         if (isDone) {
-            if (_targetPos.getX() == x + _origin.getX() && _targetPos.getY() == y + _origin.getY() && _targetPos.getZ() == z + _origin.getZ()) {
-                return _targetPlace;
-            }
-            return blockState;
+            return _targetPlace;
         }
         //System.out.print("oof: [");
         for (BlockState possible : list) {
             //System.out.print(possible.getBlock().getTranslationKey() + " ");
             if (blockIsTarget(possible.getBlock())) {
                 System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
-                _targetPos = _origin.add(new BlockPos(x, y, z));
                 _targetPlace = possible;
                 return possible;
             }
         }
-        //System.out.println("] ( :(((((( )");
+        System.out.println("] ( :(((((( )");
         return blockState;
     }
 

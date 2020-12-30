@@ -2,6 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
@@ -17,7 +18,7 @@ public class PlaceBlockNearbyTask extends Task {
     // Action<BlockPos, Block>
     //private Consumer<Pair<BlockPos, BlockState>> _onPlace;
 
-    private Block _toPlace;
+    private Block[] _toPlace;
 
     private boolean _finished;
 
@@ -33,8 +34,11 @@ public class PlaceBlockNearbyTask extends Task {
 
     private PlaceBlockNearbySchematic _schematic;
 
-    public PlaceBlockNearbyTask(Block toPlace) {
+    public PlaceBlockNearbyTask(Block[] toPlace) {
         _toPlace = toPlace;
+    }
+    public PlaceBlockNearbyTask(Block toPlace) {
+        this(new Block[] {toPlace});
     }
 
     @Override
@@ -80,7 +84,7 @@ public class PlaceBlockNearbyTask extends Task {
             _schematic = new PlaceBlockNearbySchematic(origin, _toPlace);
             _schematic.reset();
 
-            mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace.getTranslationKey() + " nearby", _schematic, origin);
+            mod.getClientBaritone().getBuilderProcess().build("Place " + _toPlace[0].getTranslationKey() + " nearby", _schematic, origin);
         }
 
         // We're placing. Check if we successfully placed the block.
@@ -90,7 +94,7 @@ public class PlaceBlockNearbyTask extends Task {
             assert MinecraftClient.getInstance().world != null;
             BlockState state = MinecraftClient.getInstance().world.getBlockState(shouldBePlacedHere);
             //Debug.logMessage("(delete this lol) TARGET POS: " + shouldBePlacedHere + ", " + (state != null? state.getBlock().getTranslationKey() : "(null)"));
-            if (state != null && state.getBlock().is(_toPlace)) {
+            if (state != null && isCorrectBlock(state.getBlock())) {
                 // We good!
                 onFinishPlacing(shouldBePlacedHere);
                 return null;
@@ -118,14 +122,18 @@ public class PlaceBlockNearbyTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockNearbyTask) {
             PlaceBlockNearbyTask other = (PlaceBlockNearbyTask) obj;
-            return other._toPlace.is(_toPlace);
+            if (other._toPlace.length != _toPlace.length) return false;
+            for (int i = 0; i < _toPlace.length; ++i) {
+                if (!other._toPlace[i].is(_toPlace[i])) return false;
+            }
+            return true;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Place " + ItemTarget.trimItemName(_toPlace.getTranslationKey()) + " nearby";
+        return "Place " + ItemTarget.trimItemName(_toPlace[0].getTranslationKey()) + " nearby";
     }
 
     // Also used to determine when we placed the block
@@ -143,7 +151,15 @@ public class PlaceBlockNearbyTask extends Task {
         _finished = true;
         _placed = placed;
         _mod.getClientBaritone().getBuilderProcess().onLostControl();
-        _mod.getBlockTracker().addBlock(_toPlace, placed);
+        assert MinecraftClient.getInstance().world != null;
+        _mod.getBlockTracker().addBlock(MinecraftClient.getInstance().world.getBlockState(placed).getBlock(), placed);
+    }
+
+    private boolean isCorrectBlock(Block block) {
+        for (Block check : _toPlace) {
+            if (check.is(block)) return true;
+        }
+        return false;
     }
 
 }

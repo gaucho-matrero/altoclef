@@ -153,7 +153,7 @@ public class InventoryTracker extends Tracker {
             // If we already have the item, we're good.
             if (targetMet(itemTarget)) continue;
             // Check for mapping
-            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, 1);
+            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, itemTarget.targetCount);
             if (mapping == null) return false;
             // Indicate we've used this item.
             for (int invSlot : mapping.values()) {
@@ -496,14 +496,13 @@ public class InventoryTracker extends Tracker {
             Slot itemSlot;
             Slot craftSlot;
             int invSlot = craftPositionToInvSlot.get(craftPos);
+            itemSlot = Slot.getFromInventory(invSlot);
             //Debug.logMessage("WHAT? " + invSlot + " -> " + craftPos);
             if (bigCrafting) {
                 // Craft in table
-                itemSlot = new CraftingTableInventorySlot(invSlot);
-                craftSlot = CraftingTableSlot.getInputSlot(craftPos);
+                craftSlot = CraftingTableSlot.getInputSlot(craftPos, recipe.isBig());
             } else {
                 // Craft in window
-                itemSlot = new PlayerInventorySlot(invSlot);
                 craftSlot = PlayerSlot.getCraftInputSlot(craftPos);
             }
             moveSlotToCraftSlot.add(new Pair<>(itemSlot, craftSlot));
@@ -520,8 +519,18 @@ public class InventoryTracker extends Tracker {
             }
         }
 
+
         // Receive output
         Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+
+        // This returns false positives all the time if left here.
+        /*
+        if (getItemStackInSlot(outputSlot).isEmpty()) {
+            Debug.logWarning("Craft Output slot is empty");
+            return false;
+        }
+         */
+
         // TODO: This should be only one call, but it's two. The latter is a temporary fix too.
         clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         clickSlot(outputSlot, 0, SlotActionType.SWAP);

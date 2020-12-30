@@ -100,10 +100,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private int _craftCount;
 
+    private CollectRecipeCataloguedResourcesTask _collectTask;
+
     public DoCraftInTableTask(List<RecipeTarget> targets) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _targets = targets;
         _craftTimer = new Timer(0.5);
+
+        RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
+        _targets.toArray(targetArray);
+        _collectTask = new CollectRecipeCataloguedResourcesTask(targetArray);
     }
 
     @Override
@@ -111,18 +117,31 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         super.onStart(mod);
         _crafted = false;
         _craftCount = 0;
+        mod.getPlayer().closeHandledScreen();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
-        _targets.toArray(targetArray);
-        if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
-            setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
-            return new CollectRecipeCataloguedResourcesTask(targetArray);
-        } else {
-            setDebugState("craft HAS have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+        // TODO: This shouldn't be here.
+        // This is duct tape for the following scenario:
+        //
+        //      The Collect Recipe Resources task does NOT actually grab all of the resources we "claim" to need.
+        //      It will finish while we STILL need resources.
+        //
+        //
+        //      When is this OK?
+        //
+        //      Only if we ASSUME that hasRecipeMaterials is TOO STRICT and the Collect Task is CORRECT.
+        //
+        if (!_collectTask.isFinished(mod)) {
+
+            RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
+            _targets.toArray(targetArray);
+            if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
+                setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+                return _collectTask;
+            }
         }
         /*
         // Collect recipe materials first
@@ -161,23 +180,29 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected Task containerSubTask(AltoClef mod) {
-        //Debug.logMessage("GOT TO TABLE. Crafting...");
+        Debug.logMessage("GOT TO TABLE. Crafting...");
 
         // Have a delay between the crafting
-        if (!_craftTimer.elapsed()) return null;
-        _craftTimer.reset();
+        if (!_craftTimer.elapsed()) {
+            Debug.logMessage("(craft delayed)");
+            _craftTimer.reset();
+            return null;
+        }
 
         // Craft everything
         int i = 0;
         boolean succeeded = false;
         for (RecipeTarget target : _targets) {
-            if (i == _craftCount) {
-                setDebugState("Crafting: " + target.getRecipe());
-                if (craftInstant(mod, target.getRecipe())) {
-                    succeeded = true;
+            for (int times = 0; times < target.getItem().targetCount; ++times) {
+                if (i == _craftCount) {
+                    //setDebugState("Crafting: " + target.getRecipe() + " # " + i);
+                    Debug.logMessage("Crafting: " + target.getRecipe() + " # " + i);
+                    if (craftInstant(mod, target.getRecipe())) {
+                        succeeded = true;
+                    }
                 }
+                i++;
             }
-            i++;
         }
         if (succeeded) {
             _craftCount++;

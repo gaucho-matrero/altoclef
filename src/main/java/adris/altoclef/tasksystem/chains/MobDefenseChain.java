@@ -4,10 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.DodgeProjectilesTask;
 import adris.altoclef.tasks.RunAwayFromCreepersTask;
+import adris.altoclef.tasks.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
@@ -23,6 +25,8 @@ public class MobDefenseChain extends SingleTaskChain {
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 4;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 15;
 
+    private static final double DANGER_KEEP_DISTANCE = 15;
+
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
     }
@@ -30,8 +34,15 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        // Pause if we're not loaded into a world.
+        if (!mod.inGame()) return 0;
+
+
         // Force field
         doForceField(mod);
+
+        // Tell baritone to avoid mobs if we're vulnurable.
+        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
 
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
@@ -48,10 +59,17 @@ public class MobDefenseChain extends SingleTaskChain {
             return 65;
         }
 
+        // Dodge all mobs cause we boutta die son
+        if (isInDanger(mod)) {
+            setTask(new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE));
+            return 70;
+        }
+
         return 0;
     }
 
     private void doForceField(AltoClef mod) {
+
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
@@ -110,6 +128,35 @@ public class MobDefenseChain extends SingleTaskChain {
         } catch (ConcurrentModificationException e) {
             Debug.logWarning("Weird exception caught and ignored while checking for nearby projectiles.");
         }
+        return false;
+    }
+
+    private boolean isInDanger(AltoClef mod) {
+
+        if (isVulnurable(mod)) {
+            // If hostile mobs are nearby...
+            try {
+                ClientPlayerEntity player = mod.getPlayer();
+                List<HostileEntity> hostiles = mod.getEntityTracker().getHostiles();
+                for(HostileEntity entity : hostiles) {
+                    if (entity.isInRange(player, DANGER_KEEP_DISTANCE)) {
+                        return true;
+                    }
+                }
+            }catch (Exception e) {
+                Debug.logWarning("Weird multithread exception. Will fix later.");
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isVulnurable(AltoClef mod) {
+        int armor = mod.getPlayer().getArmor();
+        float health = mod.getPlayer().getHealth();
+        if (armor <= 15 && health < 3) return true;
+        if (armor < 10 && health < 10) return true;
+        if (armor < 5 && health < 18) return true;
         return false;
     }
 

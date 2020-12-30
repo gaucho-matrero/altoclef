@@ -1,14 +1,15 @@
 package adris.altoclef.mixins;
 
 import adris.altoclef.StaticMixinHookups;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
-@Mixin(ClientPlayerEntity.class)
+// Changed this from player to client, I hope this doesn't break anything.
+@Mixin(MinecraftClient.class)
 public final class ClientTickMixin {
     @Inject(
             method = "tick",

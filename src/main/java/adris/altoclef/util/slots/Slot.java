@@ -94,7 +94,6 @@ public abstract class Slot {
         if (screen instanceof CraftingScreen) {
             return ContainerType.CRAFTING_TABLE;
         }
-        Debug.logInternal("SCREEN: " + screen);
         return ContainerType.PLAYER;
     }
 

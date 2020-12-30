@@ -3,25 +3,25 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.resources.CollectFuelTask;
 import adris.altoclef.tasksystem.ITaskWithDowntime;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.FurnaceScreenHandler;
-import net.minecraft.screen.slot.FurnaceFuelSlot;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 // Ref
 // https://minecraft.gamepedia.com/Smelting
@@ -228,8 +228,21 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected double getCostToMakeNew(AltoClef mod) {
-            // TODO: If we're already smelting, get cost for materials (for now just set to really high number or something)
-            return 9999999;
+            if (_currentFurnace != null) {
+                // TODO: If we're already smelting, get cost for materials (for now just set to really high number or something)
+                return 9999999;
+            }
+            // We got stone
+            if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) > 8) {
+                double cost = 300 - (50 * (double)mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
+                return Math.max(cost, 60);
+            }
+            // We got pick
+            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
+                return 200;
+            }
+            // We gotta make pick and mine stone
+            return 400;
         }
 
         @Override

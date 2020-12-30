@@ -20,6 +20,7 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        Debug.logMessage("GOING TO BLOCK");
         mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
         _running = true;
     }

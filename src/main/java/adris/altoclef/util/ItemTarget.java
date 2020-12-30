@@ -2,6 +2,8 @@ package adris.altoclef.util;
 
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import sun.util.resources.ext.CalendarData_en_IE;
@@ -134,6 +136,8 @@ public class ItemTarget {
     public static Item[] BED = new Item[]{ Items.WHITE_BED, Items.BLACK_BED, Items.BLUE_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.GREEN_BED, Items.LIGHT_BLUE_BED, Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED, Items.PINK_BED, Items.PURPLE_BED, Items.RED_BED, Items.YELLOW_BED};
     public static Item[] CARPET = new Item[]{ Items.WHITE_CARPET, Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET, Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET, Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET};
 
+    public static Block[] WOOD_SIGNS_ALL = new Block[]{ Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN};
+
     public static String trimItemName(String name) {
         if (name.startsWith("block.minecraft.")) {
             name = name.substring("block.minecraft.".length());
@@ -141,6 +145,14 @@ public class ItemTarget {
             name = name.substring("item.minecraft.".length());
         }
         return name;
+    }
+
+    public static Block[] itemsToBlocks(Item ...items) {
+        Block[] result = new Block[items.length];
+        for (int i = 0; i < items.length; ++i) {
+            result[i] = Block.getBlockFromItem(items[i]);
+        }
+        return result;
     }
 
     public boolean isEmpty() {

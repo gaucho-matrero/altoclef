@@ -36,6 +36,7 @@ public class EntityTracker extends Tracker {
     private final HashMap<Class, List<MobEntity>> _mobMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
+    private final List<HostileEntity> _hostiles = new ArrayList<>();
 
     private final List<CachedProjectile> _projectiles = new ArrayList<>();
 
@@ -149,12 +150,18 @@ public class EntityTracker extends Tracker {
         return _projectiles;
     }
 
+    public List<HostileEntity> getHostiles() {
+        ensureUpdated();
+        return _hostiles;
+    }
+
     @Override
     protected synchronized void updateState() {
         _itemDropLocations.clear();
         _mobMap.clear();
         _closeEntities.clear();
         _projectiles.clear();
+        _hostiles.clear();
         if (MinecraftClient.getInstance().world == null) return;
 
         // Loop through all entities and track 'em
@@ -180,6 +187,38 @@ public class EntityTracker extends Tracker {
                     _mobMap.put(type, new ArrayList<>());
                 }
                 _mobMap.get(type).add(mob);
+
+                if (entity instanceof HostileEntity) {
+
+                    // Only run away if the hostile can see us.
+                    HostileEntity hostile = (HostileEntity) entity;
+
+                    if (hostile.canSee(_mod.getPlayer())) {
+                        // Check if the mob is facing us or is close enough
+                        boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 4);
+
+                        if (!closeEnough) {
+                            if (hostile.getLookControl().isActive()) {
+                                Vec3d lookTarget = new Vec3d(
+                                        hostile.getLookControl().getLookX(),
+                                        hostile.getLookControl().getLookY(),
+                                        hostile.getLookControl().getLookZ()
+                                );
+                                Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
+                                if (lookTarget.isInRange(_mod.getPlayer().getPos(), 4f)) {
+                                    closeEnough = true;
+                                }
+                            }
+                        }
+
+                        // TODO: if closeEnough, check if mob is Angerable + ANGRY at player.
+
+                        //Debug.logInternal("TARGET: " + hostile.is);
+                        if (closeEnough) {
+                            _hostiles.add(hostile);
+                        }
+                    }
+                }
 
                 /*
                 if (mob instanceof HostileEntity) {

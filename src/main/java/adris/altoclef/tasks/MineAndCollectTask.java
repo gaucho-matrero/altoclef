@@ -2,6 +2,8 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
@@ -47,7 +49,11 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final Timer _mineCheck = new Timer(10.0);
     private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
-    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.2f);
+    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
+
+    private final Timer _tickIntervalCheck = new Timer(1);
+
+    private final IProgressChecker<Double> _longTermProgressChecker = new LinearProgressChecker(20, 0.1);
 
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
     private int _distanceFailCounter = 0;
@@ -164,9 +170,14 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
+        if (_tickIntervalCheck.elapsed()) {
+            // The time between ticks is big enough so we gotta reset
+            resetCheckers(mod);
+        }
+        _tickIntervalCheck.reset();
+
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            _distanceProgressChecker.reset(mod.getPlayer().getPos());
-            _mineProgressChecker.reset();
+            resetCheckers(mod);
             setDebugState("Wandering...");
             return _wanderTask;
         }
@@ -214,8 +225,7 @@ public class MineAndCollectTask extends ResourceTask {
             _targetBoms = boms;
 
             if (wasRunningBefore) {
-                _mineProgressChecker.reset();
-                _distanceProgressChecker.reset(mod.getPlayer().getPos());
+                resetCheckers(mod);
             }
             Debug.logInternal("Starting to mine.");
         }
@@ -237,12 +247,14 @@ public class MineAndCollectTask extends ResourceTask {
             _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
             if (_distanceProgressChecker.failed()) {
                 Debug.logMessage("Failed to make progress moving to our block. Blacklisting.");
+                Debug.logWarning("OOF");
                 failed = true;
                 // If we've failed too much, wander.
                 _distanceFailCounter++;
                 if (_distanceFailCounter >= DISTANCE_FAIL_TOO_MUCH_COUNT) {
                     Debug.logMessage("Failed too much, Going somewhere else.");
                     _distanceFailCounter = 0;
+                    _wanderTask.reset();
                     return _wanderTask;
                 }
                 _distanceProgressChecker.reset(mod.getPlayer().getPos());
@@ -292,6 +304,12 @@ public class MineAndCollectTask extends ResourceTask {
             //if (!us.matches(them.getAnyBlockState())) return false;
         }
         return true;
+    }
+
+    private void resetCheckers(AltoClef mod) {
+        _distanceProgressChecker.reset(mod.getPlayer().getPos());
+        _mineProgressChecker.reset();
+        _longTermProgressChecker.reset();
     }
 
     /*

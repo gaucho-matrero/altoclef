@@ -21,6 +21,10 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     protected void onTick(AltoClef mod) {
+
+        // Pause if we're not loaded into a world.
+        if (!mod.inGame()) return;
+
         // Stop shortcut
         if (_mainTask != null && _mainTask.isActive() && Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW.GLFW_KEY_K)) {
             Debug.logMessage("(stop shortcut sent)");

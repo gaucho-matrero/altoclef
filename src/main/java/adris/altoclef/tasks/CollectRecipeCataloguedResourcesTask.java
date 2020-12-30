@@ -17,13 +17,15 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
     private RecipeTarget[] _targets;
 
+    private boolean _finished = false;
+
     public CollectRecipeCataloguedResourcesTask(RecipeTarget ...targets) {
         _targets = targets;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
-
+        _finished = false;
     }
 
     @Override
@@ -51,7 +53,8 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                     if (!catalogueCount.containsKey(targetName)) {
                         catalogueCount.put(targetName, 0);
                     }
-                    catalogueCount.put(targetName, catalogueCount.get(targetName) + 1);
+                    int numberOfRepeats = target.getItem().targetCount;
+                    catalogueCount.put(targetName, catalogueCount.get(targetName) + numberOfRepeats);
                 }
             }
 
@@ -65,6 +68,8 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                 }
             }
         }
+
+        _finished = true;
 
         return null;
     }
@@ -91,5 +96,10 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     @Override
     protected String toDebugString() {
         return "Collect Recipe Resources: " + ArrayUtils.toString(_targets);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return _finished;
     }
 }
