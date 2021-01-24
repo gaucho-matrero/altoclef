@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import sun.util.resources.ext.CalendarData_en_IE;
 
 public class ItemTarget {
     private Item[] _itemMatches;

@@ -6,9 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import jdk.internal.loader.Resource;
 import org.apache.commons.lang3.ArrayUtils;
-import sun.security.util.ArrayUtil;
 
 import java.util.*;
 
