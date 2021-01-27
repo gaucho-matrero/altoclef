@@ -592,6 +592,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean equipItem(ItemTarget toEquip) {
+        if (toEquip == null) return false;
         for (Item item : toEquip.getMatches()) {
             if (hasItem(item)) {
                 if (equipItem(item)) return true;

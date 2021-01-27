@@ -154,7 +154,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
 
     private boolean rightClick() {
-        _mod.getInventoryTracker().equipItem(_equipTarget);
+        if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
 
         Optional<Rotation> reachable;
         if (sideDoesntMatter()) {

@@ -27,11 +27,14 @@ public class CraftInTableTask extends ResourceTask {
         _targets = targets;
         _craftTask = new DoCraftInTableTask(_targets);
     }
-    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
+    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect) {
         super(target);
         _targets = new ArrayList<>(1);
         _targets.add(new RecipeTarget(target, recipe));
-        _craftTask = new DoCraftInTableTask(_targets);
+        _craftTask = new DoCraftInTableTask(_targets, collect);
+    }
+    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
+        this(target, recipe, true);
     }
     public CraftInTableTask(Item[] items, int count, CraftingRecipe recipe) {
         this(new ItemTarget(items, count), recipe);
@@ -100,16 +103,22 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private int _craftCount;
 
+    private boolean _collect;
+
     private CollectRecipeCataloguedResourcesTask _collectTask;
 
-    public DoCraftInTableTask(List<RecipeTarget> targets) {
+    public DoCraftInTableTask(List<RecipeTarget> targets, boolean collect) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _targets = targets;
+        _collect = collect;
         _craftTimer = new Timer(0.5);
 
         RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
         _targets.toArray(targetArray);
         _collectTask = new CollectRecipeCataloguedResourcesTask(targetArray);
+    }
+    public DoCraftInTableTask(List<RecipeTarget> targets) {
+        this(targets, true);
     }
 
     @Override
@@ -134,13 +143,15 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         //      Only if we ASSUME that hasRecipeMaterials is TOO STRICT and the Collect Task is CORRECT.
         //
-        if (!_collectTask.isFinished(mod)) {
+        if (_collect) {
+            if (!_collectTask.isFinished(mod)) {
 
-            RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
-            _targets.toArray(targetArray);
-            if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
-                setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
-                return _collectTask;
+                RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
+                _targets.toArray(targetArray);
+                if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
+                    setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+                    return _collectTask;
+                }
             }
         }
         /*
