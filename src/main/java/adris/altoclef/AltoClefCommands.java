@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.PlaceSignTask;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -15,6 +16,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -63,6 +67,15 @@ public class AltoClefCommands extends CommandList {
                 //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
                 break;
             }
+            case "deadmeme":
+                File file = new File("test.txt");
+                try {
+                    FileReader reader = new FileReader(file);
+                    mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
             case "stacked":
                 mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;
