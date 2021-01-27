@@ -10,6 +10,7 @@ import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
@@ -171,7 +172,6 @@ public class InventoryTracker extends Tracker {
         return hasRecipeMaterials(new HashMap<>(), targets);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasRecipeMaterials(CraftingRecipe recipe) {
         return hasRecipeMaterials(recipe, 1);
     }
@@ -572,6 +572,23 @@ public class InventoryTracker extends Tracker {
             needsToMove -= moveItems(current, moveTo, moveSize);
         }
         return moveCount - needsToMove;
+    }
+
+    public boolean equipItem(Item toEquip) {
+        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+
+        // Already equipped
+        if (getItemStackInSlot(target).getItem() == toEquip) return true;
+
+        List<Integer> itemSlots = getInventorySlotsWithItem(toEquip);
+        if (itemSlots.size() != 0) {
+            int slot = itemSlots.get(0);
+            swapItems(new PlayerInventorySlot(slot), target);
+            return true;
+        }
+
+        Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
+        return false;
     }
 
     private static Map<Item, Integer> getFuelTimeMap() {

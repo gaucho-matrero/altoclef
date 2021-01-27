@@ -7,7 +7,6 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalGetToPosition;
-import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.schematic.AbstractSchematic;
@@ -15,6 +14,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.util.math.BlockPos;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 // TODO: "isPosValid". Break
 // TODO: Abstract this out to "DoStuffAtPlacedBlockTask" where the only extra work here is the writing of the sign.
@@ -133,7 +133,8 @@ public class PlaceSignTask extends Task {
             BlockPos origin = mod.getPlayer().getBlockPos();
             Block[] blocks = ItemTarget.WOOD_SIGNS_ALL;
             if (_target == null) {
-                _placing = new PlaceBlockNearbySchematic(origin, blocks, false);
+                throw new NotImplementedException();
+                //_placing = new PlaceBlockNearbySchematic(origin, blocks, false);
             } else {
                 _placing = new PlaceBlockSchematic(blocks);
             }

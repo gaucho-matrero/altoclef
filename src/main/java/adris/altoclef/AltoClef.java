@@ -57,6 +57,8 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
+        initializeBaritoneSettings();
+
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
         _taskRunner = new TaskRunner(this);
@@ -81,7 +83,6 @@ public class AltoClef implements ModInitializer {
 
         initializeCommands();
 
-        initializeBaritoneSettings();
     }
 
     // Client tick

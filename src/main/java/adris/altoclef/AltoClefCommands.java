@@ -1,20 +1,15 @@
 package adris.altoclef;
 
-import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.slots.*;
-import adris.altoclef.TaskCatalogue;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,18 +47,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
             case "place":
-                new Thread(() -> {
-                    try {
-                        for (int i = 3; i > 0; --i) {
-                            Debug.logMessage(i + "...");
-                            Thread.sleep(1000, 0);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(0), FurnaceSlot.INPUT_SLOT_MATERIALS, 3);
-                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(1), FurnaceSlot.INPUT_SLOT_FUEL, 3);
-                }).start();
+                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
                 break;
             case "stacked":
                 mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
