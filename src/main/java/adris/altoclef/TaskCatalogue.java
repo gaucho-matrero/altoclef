@@ -111,6 +111,7 @@ public class TaskCatalogue {
 
         if (!taskExists(name)) {
             Debug.logWarning("Task " + name + " does not exist. Error possibly.");
+            Debug.logStack();
             return null;
         }
 

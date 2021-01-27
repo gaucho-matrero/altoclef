@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -45,6 +46,12 @@ public class AltoClefCommands extends CommandList {
             case "":
                 // Idle
                 mod.runUserTask(new IdleTask());
+                break;
+            case "sign":
+                mod.runUserTask(new PlaceSignTask("Hello there!"));
+                break;
+            case "sign2":
+                mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
                 break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));

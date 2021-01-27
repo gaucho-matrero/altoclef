@@ -143,6 +143,10 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 // If we're below, place ourselves two blocks below.
                 offs = offs.down();
             }
+            if (offs.getY() == 1) {
+                // If we're above, move into the block.
+                offs = offs.down();
+            }
             pos = pos.add(offs);
         }
 
