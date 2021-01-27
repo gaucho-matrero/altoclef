@@ -1,28 +1,20 @@
 package adris.altoclef;
 
-import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.PlaceSignTask;
-import adris.altoclef.tasks.stupid.BeeMovieTask;
-import adris.altoclef.tasks.stupid.ButtonsEverywhereTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.baritone.PlaceBlockNearbySchematic;
 import adris.altoclef.util.slots.*;
-import adris.altoclef.TaskCatalogue;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -55,23 +47,22 @@ public class AltoClefCommands extends CommandList {
                 // Idle
                 mod.runUserTask(new IdleTask());
                 break;
+            case "sign":
+                mod.runUserTask(new PlaceSignTask("Hello there!"));
+                break;
+            case "sign2":
+                mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
+                break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
-            case "place":
-                new Thread(() -> {
-                    try {
-                        for (int i = 3; i > 0; --i) {
-                            Debug.logMessage(i + "...");
-                            Thread.sleep(1000, 0);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(0), FurnaceSlot.INPUT_SLOT_MATERIALS, 3);
-                    mod.getInventoryTracker().moveItems(Slot.getFromInventory(1), FurnaceSlot.INPUT_SLOT_FUEL, 3);
-                }).start();
+            case "place": {
+                BlockPos targetPos = new BlockPos(0, 6, 0);
+                Direction direction = Direction.NORTH;
+                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("sign", 1), direction, targetPos));
+                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
                 break;
+            }
             case "stacked":
                 mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;
@@ -79,24 +70,6 @@ public class AltoClefCommands extends CommandList {
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
-                break;
-            case "sign":
-                mod.runUserTask(new PlaceSignTask(mod.getPlayer().getBlockPos().add(5, 0, 1),"chigga was here yo"));
-                break;
-            case "deadmeme":
-                File file = new File("test.txt");
-                try {
-                    FileReader reader = new FileReader(file);
-                    mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "many":
-                mod.runUserTask(TaskCatalogue.getItemTask("sign", 32));
-                break;
-            case "buttons":
-                mod.runUserTask(new ButtonsEverywhereTask());
                 break;
         }
     }

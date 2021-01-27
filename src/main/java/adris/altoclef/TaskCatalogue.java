@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.resources.CollectCobblestoneTask;
 import adris.altoclef.tasks.resources.CollectPlanksTask;
+import adris.altoclef.tasks.resources.CollectSignTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -37,7 +38,9 @@ public class TaskCatalogue {
             shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p);
             shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, p, o, o, o);
 
-            shapedRecipe3x3("sign", ItemTarget.WOOD_SIGN, p, p, p, p, p, p, o, s, o);
+            simple("sign", ItemTarget.WOOD_SIGN, CollectSignTask.class);
+
+            //shapedRecipe3x3("sign", ItemTarget.WOOD_SIGN, p, p, p, p, p, p, o, s, o);
 
             tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
@@ -97,10 +100,18 @@ public class TaskCatalogue {
         return _nameToItemMatches.get(name);
     }
 
+    public static ItemTarget getItemTarget(String name, int count) {
+        return new ItemTarget(name, count);
+    }
+    public static CataloguedResourceTask getSquashedItemTask(ItemTarget ...targets) {
+        return new CataloguedResourceTask(true, targets);
+    }
+
     public static ResourceTask getItemTask(String name, int count) {
 
         if (!taskExists(name)) {
             Debug.logWarning("Task " + name + " does not exist. Error possibly.");
+            Debug.logStack();
             return null;
         }
 

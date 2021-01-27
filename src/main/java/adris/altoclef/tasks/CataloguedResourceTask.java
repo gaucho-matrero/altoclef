@@ -6,9 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import jdk.internal.loader.Resource;
 import org.apache.commons.lang3.ArrayUtils;
-import sun.security.util.ArrayUtil;
 
 import java.util.*;
 
@@ -27,7 +25,9 @@ public class CataloguedResourceTask extends Task {
         _tasksToComplete = new ArrayList<>(targets.length);
 
         for(ItemTarget target : targets) {
-            _tasksToComplete.add(TaskCatalogue.getItemTask(target));
+            if (target != null) {
+                _tasksToComplete.add(TaskCatalogue.getItemTask(target));
+            }
         }
 
         if (squash) {
@@ -78,7 +78,10 @@ public class CataloguedResourceTask extends Task {
 
             if (other._targets.length != _targets.length) return false;
             for (int i = 0; i < _targets.length; ++i) {
-                if (!other._targets[i].equals(_targets[i])) return false;
+                if ((other._targets[i] == null) != (_targets[i] == null)) return false;
+                if (other._targets[i] != null) {
+                    if (!other._targets[i].equals(_targets[i])) return false;
+                }
             }
             return true;
         }

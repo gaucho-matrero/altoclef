@@ -2,6 +2,7 @@
 package adris.altoclef.util.slots;
 
 import adris.altoclef.Debug;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 
 public class PlayerSlot extends Slot {
@@ -60,7 +61,8 @@ public class PlayerSlot extends Slot {
     public static PlayerSlot getEquipSlot(EquipmentSlot equipSlot) {
         switch (equipSlot) {
             case MAINHAND:
-                return null; // Any will work, so this is unspecified.
+                assert MinecraftClient.getInstance().player != null;
+                return new PlayerInventorySlot(MinecraftClient.getInstance().player.inventory.selectedSlot);
             case OFFHAND:
                 return OFFHAND_SLOT;
             case FEET:

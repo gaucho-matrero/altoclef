@@ -53,8 +53,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final Timer _tickIntervalCheck = new Timer(1);
 
-    private final IProgressChecker<Double> _longTermProgressChecker = new LinearProgressChecker(20, 0.1);
-
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
     private int _distanceFailCounter = 0;
 
@@ -83,15 +81,14 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        // Baritone is buggy here. For example:
-        // If I try to mine diamonds, it will stop and grab every egg on the ground.
         mod.getConfigState().push();
+        // Set to false b/c Baritone is buggy here. For example:
+        // If I try to mine diamonds, it will stop and grab every egg on the ground.
         mod.getConfigState().setMineScanDroppedItems(false);
         _cachedBlacklist.clear();
         _distanceFailCounter = 0;
 
-        _distanceProgressChecker.reset(mod.getPlayer().getPos());
-        _mineProgressChecker.reset();
+        resetCheckers(mod);
     }
 
     @Override
@@ -242,7 +239,7 @@ public class MineAndCollectTask extends ResourceTask {
                 _mineProgressChecker.reset();
             }
             // Reset other checker (independent, one blocks another)
-            _distanceProgressChecker.reset(mod.getPlayer().getPos());
+            _distanceProgressChecker.reset();
         } else {
             _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
             if (_distanceProgressChecker.failed()) {
@@ -257,7 +254,7 @@ public class MineAndCollectTask extends ResourceTask {
                     _wanderTask.reset();
                     return _wanderTask;
                 }
-                _distanceProgressChecker.reset(mod.getPlayer().getPos());
+                _distanceProgressChecker.reset();
             }
             // Reset other checker (independent, one blocks another)
             _mineProgressChecker.reset();
@@ -265,7 +262,7 @@ public class MineAndCollectTask extends ResourceTask {
         if (failed) {
             try {
                 blacklistCurrentTarget(mod);
-            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 // oof
                 Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #1) :(");
                 e.printStackTrace();
@@ -307,9 +304,8 @@ public class MineAndCollectTask extends ResourceTask {
     }
 
     private void resetCheckers(AltoClef mod) {
-        _distanceProgressChecker.reset(mod.getPlayer().getPos());
+        _distanceProgressChecker.reset();
         _mineProgressChecker.reset();
-        _longTermProgressChecker.reset();
     }
 
     /*
@@ -330,7 +326,7 @@ public class MineAndCollectTask extends ResourceTask {
      */
 
     @SuppressWarnings("unchecked")
-    private void blacklistCurrentTarget(AltoClef mod) throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException {
+    private void blacklistCurrentTarget(AltoClef mod) throws NoSuchFieldException, IllegalAccessException {
         // This object will be used for access
         //UserClass userClassObj = new UserClass();
         MineProcess proc = mod.getClientBaritone().getMineProcess();

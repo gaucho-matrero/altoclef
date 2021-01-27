@@ -9,8 +9,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.screen.ScreenHandler;
-import org.graalvm.compiler.nodes.memory.MemoryCheckpoint;
 
 public class DeathMenuChain extends TaskChain {
 

@@ -231,7 +231,7 @@ public class EntityTracker extends Tracker {
                     Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
                     inGroundField.setAccessible(true);
                     inGround = inGroundField.getBoolean(projEntity);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
 
