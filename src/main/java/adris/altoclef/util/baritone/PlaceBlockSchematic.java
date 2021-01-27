@@ -8,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-@Deprecated
+//@Deprecated
 public class PlaceBlockSchematic extends AbstractSchematic {
 
     private static final int RANGE = 1;

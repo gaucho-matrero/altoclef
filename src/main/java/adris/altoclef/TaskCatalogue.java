@@ -31,12 +31,12 @@ public class TaskCatalogue {
             String o = null;
 
             simple("planks", ItemTarget.PLANKS, CollectPlanksTask.class);
-            shapedRecipe2x2("stick", Items.STICK, p, o, p, o);
+            shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
             mine("log", MiningRequirement.HAND, ItemTarget.LOG, ItemTarget.LOG);
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
-            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, p, p, p, p);
-            shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, o, o, p, p);
-            shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, p, o, o, o);
+            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p);
+            shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, 1, o, o, p, p);
+            shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, 1, p, o, o, o);
 
             simple("sign", ItemTarget.WOOD_SIGN, CollectSignTask.class);
 
@@ -46,8 +46,8 @@ public class TaskCatalogue {
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
             {
                 String c = "cobblestone";
-                shapedRecipe3x3("stone_pickaxe", Items.STONE_PICKAXE, c, c, c, o, s, o, o, s, o);
-                shapedRecipe3x3("furnace", Items.FURNACE, c, c, c, c, o, c, c, c, c);
+                shapedRecipe3x3("stone_pickaxe", Items.STONE_PICKAXE, 1, c, c, c, o, s, o, o, s, o);
+                shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
             }
             tools("stone", "cobblestone", Items.STONE_PICKAXE, Items.STONE_SHOVEL, Items.STONE_SWORD, Items.STONE_AXE, Items.STONE_HOE);
 
@@ -67,7 +67,7 @@ public class TaskCatalogue {
             tools("diamond", "diamond", Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_HOE);
             armor("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
 
-            shapedRecipe2x2("torch", Items.TORCH, "coal", o, s, o);
+            shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
 
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
@@ -149,19 +149,19 @@ public class TaskCatalogue {
         mine(name, requirement, new Block[]{toMine}, target);
     }
 
-    private static void shapedRecipe2x2(String name, Item[] matches, String s0, String s1, String s2, String s3) {
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)});
+    private static void shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)}, outputCount);
         put(name, matches, new CraftTaskFactory(CraftInInventoryTask.class, name, recipe));
     }
-    private static void shapedRecipe3x3(String name, Item[] matches, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)});
+    private static void shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)}, outputCount);
         put(name, matches, new CraftTaskFactory(CraftInTableTask.class, name, recipe));
     }
-    private static void shapedRecipe2x2(String name, Item match, String s0, String s1, String s2, String s3) {
-        shapedRecipe2x2(name, new Item[]{match}, s0, s1, s2, s3);
+    private static void shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
+        shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
     }
-    private static void shapedRecipe3x3(String name, Item match, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        shapedRecipe3x3(name, new Item[]{match}, s0, s1, s2, s3, s4, s5, s6, s7, s8);
+    private static void shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+        shapedRecipe3x3(name, new Item[]{match}, craftCount, s0, s1, s2, s3, s4, s5, s6, s7, s8);
     }
 
     private static void smelt(String name, Item[] matches, String materials) {
@@ -176,21 +176,21 @@ public class TaskCatalogue {
         String o = null;
         //noinspection UnnecessaryLocalVariable
         String m = material;
-        shapedRecipe3x3(toolMaterialName + "_pickaxe", pickaxeItem, m, m, m, o, s, o, o, s, o);
-        shapedRecipe3x3(toolMaterialName + "_shovel", shovelItem, o, m, o, o, s, o, o, s, o);
-        shapedRecipe3x3(toolMaterialName + "_sword", swordItem, o, m, o, o, m, o, o, s, o);
-        shapedRecipe3x3(toolMaterialName + "_axe", axeItem, m, m, o, m, s, o, o, s, o);
-        shapedRecipe3x3(toolMaterialName + "_hoe", hoeItem, m, m, o, o, s, o, o, s, o);
+        shapedRecipe3x3(toolMaterialName + "_pickaxe", pickaxeItem, 1, m, m, m, o, s, o, o, s, o);
+        shapedRecipe3x3(toolMaterialName + "_shovel", shovelItem, 1, o, m, o, o, s, o, o, s, o);
+        shapedRecipe3x3(toolMaterialName + "_sword", swordItem, 1, o, m, o, o, m, o, o, s, o);
+        shapedRecipe3x3(toolMaterialName + "_axe", axeItem, 1, m, m, o, m, s, o, o, s, o);
+        shapedRecipe3x3(toolMaterialName + "_hoe", hoeItem, 1, m, m, o, o, s, o, o, s, o);
     }
 
     private static void armor(String armorMaterialName, String material, Item helmetItem, Item chestplateItem, Item leggingsItem, Item bootsItem) {
         String o = null;
         //noinspection UnnecessaryLocalVariable
         String m = material;
-        shapedRecipe3x3(armorMaterialName + "_helmet", helmetItem, m, m, m, m, o, m, o, o, o);
-        shapedRecipe3x3(armorMaterialName + "_chestplate", chestplateItem, m, o, m, m, m, m, m, m, m);
-        shapedRecipe3x3(armorMaterialName + "_leggings", leggingsItem, m, m, m, m, o, m, m, o, m);
-        shapedRecipe3x3(armorMaterialName + "_boots", bootsItem, o, o, o, m, o, m, m, o, m);
+        shapedRecipe3x3(armorMaterialName + "_helmet", helmetItem, 1, m, m, m, m, o, m, o, o, o);
+        shapedRecipe3x3(armorMaterialName + "_chestplate", chestplateItem, 1, m, o, m, m, m, m, m, m, m);
+        shapedRecipe3x3(armorMaterialName + "_leggings", leggingsItem, 1, m, m, m, m, o, m, m, o, m);
+        shapedRecipe3x3(armorMaterialName + "_boots", bootsItem, 1, o, o, o, m, o, m, m, o, m);
     }
 
     private static void alias(String newName, String original) {

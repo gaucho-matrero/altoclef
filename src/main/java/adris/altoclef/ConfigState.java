@@ -59,6 +59,13 @@ public class ConfigState {
         current().applyState();
     }
 
+    public boolean exclusivelyMineLogs() {
+        return current().exclusivelyMineLogs;
+    }
+    public void setExclusivelyMineLogs(boolean value) {
+        current().exclusivelyMineLogs = value;
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProtected(Item item) {
         // For now nothing is protected.
@@ -83,10 +90,13 @@ public class ConfigState {
     }
 
     class State {
-        /// Params
+        /// Baritone Params
         public double followOffsetDistance;
         public List<Item> throwawayItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
+
+        // Alto Clef params
+        public boolean exclusivelyMineLogs;
 
         public State() {
             Settings s = _mod.getClientBaritoneSettings();

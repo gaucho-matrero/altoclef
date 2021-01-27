@@ -41,9 +41,9 @@ public class AltoClefCommands extends CommandList {
         ItemTarget B = new ItemTarget("planks");
         ItemTarget s = new ItemTarget("stick");
         ItemTarget o = null;
-        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe("wooden_pickaxe",new ItemTarget[]{B, B, B, o, s, o, o, s, o});
+        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe("wooden_pickaxe",new ItemTarget[]{B, B, B, o, s, o, o, s, o}, 1);
         ItemTarget targetItem = new ItemTarget(Items.WOODEN_PICKAXE, 1);
-        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe("wooden_sword",new ItemTarget[]{ o, B, o, o, B, o, o, s, o});
+        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe("wooden_sword",new ItemTarget[]{ o, B, o, o, B, o, o, s, o}, 1);
         ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
 
         switch (arg) {
@@ -60,11 +60,19 @@ public class AltoClefCommands extends CommandList {
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
+            case "structure":
+                mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
+                break;
             case "place": {
                 BlockPos targetPos = new BlockPos(0, 6, 0);
                 Direction direction = Direction.NORTH;
                 mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("sign", 1), direction, targetPos));
                 //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
+                break;
+            }
+            case "equip": {
+                mod.getInventoryTracker().swapItems(Slot.getFromInventory(11), Slot.getFromInventory(1));
+                //mod.getInventoryTracker().equipItem(new ItemTarget("sign"));
                 break;
             }
             case "deadmeme":

@@ -17,6 +17,8 @@ public class CraftingRecipe {
 
     private String _shortName;
 
+    private int _outputCount;
+
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
@@ -57,6 +59,8 @@ public class CraftingRecipe {
         return _mustMatch.size();
     }
 
+    public int outputCount() {return _outputCount; }
+
     public CraftingRecipe withMustMatch(Integer[] matchingSlotIndices) {
         Collections.addAll(_mustMatch, matchingSlotIndices);
 
@@ -83,17 +87,17 @@ public class CraftingRecipe {
         return this;
     }
 
-    public static CraftingRecipe newShapedRecipe(Item[][] items) {
-        return newShapedRecipe(null, items);
+    public static CraftingRecipe newShapedRecipe(Item[][] items, int outputCount) {
+        return newShapedRecipe(null, items, outputCount);
     }
-    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots) {
-        return newShapedRecipe(null, slots);
+    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots, int outputCount) {
+        return newShapedRecipe(null, slots, outputCount);
     }
-    public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items) {
-        return newShapedRecipe(shortName, createSlots(items));
+    public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items, int outputCount) {
+        return newShapedRecipe(shortName, createSlots(items), outputCount);
     }
 
-    public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots) {
+    public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots, int outputCount) {
         if (slots.length != 4 && slots.length != 9) {
             Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
             return null;
@@ -108,6 +112,7 @@ public class CraftingRecipe {
         CraftingRecipe result = new CraftingRecipe();
         result._shortName = shortName;
         result._slots = slots;
+        result._outputCount = outputCount;
         if (slots.length == 4) {
             result._width = 2;
             result._height = 2;
@@ -136,9 +141,7 @@ public class CraftingRecipe {
 
     private static ItemTarget[] createSlots(ItemTarget[] slots) {
         ItemTarget[] result = new ItemTarget[slots.length];
-        for (int i = 0; i < slots.length; ++i) {
-            result[i] = slots[i];
-        }
+        System.arraycopy(slots, 0, result, 0, slots.length);
         return result;
     }
     private static ItemTarget[] createSlots(Item[][] slots) {
@@ -154,6 +157,7 @@ public class CraftingRecipe {
         if (o instanceof CraftingRecipe) {
             CraftingRecipe other = (CraftingRecipe) o;
             if (other._shapeless != _shapeless) return false;
+            if (other._outputCount != _outputCount) return false;
             if (other._height != _height) return false;
             if (other._width != _width) return false;
             if (other._mustMatch.size() != _mustMatch.size()) return false;

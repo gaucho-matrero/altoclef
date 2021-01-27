@@ -74,8 +74,12 @@ public class TimeoutWanderTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
 
-        double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
-        return sqDist > _distanceToWander*_distanceToWander;
+        if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
+            double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
+            return sqDist > _distanceToWander * _distanceToWander;
+        } else {
+            return false;
+        }
     }
 
     @Override

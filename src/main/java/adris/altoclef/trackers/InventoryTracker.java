@@ -364,6 +364,9 @@ public class InventoryTracker extends Tracker {
             return null;
         }
 
+        // NOT THE CASE! We may have something in the cursor slot to place.
+        //if (getItemStackInSlot(slot).isEmpty()) return getItemStackInSlot(slot);
+
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
             return null;
@@ -372,11 +375,11 @@ public class InventoryTracker extends Tracker {
 
         return _mod.getController().clickSlot(syncId, slot.getWindowSlot(), mouseButton, type, player);
     }
-    public ItemStack clickSlot(Slot slot, int mouseButton) {
-        return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
-    }
     public ItemStack clickSlot(Slot slot, SlotActionType type) {
         return clickSlot(slot, 0, type);
+    }
+    public ItemStack clickSlot(Slot slot, int mouseButton) {
+        return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
     }
     public ItemStack clickSlot(Slot slot) {
         return clickSlot(slot, 0);
@@ -454,12 +457,13 @@ public class InventoryTracker extends Tracker {
             clickSlot(slot1);
         }
         // Pick up slot2
-        ItemStack placed = clickSlot(slot2);
+        ItemStack second = clickSlot(slot2);
 
         // slot 1 is now in slot 2
+        // slot 2 is now in cursor
 
         // If slot 2 is not empty, move it back to slot 1
-        if (placed != null && !placed.isEmpty()) {
+        if (second != null && !second.isEmpty()) {
             if (!slotIsCursor(slot1)) {
                 clickSlot(slot1);
             }
@@ -583,7 +587,7 @@ public class InventoryTracker extends Tracker {
         List<Integer> itemSlots = getInventorySlotsWithItem(toEquip);
         if (itemSlots.size() != 0) {
             int slot = itemSlots.get(0);
-            swapItems(new PlayerInventorySlot(slot), target);
+            swapItems(Slot.getFromInventory(slot), target);
             return true;
         }
 
@@ -593,6 +597,11 @@ public class InventoryTracker extends Tracker {
 
     public boolean equipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
+
+        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        // Already equipped
+        if (toEquip.matches(getItemStackInSlot(target).getItem())) return true;
+
         for (Item item : toEquip.getMatches()) {
             if (hasItem(item)) {
                 if (equipItem(item)) return true;

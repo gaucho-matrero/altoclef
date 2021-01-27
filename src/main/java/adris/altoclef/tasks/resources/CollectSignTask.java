@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
@@ -34,8 +35,9 @@ public class CollectSignTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
-        int neededSticks = (int)(Math.floor((float)_count / 3)) + 1;
-        int neededPlanks = (int)(Math.floor((float)_count / 3) + 1) * 6;
+        int signsCurrent = mod.getInventoryTracker().getItemCount(new ItemTarget("sign"));
+        int neededSticks = (int)(Math.floor((float)_count / 3 - 0.1)) + 1 - signsCurrent;
+        int neededPlanks = (int)(Math.floor((float)_count / 3 - 0.1) + 1) * 6 - (6 * signsCurrent);
 
         // These will be squashed together
         ItemTarget stickGet = null;
@@ -43,6 +45,7 @@ public class CollectSignTask extends ResourceTask {
 
         // Collect sticks.
         if (mod.getInventoryTracker().getItemCount(Items.STICK) < neededSticks) {
+            Debug.logMessage("NEED " + neededSticks + " STICKS");
             stickGet = TaskCatalogue.getItemTarget("stick", neededSticks);
             //return TaskCatalogue.getItemTask("stick", neededSticks);
         }
@@ -56,6 +59,7 @@ public class CollectSignTask extends ResourceTask {
             }
         }
         if (hasEnough == null) {
+            Debug.logMessage("NEED " + neededPlanks + " PLANKS");
             // We need planks!
             plankGet = new ItemTarget("planks"); // get infinity cause we will catch our target above.
         }
@@ -68,7 +72,7 @@ public class CollectSignTask extends ResourceTask {
         // If we do have it, return craft in inventory task for a generated recipe of that type of plank.
 
         Item p = hasEnough;
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("sign", new ItemTarget[] {t(p), t(p), t(p), t(p), t(p), t(p), null, t("stick"), null});
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("sign", new ItemTarget[] {t(p), t(p), t(p), t(p), t(p), t(p), null, t("stick"), null}, 3);
 
         return new CraftInTableTask(new ItemTarget("sign", _count), recipe, false);
     }

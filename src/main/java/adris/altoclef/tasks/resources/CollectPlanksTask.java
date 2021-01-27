@@ -9,7 +9,8 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.item.Item;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CollectPlanksTask extends CraftInInventoryTask {
 
@@ -18,7 +19,8 @@ public class CollectPlanksTask extends CraftInInventoryTask {
             new Item[][]{
                 ItemTarget.LOG, null,
                 null, null
-            }
+            },
+            4
     );
 
     public CollectPlanksTask(int count) {
@@ -28,8 +30,12 @@ public class CollectPlanksTask extends CraftInInventoryTask {
     @Override
     protected Task collectRecipeSubTask(AltoClef mod) {
         // Collect planks and logs
-        return new MineAndCollectTask(Arrays.asList(
-                new ItemTarget(ItemTarget.LOG), new ItemTarget(ItemTarget.PLANKS)
-        ), MiningRequirement.HAND);
+        ArrayList<ItemTarget> blocksTomine = new ArrayList<>(2);
+        blocksTomine.add(new ItemTarget(ItemTarget.LOG));
+        // Ignore planks if we're told to.
+        if (!mod.getConfigState().exclusivelyMineLogs()) {
+            blocksTomine.add(new ItemTarget(ItemTarget.PLANKS));
+        }
+        return new MineAndCollectTask(blocksTomine, MiningRequirement.HAND);
     }
 }

@@ -53,7 +53,8 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                     if (!catalogueCount.containsKey(targetName)) {
                         catalogueCount.put(targetName, 0);
                     }
-                    int numberOfRepeats = target.getItem().targetCount;
+                    // How many "repeats" of a recipe we will need.
+                    int numberOfRepeats = (int)Math.ceil(0.1 + (double)target.getItem().targetCount / target.getRecipe().outputCount());
                     catalogueCount.put(targetName, catalogueCount.get(targetName) + numberOfRepeats);
                 }
             }

@@ -158,7 +158,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
 
     private boolean rightClick() {
-        if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
 
         Optional<Rotation> reachable;
         if (sideDoesntMatter()) {
@@ -192,6 +191,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
+                if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
                 this.baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 //System.out.println(this.ctx.player().playerScreenHandler);
 

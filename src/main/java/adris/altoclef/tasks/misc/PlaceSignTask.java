@@ -79,7 +79,7 @@ public class PlaceSignTask extends Task {
 
                 // Add newline
                 screen.keyPressed(257, 36, 0);
-                Debug.logMessage("NEW LINE ADDED BEFORE: " + c);
+                //Debug.logMessage("NEW LINE ADDED BEFORE: " + c);
             }
             // keycode don't matter
             //int keyCode = java.awt.event.KeyEvent.getExtendedKeyCodeForChar(c);

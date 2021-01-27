@@ -36,7 +36,7 @@ public class InteractItemWithBlockTask extends Task {
 
         if (!_trying && !proc(mod).isActive()) {
             _trying = true;
-            proc(mod).getToBlock(_target, _direction, true, false, false);
+            proc(mod).getToBlock(_target, _direction, true, true, false);
             proc(mod).setInteractEquipItem(_toUse);
         }
 

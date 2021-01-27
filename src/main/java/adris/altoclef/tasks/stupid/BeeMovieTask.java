@@ -2,18 +2,19 @@ package adris.altoclef.tasks.stupid;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.CataloguedResourceTask;
-import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +28,9 @@ import java.util.List;
  * with signs.
  */
 public class BeeMovieTask extends Task {
+
+    // How many building materials to collect/buffer up
+    private static final int STRUCTURE_MATERIALS_BUFFER = 64;
 
     private final BlockPos _start;
     private final BlockPos _direction = new BlockPos(0, 0, -1);
@@ -44,7 +48,8 @@ public class BeeMovieTask extends Task {
     // Grab extra resources and acquire extra tools for speed
     private boolean _sharpenTheAxe = true;
 
-    private Task _extraSignAcquireTask = null;
+    private Task _extraSignAcquireTask;
+    private Task _structureMaterialsTask;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
         _uniqueId = uniqueId;
@@ -52,34 +57,31 @@ public class BeeMovieTask extends Task {
         _textParser = new StreamedSignStringParser(input);
 
         _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 32));//TaskCatalogue.getItemTask("sign", 32);
+        _structureMaterialsTask =new MineAndCollectTask(new ItemTarget(new Item[] {Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[] {Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getConfigState().push();
+        // Prevent mineshaft garbage
+        mod.getConfigState().setExclusivelyMineLogs(true);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
         if (_currentPlace != null && _currentPlace.isActive() && !_currentPlace.isFinished(mod)) {
+            setDebugState("Placing...");
             return _currentPlace;
         }
 
-        // TODO: If we have no signs and an "Sharpen Your Axe Preparation" flag is set, get diamond axe (or try to).
-
-        // NOTE: This only checks for the EXISTANCE of signs, NOT that they have the proper text.
-
-        // Get building blocks
-        if (!mod.getInventoryTracker().hasItem(Items.DIRT)) {
-            return TaskCatalogue.getItemTask("dirt", 64);
-        }
-
         if (_sharpenTheAxe) {
-            setDebugState("Sharpening the axe (if you don't want this, disable it)");
-            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
-                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_pickaxe", 1));
+            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL)) {
+                setDebugState("Sharpening the axe: Tools");
+                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1));
             }
             if (_extraSignAcquireTask.isActive() && !_extraSignAcquireTask.isFinished(mod)) {
+                setDebugState("Sharpening the axe: Signs");
                 return _extraSignAcquireTask;
             }
             if (!mod.getInventoryTracker().hasItem(ItemTarget.WOOD_SIGN)) {
@@ -88,10 +90,17 @@ public class BeeMovieTask extends Task {
             }
         }
 
+        // Get building blocks
+        int buildCount = mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE);
+        if (buildCount < STRUCTURE_MATERIALS_BUFFER && (buildCount == 0 || _structureMaterialsTask.isActive())) {
+            setDebugState("Collecting structure blocks...");
+            return _structureMaterialsTask;
+        }
+
         int signCounter = 0;
+        // NOTE: This only checks for the EXISTANCE of signs, NOT that they have the proper text.
         BlockPos currentSignPos = _start;
         while (true) {
-            Debug.logMessage("loop: " + signCounter + " = " + currentSignPos);
             assert MinecraftClient.getInstance().world != null;
 
             /*
@@ -103,6 +112,15 @@ public class BeeMovieTask extends Task {
              */
 
             BlockState blockAt = MinecraftClient.getInstance().world.getBlockState(currentSignPos);
+
+            BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
+
+            boolean canPlace = below.isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
+
+            if (!canPlace) {
+                setDebugState("Placing block below for sign placement...");
+                return new PlaceStructureBlockTask(currentSignPos.down());
+            }
 
             // Need a sign at this point.
             while (_cachedStrings.size() <= signCounter) {
@@ -131,7 +149,7 @@ public class BeeMovieTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        // Nothing
+        mod.getConfigState().pop();
     }
 
     @Override
@@ -207,7 +225,7 @@ public class BeeMovieTask extends Task {
                     break;
                 }
                 char c = (char) in;
-                Debug.logMessage("Read " + c);
+                //Debug.logMessage("Read " + c);
 
                 line.append(c);
 
