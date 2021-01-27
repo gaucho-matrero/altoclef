@@ -10,6 +10,9 @@ import adris.altoclef.util.slots.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,9 +49,13 @@ public class AltoClefCommands extends CommandList {
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
-            case "place":
-                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
+            case "place": {
+                BlockPos targetPos = new BlockPos(0, 6, 0);
+                Direction direction = Direction.NORTH;
+                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("sign", 1), direction, targetPos));
+                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
                 break;
+            }
             case "stacked":
                 mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;

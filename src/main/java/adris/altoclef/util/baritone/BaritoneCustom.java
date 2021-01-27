@@ -11,7 +11,7 @@ public class BaritoneCustom {
     private final PlaceBlockNearbyProcess _placeBlockNearbyProcess;
 
     public BaritoneCustom(AltoClef mod, Baritone baritone) {
-        baritone.getPathingControlManager().registerProcess(_interactWithBlockPositionProcess = new InteractWithBlockPositionProcess(baritone) );
+        baritone.getPathingControlManager().registerProcess(_interactWithBlockPositionProcess = new InteractWithBlockPositionProcess(baritone, mod) );
         baritone.getPathingControlManager().registerProcess(_placeBlockNearbyProcess = new PlaceBlockNearbyProcess(baritone, mod));
     }
 

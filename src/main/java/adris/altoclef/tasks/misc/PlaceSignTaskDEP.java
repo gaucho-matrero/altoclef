@@ -7,7 +7,6 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalGetToPosition;
-import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.schematic.AbstractSchematic;
 import net.minecraft.block.Block;
@@ -19,7 +18,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 // TODO: "isPosValid". Break
 // TODO: Abstract this out to "DoStuffAtPlacedBlockTask" where the only extra work here is the writing of the sign.
 
-public class PlaceSignTask extends Task {
+@Deprecated
+public class PlaceSignTaskDEP extends Task {
 
     private BlockPos _target;
     private final String _message;
@@ -37,11 +37,11 @@ public class PlaceSignTask extends Task {
     private BlockPos _bullshitLastWorkingRandomDelta = null;
     private int _bullshitFailCounter = 0;
 
-    public PlaceSignTask(BlockPos target, String message) {
+    public PlaceSignTaskDEP(BlockPos target, String message) {
         _target = target;
         _message = message;
     }
-    public PlaceSignTask(String message) {
+    public PlaceSignTaskDEP(String message) {
         this(null, message);
     }
 
@@ -136,7 +136,7 @@ public class PlaceSignTask extends Task {
                 throw new NotImplementedException();
                 //_placing = new PlaceBlockNearbySchematic(origin, blocks, false);
             } else {
-                _placing = new PlaceBlockSchematic(blocks);
+                //_placing = new PlaceBlockSchematic(blocks);
             }
             mod.getClientBaritone().getBuilderProcess().build("Place Sign", _placing , _target == null? origin : _target);
             _placeTimeout.reset();
@@ -152,8 +152,8 @@ public class PlaceSignTask extends Task {
 
     @Override
     protected boolean isEqual(Task obj) {
-        if (obj instanceof PlaceSignTask) {
-            PlaceSignTask task = (PlaceSignTask) obj;
+        if (obj instanceof PlaceSignTaskDEP) {
+            PlaceSignTaskDEP task = (PlaceSignTaskDEP) obj;
             if (!task._message.equals(_message)) return false;
             if ((task._target == null) != (_target == null)) return false;
             assert task._target != null;

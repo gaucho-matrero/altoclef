@@ -591,6 +591,15 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public boolean equipItem(ItemTarget toEquip) {
+        for (Item item : toEquip.getMatches()) {
+            if (hasItem(item)) {
+                if (equipItem(item)) return true;
+            }
+        }
+        return false;
+    }
+
     private static Map<Item, Integer> getFuelTimeMap() {
         if (_fuelTimeMap == null) {
             _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();

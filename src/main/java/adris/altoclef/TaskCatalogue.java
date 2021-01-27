@@ -97,6 +97,10 @@ public class TaskCatalogue {
         return _nameToItemMatches.get(name);
     }
 
+    public static ItemTarget getItemTarget(String name, int count) {
+        return new ItemTarget(name, count);
+    }
+
     public static ResourceTask getItemTask(String name, int count) {
 
         if (!taskExists(name)) {

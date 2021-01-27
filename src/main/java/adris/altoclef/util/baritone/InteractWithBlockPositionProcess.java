@@ -3,7 +3,8 @@ package adris.altoclef.util.baritone;//
 // (powered by FernFlower decompiler)
 //
 
-
+import adris.altoclef.AltoClef;
+import adris.altoclef.util.ItemTarget;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
@@ -35,6 +36,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 // Literally a copy of baritone's GetToBlockProcess but we pass a position instead of a BOM
 
@@ -47,18 +51,25 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     private boolean _cancelRightClick;
 
+    private Direction _interactSide;
+
     private BlockPos start;
 
     private int tickCount = 0;
     private int arrivalTickCount = 0;
 
-    public InteractWithBlockPositionProcess(Baritone baritone) {
-        super(baritone);
+    private ItemTarget _equipTarget = null;
+
+    private AltoClef _mod;
+
+    public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
+        super(baritone); _mod = mod;
     }
 
-    public void getToBlock(BlockPos target, boolean rightClickOnArrival, boolean blockOnTopMustBeRemoved, boolean walkInto) {
+    public void getToBlock(BlockPos target, Direction interactSide, boolean rightClickOnArrival, boolean blockOnTopMustBeRemoved, boolean walkInto) {
         this.onLostControl();
         _target = target;
+        _interactSide = interactSide;
         _rightClickOnArrival = rightClickOnArrival;
         _blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
         _walkInto = walkInto;
@@ -72,7 +83,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.getToBlock(target, rightClickOnArrival, false);
     }
     public void getToBlock(BlockPos target, boolean rightClickOnArrival, boolean blockOnTopMustBeRemoved) {
-        this.getToBlock(target, rightClickOnArrival, blockOnTopMustBeRemoved, false);
+        this.getToBlock(target, null, rightClickOnArrival, blockOnTopMustBeRemoved, false);
     }
 
     public boolean isActive() {
@@ -82,7 +93,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Goal goal = createGoal(_target);
         if (calcFailed) {
-            if ((Boolean)Baritone.settings().blacklistClosestOnFailure.value) {
+            if (Baritone.settings().blacklistClosestOnFailure.value) {
                 this.logDirect("Unable to find any path to " + _target + ", we're screwed...");
                 return this.onTick(false, isSafeToCancel);
             } else {
@@ -94,34 +105,21 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         } else {
-            int mineGoalUpdateInterval = (Integer)Baritone.settings().mineGoalUpdateInterval.value;
 
-            if (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel) {
+            if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
                 if (!_rightClickOnArrival) {
                     this.onLostControl();
-                    return new PathingCommand((Goal)null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
 
                 if (this.rightClick()) {
                     this.onLostControl();
-                    return new PathingCommand((Goal)null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
                 }
             }
 
             return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
-    }
-
-
-    private boolean areAdjacent(BlockPos posA, BlockPos posB) {
-        int diffX = Math.abs(posA.getX() - posB.getX());
-        int diffY = Math.abs(posA.getY() - posB.getY());
-        int diffZ = Math.abs(posA.getZ() - posB.getZ());
-        return diffX + diffY + diffZ == 1;
-    }
-
-    public synchronized void cancelRightClick() {
-        _cancelRightClick = true;
     }
 
     public synchronized void onLostControl() {
@@ -130,33 +128,82 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.baritone.getInputOverrideHandler().clearAllKeys();
     }
 
+    public synchronized void setInteractEquipItem(ItemTarget item) {
+        _equipTarget = item;
+    }
+
     public String displayName0() {
         return "Get To " + _target;
     }
     private Goal createGoal(BlockPos pos) {
+
+        if (!sideDoesntMatter()) {
+            Vec3i offs = _interactSide.getVector();
+            if (offs.getY() == -1) {
+                // If we're below, place ourselves two blocks below.
+                offs = offs.down();
+            }
+            pos = pos.add(offs);
+        }
+
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return (Goal)(_blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos));
+            return _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
         }
     }
 
     private boolean rightClick() {
-        Optional reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+        _mod.getInventoryTracker().equipItem(_equipTarget);
 
-        this.baritone.getLookBehavior().updateTarget((Rotation)reachable.get(), true);
-        this.baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-        //System.out.println(this.ctx.player().playerScreenHandler);
-        if (!(this.ctx.player().currentScreenHandler instanceof PlayerScreenHandler)) {
-            return true;
-        }
+        Optional<Rotation> reachable;
+        if (sideDoesntMatter()) {
+            reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
 
-        if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
-            this.logDirect("Right click timed out/cancelled");
-            return true;
         } else {
-            return false;
+            Vec3i sideVector = _interactSide.getVector();
+            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
+
+            Vec3d sidePoint = centerOffset.add(_target.getX(), _target.getY(), _target.getZ());
+
+            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+            reachable = RotationUtils.reachableOffset(ctx.player(), _target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
+
+            // Check for right angle
+            if (reachable.isPresent()) {
+                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
+                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
+                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
+
+                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
+                if (dot < 0) {
+                    // We're perpendicular and cannot face.
+                    return false;
+                }
+            }
+
         }
+        if (reachable.isPresent()) {
+
+
+            this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
+            if (this.baritone.getPlayerContext().isLookingAt(_target)) {
+                this.baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                //System.out.println(this.ctx.player().playerScreenHandler);
+
+                if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
+                    this.logDirect("Right click timed out/cancelled");
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean sideDoesntMatter() {
+        return _interactSide == null;
     }
 
 }
