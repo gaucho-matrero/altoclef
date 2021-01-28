@@ -86,6 +86,10 @@ public class ConfigState {
     }
 
     private State current() {
+        if (_states.empty()) {
+            Debug.logError("STATE EMPTY, UNEMPTIED!");
+            push();
+        }
         return _states.peek();
     }
 

@@ -15,7 +15,7 @@ import java.util.List;
 
 public class CollectSignTask extends ResourceTask {
 
-    private int _count;
+    private final int _count;
 
     public CollectSignTask(int count) {
         super(new ItemTarget(ItemTarget.WOOD_SIGN, count));
@@ -36,8 +36,10 @@ public class CollectSignTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         int signsCurrent = mod.getInventoryTracker().getItemCount(new ItemTarget("sign"));
-        int neededSticks = (int)(Math.floor((float)_count / 3 - 0.1)) + 1 - signsCurrent;
-        int neededPlanks = (int)(Math.floor((float)_count / 3 - 0.1) + 1) * 6 - (6 * signsCurrent);
+        int neededSticks = (int)(Math.floor((float)(_count - signsCurrent) / 3 - 0.1)) + 1;
+        int neededPlanks = (int)(Math.floor((float)(_count - signsCurrent) / 3 - 0.1) + 1) * 6;
+
+        Debug.logMessage("(" + signsCurrent + ") :" + neededPlanks + " : " + neededSticks);
 
         // These will be squashed together
         ItemTarget stickGet = null;
@@ -72,7 +74,7 @@ public class CollectSignTask extends ResourceTask {
         // If we do have it, return craft in inventory task for a generated recipe of that type of plank.
 
         Item p = hasEnough;
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("sign", new ItemTarget[] {t(p), t(p), t(p), t(p), t(p), t(p), null, t("stick"), null}, 3);
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(hasEnough.getTranslationKey() + " sign", new ItemTarget[] {t(p), t(p), t(p), t(p), t(p), t(p), null, t("stick"), null}, 3);
 
         return new CraftInTableTask(new ItemTarget("sign", _count), recipe, false);
     }

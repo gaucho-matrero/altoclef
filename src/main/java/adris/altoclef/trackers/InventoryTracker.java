@@ -182,6 +182,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean isArmorEquipped(Item item) {
+        ensureUpdated();
         if (item instanceof ArmorItem) {
             ArmorItem armor = (ArmorItem) item;
             Slot slot = PlayerSlot.getEquipSlot(armor.getSlotType());
@@ -196,13 +197,62 @@ public class InventoryTracker extends Tracker {
         return getRecipeMapping(Collections.emptyMap(), recipe, 1);
     }
 
+    // Less garbo version
+    private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
+        ensureUpdated();
+
+        HashMap<Integer, Integer> result = new HashMap<>();
+
+        HashMap<Item, Integer> usedUp = new HashMap<>(alreadyUsed);
+
+        // Go through each craft slot
+        for (int craftSlot = 0; craftSlot < recipe.getSlotCount(); ++craftSlot) {
+            ItemTarget item = recipe.getSlot(craftSlot);
+            if (item == null || item.isEmpty()) continue;
+
+            // Repeat this collection "count" number of times.
+            for (int i = 0; i < count; ++i) {
+                boolean foundMatch = false;
+                //noinspection SpellCheckingInspection
+                itemsearch:
+                // Check for an item that meets the requirement
+                for (Item match : item.getMatches()) {
+                    // Ensure we have a default used up of zero if not used up yet.
+                    if (!usedUp.containsKey(match)) usedUp.put(match, 0);
+
+                    int toSkip = usedUp.get(match);
+                    for (int invSlot : getInventorySlotsWithItem(match)) {
+                        ItemStack stack = getItemStackInSlot(Slot.getFromInventory(invSlot));
+                        // Skip over items we already used.
+                        // Edge case: We may skip over the entire stack. In that case this stack is used up.
+                        if (toSkip != 0 && toSkip >= stack.getCount()) {
+                            toSkip -= stack.getCount();
+                        } else {
+                            // If we skip over all the items in THIS stack, we will have at least one left over.
+                            // That means we found our guy.
+
+                            result.put(craftSlot, invSlot);
+                            usedUp.put(match, usedUp.get(match) + 1);
+                            foundMatch = true;
+                            break itemsearch;
+                        }
+                    }
+                }
+                if (!foundMatch) {
+                    //Debug.logWarning("Failed to find match for craft slot " + craftSlot);
+                    return null;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /*
     private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
         ensureUpdated();
 
         HashMap<Integer, Integer> craftSlotToInventorySlot = new HashMap<>();
-
-        // Matching
-        List<ItemTarget> matchingSlots = new ArrayList<>(recipe.mustMatchCount());
 
         // How many of each item we used
         HashMap<Item, Integer> usedUp = new HashMap<>();
@@ -222,11 +272,6 @@ public class InventoryTracker extends Tracker {
 
             //Debug.logMessage(craftPos + " => " + slot);
 
-            boolean mustMatchItem = recipe.mustMatch(craftPos);
-            if (mustMatchItem) {
-                matchingSlots.add(craftTarget);
-            }
-
             boolean slotSatisfied = false;
             // Make sure we have at least one of the requirements
             for (Item item : craftTarget.getMatches()) {
@@ -234,42 +279,41 @@ public class InventoryTracker extends Tracker {
                     usedUp.put(item, 0);
                 }
 
-                //Debug.logMessage("Check: " + item.getTranslationKey());
+                Debug.logMessage(craftPos + ": Check: " + item.getTranslationKey());
 
                 // "Spread Down" our items
                 int toSkip = usedUp.get(item);
                 int toFind = count;
-                //Debug.logMessage("Start toSkip = " + toSkip);
+                // toSkip = 0, toFind = 1.
+                //Debug.logMessage("Start toSkip = " + toSkip + ", total count = " + toFind);
 
                 for (int invSlotPosition : getInventorySlotsWithItem(item)) {
                     ItemStack stack;
                     try {
                         stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
                     } catch (Exception e) {
-                        Debug.logWarning("Inventory solt " + invSlotPosition + " invalid for some reason...");
+                        Debug.logWarning("Inventory slot " + invSlotPosition + " invalid for some reason...");
                         // Failed.
                         continue;
                     }
 
-                    //Debug.logMessage("(exists in slot " + invSlotPosition + ")");
+                    Debug.logMessage("    (exists in slot " + invSlotPosition + ")");
 
                     if (toSkip >= stack.getCount()) {
                         // We skip through this stack
                         toSkip -= stack.getCount();
                     } else {
-                        //Debug.logMessage("Found one in inv slot " + invSlotPosition);
+                        // We use at least something from this stack.
                         toSkip = 0;
                         for (int used = 0; used < count; ++used) {
                             toFind -= stack.getCount();
                             if (toFind < 0) toFind = 0;
-                            if (!mustMatchItem) {
-                                // Use one up but only if we can use it straight away (not if we're expecting a matching)
-                                usedUp.put(item, usedUp.get(item) + 1);
-                                if (toFind == 0) {
-                                    // Only keep track of the final item, as the mapping pertains to ONE recipe.
-                                    craftSlotToInventorySlot.put(craftPos, invSlotPosition);
-                                    slotSatisfied = true;
-                                }
+                            // Use one up
+                            usedUp.put(item, usedUp.get(item) + 1);
+                            if (toFind == 0) {
+                                // Only keep track of the final item, as the mapping pertains to ONE recipe.
+                                craftSlotToInventorySlot.put(craftPos, invSlotPosition);
+                                slotSatisfied = true;
                             }
                         }
                         // Stop when we've found enough items to fill this slot ("count" checks for multiple times a recipe)
@@ -280,7 +324,7 @@ public class InventoryTracker extends Tracker {
                 }
                 // We ran out of items
                 if (toSkip != 0) {
-                    //Debug.logWarning("TEMP A: " + toSkip);
+                    Debug.logWarning("We ran out of items");
                     return null;
                 }
 
@@ -289,72 +333,19 @@ public class InventoryTracker extends Tracker {
                     break;
                 }
 
-                /*
-                int amountLeft = getItemCount(item) - usedUp.get(item);
-                if (amountLeft > 0) {
-                    foundItem = true;
-                    // Use one up but only if we can use it straight away.
-                    if (!mustMatchItem) {
-                        inventoryToSlot.put()
-                        usedUp.put(item, usedUp.get(item) + 1);
-                    }
-                }
-                 */
             }
             if (!slotSatisfied) {
                 //Debug.logWarning("TEMP B");
+                Debug.logWarning("We failed to find a required item for craft slot " + craftPos);
                 // Failure to find item required for this slot.
                 return null;
             }
         }
-        // Now handle matching
-        if (!recipe.getMustMatchCollection().isEmpty()) {
-            ItemTarget exampleFirst = matchingSlots.get(0);
-            int requiredCount = recipe.mustMatchCount() * count;
-            for (Item item : exampleFirst.getMatches()) {
-                // We found an item that fits that match.
-                // At this point, `usedUp` reflects how many items we DEFINITELY used.
-                int itemsRemaining = getItemCount(item) - usedUp.get(item);
-                if (itemsRemaining >= requiredCount) {
-                    // "Spread down" just like we did the items above.
-                    int toSkip = usedUp.get(item);
-
-                    Iterator<Integer> matchingSlotIterator = recipe.getMustMatchCollection().iterator();
-
-                    for (int invSlotPosition : getInventorySlotsWithItem(item)) {
-                        ItemStack stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
-
-                        if (toSkip > stack.getCount()) {
-                            toSkip -= stack.getCount();
-                        } else {
-                            if (!matchingSlotIterator.hasNext()) {
-                                // We exhausted our matching slot requirements. We're done!
-                                return craftSlotToInventorySlot;
-                            }
-                            int index = matchingSlotIterator.next();
-                            Debug.logWarning("Matching found one: " + invSlotPosition + " -> " + index);
-                            craftSlotToInventorySlot.put(index, invSlotPosition);
-                            usedUp.put(item, usedUp.get(item) + 1);
-                        }
-                    }
-                    if (toSkip != 0) {
-                        //Debug.logWarning("TEMP C");
-                        // We ran out of spaces.
-                        return null;
-                    }
-
-                    return craftSlotToInventorySlot;
-                }
-            }
-            //Debug.logWarning("TEMP D");
-            // No combination of all items matching
-            return null;
-        }
 
         // We passed through the rings of fire
         return craftSlotToInventorySlot;
-
     }
+     */
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
         setDirty();
@@ -610,6 +601,28 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public boolean isInHotBar(Item ...items) {
+        for (int invSlot : getInventorySlotsWithItem(items)) {
+            if (0 <= invSlot && invSlot < 9) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void moveToNonEquippedHotbar(Item item, int offset) {
+
+        if (!hasItem(item)) return;
+
+        assert MinecraftClient.getInstance().player != null;
+        int equipSlot = MinecraftClient.getInstance().player.inventory.selectedSlot;
+
+        int otherSlot = (equipSlot + 1 + offset) % 9;
+
+        int found = getInventorySlotsWithItem(item).get(0);
+        swapItems(Slot.getFromInventory(found), Slot.getFromInventory(otherSlot));
+    }
+
+
     private static Map<Item, Integer> getFuelTimeMap() {
         if (_fuelTimeMap == null) {
             _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
@@ -717,4 +730,5 @@ public class InventoryTracker extends Tracker {
         }
 
     }
+
 }

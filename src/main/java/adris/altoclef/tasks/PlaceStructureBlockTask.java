@@ -3,18 +3,15 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
 import baritone.api.utils.BlockOptionalMeta;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
-import java.util.Optional;
 
 public class PlaceStructureBlockTask extends Task {
 
@@ -32,9 +29,8 @@ public class PlaceStructureBlockTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
-
+            Debug.logInternal("Run Structure Build");
             ISchematic schematic = new PlaceStructureSchematic(mod);
-
             mod.getClientBaritone().getBuilderProcess().build("structure", schematic, _target);
         }
         return null;

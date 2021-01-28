@@ -117,7 +117,7 @@ public class BlockTracker extends Tracker {
             return false;
         }
         try {
-            if (zaWarudo.isAir(pos) && !block.is(Blocks.AIR)) {
+            if (zaWarudo.isAir(pos) && !(block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
                 // This tracked block is air when it doesn't think it should.
                 Debug.logInternal("(failed aircheck)");
                 return true;

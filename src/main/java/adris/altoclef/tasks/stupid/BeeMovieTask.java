@@ -88,6 +88,14 @@ public class BeeMovieTask extends Task {
                 // Get a bunch of signs in bulk
                 return _extraSignAcquireTask;
             }
+
+            // Make 'em equippable.
+            if (!mod.getInventoryTracker().isInHotBar(Items.DIAMOND_AXE)) {
+                mod.getInventoryTracker().moveToNonEquippedHotbar(Items.DIAMOND_AXE, 0);
+            }
+            if (!mod.getInventoryTracker().isInHotBar(Items.DIAMOND_SHOVEL)) {
+                mod.getInventoryTracker().moveToNonEquippedHotbar(Items.DIAMOND_SHOVEL, 1);
+            }
         }
 
         // Get building blocks

@@ -53,14 +53,13 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     private Direction _interactSide;
 
-    private BlockPos start;
-
-    private int tickCount = 0;
     private int arrivalTickCount = 0;
 
     private ItemTarget _equipTarget = null;
 
     private AltoClef _mod;
+
+    private boolean _failed;
 
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone); _mod = mod;
@@ -76,7 +75,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         _cancelRightClick = false;
 
-        this.start = this.ctx.playerFeet();
+        _failed = false;
+
         this.arrivalTickCount = 0;
     }
     public void getToBlock(BlockPos target, boolean rightClickOnArrival) {
@@ -90,10 +90,15 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         return _target != null;
     }
 
+    public boolean failed() {
+        return _failed;
+    }
+
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Goal goal = createGoal(_target);
         if (calcFailed) {
             if (Baritone.settings().blacklistClosestOnFailure.value) {
+                _failed = true;
                 this.logDirect("Unable to find any path to " + _target + ", we're screwed...");
                 return this.onTick(false, isSafeToCancel);
             } else {
@@ -124,7 +129,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     public synchronized void onLostControl() {
         _target = null;
-        this.start = null;
         this.baritone.getInputOverrideHandler().clearAllKeys();
     }
 
@@ -141,10 +145,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             Vec3i offs = _interactSide.getVector();
             if (offs.getY() == -1) {
                 // If we're below, place ourselves two blocks below.
-                offs = offs.down();
-            }
-            if (offs.getY() == 1) {
-                // If we're above, move into the block.
                 offs = offs.down();
             }
             pos = pos.add(offs);
@@ -198,6 +198,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 //System.out.println(this.ctx.player().playerScreenHandler);
 
                 if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
+                    _failed = true;
                     this.logDirect("Right click timed out/cancelled");
                     return true;
                 } else {

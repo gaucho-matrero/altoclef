@@ -22,7 +22,7 @@ public class CraftingRecipe {
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
-    private final Set<Integer> _mustMatch = new HashSet<>();
+    //private final Set<Integer> _mustMatch = new HashSet<>();
 
     private CraftingRecipe() {}
 
@@ -49,18 +49,21 @@ public class CraftingRecipe {
         return _slots.length > 4;
     }
 
+    public int outputCount() {return _outputCount; }
+
+
+    /*
     public boolean mustMatch(int index) {
         return _mustMatch.contains(index);
     }
 
     public Collection<Integer> getMustMatchCollection() { return _mustMatch; }
 
-    public int mustMatchCount() {
+    //public int mustMatchCount() {
         return _mustMatch.size();
     }
 
-    public int outputCount() {return _outputCount; }
-
+    /*
     public CraftingRecipe withMustMatch(Integer[] matchingSlotIndices) {
         Collections.addAll(_mustMatch, matchingSlotIndices);
 
@@ -86,6 +89,7 @@ public class CraftingRecipe {
         }
         return this;
     }
+     */
 
     public static CraftingRecipe newShapedRecipe(Item[][] items, int outputCount) {
         return newShapedRecipe(null, items, outputCount);
@@ -160,9 +164,8 @@ public class CraftingRecipe {
             if (other._outputCount != _outputCount) return false;
             if (other._height != _height) return false;
             if (other._width != _width) return false;
-            if (other._mustMatch.size() != _mustMatch.size()) return false;
+            //if (other._mustMatch.size() != _mustMatch.size()) return false;
             if (other._slots.length != _slots.length) return false;
-            // TODO: mustMatch equality?
             for (int i = 0; i < _slots.length; ++i) {
                 if ( (other._slots[i] == null) != (_slots[i] == null) ) return false;
                 if (_slots[i] != null && !other._slots[i].equals(_slots[i])) return false;
@@ -181,8 +184,7 @@ public class CraftingRecipe {
                 name += "_slots=" + Arrays.toString(_slots) +
                         ", _width=" + _width +
                         ", _height=" + _height +
-                        ", _shapeless=" + _shapeless +
-                        ", _mustMatch=" + _mustMatch;
+                        ", _shapeless=" + _shapeless;
             }
             name += "}";
             return name;

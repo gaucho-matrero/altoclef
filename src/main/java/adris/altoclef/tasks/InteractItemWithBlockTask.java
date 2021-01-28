@@ -1,6 +1,7 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -25,7 +26,7 @@ public class InteractItemWithBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-
+        _trying = false;
     }
 
     @Override
@@ -34,7 +35,8 @@ public class InteractItemWithBlockTask extends Task {
             return TaskCatalogue.getItemTask(_toUse);
         }
 
-        if (!_trying && !proc(mod).isActive()) {
+        if (!proc(mod).isActive()) {
+            Debug.logMessage("Interact with block process restarting");
             _trying = true;
             proc(mod).getToBlock(_target, _direction, true, true, false);
             proc(mod).setInteractEquipItem(_toUse);

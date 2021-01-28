@@ -66,7 +66,7 @@ public class PickupDroppedItemTask extends Task {
         if (isPathing) {
             setDebugState("Going to " + _itemGoal);
             // Update blacklist if we're not making good progress.
-            double progress = BaritoneHelper.calculateGenericHeuristic(playerPos, _itemGoal);
+            double progress = -1 * BaritoneHelper.calculateGenericHeuristic(playerPos, _itemGoal);
             _progressChecker.setProgress(progress);
             if (_progressChecker.failed()) {
                 mod.getEntityTracker().blacklist(_itemGoal);

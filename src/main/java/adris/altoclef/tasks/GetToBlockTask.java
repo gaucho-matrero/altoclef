@@ -27,6 +27,10 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (!mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() && mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed()) {
+            Debug.logWarning("Restarting +interact with block...");
+            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
+        }
         // Baritone task
         return null;
     }
@@ -49,7 +53,7 @@ public class GetToBlockTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
+        return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
     }
 
     @Override
