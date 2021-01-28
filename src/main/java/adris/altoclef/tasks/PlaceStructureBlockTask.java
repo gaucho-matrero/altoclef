@@ -6,8 +6,10 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
+import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
@@ -85,11 +87,7 @@ public class PlaceStructureBlockTask extends Task {
                 }
                 Debug.logInternal("Failed to find throwaway block");
                 // No throwaways available!!
-                Optional<BlockState> o = available.stream().findAny();
-                if (o.isPresent()) return o.get();
-                Debug.logInternal("Failed to find ANY block");
-                // No blocks available period!
-                return blockState;
+                return new BlockOptionalMeta(Blocks.COBBLESTONE).getAnyBlockState();
             }
             // Don't care.
             return blockState;

@@ -3,10 +3,14 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.DestroyBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.util.math.BlockPos;
@@ -49,6 +53,14 @@ public class PlaceSignTask extends Task {
         if (placeAnywhere()) {
             return new PlaceBlockNearbyTask(ItemTarget.WOOD_SIGNS_ALL);
         } else {
+
+            assert MinecraftClient.getInstance().world != null;
+            BlockState b = MinecraftClient.getInstance().world.getBlockState(_target);
+
+            if (!isSign(b.getBlock()) && !b.isAir() && b.getBlock() != Blocks.WATER && b.getBlock() != Blocks.LAVA) {
+                return new DestroyBlockTask(_target);
+            }
+
             return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down());
         }
     }
@@ -130,5 +142,12 @@ public class PlaceSignTask extends Task {
 
     private boolean editingSign() {
         return MinecraftClient.getInstance().currentScreen instanceof SignEditScreen;
+    }
+
+    private static boolean isSign(Block block) {
+        for(Block check : ItemTarget.WOOD_SIGNS_ALL) {
+            if (check == block) return true;
+        }
+        return false;
     }
 }

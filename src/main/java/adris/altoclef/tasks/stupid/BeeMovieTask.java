@@ -111,12 +111,16 @@ public class BeeMovieTask extends Task {
             }
              */
 
-            BlockState blockAt = MinecraftClient.getInstance().world.getBlockState(currentSignPos);
+            // Clear above
+            BlockState above = MinecraftClient.getInstance().world.getBlockState(currentSignPos.up());
+            if (!above.isAir() && above.getBlock() != Blocks.WATER) {
+                setDebugState("Clearing block above to prevent hanging...");
+                return new DestroyBlockTask(currentSignPos.up());
+            }
 
+            // Fortify below
             BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
-
             boolean canPlace = below.isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
-
             if (!canPlace) {
                 setDebugState("Placing block below for sign placement...");
                 return new PlaceStructureBlockTask(currentSignPos.down());
@@ -134,6 +138,9 @@ public class BeeMovieTask extends Task {
                 Debug.logMessage("NEXT SIGN: " + next);
                 _cachedStrings.add(next);
             }
+
+
+            BlockState blockAt = MinecraftClient.getInstance().world.getBlockState(currentSignPos);
 
 
             if (!isSign(blockAt.getBlock())) {

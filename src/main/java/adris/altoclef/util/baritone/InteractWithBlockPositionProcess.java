@@ -153,7 +153,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
+            return new GoalGetToBlock(pos);
+            // Is the following better? Commented out was the old way copied from baritone.
+            //return new _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
         }
     }
 
