@@ -15,9 +15,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -36,6 +34,8 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
     private boolean _onlyPlaceOnGround;
 
     private AltoClef _mod;
+
+    private int _placeTimer;
 
     private static final Vec3i[] OFFSETS;
     static {
@@ -66,6 +66,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
     public void place(Block[] toPlace, boolean onlyPlaceOnGround) {
         _toPlace = toPlace;
         _placed = null;
+        _placeTimer = 0;
         _onlyPlaceOnGround = onlyPlaceOnGround;
     }
     public void place(Block[] toPlace) {
@@ -76,6 +77,12 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
 
         if (!isActive()) return null;
+
+        // Wait while placing.
+        if (_placeTimer-- > 0) {
+            //Debug.logMessage("(wait)");
+            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
 
         // Wait for place
         if (_placed != null) {
@@ -92,7 +99,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
             assert MinecraftClient.getInstance().player != null;
             BlockPos playerPos = MinecraftClient.getInstance().player.getBlockPos();
             BlockPos tryPos = playerPos.add(offs);
-            if (tryPlace(tryPos)) {
+            if (tryPlaceAt(tryPos)) {
                 _placed = tryPos;
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
@@ -149,7 +156,6 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                 if (MovementHelper.avoidBreaking(baritone.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
                     return false;
                 }
-                Debug.logInternal("BREAKING");
                 // Break
                 MovementHelper.switchToBestToolFor(ctx, ctx.world().getBlockState(pos));
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
@@ -161,18 +167,17 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         return false;
     }
 
-    private boolean tryPlace(BlockPos pos) {
+    private boolean tryPlaceAt(BlockPos pos) {
 
         // Only place if it's air or water
         BlockState state = ctx.world().getBlockState(pos);
 
         if (!canPlaceIn(state.getBlock())) {
-            //Debug.logInternal("Failed to place in " + state.getBlock().getTranslationKey());
+            //Debug.logInternal("Failed to place " + pos.toShortString() + " in " + state.getBlock().getTranslationKey());
             return false;
         }
 
         // Place
-        // Offset by center
         Vec3d placeBelow = new Vec3d(0.5, 0, 0.5);
         Vec3d[] placeOffsets = new Vec3d[] {
                 new Vec3d(0, 0.5, 0.5),
@@ -199,10 +204,12 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
 
         if (!isActive()) return false;
 
+        // pos is where the object will be placed
+        // placeOn is what block it will be placed ON.
         Vec3d centerOffs = offs.subtract(0.5, 0.5, 0.5).normalize();
         BlockPos placeOn = pos.add(centerOffs.x, centerOffs.y, centerOffs.z);
 
-        Optional<Rotation> rot = RotationUtils.reachableOffset(ctx.player(), placeOn, new Vec3d(pos.getX() + offs.x, pos.getY() + offs.y, pos.getZ() + offs.z), ctx.playerController().getBlockReachDistance(), false);
+        Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), placeOn, ctx.playerController().getBlockReachDistance());//RotationUtils.reachableOffset(ctx.player(), placeOn, new Vec3d(pos.getX() + offs.x, pos.getY() + offs.y, pos.getZ() + offs.z), ctx.playerController().getBlockReachDistance(), false);
         if (rot.isPresent()) {
             HitResult result = RayTraceUtils.rayTraceTowards(ctx.player(), rot.get(), ctx.playerController().getBlockReachDistance());
             //if (result instanceof BlockHitResult && ((BlockHitResult) result).getSide() == Direction.UP) {
@@ -218,7 +225,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                     if (withinPlayer(pos, offs)) {
                         //baritone.getInputOverrideHandler().clearAllKeys();
                         //baritone.getInputOverrideHandler().setInputForceState(Input.JUMP, true);
-                        Debug.logInternal("(within player)");
+                        //Debug.logInternal("(within player) " + offs);
                         return false;
                     }
                     boolean hasItem = false;
@@ -239,8 +246,13 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                     baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
 
                     return true;
+                } else {
+                    //Debug.logInternal("Timer SET");
+                    _placeTimer = 5;
                 }
             //}
+        } else {
+            //logDebug("No view to " + placeOn);
         }
         return false;
     }
@@ -249,11 +261,13 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
     private static boolean canPlaceIn(Block block) {
-        return block == Blocks.AIR || block == Blocks.WATER;
+        return block == Blocks.AIR || block == Blocks.WATER || block == Blocks.CAVE_AIR; // wtf is cave_air
     }
 
     private static boolean withinPlayer(BlockPos pos, Vec3d offs) {
-        Vec3d center = new Vec3d(pos.getX() + offs.x, pos.getY() + offs.y, pos.getZ() + offs.z);
+        Vec3d centerOffs = offs.subtract(0.5, 0.5, 0.5).normalize();
+
+        Vec3d center = new Vec3d(pos.getX() + centerOffs.x, pos.getY() + centerOffs.y, pos.getZ() + centerOffs.z);
         assert MinecraftClient.getInstance().player != null;
         Vec3d playerPos = MinecraftClient.getInstance().player.getPos();
         Vec3d playerTop = playerPos.add(new Vec3d(0, MinecraftClient.getInstance().player.getHeight(), 0));
