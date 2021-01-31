@@ -113,7 +113,6 @@ public class BlockTracker extends Tracker {
         ClientWorld zaWarudo = MinecraftClient.getInstance().world;
         // No world, therefore we don't assume block is invalid.
         if (zaWarudo == null) {
-            Debug.logInternal("(failed worldcheck)");
             return false;
         }
         try {

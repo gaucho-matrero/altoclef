@@ -1,9 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.resources.CollectCobblestoneTask;
-import adris.altoclef.tasks.resources.CollectPlanksTask;
-import adris.altoclef.tasks.resources.CollectSignTask;
+import adris.altoclef.tasks.resources.*;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -54,6 +52,9 @@ public class TaskCatalogue {
             mine("coal",  MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
             mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
+
+            mine("gravel", MiningRequirement.HAND, Blocks.GRAVEL, Items.GRAVEL);
+
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
             smelt("gold_ingot", Items.GOLD_INGOT, "gold_ore");
 
@@ -67,7 +68,19 @@ public class TaskCatalogue {
             tools("diamond", "diamond", Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_HOE);
             armor("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
 
+            simple("flint", Items.FLINT, CollectFlintTask.class);
+
             shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
+            {
+                String i = "iron_ingot";
+                shapedRecipe3x3("bucket", Items.BUCKET, 1, i, o, i, o, i, o, o, o, o);
+                shapedRecipe2x2("flint_and_steel", Items.FLINT_AND_STEEL, 1, i, o, o, "flint");
+
+                shapedRecipe2x2("shears", Items.SHEARS, 1, i, o, o, i);
+            }
+
+            simple("water_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectWaterBucketTask.class);
+            simple("lava_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask.class);
 
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");

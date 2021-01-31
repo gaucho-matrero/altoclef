@@ -23,6 +23,10 @@ public class InteractItemWithBlockTask extends Task {
         _direction = direction;
         _target = target;
     }
+    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target) {
+        // null means any side is OK
+        this(toUse, null, target);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -59,7 +63,8 @@ public class InteractItemWithBlockTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof InteractItemWithBlockTask) {
             InteractItemWithBlockTask task = (InteractItemWithBlockTask) obj;
-            if (!task._direction.equals(_direction)) return false;
+            if ((task._direction == null) != (_direction == null)) return false;
+            if (task._direction != null && !task._direction.equals(_direction)) return false;
             if (!task._toUse.equals(_toUse)) return false;
             if (!task._target.equals(_target)) return false;
             return true;

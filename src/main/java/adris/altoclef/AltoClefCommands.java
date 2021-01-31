@@ -65,10 +65,10 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "place": {
                 BlockPos targetPos = new BlockPos(0, 6, 0);
-                mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
+                //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
                 //Direction direction = Direction.UP;
                 //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("sign", 1), direction, targetPos));
-                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.FURNACE, Blocks.CRAFTING_TABLE, Blocks.OAK_SIGN}));
+                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
                 break;
             }
             case "equip": {

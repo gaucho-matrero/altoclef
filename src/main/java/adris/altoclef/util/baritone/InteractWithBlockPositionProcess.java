@@ -4,12 +4,13 @@ package adris.altoclef.util.baritone;//
 //
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalComposite;
-import baritone.api.pathing.goals.GoalGetToBlock;
+import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.process.IGetToBlockProcess;
@@ -111,17 +112,17 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             }
         } else {
 
-            if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
-                if (!_rightClickOnArrival) {
-                    this.onLostControl();
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                }
-
-                if (this.rightClick()) {
-                    this.onLostControl();
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                }
+            //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
+            if (!_rightClickOnArrival) {
+                this.onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
+
+            if (this.rightClick()) {
+                this.onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            }
+            //}
 
             return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
@@ -153,7 +154,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return new GoalGetToBlock(pos);
+            Debug.logInternal("GOAL NEAR");
+            return new GoalNear(pos, 1);
+            //return new GoalGetToBlock(pos);
             // Is the following better? Commented out was the old way copied from baritone.
             //return new _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
         }
@@ -164,7 +167,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         Optional<Rotation> reachable;
         if (sideDoesntMatter()) {
             reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-
         } else {
             Vec3i sideVector = _interactSide.getVector();
             Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
@@ -189,8 +191,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         }
         if (reachable.isPresent()) {
-
-
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
                 if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);

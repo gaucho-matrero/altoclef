@@ -5,8 +5,11 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
+import baritone.process.MineProcess;
+import baritone.api.utils.RayTraceUtils;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.RaycastContext;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -77,6 +80,16 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void setRayTracingFluidHandling(RaycastContext.FluidHandling fluidHandling) {
+        current().rayFluidHandling = fluidHandling;
+        current().applyState();
+    }
+
+    public void setMineProcSearchAnywhereFlag(boolean value) {
+        current().mineProcSearchAnyFlag = value;
+        current().applyState();
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProtected(Item item) {
         // For now nothing is protected.
@@ -122,6 +135,10 @@ public class ConfigState {
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
 
+        // Hard coded stuff
+        public RaycastContext.FluidHandling rayFluidHandling;
+        public boolean mineProcSearchAnyFlag;
+
         public State() {
             this(null);
         }
@@ -159,6 +176,8 @@ public class ConfigState {
             blocksToAvoidBreaking = new HashSet<>(settings._blocksToAvoidBreaking);
             toAvoidBreaking = new ArrayList<>(settings._breakAvoiders);
 
+            rayFluidHandling = RayTraceUtils.fluidHandling;
+            mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
         }
 
         /**
@@ -174,6 +193,9 @@ public class ConfigState {
             sa._breakAvoiders.addAll(toAvoidBreaking);
             sa._blocksToAvoidBreaking.clear();
             sa._blocksToAvoidBreaking.addAll(blocksToAvoidBreaking);
+
+            RayTraceUtils.fluidHandling = rayFluidHandling;
+            MineProcess.searchAnyFlag = mineProcSearchAnyFlag;
         }
     }
 }
