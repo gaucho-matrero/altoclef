@@ -1,2 +1,14 @@
-Acquire "artifacts.zip" from https://gitlab.com/CDAGaming/fabritone/-/jobs -> fabric/1.16.3.
-Unzip and move "baritone-1.6.1-dev.jar" to this folder.
+
+You'll have to clone my Fabritone-extra project and build gradle.
+
+1) Clone git repository: https://gitlab.com/adrisj7/fabritone
+(this is a fork of https://gitlab.com/CDAGaming/fabritone)
+
+2) Import Gradle Project (Preferred IDE is IntelliJ but you may try with other IDEs)
+
+3) run gradle target: "build"
+
+4) the following directory should now exist:
+"build/libs/baritone-1.6.2-dev.jar"
+
+5) Move "baritone-1.6.2-dev.jar" to this folder.

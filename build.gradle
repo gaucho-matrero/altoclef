@@ -21,7 +21,7 @@ dependencies {
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    compile files('libs/baritone-1.6.1-dev.jar')
+    compile files('libs/baritone-1.6.2-dev.jar')
 }
 
 processResources {

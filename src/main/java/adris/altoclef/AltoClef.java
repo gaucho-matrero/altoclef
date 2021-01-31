@@ -11,6 +11,7 @@ import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
+import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
@@ -152,6 +153,10 @@ public class AltoClef implements ModInitializer {
         return Baritone.settings();
     }
 
+    public AltoClefSettings getExtraBaritoneSettings() {
+        return Baritone.getAltoClefSettings();
+    }
+
     public int getTicks() {
         try {
             ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
@@ -169,6 +174,8 @@ public class AltoClef implements ModInitializer {
     }
     public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
     public PlayerExtraController getControllerExtras() {return _extraController; }
+
+
     // Extra control
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);

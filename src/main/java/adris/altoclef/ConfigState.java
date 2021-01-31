@@ -3,13 +3,13 @@ package adris.altoclef;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
+import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Represents a state of global config. It can be copied and reset
@@ -42,6 +42,7 @@ public class ConfigState {
 
     public void addThrowawayItems(Item ...items) {
         Collections.addAll(current().throwawayItems, items);
+        current().applyState();
     }
 
     public void removeThrowawayItems(Item ...items) {
@@ -64,6 +65,16 @@ public class ConfigState {
     }
     public void setExclusivelyMineLogs(boolean value) {
         current().exclusivelyMineLogs = value;
+        current().applyState();
+    }
+
+    public void avoidBlockBreaking(BlockPos pos) {
+        current().blocksToAvoidBreaking.add(pos);
+        current().applyState();
+    }
+    public void avoidBlockBreaking(Predicate<BlockPos> pred) {
+        current().toAvoidBreaking.add(pred);
+        current().applyState();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -74,7 +85,12 @@ public class ConfigState {
 
     /// Stack management
     public void push() {
-        _states.push(new State());
+        if (_states.empty()) {
+            _states.push(new State());
+        } else {
+            // Make copy and push that
+            _states.push(new State(current()));
+        }
     }
     public void pop() {
         if (_states.empty()) {
@@ -102,18 +118,31 @@ public class ConfigState {
         // Alto Clef params
         public boolean exclusivelyMineLogs;
 
-        public State() {
-            Settings s = _mod.getClientBaritoneSettings();
+        // Extra Baritone Settings
+        public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
+        public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
 
-            // Read in current state on creation
-            readState(s);
+        public State() {
+            this(null);
+        }
+
+        public State(State toCopy) {
+            // Read in current state
+            readState(_mod.getClientBaritoneSettings());
+
+            readExtraState(_mod.getExtraBaritoneSettings());
+
+            if (toCopy != null) {
+                // Copy over stuff from old one
+                exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
+            }
         }
 
         /**
          * Make the current state match our copy
          */
         public void applyState() {
-            applyState(_mod.getClientBaritoneSettings());
+            applyState(_mod.getClientBaritoneSettings(), _mod.getExtraBaritoneSettings());
         }
 
         /**
@@ -126,14 +155,25 @@ public class ConfigState {
             mineScanDroppedItems = s.mineScanDroppedItems.value;
         }
 
+        private void readExtraState(AltoClefSettings settings) {
+            blocksToAvoidBreaking = new HashSet<>(settings._blocksToAvoidBreaking);
+            toAvoidBreaking = new ArrayList<>(settings._breakAvoiders);
+
+        }
+
         /**
          * Make the current state match our copy
          */
-        private void applyState(Settings s) {
+        private void applyState(Settings s, AltoClefSettings sa) {
             s.acceptableThrowawayItems.value.clear();
             s.acceptableThrowawayItems.value.addAll(throwawayItems);
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
+
+            sa._breakAvoiders.clear();
+            sa._breakAvoiders.addAll(toAvoidBreaking);
+            sa._blocksToAvoidBreaking.clear();
+            sa._blocksToAvoidBreaking.addAll(blocksToAvoidBreaking);
         }
     }
 }

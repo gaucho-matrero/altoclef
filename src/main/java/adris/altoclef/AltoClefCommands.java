@@ -93,6 +93,13 @@ public class AltoClefCommands extends CommandList {
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
                 break;
+            case "avoid":
+                // Test block break predicate
+                mod.getConfigState().avoidBlockBreaking((BlockPos b) -> (-1000 < b.getX() && b.getX() < 1000)
+                        && (-1000 < b.getY() && b.getY() < 1000)
+                        && (-1000 < b.getZ() && b.getZ() < 1000));
+                Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
+                break;
         }
     }
 
