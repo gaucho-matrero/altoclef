@@ -65,6 +65,19 @@ public class BeeMovieTask extends Task {
         mod.getConfigState().push();
         // Prevent mineshaft garbage
         mod.getConfigState().setExclusivelyMineLogs(true);
+
+        // Avoid breaking the ground below the signs.
+        mod.getConfigState().avoidBlockBreaking((block) -> {
+            BlockPos bottomStart = _start.down();
+            BlockPos delta = block.subtract(bottomStart);
+            return sign(delta.getX()) == sign(_direction.getX())
+                    && sign(delta.getY()) == sign(_direction.getY())
+                    && sign(delta.getZ()) == sign(_direction.getZ());
+        });
+    }
+
+    private static int sign(int num) {
+        return Integer.compare(num, 0);
     }
 
     @Override
