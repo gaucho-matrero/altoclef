@@ -80,13 +80,24 @@ public class ConfigState {
         current().applyState();
     }
 
-    public void setRayTracingFluidHandling(RaycastContext.FluidHandling fluidHandling) {
-        current().rayFluidHandling = fluidHandling;
+    public void avoidBlockPlacing(Predicate<BlockPos> pred) {
+        current().toAvoidPlacing.add(pred);
         current().applyState();
     }
 
-    public void setMineProcSearchAnywhereFlag(boolean value) {
+    public void setRayTracingFluidHandling(RaycastContext.FluidHandling fluidHandling) {
+        current().rayFluidHandling = fluidHandling;
+        //Debug.logMessage("OOF: " + fluidHandling);
+        current().applyState();
+    }
+
+    public void setSearchAnywhereFlag(boolean value) {
         current().mineProcSearchAnyFlag = value;
+        current().applyState();
+    }
+
+    public void setAllowWalkThroughFlowingWater(boolean value) {
+        current()._allowWalkThroughFlowingWater = value;
         current().applyState();
     }
 
@@ -134,6 +145,8 @@ public class ConfigState {
         // Extra Baritone Settings
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
+        public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
+        public boolean _allowWalkThroughFlowingWater = false;
 
         // Hard coded stuff
         public RaycastContext.FluidHandling rayFluidHandling;
@@ -175,6 +188,8 @@ public class ConfigState {
         private void readExtraState(AltoClefSettings settings) {
             blocksToAvoidBreaking = new HashSet<>(settings._blocksToAvoidBreaking);
             toAvoidBreaking = new ArrayList<>(settings._breakAvoiders);
+            toAvoidPlacing = new ArrayList<>(settings._placeAvoiders);
+            _allowWalkThroughFlowingWater = settings._allowFlowingWaterPass;
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
             mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
@@ -193,6 +208,10 @@ public class ConfigState {
             sa._breakAvoiders.addAll(toAvoidBreaking);
             sa._blocksToAvoidBreaking.clear();
             sa._blocksToAvoidBreaking.addAll(blocksToAvoidBreaking);
+            sa._placeAvoiders.clear();
+            sa._placeAvoiders.addAll(toAvoidPlacing);
+
+            sa._allowFlowingWaterPass = _allowWalkThroughFlowingWater;
 
             RayTraceUtils.fluidHandling = rayFluidHandling;
             MineProcess.searchAnyFlag = mineProcSearchAnyFlag;

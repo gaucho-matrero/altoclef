@@ -8,34 +8,17 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalNear;
-import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.pathing.goals.GoalTwoBlocks;
-import baritone.api.process.IGetToBlockProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
-import baritone.api.utils.BetterBlockPos;
-import baritone.api.utils.BlockOptionalMeta;
-import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
-import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.MovementHelper;
-import baritone.process.MineProcess;
 import baritone.utils.BaritoneProcessHelper;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+
 import java.util.Optional;
-import java.util.stream.Stream;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.screen.PlayerScreenHandler;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -97,7 +80,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Goal goal = createGoal(_target);
-        if (calcFailed) {
+        if (false && calcFailed) {
             if (Baritone.settings().blacklistClosestOnFailure.value) {
                 _failed = true;
                 this.logDirect("Unable to find any path to " + _target + ", we're screwed...");
@@ -118,13 +101,17 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
 
-            if (this.rightClick()) {
-                this.onLostControl();
-                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            switch (this.rightClick()) {
+                case CANT_REACH:
+                    return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+                case WAIT_FOR_CLICK:
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                case CLICK_ATTEMPTED:
+                    this.onLostControl();
+                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+                default:
+                    return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
             }
-            //}
-
-            return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
     }
 
@@ -154,7 +141,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            Debug.logInternal("GOAL NEAR");
             return new GoalNear(pos, 1);
             //return new GoalGetToBlock(pos);
             // Is the following better? Commented out was the old way copied from baritone.
@@ -162,11 +148,14 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         }
     }
 
-    private boolean rightClick() {
+    private ClickResponse rightClick() {
 
         Optional<Rotation> reachable;
         if (sideDoesntMatter()) {
             reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+            if (!reachable.isPresent()) {
+                Debug.logMessage("Fail: " + _target);
+            }
         } else {
             Vec3i sideVector = _interactSide.getVector();
             Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
@@ -185,12 +174,16 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
                 if (dot < 0) {
                     // We're perpendicular and cannot face.
-                    return false;
+                    Debug.logMessage("DOT PRODUCT FAIL: " + dot);
+                    return ClickResponse.CANT_REACH;
                 }
+            } else {
+                Debug.logMessage("Fail: " + _target + " : " + sidePoint);
             }
 
         }
         if (reachable.isPresent()) {
+            //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
                 if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
@@ -200,13 +193,18 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
                     _failed = true;
                     this.logDirect("Right click timed out/cancelled");
-                    return true;
-                } else {
-                    return false;
+                    return ClickResponse.CLICK_ATTEMPTED;
                 }
             }
+            return ClickResponse.WAIT_FOR_CLICK;
         }
-        return false;
+        return ClickResponse.CANT_REACH;
+    }
+
+    private enum ClickResponse {
+        CANT_REACH,
+        WAIT_FOR_CLICK,
+        CLICK_ATTEMPTED
     }
 
     private boolean sideDoesntMatter() {

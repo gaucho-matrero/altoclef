@@ -2,6 +2,9 @@ package adris.altoclef;
 
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
+import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.misc.ConstructNetherPortalSpeedrunTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
@@ -14,7 +17,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,9 +68,9 @@ public class AltoClefCommands extends CommandList {
             case "place": {
                 BlockPos targetPos = new BlockPos(0, 6, 0);
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
-                //Direction direction = Direction.UP;
-                //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("sign", 1), direction, targetPos));
-                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
+                Direction direction = Direction.UP;
+                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos));
+                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
                 break;
             }
             case "equip": {
@@ -99,6 +101,9 @@ public class AltoClefCommands extends CommandList {
                         && (-1000 < b.getY() && b.getY() < 1000)
                         && (-1000 < b.getZ() && b.getZ() < 1000));
                 Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
+                break;
+            case "portal":
+                mod.runUserTask(new ConstructNetherPortalSpeedrunTask());
                 break;
         }
     }

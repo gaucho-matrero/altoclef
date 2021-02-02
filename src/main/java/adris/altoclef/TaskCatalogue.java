@@ -80,7 +80,7 @@ public class TaskCatalogue {
             }
 
             simple("water_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectWaterBucketTask.class);
-            simple("lava_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask.class);
+            simple("lava_bucket", Items.LAVA_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask.class);
 
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");

@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  *
@@ -69,13 +70,21 @@ public class BlockTracker extends Tracker {
     }
 
     public BlockPos getNearestTracking(Vec3d pos, Block block) {
+        return getNearestTracking(pos, block, (p) -> false);
+    }
+    public BlockPos getNearestTracking(Vec3d pos, Block block, Predicate<BlockPos> isInvalidTest) {
         if (!_trackingBlocks.containsKey(block)) {
             Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
             return null;
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return _cache.getNearest(block, pos);
+        return _cache.getNearest(block, pos, isInvalidTest);
+    }
+
+    public List<BlockPos> getKnownLocations(Block ...blocks) {
+        updateState();
+        return _cache.getKnownLocations(blocks);
     }
 
     private boolean shouldUpdate() {
@@ -184,7 +193,7 @@ public class BlockTracker extends Tracker {
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(Block block, Vec3d position) {
+        public BlockPos getNearest(Block block, Vec3d position, Predicate<BlockPos> isInvalid) {
             if (!anyFound(block)) {
                 Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
@@ -201,6 +210,7 @@ public class BlockTracker extends Tracker {
             ListIterator<BlockPos> it = blockList.listIterator();
             while (it.hasNext()) {
                 BlockPos pos = it.next();
+                if (isInvalid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (blockIsInvalid(block, pos)) {
@@ -236,6 +246,11 @@ public class BlockTracker extends Tracker {
             }
 
             while (toPurge > 0) {
+                if (blockList.size() == 0) {
+                    //noinspection UnusedAssignment
+                    toPurge = 0;
+                    break;
+                }
                 blockList.remove(blockList.size() - 1);
                 toPurge --;
             }
