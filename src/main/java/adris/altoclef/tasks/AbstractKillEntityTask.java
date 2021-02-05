@@ -40,7 +40,7 @@ public abstract class AbstractKillEntityTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        LivingEntity entity = getEntityTarget();
+        LivingEntity entity = getEntityTarget(mod);
 
         mod.getMobDefenseChain().setTargetEntity(entity);
 
@@ -88,7 +88,7 @@ public abstract class AbstractKillEntityTask extends Task {
         mod.getMobDefenseChain().resetForceField();
     }
 
-    protected abstract LivingEntity getEntityTarget();
+    protected abstract LivingEntity getEntityTarget(AltoClef mod);
 
     private void equipWeapon(AltoClef mod) {
         for (Item item : WEAPON_ITEMS) {

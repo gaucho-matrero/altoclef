@@ -8,6 +8,9 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
@@ -88,6 +91,16 @@ public class TaskCatalogue {
             alias("gold_pick", "gold_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
 
+            mobCook("porkchop", Items.PORKCHOP, Items.COOKED_PORKCHOP, PigEntity.class);
+            mobCook("beef", Items.BEEF, Items.COOKED_BEEF, CowEntity.class);
+            mobCook("chicken", Items.CHICKEN, Items.COOKED_CHICKEN, ChickenEntity.class);
+            mobCook("mutton", Items.MUTTON, Items.COOKED_MUTTON, SheepEntity.class);
+            mobCook("rabbit", Items.RABBIT, Items.COOKED_RABBIT, RabbitEntity.class);
+            mobCook("salmon", Items.SALMON, Items.COOKED_SALMON, SalmonEntity.class);
+            mobCook("cod", Items.COD, Items.COOKED_COD, CodEntity.class);
+            mob("bone", Items.BONE, SkeletonEntity.class);
+            mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
+            mob("feather", Items.FEATHER, ChickenEntity.class);
         }
     }
 
@@ -182,6 +195,21 @@ public class TaskCatalogue {
     }
     private static void smelt(String name, Item match, String materials) {
         smelt(name, new Item[]{match}, materials);
+    }
+
+    private static void mob(String name, Item[] matches, Class mobClass) {
+        put(name, matches, new MobTaskFactory(mobClass, matches));
+    }
+    private static void mob(String name, Item match, Class mobClass) {
+        mob(name, new Item[] {match}, mobClass);
+    }
+
+    private static void mobCook(String uncookedName, String cookedName, Item uncooked, Item cooked, Class mobClass) {
+        mob(uncookedName, uncooked, mobClass);
+        smelt(cookedName, cooked, uncookedName);
+    }
+    private static void mobCook(String uncookedName, Item uncooked, Item cooked, Class mobClass) {
+        mobCook(uncookedName, "cooked_" + uncookedName, uncooked, cooked, mobClass);
     }
 
     private static void tools(String toolMaterialName, String material, Item pickaxeItem, Item shovelItem, Item swordItem, Item axeItem, Item hoeItem) {
@@ -296,6 +324,23 @@ public class TaskCatalogue {
         protected ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
             Constructor constructor = _class.getConstructor(ItemTarget.class, Block[].class, MiningRequirement.class);
             return (ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
+        }
+    }
+
+    static class MobTaskFactory extends TaskFactory {
+        private Item[] _target;
+        private Class _mob;
+        public MobTaskFactory(Class mob, Item[] target) {
+            super(KillAndLooktTask.class);
+            _mob = mob;
+            _target = target;
+        }
+        @Override
+        protected ResourceTask createResourceTaskInternal(String name, int count) {
+            //Constructor constructor = _class.getConstructor(ItemTarget.class, Block[].class, MiningRequirement.class);
+            ItemTarget[] targets = new ItemTarget[_target.length];
+            for (int i = 0; i < targets.length; ++i) targets[i] = new ItemTarget(_target[i], count);
+            return new KillAndLooktTask(_mob, targets);//(ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
         }
     }
 

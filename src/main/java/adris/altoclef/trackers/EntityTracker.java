@@ -23,6 +23,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")
 public class EntityTracker extends Tracker {
@@ -82,6 +83,20 @@ public class EntityTracker extends Tracker {
         }
         return closestEntity;
     }
+
+    public Entity getClosestEntity(Vec3d position, Class toFind) {
+        Entity closestEntity = null;
+        double minCost = Float.POSITIVE_INFINITY;
+        for (MobEntity entity : _mobMap.get(toFind)) {
+            double cost = entity.squaredDistanceTo(position);
+            if (cost < minCost) {
+                minCost = cost;
+                closestEntity = entity;
+            }
+        }
+        return closestEntity;
+    }
+
     private boolean isBlackListed(Entity entity) {
         if (entity == null) return false;
         return isBlackListed(entity.getPos());

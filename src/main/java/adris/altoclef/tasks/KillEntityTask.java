@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.entity.LivingEntity;
 
@@ -12,7 +13,7 @@ public class KillEntityTask extends AbstractKillEntityTask {
     }
 
     @Override
-    protected LivingEntity getEntityTarget() {
+    protected LivingEntity getEntityTarget(AltoClef mod) {
         return _target;
     }
 
