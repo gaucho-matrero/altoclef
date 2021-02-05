@@ -5,19 +5,29 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Input;
+import baritone.Baritone;
+import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
 import javafx.scene.input.KeyCode;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyCodeAccessor;
 import net.java.games.input.Component;
+import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import org.lwjgl.glfw.GLFW;
 
 public class FoodChain extends SingleTaskChain {
@@ -61,6 +71,13 @@ public class FoodChain extends SingleTaskChain {
                 Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
                 _isTryingToEat = true;
                 _requestFillup = true;
+
+                // Make sure we're not facing a container
+                if (isCollidingContainer(mod)) {
+                    randomOrientation(mod);
+                    return Float.NEGATIVE_INFINITY;
+                }
+
                 mod.getInventoryTracker().equipItem(toUse);
                 MinecraftClient.getInstance().options.keyUse.setPressed(true);
             } else {
@@ -155,5 +172,39 @@ public class FoodChain extends SingleTaskChain {
             mod.getExtraBaritoneSettings()._pauseInteractions = false;
         }
         super.onStop(mod);
+    }
+
+    private boolean isCollidingContainer(AltoClef mod) {
+        IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
+        Rotation rot = ctx.playerRotations();
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        HitResult result = RayTraceUtils.rayTraceTowards(player, rot, ctx.playerController().getBlockReachDistance());
+        if (result.getType() == HitResult.Type.BLOCK) {
+            Block block = mod.getWorld().getBlockState(new BlockPos(result.getPos())).getBlock();
+            if (block instanceof ChestBlock
+                    || block instanceof EnderChestBlock
+                    || block instanceof CraftingTableBlock
+                    || block instanceof AbstractFurnaceBlock
+                    || block instanceof LoomBlock
+                    || block instanceof CartographyTableBlock
+                    || block instanceof EnchantingTableBlock
+            ) {
+                return true;
+            }
+        } else if (result.getType() == HitResult.Type.ENTITY) {
+            if (result instanceof EntityHitResult) {
+                Entity entity = ((EntityHitResult) result).getEntity();
+                if (entity instanceof MerchantEntity) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void randomOrientation(AltoClef mod) {
+        Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
+        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
     }
 }

@@ -20,6 +20,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
 
 import java.lang.reflect.Field;
@@ -175,6 +176,7 @@ public class AltoClef implements ModInitializer {
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
+    public ClientWorld getWorld() {return MinecraftClient.getInstance().world; }
     public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
     public PlayerExtraController getControllerExtras() {return _extraController; }
 

@@ -13,6 +13,7 @@ import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.progresscheck.ProgressCheckerRetry;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.PathingCommand;
 import baritone.api.utils.BlockOptionalMeta;
@@ -22,6 +23,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -49,12 +51,14 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final Timer _mineCheck = new Timer(10.0);
     private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
-    private final DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
+    private final IProgressChecker<Vec3d> _distanceProgressChecker = new ProgressCheckerRetry(new DistanceProgressChecker(10, 0.1f), 3);
 
     private final Timer _tickIntervalCheck = new Timer(1);
 
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
     private int _distanceFailCounter = 0;
+
+    private Timer _mineDropTimer = new Timer(1);
 
     public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
@@ -101,6 +105,11 @@ public class MineAndCollectTask extends ResourceTask {
 
         if (!mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
             // I mean, yeah we should avoid picking up since no items were found.
+            return true;
+        }
+
+        // We're still mining, wait a little for our mining to continue.
+        if (!_mineDropTimer.elapsed()) {
             return true;
         }
 
@@ -235,6 +244,7 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         if (mining) {
+            _mineDropTimer.reset();
             double progress = mod.getControllerExtras().getBreakingBlockProgress();
             _mineProgressChecker.setProgress(progress);
             if (_mineProgressChecker.failed()) {
