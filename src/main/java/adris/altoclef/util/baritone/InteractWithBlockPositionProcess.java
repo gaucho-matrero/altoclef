@@ -80,39 +80,29 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         Goal goal = createGoal(_target);
-        if (false && calcFailed) {
-            if (Baritone.settings().blacklistClosestOnFailure.value) {
-                _failed = true;
-                this.logDirect("Unable to find any path to " + _target + ", we're screwed...");
-                return this.onTick(false, isSafeToCancel);
-            } else {
-                this.logDirect("Unable to find any path to " + _target + ", canceling GetToBlock");
-                if (isSafeToCancel) {
-                    this.onLostControl();
-                }
 
-                return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
-            }
-        } else {
-
-            //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
-            if (!_rightClickOnArrival) {
+        //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
+        if (!_rightClickOnArrival) {
+            if (goal.isInGoal(this.ctx.player().getBlockPos())) {
                 this.onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-            }
-
-            switch (this.rightClick()) {
-                case CANT_REACH:
-                    return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
-                case WAIT_FOR_CLICK:
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                case CLICK_ATTEMPTED:
-                    this.onLostControl();
-                    return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
-                default:
-                    return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+            } else {
+                return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
+
+        switch (this.rightClick()) {
+            case CANT_REACH:
+                return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+            case WAIT_FOR_CLICK:
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            case CLICK_ATTEMPTED:
+                this.onLostControl();
+                return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            default:
+                return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
+        }
+
     }
 
     public synchronized void onLostControl() {

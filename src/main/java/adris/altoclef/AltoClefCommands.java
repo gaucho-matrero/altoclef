@@ -14,6 +14,8 @@ import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -23,9 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
-@SuppressWarnings({"unused", "unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
     private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
@@ -104,6 +107,15 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "portal":
                 mod.runUserTask(new ConstructNetherPortalSpeedrunTask());
+                break;
+            case "kill":
+                List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedMobs(ZombieEntity.class);
+                if (zombs.size() == 0) {
+                    Debug.logWarning("No zombs found.");
+                } else {
+                    LivingEntity entity = zombs.get(0);
+                    mod.runUserTask(new KillEntityTask(entity));
+                }
                 break;
         }
     }

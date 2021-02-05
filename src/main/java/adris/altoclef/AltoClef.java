@@ -39,6 +39,7 @@ public class AltoClef implements ModInitializer {
     // Task chains
     private UserTaskChain _userTaskChain;
     private FoodChain _foodChain;
+    private MobDefenseChain _mobDefenseChain;
 
     // Trackers
     private InventoryTracker _inventoryTracker;
@@ -73,7 +74,7 @@ public class AltoClef implements ModInitializer {
 
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
-        new MobDefenseChain(_taskRunner);
+        _mobDefenseChain = new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
@@ -187,6 +188,9 @@ public class AltoClef implements ModInitializer {
     }
     public FoodChain getFoodChain() {
         return _foodChain;
+    }
+    public MobDefenseChain getMobDefenseChain() {
+        return _mobDefenseChain;
     }
 
     // Are we in game (playing in a server/world)

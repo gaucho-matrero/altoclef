@@ -112,6 +112,12 @@ public abstract class DoStuffInContainerTask extends Task {
 
         // Walk to it and open it
         setDebugState("Walking to container... " + nearest);
+
+        // Wait for food
+        if (mod.getFoodChain().isTryingToEat()) {
+            return null;
+        }
+
         return new GetToBlockTask(nearest, true);
     }
 

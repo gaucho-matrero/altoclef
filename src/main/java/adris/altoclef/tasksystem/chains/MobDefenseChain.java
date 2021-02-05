@@ -9,12 +9,18 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
+import adris.altoclef.util.slots.PlayerInventorySlot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.item.ToolItem;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ConcurrentModificationException;
@@ -28,6 +34,11 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private static final double DANGER_KEEP_DISTANCE = 15;
 
+    private LivingEntity _targetEntity;
+    private double _forceFieldRange = Double.POSITIVE_INFINITY;
+
+    private boolean _doingFunkyStuff = false;
+
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
     }
@@ -38,16 +49,17 @@ public class MobDefenseChain extends SingleTaskChain {
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return 0;
 
-
         // Force field
         doForceField(mod);
 
         // Tell baritone to avoid mobs if we're vulnurable.
         mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
 
+        _doingFunkyStuff = false;
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
+            _doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
             setTask(new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE));
             return 50 + blowingUp.getClientFuseTime(1) * 50;
@@ -55,6 +67,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Dodge projectiles
         if (isProjectileClose(mod)) {
+            _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
@@ -62,22 +75,29 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod)) {
-            setTask(new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE));
-            return 70;
+            _doingFunkyStuff = true;
+            if (_targetEntity == null) {
+                setTask(new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE));
+                return 70;
+            }
         }
 
         return 0;
     }
 
     private void doForceField(AltoClef mod) {
-
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
             for (Entity entity : entities) {
                 if (entity instanceof HostileEntity) {
                     if (EntityTracker.isAngryAtPlayer((HostileEntity) entity)) {
-                        mod.getControllerExtras().attack(entity);
+                        if (_targetEntity.equals(entity)) continue;
+                        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
+                            // Equip non-tool
+                            deequipTool(mod);
+                            mod.getControllerExtras().attack(entity);
+                        }
                     }
                 }
             }
@@ -169,6 +189,30 @@ public class MobDefenseChain extends SingleTaskChain {
         // Not fusing. We only get fusing crepers.
         if (fuse <= 0.001f) return 0;
         return distance * (1 - fuse*fuse);
+    }
+
+    public void setTargetEntity(LivingEntity entity) {
+        _targetEntity = entity;
+    }
+
+    public void setForceFieldRange(double range) {
+        _forceFieldRange = range;
+    }
+    public void resetForceField() {
+        _forceFieldRange = Double.POSITIVE_INFINITY;
+    }
+
+    public boolean isDoingAcrobatics() {
+        return _doingFunkyStuff;
+    }
+
+    private void deequipTool(AltoClef mod) {
+        boolean toolEquipped = false;
+        Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+        if (equip instanceof ToolItem) {
+            // Pick non tool item or air
+            mod.getInventoryTracker().equipItem(Items.AIR);
+        }
     }
 
     @Override

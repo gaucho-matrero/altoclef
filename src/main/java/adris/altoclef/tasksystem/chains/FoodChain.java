@@ -24,6 +24,8 @@ import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -59,6 +61,11 @@ public class FoodChain extends SingleTaskChain {
             test --;
         }
 
+        // We're in danger, don't eat now!!
+        if (mod.getMobDefenseChain().isDoingAcrobatics()) {
+            return Float.NEGATIVE_INFINITY;
+        }
+
         // If we requested a fillup but we're full, stop.
         if (_requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() == 20) {
             _requestFillup = false;
@@ -67,8 +74,7 @@ public class FoodChain extends SingleTaskChain {
         if (needsToEat() || _requestFillup) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
-                _requestFillup = true;
-                Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
+                //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
                 _isTryingToEat = true;
                 _requestFillup = true;
 
@@ -175,11 +181,15 @@ public class FoodChain extends SingleTaskChain {
     }
 
     private boolean isCollidingContainer(AltoClef mod) {
+
+        if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
+            mod.getPlayer().closeHandledScreen();
+            return true;
+        }
+
         IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
-        Rotation rot = ctx.playerRotations();
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        assert player != null;
-        HitResult result = RayTraceUtils.rayTraceTowards(player, rot, ctx.playerController().getBlockReachDistance());
+        HitResult result = MinecraftClient.getInstance().crosshairTarget;
+        if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
             Block block = mod.getWorld().getBlockState(new BlockPos(result.getPos())).getBlock();
             if (block instanceof ChestBlock

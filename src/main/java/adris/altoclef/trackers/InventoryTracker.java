@@ -29,10 +29,9 @@ public class InventoryTracker extends Tracker {
 
     private HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
+    private List<Integer> _foodSlots = new ArrayList<>();
 
     private static Map<Item, Integer> _fuelTimeMap = null;
-
-    private static List<Integer> _foodSlots = new ArrayList<>();
 
     private int _emptySlots = 0;
 
@@ -492,6 +491,11 @@ public class InventoryTracker extends Tracker {
         return moveCount - needsToMove;
     }
 
+    public boolean isEquipped(Item item) {
+        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        return getItemStackInSlot(target).getItem() == item;
+    }
+
     public boolean equipItem(Item toEquip) {
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
@@ -639,7 +643,6 @@ public class InventoryTracker extends Tracker {
                 if (!isCursorStack) {
                     _emptySlots++;
                 }
-                continue;
             }
             Item item = stack.getItem();
             int count = stack.getCount();

@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import baritone.api.pathing.goals.GoalGetToBlock;
 import net.minecraft.util.math.BlockPos;
 
 public class GetToBlockTask extends Task {
@@ -21,15 +22,15 @@ public class GetToBlockTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         Debug.logMessage("GOING TO BLOCK");
-        mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
+        startProc(mod);
         _running = true;
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (!mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() && mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed()) {
+        if (!procActive(mod)) {
             Debug.logWarning("Restarting +interact with block...");
-            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
+            startProc(mod);
         }
         // Baritone task
         return null;
@@ -38,7 +39,7 @@ public class GetToBlockTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         _running = false;
-        mod.getCustomBaritone().getInteractWithBlockPositionProcess().onLostControl();
+        stopProc(mod);
     }
 
     @Override
@@ -59,5 +60,27 @@ public class GetToBlockTask extends Task {
     @Override
     protected String toDebugString() {
         return "Getting to block " + _position;
+    }
+
+    private boolean procActive(AltoClef mod) {
+        if (_rightClickOnArrival) {
+            return mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() && mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed();
+        } else {
+            return mod.getClientBaritone().getCustomGoalProcess().isActive();
+        }
+    }
+    private void startProc(AltoClef mod) {
+        if (_rightClickOnArrival) {
+            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
+        } else {
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(_position));
+        }
+    }
+    private void stopProc(AltoClef mod) {
+        if (_rightClickOnArrival) {
+            mod.getCustomBaritone().getInteractWithBlockPositionProcess().onLostControl();
+        } else {
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+        }
     }
 }
