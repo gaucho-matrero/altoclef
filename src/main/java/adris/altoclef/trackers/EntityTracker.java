@@ -227,12 +227,14 @@ public class EntityTracker extends Tracker {
 
                 boolean inGround = false;
                 // Get projectile "inGround" variable
-                try {
-                    Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
-                    inGroundField.setAccessible(true);
-                    inGround = inGroundField.getBoolean(projEntity);
-                } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-                    e.printStackTrace();
+                if (entity instanceof PersistentProjectileEntity) {
+                    try {
+                        Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
+                        inGroundField.setAccessible(true);
+                        inGround = inGroundField.getBoolean(projEntity);
+                    } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 if (!inGround) {

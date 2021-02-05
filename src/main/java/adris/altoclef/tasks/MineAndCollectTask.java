@@ -230,6 +230,10 @@ public class MineAndCollectTask extends ResourceTask {
         boolean failed = false;
         boolean mining = mod.getController().isBreakingBlock();
 
+        if (mod.getFoodChain().isTryingToEat()) {
+            resetCheckers(mod);
+        }
+
         if (mining) {
             double progress = mod.getControllerExtras().getBreakingBlockProgress();
             _mineProgressChecker.setProgress(progress);

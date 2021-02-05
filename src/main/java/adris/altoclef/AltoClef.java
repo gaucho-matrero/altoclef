@@ -4,6 +4,7 @@ import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.chains.DeathMenuChain;
+import adris.altoclef.tasksystem.chains.FoodChain;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
 import adris.altoclef.tasksystem.chains.UserTaskChain;
 import adris.altoclef.trackers.*;
@@ -36,6 +37,7 @@ public class AltoClef implements ModInitializer {
 
     // Task chains
     private UserTaskChain _userTaskChain;
+    private FoodChain _foodChain;
 
     // Trackers
     private InventoryTracker _inventoryTracker;
@@ -72,6 +74,7 @@ public class AltoClef implements ModInitializer {
         _userTaskChain = new UserTaskChain(_taskRunner);
         new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
+        _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);
@@ -179,6 +182,9 @@ public class AltoClef implements ModInitializer {
     // Extra control
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);
+    }
+    public FoodChain getFoodChain() {
+        return _foodChain;
     }
 
     // Are we in game (playing in a server/world)

@@ -32,6 +32,8 @@ public class InventoryTracker extends Tracker {
 
     private static Map<Item, Integer> _fuelTimeMap = null;
 
+    private static List<Integer> _foodSlots = new ArrayList<>();
+
     private int _emptySlots = 0;
 
     public InventoryTracker(TrackerManager manager) {
@@ -147,6 +149,26 @@ public class InventoryTracker extends Tracker {
         return fuel;
     }
 
+    public double getTotalFoodAmount() {
+        ensureUpdated();
+        double total = 0;
+        for (int slot : _foodSlots) {
+            ItemStack stack = getItemStackInSlot(Slot.getFromInventory(slot));
+            if (stack.getItem().getFoodComponent() == null) continue;
+            total += stack.getItem().getFoodComponent().getHunger() * stack.getCount();
+        }
+        return total;
+    }
+
+    public List<ItemStack> getAvailableFoods() {
+        ensureUpdated();
+        List<ItemStack> result = new ArrayList<>(_foodSlots.size());
+        for(int slot : _foodSlots) {
+            result.add(getItemStackInSlot(Slot.getFromInventory(slot)));
+        }
+        return result;
+    }
+
     public boolean hasRecipeMaterials(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
@@ -247,105 +269,6 @@ public class InventoryTracker extends Tracker {
 
         return result;
     }
-
-    /*
-    private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
-        ensureUpdated();
-
-        HashMap<Integer, Integer> craftSlotToInventorySlot = new HashMap<>();
-
-        // How many of each item we used
-        HashMap<Item, Integer> usedUp = new HashMap<>();
-
-        // Fill in if we have items already used
-        for(Item item : alreadyUsed.keySet()) {
-            // This can be replaced with a one liner since duplicate keys won't ever exist.
-            if (!usedUp.containsKey(item)) {
-                usedUp.put(item, 0);
-            }
-            usedUp.put(item, usedUp.get(item) + alreadyUsed.get(item));
-        }
-
-        for (int craftPos = 0; craftPos < recipe.getSlotCount(); ++craftPos) {
-            ItemTarget craftTarget = recipe.getSlot(craftPos);
-            if (craftTarget == null || craftTarget.isEmpty()) continue;
-
-            //Debug.logMessage(craftPos + " => " + slot);
-
-            boolean slotSatisfied = false;
-            // Make sure we have at least one of the requirements
-            for (Item item : craftTarget.getMatches()) {
-                if (!usedUp.containsKey(item)) {
-                    usedUp.put(item, 0);
-                }
-
-                Debug.logMessage(craftPos + ": Check: " + item.getTranslationKey());
-
-                // "Spread Down" our items
-                int toSkip = usedUp.get(item);
-                int toFind = count;
-                // toSkip = 0, toFind = 1.
-                //Debug.logMessage("Start toSkip = " + toSkip + ", total count = " + toFind);
-
-                for (int invSlotPosition : getInventorySlotsWithItem(item)) {
-                    ItemStack stack;
-                    try {
-                        stack = _mod.getPlayer().inventory.getStack(invSlotPosition);
-                    } catch (Exception e) {
-                        Debug.logWarning("Inventory slot " + invSlotPosition + " invalid for some reason...");
-                        // Failed.
-                        continue;
-                    }
-
-                    Debug.logMessage("    (exists in slot " + invSlotPosition + ")");
-
-                    if (toSkip >= stack.getCount()) {
-                        // We skip through this stack
-                        toSkip -= stack.getCount();
-                    } else {
-                        // We use at least something from this stack.
-                        toSkip = 0;
-                        for (int used = 0; used < count; ++used) {
-                            toFind -= stack.getCount();
-                            if (toFind < 0) toFind = 0;
-                            // Use one up
-                            usedUp.put(item, usedUp.get(item) + 1);
-                            if (toFind == 0) {
-                                // Only keep track of the final item, as the mapping pertains to ONE recipe.
-                                craftSlotToInventorySlot.put(craftPos, invSlotPosition);
-                                slotSatisfied = true;
-                            }
-                        }
-                        // Stop when we've found enough items to fill this slot ("count" checks for multiple times a recipe)
-                        if (toFind == 0) {
-                            break;
-                        }
-                    }
-                }
-                // We ran out of items
-                if (toSkip != 0) {
-                    Debug.logWarning("We ran out of items");
-                    return null;
-                }
-
-                // We found all items for THIS slot/satisfied it.
-                if (slotSatisfied) {
-                    break;
-                }
-
-            }
-            if (!slotSatisfied) {
-                //Debug.logWarning("TEMP B");
-                Debug.logWarning("We failed to find a required item for craft slot " + craftPos);
-                // Failure to find item required for this slot.
-                return null;
-            }
-        }
-
-        // We passed through the rings of fire
-        return craftSlotToInventorySlot;
-    }
-     */
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
         setDirty();
@@ -694,6 +617,7 @@ public class InventoryTracker extends Tracker {
     protected void updateState() {
         _itemCounts.clear();
         _itemSlots.clear();
+        _foodSlots.clear();
         _emptySlots = 0;
 
         if (MinecraftClient.getInstance().player == null) {
@@ -724,6 +648,9 @@ public class InventoryTracker extends Tracker {
             }
             if (!_itemSlots.containsKey(item)) {
                 _itemSlots.put(item, new ArrayList<>());
+            }
+            if (item.isFood()) {
+                _foodSlots.add(slot);
             }
             _itemCounts.put(item, _itemCounts.get(item) + count);
             _itemSlots.get(item).add(slot);

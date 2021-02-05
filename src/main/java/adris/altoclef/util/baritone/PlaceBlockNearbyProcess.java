@@ -230,7 +230,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                     }
                     boolean hasItem = false;
                     for (Block block : _toPlace) {
-                        if (_mod.getInventoryTracker().hasItem(block.asItem())) {
+                        if (!_mod.getExtraBaritoneSettings()._pauseInteractions && _mod.getInventoryTracker().hasItem(block.asItem())) {
                             _mod.getInventoryTracker().equipItem(block.asItem());
                             hasItem = true;
                             break;
@@ -251,8 +251,6 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                     _placeTimer = 5;
                 }
             //}
-        } else {
-            //logDebug("No view to " + placeOn);
         }
         return false;
     }
