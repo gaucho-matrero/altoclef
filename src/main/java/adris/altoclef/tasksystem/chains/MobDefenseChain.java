@@ -34,7 +34,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private static final double DANGER_KEEP_DISTANCE = 15;
 
-    private LivingEntity _targetEntity;
+    private Entity _targetEntity;
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
 
     private boolean _doingFunkyStuff = false;
@@ -191,7 +191,7 @@ public class MobDefenseChain extends SingleTaskChain {
         return distance * (1 - fuse*fuse);
     }
 
-    public void setTargetEntity(LivingEntity entity) {
+    public void setTargetEntity(Entity entity) {
         _targetEntity = entity;
     }
 

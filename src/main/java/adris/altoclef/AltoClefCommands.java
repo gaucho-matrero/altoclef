@@ -263,6 +263,17 @@ public class AltoClefCommands extends CommandList {
         }
     }
 
+    static class FoodCommand extends Command {
+        public FoodCommand() throws CommandException {
+            super("food", "Collects a certain amount of food", new Arg(Integer.class, "count"));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)));
+        }
+    }
+
     static class TestCommand extends Command {
 
         public TestCommand() throws CommandException {

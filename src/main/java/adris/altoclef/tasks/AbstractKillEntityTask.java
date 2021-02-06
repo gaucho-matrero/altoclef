@@ -8,6 +8,7 @@ import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
@@ -43,7 +44,7 @@ public abstract class AbstractKillEntityTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        LivingEntity entity = getEntityTarget(mod);
+        Entity entity = getEntityTarget(mod);
 
         mod.getMobDefenseChain().setTargetEntity(entity);
 
@@ -98,7 +99,7 @@ public abstract class AbstractKillEntityTask extends Task {
         mod.getMobDefenseChain().resetForceField();
     }
 
-    protected abstract LivingEntity getEntityTarget(AltoClef mod);
+    protected abstract Entity getEntityTarget(AltoClef mod);
 
     private void equipWeapon(AltoClef mod) {
         for (Item item : WEAPON_ITEMS) {
