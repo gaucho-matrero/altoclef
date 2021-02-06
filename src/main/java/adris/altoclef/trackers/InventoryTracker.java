@@ -66,6 +66,7 @@ public class InventoryTracker extends Tracker {
         return _itemCounts.get(item);
     }
     public int getItemCount(Item ...items) {
+        ensureUpdated();
         int sum = 0;
         for (Item match : items) {
             sum += getItemCount(match);
@@ -79,6 +80,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public int getMaxItemCount(ItemTarget target) {
+        ensureUpdated();
         int max = 0;
         for (Item match : target.getMatches()) {
             int count = getItemCount(match);
@@ -88,6 +90,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public List<Integer> getInventorySlotsWithItem(Item ...items) {
+        ensureUpdated();
         List<Integer> result = new ArrayList<>();
         for (Item item : items) {
             if (_itemSlots.containsKey(item)) {
@@ -391,11 +394,11 @@ public class InventoryTracker extends Tracker {
         // slot 2 is now in cursor
 
         // If slot 2 is not empty, move it back to slot 1
-        if (second != null && !second.isEmpty()) {
-            if (!slotIsCursor(slot1)) {
-                clickSlot(slot1);
-            }
+        //if (second != null && !second.isEmpty()) {
+        if (!slotIsCursor(slot1)) {
+            clickSlot(slot1);
         }
+        //}
     }
 
     public void grabItem(Slot slot) {
@@ -512,6 +515,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean equipItem(Item toEquip) {
+        ensureUpdated();
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
         // Already equipped
@@ -655,13 +659,16 @@ public class InventoryTracker extends Tracker {
             } else {
                 stack = inventory.getStack(slot);
             }
-            if (stack.isEmpty()) {
-                if (!isCursorStack) {
-                    _emptySlots++;
-                }
-            }
             Item item = stack.getItem();
             int count = stack.getCount();
+            if (stack.isEmpty()) {
+                // If our cursor slot is empty, IGNORE IT as we don't want to treat it as a valid slot.
+                if (isCursorStack) {
+                    continue;
+                }
+                _emptySlots++;
+                item = Items.AIR;
+            }
             if (!_itemCounts.containsKey(item)) {
                 _itemCounts.put(item, 0);
             }

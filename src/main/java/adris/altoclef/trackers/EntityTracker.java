@@ -264,8 +264,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public static boolean isAngryAtPlayer(HostileEntity hostile) {
+    public static boolean isAngryAtPlayer(Monster hostile) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        // NOTE: These do not work.
         if (hostile instanceof EndermanEntity) {
             EndermanEntity enderman = (EndermanEntity) hostile;
             return enderman.isAngryAt(player) && enderman.isAngry();

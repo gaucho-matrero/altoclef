@@ -17,7 +17,10 @@ import net.minecraft.util.hit.HitResult;
 
 public abstract class AbstractKillEntityTask extends Task {
 
-    private static final double OTHER_FORCE_FIELD_RANGE = 1.6;
+    private static final double OTHER_FORCE_FIELD_RANGE = 2;
+
+    // Not the "striking" distance, but the "ok we're close enough, lower our guard for other mobs and focus on this one" range.
+    private static final double CONSIDER_COMBAT_RANGE = 10;
 
     private static final Item[] WEAPON_ITEMS = new Item[] {
             Items.DIAMOND_SWORD,
@@ -46,10 +49,9 @@ public abstract class AbstractKillEntityTask extends Task {
 
         // Oof
         if (entity == null) {
+            mod.getMobDefenseChain().resetForceField();
             return null;
         }
-
-        mod.getMobDefenseChain().setForceFieldRange(OTHER_FORCE_FIELD_RANGE);
 
         double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
 
@@ -57,7 +59,15 @@ public abstract class AbstractKillEntityTask extends Task {
 
         float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
 
-        boolean tooClose = entity.squaredDistanceTo(mod.getPlayer()) < MAINTAIN_DISTANCE*MAINTAIN_DISTANCE;
+        double sqDist = entity.squaredDistanceTo(mod.getPlayer());
+
+        if (sqDist < CONSIDER_COMBAT_RANGE*CONSIDER_COMBAT_RANGE) {
+            mod.getMobDefenseChain().setForceFieldRange(OTHER_FORCE_FIELD_RANGE);
+        } else {
+            mod.getMobDefenseChain().resetForceField();
+        }
+
+        boolean tooClose = sqDist < MAINTAIN_DISTANCE*MAINTAIN_DISTANCE;
         // Step away if we're too close
         if (tooClose) {
             setDebugState("Maintaining distance");

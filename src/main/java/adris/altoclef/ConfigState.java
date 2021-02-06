@@ -186,10 +186,14 @@ public class ConfigState {
         }
 
         private void readExtraState(AltoClefSettings settings) {
-            blocksToAvoidBreaking = new HashSet<>(settings._blocksToAvoidBreaking);
-            toAvoidBreaking = new ArrayList<>(settings._breakAvoiders);
-            toAvoidPlacing = new ArrayList<>(settings._placeAvoiders);
-            _allowWalkThroughFlowingWater = settings._allowFlowingWaterPass;
+            synchronized (settings.getBreakMutex()) {
+                synchronized (settings.getPlaceMutex()) {
+                    blocksToAvoidBreaking = new HashSet<>(settings.getBlocksToAvoidBreaking());
+                    toAvoidBreaking = new ArrayList<>(settings.getBreakAvoiders());
+                    toAvoidPlacing = new ArrayList<>(settings.getPlaceAvoiders());
+                }
+            }
+            _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
             mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
@@ -204,14 +208,19 @@ public class ConfigState {
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
 
-            sa._breakAvoiders.clear();
-            sa._breakAvoiders.addAll(toAvoidBreaking);
-            sa._blocksToAvoidBreaking.clear();
-            sa._blocksToAvoidBreaking.addAll(blocksToAvoidBreaking);
-            sa._placeAvoiders.clear();
-            sa._placeAvoiders.addAll(toAvoidPlacing);
+            // Kinda jank but it works.
+            synchronized (sa.getBreakMutex()) {
+                synchronized (sa.getPlaceMutex()) {
+                    sa.getBreakAvoiders().clear();
+                    sa.getBreakAvoiders().addAll(toAvoidBreaking);
+                    sa.getBlocksToAvoidBreaking().clear();
+                    sa.getBlocksToAvoidBreaking().addAll(blocksToAvoidBreaking);
+                    sa.getPlaceAvoiders().clear();
+                    sa.getPlaceAvoiders().addAll(toAvoidPlacing);
+                }
+            }
 
-            sa._allowFlowingWaterPass = _allowWalkThroughFlowingWater;
+            sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
 
             RayTraceUtils.fluidHandling = rayFluidHandling;
             MineProcess.searchAnyFlag = mineProcSearchAnyFlag;

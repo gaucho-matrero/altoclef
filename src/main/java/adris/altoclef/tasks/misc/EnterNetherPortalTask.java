@@ -4,13 +4,20 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
 public class EnterNetherPortalTask extends Task {
 
     private final Task _getPortalTask;
     private final Dimension _targetDimension;
+
+    private Timer _portalTimeout = new Timer(10);
+    private Task _wanderTask = new TimeoutWanderTask(3);
+
+    private boolean _leftPortal;
 
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
         if (targetDimension == Dimension.END) throw new IllegalArgumentException("Can't build a nether portal to the end.");
@@ -21,14 +28,29 @@ public class EnterNetherPortalTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
+        _leftPortal = false;
+        _portalTimeout.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            setDebugState("Exiting portal for a bit.");
+            _portalTimeout.reset();
+            _leftPortal = true;
+            return _wanderTask;
+        }
+
         if (mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock() == Blocks.NETHER_PORTAL) {
+
+            if (_portalTimeout.elapsed() && !_leftPortal) {
+                return _wanderTask;
+            }
             setDebugState("Waiting inside portal");
             return null;
+        } else {
+            _portalTimeout.reset();
         }
 
         BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);

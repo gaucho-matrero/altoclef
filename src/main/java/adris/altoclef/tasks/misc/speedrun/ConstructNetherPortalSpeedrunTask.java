@@ -33,7 +33,12 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     // The "portal origin relative to region" corresponds to the portal origin with respect to the "portalable" region (see _portalOrigin).
     // This can only really be explained visually, sorry!
     private static final Vec3i PORTALABLE_REGION_SIZE = new Vec3i(4, 6, 6);
-    private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 1, 2);
+    private static final Vec3i[] PORTALABLE_REGION_EXTRA = new Vec3i[] {
+            // Destroy these blocks too.
+            new Vec3i(0, -1, 0),
+            new Vec3i(0, -1, 1),
+    };
+    private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 0, 2);
 
     // Relative to portal origin
     private static final Vec3i[] PORTAL_CONSTRUCTION_FRAME = new Vec3i[] {
@@ -375,47 +380,49 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             }
         }
         if (_destroyTarget != null) return _destroyTarget;
+        // Region
         for (int dx = 0; dx < PORTALABLE_REGION_SIZE.getX(); ++dx) {
             for (int dz = 0; dz < PORTALABLE_REGION_SIZE.getZ(); ++dz) {
                 for (int dy = 0; dy < PORTALABLE_REGION_SIZE.getY(); ++dy) {
                     BlockPos toCheck = getPortalRegionCorner().add(dx, dy, dz);
-
-                    BlockState state = MinecraftClient.getInstance().world.getBlockState(toCheck);
-                    Block block = state.getBlock();
-
-                    // Ignore air
-                    if (state.isAir()) {
-                        continue;
-                    }
-
-                    // If it's water ignore it.
-                    if (block == Blocks.WATER) continue;
-
-                    // If we're supposed to have structures here, ignore.
-                    Vec3i relativeToOrigin = new Vec3i(dx - PORTAL_ORIGIN_RELATIVE_TO_REGION.getX(), dy  - PORTAL_ORIGIN_RELATIVE_TO_REGION.getY(), dz - PORTAL_ORIGIN_RELATIVE_TO_REGION.getZ());
-                    boolean foundFrame = false;
-                    for(Vec3i framePos : PORTAL_CONSTRUCTION_FRAME) {
-                        if (framePos.equals(relativeToOrigin)) {
-                            foundFrame = true;
-                            break;
-                        }
-                    }
-                    if (foundFrame) continue;
-
-                    /*
-                    // If water is here that should be here we chill.
-                    if (relativeToOrigin.equals(WATER_SOURCE_ORIGIN)) {
-                        if (block == Blocks.WATER) continue;
-                    }
-                     */
-
-                    //Debug.logMessage("GOTTA DESTROY: " + block.getTranslationKey());
-
-                    return toCheck;
+                    if (shouldBeDestroyed(toCheck)) return toCheck;
                 }
             }
         }
+        // Extra places
+        for (Vec3i relativeToOrigin : PORTALABLE_REGION_EXTRA) {
+            BlockPos toCheck = _portalOrigin.add(relativeToOrigin);
+            if (shouldBeDestroyed(toCheck)) return toCheck;
+        }
+
         return null;
+    }
+    private boolean shouldBeDestroyed(BlockPos toCheck) {
+        BlockState state = MinecraftClient.getInstance().world.getBlockState(toCheck);
+        Block block = state.getBlock();
+
+        // Ignore air
+        if (state.isAir()) {
+            return false;
+        }
+
+        // If it's water ignore it.
+        if (block == Blocks.WATER) return false;
+
+        // If we're supposed to have structures here, ignore.
+        Vec3i relativeToOrigin = toCheck.subtract(_portalOrigin);//new Vec3i(dx - PORTAL_ORIGIN_RELATIVE_TO_REGION.getX(), dy  - PORTAL_ORIGIN_RELATIVE_TO_REGION.getY(), dz - PORTAL_ORIGIN_RELATIVE_TO_REGION.getZ());
+        boolean foundFrame = false;
+        for(Vec3i framePos : PORTAL_CONSTRUCTION_FRAME) {
+            if (framePos.equals(relativeToOrigin)) {
+                return false;
+            }
+        }
+        for(LavaTarget frame : PORTAL_FRAME_LAVA) {
+            if (frame.where.equals(relativeToOrigin) && (block == Blocks.LAVA || block == Blocks.OBSIDIAN)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private BlockPos getRequiredFrameLeft() {

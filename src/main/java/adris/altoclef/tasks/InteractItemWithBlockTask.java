@@ -3,9 +3,11 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -17,6 +19,9 @@ public class InteractItemWithBlockTask extends Task {
     private final BlockPos _target;
 
     private boolean _trying;
+
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
+    private final Task _wanderTask = new TimeoutWanderTask(5);
 
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target) {
         _toUse = toUse;
@@ -31,12 +36,25 @@ public class InteractItemWithBlockTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _trying = false;
+        _moveChecker.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+
         if (!mod.getInventoryTracker().targetMet(_toUse)) {
+            _moveChecker.reset();
             return TaskCatalogue.getItemTask(_toUse);
+        }
+
+        // Wander and check
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _moveChecker.reset();
+            return _wanderTask;
+        }
+        if (!_moveChecker.check(mod)) {
+            Debug.logMessage("Failed, wandering.");
+            return _wanderTask;
         }
 
         if (!proc(mod).isActive()) {

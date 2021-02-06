@@ -17,6 +17,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
@@ -89,8 +90,8 @@ public class MobDefenseChain extends SingleTaskChain {
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
             for (Entity entity : entities) {
-                if (entity instanceof HostileEntity) {
-                    if (EntityTracker.isAngryAtPlayer((HostileEntity) entity)) {
+                if (entity instanceof Monster) {
+                    if (EntityTracker.isAngryAtPlayer((Monster)entity)) {
                         if (_targetEntity != null && _targetEntity.equals(entity)) continue;
                         if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
                             // Equip non-tool

@@ -5,15 +5,12 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.progresscheck.DistanceProgressChecker;
-import adris.altoclef.util.progresscheck.IProgressChecker;
-import adris.altoclef.util.progresscheck.LinearProgressChecker;
+import adris.altoclef.util.progresscheck.*;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.progresscheck.ProgressCheckerRetry;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.process.PathingCommand;
 import baritone.api.utils.BlockOptionalMeta;
@@ -50,8 +47,7 @@ public class MineAndCollectTask extends ResourceTask {
     private PathingCommand _cachedCommand = null;
 
     private final Timer _mineCheck = new Timer(10.0);
-    private final IProgressChecker<Double> _mineProgressChecker = new LinearProgressChecker(4, 0.01f);
-    private final IProgressChecker<Vec3d> _distanceProgressChecker = new ProgressCheckerRetry(new DistanceProgressChecker(10, 0.1f), 3);
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(5, 0.1, 4, 0.01, 3);
 
     private final Timer _tickIntervalCheck = new Timer(1);
 
@@ -92,7 +88,7 @@ public class MineAndCollectTask extends ResourceTask {
         _cachedBlacklist.clear();
         _distanceFailCounter = 0;
 
-        resetCheckers(mod);
+        _moveChecker.reset();
     }
 
     @Override
@@ -178,12 +174,12 @@ public class MineAndCollectTask extends ResourceTask {
 
         if (_tickIntervalCheck.elapsed()) {
             // The time between ticks is big enough so we gotta reset
-            resetCheckers(mod);
+            _moveChecker.reset();
         }
         _tickIntervalCheck.reset();
 
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            resetCheckers(mod);
+            _moveChecker.reset();
             setDebugState("Wandering...");
             return _wanderTask;
         }
@@ -231,7 +227,7 @@ public class MineAndCollectTask extends ResourceTask {
             _targetBoms = boms;
 
             if (wasRunningBefore) {
-                resetCheckers(mod);
+                _moveChecker.reset();
             }
             Debug.logInternal("Starting to mine.");
         }
@@ -240,40 +236,11 @@ public class MineAndCollectTask extends ResourceTask {
         boolean mining = mod.getController().isBreakingBlock();
 
         if (mod.getFoodChain().isTryingToEat()) {
-            resetCheckers(mod);
+            _moveChecker.reset();
         }
 
-        if (mining) {
-            _mineDropTimer.reset();
-            double progress = mod.getControllerExtras().getBreakingBlockProgress();
-            _mineProgressChecker.setProgress(progress);
-            if (_mineProgressChecker.failed()) {
-                Debug.logMessage("Failed to mine block. Blacklisting.");
-                failed = true;
-                _mineProgressChecker.reset();
-            }
-            // Reset other checker (independent, one blocks another)
-            _distanceProgressChecker.reset();
-        } else {
-            _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
-            if (_distanceProgressChecker.failed()) {
-                Debug.logMessage("Failed to make progress moving to our block. Blacklisting.");
-                Debug.logWarning("OOF");
-                failed = true;
-                // If we've failed too much, wander.
-                _distanceFailCounter++;
-                if (_distanceFailCounter >= DISTANCE_FAIL_TOO_MUCH_COUNT) {
-                    Debug.logMessage("Failed too much, Going somewhere else.");
-                    _distanceFailCounter = 0;
-                    _wanderTask.reset();
-                    return _wanderTask;
-                }
-                _distanceProgressChecker.reset();
-            }
-            // Reset other checker (independent, one blocks another)
-            _mineProgressChecker.reset();
-        }
-        if (failed) {
+
+        if (!_moveChecker.check(mod)) {
             try {
                 blacklistCurrentTarget(mod);
             } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -315,11 +282,6 @@ public class MineAndCollectTask extends ResourceTask {
             //if (!us.matches(them.getAnyBlockState())) return false;
         }
         return true;
-    }
-
-    private void resetCheckers(AltoClef mod) {
-        _distanceProgressChecker.reset();
-        _mineProgressChecker.reset();
     }
 
     /*

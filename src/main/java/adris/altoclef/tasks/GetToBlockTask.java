@@ -4,13 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.progresscheck.DistanceProgressChecker;
-import adris.altoclef.util.progresscheck.IProgressChecker;
-import adris.altoclef.util.progresscheck.LinearProgressChecker;
-import adris.altoclef.util.progresscheck.ProgressCheckerRetry;
-import baritone.api.pathing.goals.GoalGetToBlock;
+import adris.altoclef.util.progresscheck.*;
+import baritone.api.pathing.goals.GoalTwoBlocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 public class GetToBlockTask extends Task {
 
@@ -19,8 +15,7 @@ public class GetToBlockTask extends Task {
 
     private boolean _running;
 
-    private IProgressChecker<Vec3d> _progressMove = new ProgressCheckerRetry<>(new DistanceProgressChecker(10, 1), 3);
-    private IProgressChecker<Double> _progressMine = new LinearProgressChecker(5, 0.1);
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 1, 5, 0.1);
 
     private static Task _wanderTask = new TimeoutWanderTask(10);
 
@@ -35,8 +30,7 @@ public class GetToBlockTask extends Task {
         Debug.logMessage("GOING TO BLOCK");
         startProc(mod);
         _running = true;
-        _progressMove.reset();
-        _progressMine.reset();
+        _moveChecker.reset();
     }
 
     @Override
@@ -45,8 +39,7 @@ public class GetToBlockTask extends Task {
         // Wander
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Wandering...");
-            _progressMine.reset();
-            _progressMove.reset();
+            _moveChecker.reset();
             return _wanderTask;
         }
 
@@ -56,16 +49,7 @@ public class GetToBlockTask extends Task {
         }
         // Check for failure
         boolean failed = false;
-        if (mod.getController().isBreakingBlock()) {
-            _progressMove.reset();
-            _progressMine.setProgress(mod.getControllerExtras().getBreakingBlockProgress());
-            if (_progressMine.failed()) failed = true;
-        } else {
-            _progressMine.reset();
-            _progressMove.setProgress(mod.getPlayer().getPos());
-            if (_progressMove.failed()) failed = true;
-        }
-        if (failed) {
+        if (!_moveChecker.check(mod)) {
             return _wanderTask;
         }
         // Baritone task
@@ -110,7 +94,7 @@ public class GetToBlockTask extends Task {
         if (_rightClickOnArrival) {
             mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
         } else {
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalGetToBlock(_position));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(_position));
         }
     }
     private void stopProc(AltoClef mod) {

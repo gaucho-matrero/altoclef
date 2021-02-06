@@ -97,7 +97,7 @@ public class FoodChain extends SingleTaskChain {
         }
 
         // Pause interactions when eating.
-        mod.getExtraBaritoneSettings()._pauseInteractions = _isTryingToEat;
+        mod.getExtraBaritoneSettings().setInteractionPaused(_isTryingToEat);
 
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
@@ -175,7 +175,7 @@ public class FoodChain extends SingleTaskChain {
             MinecraftClient.getInstance().options.keyUse.setPressed(false);
             _isTryingToEat = false;
             _requestFillup = false;
-            mod.getExtraBaritoneSettings()._pauseInteractions = false;
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
         super.onStop(mod);
     }

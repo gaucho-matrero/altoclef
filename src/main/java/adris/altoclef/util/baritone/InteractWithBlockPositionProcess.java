@@ -143,9 +143,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         Optional<Rotation> reachable;
         if (sideDoesntMatter()) {
             reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-            if (!reachable.isPresent()) {
-                Debug.logMessage("Fail: " + _target);
-            }
         } else {
             Vec3i sideVector = _interactSide.getVector();
             Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);

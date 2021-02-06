@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
@@ -11,12 +12,17 @@ import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.*;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -77,11 +83,6 @@ public class AltoClefCommands extends CommandList {
                 //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
                 break;
             }
-            case "equip": {
-                mod.getInventoryTracker().swapItems(Slot.getFromInventory(11), Slot.getFromInventory(1));
-                //mod.getInventoryTracker().equipItem(new ItemTarget("sign"));
-                break;
-            }
             case "deadmeme":
                 File file = new File("test.txt");
                 try {
@@ -107,7 +108,7 @@ public class AltoClefCommands extends CommandList {
                 Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
                 break;
             case "portal":
-                mod.runUserTask(new ConstructNetherPortalSpeedrunTask());
+                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER));
                 break;
             case "kill":
                 List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedMobs(ZombieEntity.class);
@@ -117,6 +118,58 @@ public class AltoClefCommands extends CommandList {
                     LivingEntity entity = zombs.get(0);
                     mod.runUserTask(new KillEntityTask(entity));
                 }
+                break;
+            case "equip":
+                // Test de-equip
+                new Thread() {
+                    @Override
+                    public void run() {
+                        for (int i = 3; i > 0; --i) {
+                            Debug.logMessage(i + "...");
+                            sleepSec(1);
+                        }
+
+                        Item toEquip = Items.AIR;
+                        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+
+                        // Already equipped
+                        if (mod.getInventoryTracker().getItemStackInSlot(target).getItem() == toEquip) return;
+
+                        List<Integer> itemSlots = mod.getInventoryTracker().getInventorySlotsWithItem(toEquip);
+                        if (itemSlots.size() != 0) {
+                            int slot = itemSlots.get(0);
+                            swap(Slot.getFromInventory(slot), target);
+                        }
+                    }
+
+                    private void swap(Slot slot1, Slot slot2) {
+                        mod.getInventoryTracker().clickSlot(slot1);
+
+                        Debug.logMessage("MOVE 1...");
+                        sleepSec(1);
+                        // Pick up slot2
+                        ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
+                        Debug.logMessage("MOVE 2...");
+                        sleepSec(1);
+
+                        // slot 1 is now in slot 2
+                        // slot 2 is now in cursor
+
+                        // If slot 2 is not empty, move it back to slot 1
+                        //if (second != null && !second.isEmpty()) {
+                        mod.getInventoryTracker().clickSlot(slot1);
+                        Debug.logMessage("MOVE 3!");
+                    }
+
+                    private void sleepSec(double seconds) {
+                        try {
+                            Thread.sleep((int) (1000 * seconds));
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
+                //mod.getInventoryTracker().equipItem(Items.AIR);
                 break;
             case "food":
                 mod.runUserTask(new CollectFoodTask(20));
