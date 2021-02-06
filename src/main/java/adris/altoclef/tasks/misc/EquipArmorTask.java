@@ -1,8 +1,9 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -58,6 +59,7 @@ public class EquipArmorTask extends Task {
                     Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
                 } else {
                     if (!mod.getInventoryTracker().isArmorEquipped(item)) {
+                        mod.getPlayer().closeHandledScreen();
                         Slot toMove = PlayerSlot.getEquipSlot(item.getSlotType());
                         if (toMove == null) {
                             Debug.logWarning("Invalid armor equip slot for item " + item.getTranslationKey() + ": " + item.getSlotType());

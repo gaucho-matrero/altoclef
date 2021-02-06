@@ -87,11 +87,13 @@ public class EntityTracker extends Tracker {
     public Entity getClosestEntity(Vec3d position, Class toFind) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
-        for (MobEntity entity : _mobMap.get(toFind)) {
-            double cost = entity.squaredDistanceTo(position);
-            if (cost < minCost) {
-                minCost = cost;
-                closestEntity = entity;
+        if (_mobMap.containsKey(toFind)) {
+            for (MobEntity entity : _mobMap.get(toFind)) {
+                double cost = entity.squaredDistanceTo(position);
+                if (cost < minCost) {
+                    minCost = cost;
+                    closestEntity = entity;
+                }
             }
         }
         return closestEntity;

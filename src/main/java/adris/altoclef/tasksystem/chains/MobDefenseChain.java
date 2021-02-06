@@ -2,9 +2,9 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.DodgeProjectilesTask;
-import adris.altoclef.tasks.RunAwayFromCreepersTask;
-import adris.altoclef.tasks.RunAwayFromHostilesTask;
+import adris.altoclef.tasks.misc.DodgeProjectilesTask;
+import adris.altoclef.tasks.misc.RunAwayFromCreepersTask;
+import adris.altoclef.tasks.misc.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
@@ -17,7 +17,6 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
@@ -92,7 +91,7 @@ public class MobDefenseChain extends SingleTaskChain {
             for (Entity entity : entities) {
                 if (entity instanceof HostileEntity) {
                     if (EntityTracker.isAngryAtPlayer((HostileEntity) entity)) {
-                        if (_targetEntity.equals(entity)) continue;
+                        if (_targetEntity != null && _targetEntity.equals(entity)) continue;
                         if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
                             // Equip non-tool
                             deequipTool(mod);

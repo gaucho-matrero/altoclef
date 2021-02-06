@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.misc;
+package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -6,6 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -83,6 +84,8 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     private boolean _isPlacingLiquid;
     private boolean _portalFrameBuilt;
 
+    private BlockPos _destroyTarget = null;
+
     @Override
     protected void onStart(AltoClef mod) {
         _isPlacingLiquid = false;
@@ -112,7 +115,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         // Get bucket if we don't have one.
-        if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+        if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             setDebugState("Getting bucket");
             return TaskCatalogue.getItemTask("bucket", 1);
         }
@@ -171,6 +174,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             BlockPos toDestroy = getPortalRegionUnclearedBlock();
             if (toDestroy != null) {
                 setDebugState("Clearing Portal Region");
+                _destroyTarget = toDestroy;
                 return new DestroyBlockTask(toDestroy);//new ClearRegionTask(getPortalRegionCorner(), getPortalRegionCorner().add(PORTALABLE_REGION_SIZE));
             }
         }
@@ -363,6 +367,14 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     }
 
     private BlockPos getPortalRegionUnclearedBlock() {
+        if (_destroyTarget != null) {
+            BlockState state = MinecraftClient.getInstance().world.getBlockState(_destroyTarget);
+            Block block = state.getBlock();
+            if (state.isAir() || block == Blocks.WATER) {
+                _destroyTarget = null;
+            }
+        }
+        if (_destroyTarget != null) return _destroyTarget;
         for (int dx = 0; dx < PORTALABLE_REGION_SIZE.getX(); ++dx) {
             for (int dz = 0; dz < PORTALABLE_REGION_SIZE.getZ(); ++dz) {
                 for (int dy = 0; dy < PORTALABLE_REGION_SIZE.getY(); ++dy) {

@@ -1,6 +1,7 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalRunAwayFromHostiles;
 import baritone.api.pathing.goals.Goal;

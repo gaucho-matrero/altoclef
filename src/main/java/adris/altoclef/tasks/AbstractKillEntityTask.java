@@ -76,7 +76,7 @@ public abstract class AbstractKillEntityTask extends Task {
             setDebugState("Approaching target");
             // Move to target
 
-            return new GetToBlockTask(entity.getBlockPos(), false);
+            return new GetToEntityTask(entity);
         }
 
         return null;

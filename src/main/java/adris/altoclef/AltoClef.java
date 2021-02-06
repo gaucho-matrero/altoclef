@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.chains.MobDefenseChain;
 import adris.altoclef.tasksystem.chains.UserTaskChain;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import baritone.Baritone;
@@ -196,5 +197,11 @@ public class AltoClef implements ModInitializer {
     // Are we in game (playing in a server/world)
     public boolean inGame() {
         return getPlayer() != null;
+    }
+
+    public Dimension getCurrentDimension() {
+        if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
+        if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
+        return Dimension.END;
     }
 }

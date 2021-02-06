@@ -83,12 +83,16 @@ public class ItemTarget {
                 // Neither are infinite
                 if (targetCount != other.targetCount) return false;
             }
-            if ((_itemMatches == null) != (other._itemMatches == null)) return false;
-            boolean isNull = (_itemMatches == null);
+            if ((other._itemMatches == null) != (_itemMatches == null)) return false;
+            boolean isNull = (other._itemMatches == null);
             if (isNull) return true;
             if (_itemMatches.length != other._itemMatches.length) return false;
             for (int i = 0; i < _itemMatches.length; ++i) {
-                if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+                if (other._itemMatches[i] == null) {
+                    if ((other._itemMatches[i] == null) != (_itemMatches[i] == null)) return false;
+                } else {
+                    if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+                }
             }
             return true;
         }

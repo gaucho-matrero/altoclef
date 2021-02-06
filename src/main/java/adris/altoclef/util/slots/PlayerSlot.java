@@ -78,6 +78,7 @@ public class PlayerSlot extends Slot {
     }
 
     public static final PlayerSlot CRAFT_OUTPUT_SLOT = new PlayerSlot(0);
+    // Armor slots are not visible in crafting/furnace (they break), and as such are unsafe to use.
     public static final PlayerSlot ARMOR_HELMET_SLOT = new PlayerSlot(5);
     public static final PlayerSlot ARMOR_CHESTPLATE_SLOT = new PlayerSlot(6);
     public static final PlayerSlot ARMOR_LEGGINGS_SLOT = new PlayerSlot(7);

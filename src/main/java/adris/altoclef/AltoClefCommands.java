@@ -2,18 +2,19 @@ package adris.altoclef;
 
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
-import adris.altoclef.tasks.misc.ConstructNetherPortalSpeedrunTask;
+import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
+import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
+import adris.altoclef.tasks.misc.EquipArmorTask;
+import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;
+import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Items;
@@ -117,6 +118,9 @@ public class AltoClefCommands extends CommandList {
                     mod.runUserTask(new KillEntityTask(entity));
                 }
                 break;
+            case "food":
+                mod.runUserTask(new CollectFoodTask(20));
+                break;
         }
     }
 
@@ -126,7 +130,8 @@ public class AltoClefCommands extends CommandList {
             new HelpCommand(),
             new GetCommand(),
             new StopCommand(),
-            new TestCommand()
+            new TestCommand(),
+            new GamerCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );
@@ -191,6 +196,17 @@ public class AltoClefCommands extends CommandList {
                 Debug.logWarning("Here's a list of everything we can get for you though:");
                 Debug.logWarning(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
             }
+        }
+    }
+
+    static class GamerCommand extends Command {
+        public GamerCommand() {
+            super("gamer", "Beats the game");
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) {
+            mod.runUserTask(new BeatMinecraftTask());
         }
     }
 

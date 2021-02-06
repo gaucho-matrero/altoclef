@@ -62,7 +62,7 @@ public class TimeoutWanderTask extends Task {
     }
 
     private Goal getRandomDirectionGoal(AltoClef mod) {
-        double distance = _distanceToWander + Math.random() * 25;
+        double distance = Float.isInfinite(_distanceToWander)? _distanceToWander : _distanceToWander + Math.random() * 25;
         return new GoalRunAway(distance, mod.getPlayer().getBlockPos());
     }
 
@@ -73,6 +73,8 @@ public class TimeoutWanderTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
+
+        if (Float.isInfinite(_distanceToWander)) return false;
 
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
@@ -86,6 +88,9 @@ public class TimeoutWanderTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof TimeoutWanderTask) {
             TimeoutWanderTask other = (TimeoutWanderTask) obj;
+            if (Float.isInfinite(other._distanceToWander) || Float.isInfinite(_distanceToWander)) {
+                return Float.isInfinite(other._distanceToWander) == Float.isInfinite(_distanceToWander);
+            }
             return Math.abs(other._distanceToWander - _distanceToWander) < 0.5f;
         }
         return false;

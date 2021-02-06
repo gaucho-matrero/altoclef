@@ -35,6 +35,8 @@ public class InventoryTracker extends Tracker {
 
     private int _emptySlots = 0;
 
+    private int _foodPoints = 0;
+
     public InventoryTracker(TrackerManager manager) {
         super(manager);
     }
@@ -148,6 +150,7 @@ public class InventoryTracker extends Tracker {
         return fuel;
     }
 
+    /*
     public double getTotalFoodAmount() {
         ensureUpdated();
         double total = 0;
@@ -158,6 +161,7 @@ public class InventoryTracker extends Tracker {
         }
         return total;
     }
+     */
 
     public List<ItemStack> getAvailableFoods() {
         ensureUpdated();
@@ -206,9 +210,15 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
         if (item instanceof ArmorItem) {
             ArmorItem armor = (ArmorItem) item;
+            for(ItemStack stack : _mod.getPlayer().getArmorItems()) {
+                if (stack.getItem() == item) return true;
+            }
+            return false;
+            /*
             Slot slot = PlayerSlot.getEquipSlot(armor.getSlotType());
             ItemStack target = getItemStackInSlot(slot);
             return target.getItem().equals(item);
+             */
         }
         Debug.logWarning("Non armor item provided, it is not equipped: " + item.getTranslationKey());
         return false;
@@ -267,6 +277,11 @@ public class InventoryTracker extends Tracker {
         }
 
         return result;
+    }
+
+    public int totalFoodScore() {
+        ensureUpdated();
+        return _foodPoints;
     }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
@@ -623,6 +638,7 @@ public class InventoryTracker extends Tracker {
         _itemSlots.clear();
         _foodSlots.clear();
         _emptySlots = 0;
+        _foodPoints = 0;
 
         if (MinecraftClient.getInstance().player == null) {
             // No updating needed, we have nothing.
@@ -654,6 +670,8 @@ public class InventoryTracker extends Tracker {
             }
             if (item.isFood()) {
                 _foodSlots.add(slot);
+                assert item.getFoodComponent() != null;
+                _foodPoints += item.getFoodComponent().getHunger() * count;
             }
             _itemCounts.put(item, _itemCounts.get(item) + count);
             _itemSlots.get(item).add(slot);

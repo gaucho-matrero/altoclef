@@ -45,6 +45,10 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    public boolean isTracking(Block block) {
+        return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
+    }
+
     public void trackBlock(Block block) {
         if (!_trackingBlocks.containsKey(block)) {
             _trackingBlocks.put(block, 0);
@@ -127,7 +131,7 @@ public class BlockTracker extends Tracker {
         try {
             if (zaWarudo.isAir(pos) && !(block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
                 // This tracked block is air when it doesn't think it should.
-                Debug.logInternal("(failed aircheck)");
+                //Debug.logInternal("(failed aircheck)");
                 return true;
             }
             // It might be OK to remove this. Will have to test.
@@ -195,7 +199,7 @@ public class BlockTracker extends Tracker {
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
         public BlockPos getNearest(Block block, Vec3d position, Predicate<BlockPos> isInvalid) {
             if (!anyFound(block)) {
-                Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
+                //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
             }
             BlockPos closest = null;
@@ -214,7 +218,7 @@ public class BlockTracker extends Tracker {
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (blockIsInvalid(block, pos)) {
-                    Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
+                    //Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
                     it.remove();
                     continue;
                 }
