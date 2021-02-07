@@ -5,6 +5,7 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
+import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
@@ -172,6 +173,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "temple":
                 mod.runUserTask(new SearchForDesertPyramidTask());
+                break;
+            case "blaze":
+                mod.runUserTask(new CollectBlazeRodsTask(7));
                 break;
         }
     }

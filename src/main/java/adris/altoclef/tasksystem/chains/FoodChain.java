@@ -20,6 +20,8 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
@@ -122,7 +124,7 @@ public class FoodChain extends SingleTaskChain {
             return false;
         } else {
             // Eat if we're desparate/need to heal ASAP
-            if (player.isOnFire() || health < 6) {
+            if (player.isOnFire() || player.hasStatusEffect(StatusEffects.WITHER) || health < 6) {
                 return true;
             } else if (foodLevel > 10) {
                 if (health < 14) {

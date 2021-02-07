@@ -58,6 +58,8 @@ public abstract class Task {
     }
 
     protected void stop(AltoClef mod, Task interruptTask) {
+        if (!_active) return;
+
         onStop(mod, interruptTask);
         Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
 

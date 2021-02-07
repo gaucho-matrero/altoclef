@@ -3,6 +3,7 @@ package adris.altoclef.tasks.misc.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
@@ -10,6 +11,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * This is the big kahoona. Plays the whole game.
@@ -21,8 +23,12 @@ public class BeatMinecraftTask extends Task {
     private static final int PRE_NETHER_FOOD = 5 * 40;
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
 
+    private static final int TARGET_BLAZE_RODS = 7;
+
     // A flag to determine whether we should continue doing something.
     private ForceState _forceState = ForceState.NONE;
+
+    private BlockPos _cachedPortalInNether;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -53,7 +59,6 @@ public class BeatMinecraftTask extends Task {
     }
 
     private Task overworldTick(AltoClef mod) {
-
 
         // Get diamond armor first
         if (!diamondArmorEquipped(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
@@ -96,14 +101,31 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        setDebugState("Going to nether!");
-        // Go to nether
-        return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
+        // Get blaze rods by going to nether
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+            setDebugState("Going to nether!");
+            // Go to nether
+            return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
+        }
+
+        setDebugState("Idk what to do we have our blazes");
+        return null;
     }
 
     private Task netherTick(AltoClef mod) {
-        Debug.logMessage("IN NETHER! AYEEEE");
-        return null;
+
+        // Keep track of our portal so we may return to it.
+        if (_cachedPortalInNether == null) {
+            _cachedPortalInNether = mod.getPlayer().getBlockPos();
+        }
+
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+            setDebugState("Collecting blazes");
+            // Go to nether
+            return new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+        }
+        setDebugState("Getting the hell out of here");
+        return new GetToBlockTask(_cachedPortalInNether, false);
     }
 
     private Task endTick(AltoClef mod) {
@@ -121,6 +143,7 @@ public class BeatMinecraftTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
+
     }
 
     @Override
