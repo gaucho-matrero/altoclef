@@ -6,12 +6,12 @@ import java.util.function.Consumer;
 
 public class Action<T> {
 
-    private List<Consumer<T>> _consumers = new ArrayList<>();
+    private final List<Consumer<T>> _consumers = new ArrayList<>();
 
     private boolean _lock = false;
 
-    private List<Consumer<T>> _toAdd = new ArrayList<>();
-    private List<Consumer<T>> _toRemove = new ArrayList<>();
+    private final List<Consumer<T>> _toAdd = new ArrayList<>();
+    private final List<Consumer<T>> _toRemove = new ArrayList<>();
 
     public void addListener(Consumer<T> listener) {
         if (_lock) {
@@ -42,6 +42,8 @@ public class Action<T> {
         for (Consumer<T> consumer : _toRemove) {
             _consumers.remove(consumer);
         }
+        _toAdd.clear();
+        _toRemove.clear();
 
         _lock = false;
     }

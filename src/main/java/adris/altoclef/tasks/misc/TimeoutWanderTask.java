@@ -14,7 +14,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class TimeoutWanderTask extends Task {
 
-    private float _distanceToWander;
+    private final float _distanceToWander;
 
     private Vec3d _origin;
 
@@ -24,6 +24,9 @@ public class TimeoutWanderTask extends Task {
 
     public TimeoutWanderTask(float distanceToWander) {
         _distanceToWander = distanceToWander;
+    }
+    public TimeoutWanderTask() {
+        this(Float.POSITIVE_INFINITY);
     }
 
     @Override

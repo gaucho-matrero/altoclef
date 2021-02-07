@@ -29,7 +29,6 @@ public class GetToBlockTask extends Task {
     protected void onStart(AltoClef mod) {
         Debug.logMessage("GOING TO BLOCK");
         startProc(mod);
-        _running = true;
         _moveChecker.reset();
     }
 
@@ -46,6 +45,7 @@ public class GetToBlockTask extends Task {
         if (!procActive(mod)) {
             Debug.logWarning("Restarting interact with block...");
             startProc(mod);
+            _running = true;
         }
         // Check for failure
         boolean failed = false;

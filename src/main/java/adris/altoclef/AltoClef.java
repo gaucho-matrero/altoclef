@@ -12,6 +12,7 @@ import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
+import adris.altoclef.util.csharpisbetter.Action;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -23,9 +24,13 @@ import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class AltoClef implements ModInitializer {
 
@@ -47,9 +52,12 @@ public class AltoClef implements ModInitializer {
     private EntityTracker _entityTracker;
     private BlockTracker _blockTracker;
     private ContainerTracker _containerTracker;
+    private SimpleChunkTracker _chunkTracker;
 
     // Renderers
     private CommandStatusOverlay _commandStatusOverlay;
+
+    private final Action<WorldChunk> _onChunkLoad = new Action<>();
 
     @Override
     public void onInitialize() {
@@ -84,6 +92,7 @@ public class AltoClef implements ModInitializer {
         _entityTracker = new EntityTracker(_trackerManager);
         _blockTracker = new BlockTracker(_trackerManager);
         _containerTracker = new ContainerTracker(this, _trackerManager);
+        _chunkTracker = new SimpleChunkTracker();
 
         // Renderers
         _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
@@ -103,6 +112,14 @@ public class AltoClef implements ModInitializer {
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
         _commandStatusOverlay.render(matrixStack);
+    }
+
+    public void onChunkLoad(WorldChunk chunk) {
+        _chunkTracker.onLoad(chunk.getPos());
+        _onChunkLoad.invoke(chunk);
+    }
+    public void onChunkUnload(ChunkPos chunkPos) {
+        _chunkTracker.onUnload(chunkPos);
     }
 
     private void initializeBaritoneSettings() {
@@ -147,6 +164,7 @@ public class AltoClef implements ModInitializer {
     public EntityTracker getEntityTracker() { return _entityTracker; }
     public BlockTracker getBlockTracker() { return _blockTracker; }
     public ContainerTracker getContainerTracker() {return _containerTracker;}
+    public SimpleChunkTracker getChunkTracker() {return _chunkTracker;}
 
     // Baritone access
     public Baritone getClientBaritone() {
@@ -204,4 +222,9 @@ public class AltoClef implements ModInitializer {
         if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
         return Dimension.END;
     }
+
+    public Action<WorldChunk> getOnChunkLoad() {
+        return _onChunkLoad;
+    }
+
 }

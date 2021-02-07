@@ -3,16 +3,12 @@ package adris.altoclef;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
-import adris.altoclef.tasks.misc.EnterNetherPortalTask;
+import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
-import adris.altoclef.tasks.misc.EquipArmorTask;
-import adris.altoclef.tasks.misc.IdleTask;
-import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -173,6 +169,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "food":
                 mod.runUserTask(new CollectFoodTask(20));
+                break;
+            case "temple":
+                mod.runUserTask(new SearchForDesertPyramidTask());
                 break;
         }
     }

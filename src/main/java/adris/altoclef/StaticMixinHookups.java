@@ -14,6 +14,8 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.WorldChunk;
 
 /**
  * Mixins have no way (currently) to access our mod.
@@ -41,7 +43,6 @@ public class StaticMixinHookups {
     }
 
     public static void onClientRenderOverlay(MatrixStack stack) {_mod.onClientRenderOverlay(stack);}
-
 
     // Every chat message can be interrupted by us
     public static void onChat(ChatEvent e) {
@@ -73,5 +74,13 @@ public class StaticMixinHookups {
 
     public static void onBlockInteract(BlockHitResult hitResult, BlockState blockState) {
         _mod.getContainerTracker().onBlockInteract(hitResult.getBlockPos(), blockState.getBlock());
+    }
+
+    public static void onChunkLoad(WorldChunk chunk) {
+        _mod.onChunkLoad(chunk);
+    }
+
+    public static void onChunkUnload(int x, int z) {
+        _mod.onChunkUnload(new ChunkPos(x, z));
     }
 }

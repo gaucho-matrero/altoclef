@@ -12,7 +12,8 @@
     "ClientBlockBreakMixin",
     "ClientOpenScreenMixin",
     "ClientTickMixin",
-    "EntryMixin"
+    "EntryMixin",
+    "LoadChunkMixin"
   ],
   "injectors": {
     "defaultRequire": 1
