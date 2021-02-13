@@ -8,18 +8,24 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import baritone.api.utils.RayTraceUtils;
+import baritone.api.utils.Rotation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
+
+import java.util.HashSet;
+import java.util.Optional;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
@@ -30,9 +36,13 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
     private String _liquidName;
 
-    private IProgressChecker<Double> _checker = new LinearProgressChecker(3, 0.1);
+    private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
 
     private Task _wanderTask = new TimeoutWanderTask(6.5f);
+
+    private final HashSet<BlockPos> _blacklist = new HashSet<>();
+
+    private final Timer _reachTimer = new Timer(2);
 
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
@@ -59,6 +69,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
         // Avoid breaking / placing blocks at our liquid
         mod.getConfigState().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
         mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
+
+        _blacklist.clear();
     }
 
     @Override
@@ -67,6 +79,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
             resetChecker();
+            _reachTimer.reset();
             return _wanderTask;
         }
 
@@ -75,17 +88,25 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
             resetChecker();
+            _reachTimer.reset();
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
         // Find nearest water and right click it
         BlockPos nearestLiquid = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _toCollect, (blockPos -> {
+            if (_blacklist.contains(blockPos)) return true;
             assert MinecraftClient.getInstance().world != null;
             BlockState s = MinecraftClient.getInstance().world.getBlockState(blockPos);
-            int level =s.getFluidState().getLevel();
-            //Debug.logMessage("TEST LEVEL: " + level);
-            // Only accept FULL SOURCE BLOCKS
-            return level != 8;
+            if (s.getBlock() instanceof FluidBlock) {
+                float height = s.getFluidState().getHeight();
+                // Only accept still fluids.
+                if (!s.getFluidState().isStill()) return true;
+                int level = s.getFluidState().getLevel();
+                //Debug.logMessage("TEST LEVEL: " + level + ", " + height);
+                // Only accept FULL SOURCE BLOCKS
+                return level != 8;
+            }
+            return true;
         }));
         if (nearestLiquid != null) {
             double distToLiquid = mod.getPlayer().squaredDistanceTo(nearestLiquid.getX(), nearestLiquid.getY(), nearestLiquid.getZ());
@@ -97,6 +118,23 @@ public class CollectBucketLiquidTask extends ResourceTask {
             }
             setDebugState("Interacting...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
+
+            // If we're able to reach the block but we fail...
+            if (mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive()) {
+                Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getReach();
+                if (reach.isPresent()) {
+                    if (_reachTimer.elapsed()) {
+                        _reachTimer.reset();
+                        Debug.logMessage("Failed to collect liquid at " + nearestLiquid + ", probably an invalid source block. blacklisting and trying another one.");
+                        _blacklist.add(nearestLiquid);
+                        // Try again.
+                        return null;
+                    }
+                } else {
+                    _reachTimer.reset();
+                }
+            }
+
             return new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), nearestLiquid);
         }
 

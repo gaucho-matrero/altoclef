@@ -140,35 +140,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     private ClickResponse rightClick() {
 
-        Optional<Rotation> reachable;
-        if (sideDoesntMatter()) {
-            reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-        } else {
-            Vec3i sideVector = _interactSide.getVector();
-            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
-
-            Vec3d sidePoint = centerOffset.add(_target.getX(), _target.getY(), _target.getZ());
-
-            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-            reachable = RotationUtils.reachableOffset(ctx.player(), _target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
-
-            // Check for right angle
-            if (reachable.isPresent()) {
-                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
-                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
-                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
-
-                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
-                if (dot < 0) {
-                    // We're perpendicular and cannot face.
-                    Debug.logMessage("DOT PRODUCT FAIL: " + dot);
-                    return ClickResponse.CANT_REACH;
-                }
-            } else {
-                Debug.logMessage("Fail: " + _target + " : " + sidePoint);
-            }
-
-        }
+        Optional<Rotation> reachable = getReach();
         if (reachable.isPresent()) {
             //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
@@ -198,4 +170,34 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         return _interactSide == null;
     }
 
+    public Optional<Rotation> getReach() {
+        Optional<Rotation> reachable;
+        if (sideDoesntMatter()) {
+            reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+        } else {
+            Vec3i sideVector = _interactSide.getVector();
+            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
+
+            Vec3d sidePoint = centerOffset.add(_target.getX(), _target.getY(), _target.getZ());
+
+            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+            reachable = RotationUtils.reachableOffset(ctx.player(), _target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
+
+            // Check for right angle
+            if (reachable.isPresent()) {
+                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
+                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
+                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
+
+                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
+                if (dot < 0) {
+                    // We're perpendicular and cannot face.
+                    Debug.logMessage("DOT PRODUCT FAIL: " + dot);
+                    return Optional.empty();
+                }
+            }
+        }
+
+        return reachable;
+    }
 }
