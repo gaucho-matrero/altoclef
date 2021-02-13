@@ -2,6 +2,7 @@ package adris.altoclef.util.csharpisbetter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class Action<T> {
@@ -46,5 +47,9 @@ public class Action<T> {
         _toRemove.clear();
 
         _lock = false;
+    }
+
+    public void invoke() {
+        invoke(null);
     }
 }

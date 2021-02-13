@@ -36,13 +36,15 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
     private String _liquidName;
 
-    private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
+    //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
 
     private Task _wanderTask = new TimeoutWanderTask(6.5f);
 
     private final HashSet<BlockPos> _blacklist = new HashSet<>();
 
     private final Timer _reachTimer = new Timer(2);
+
+    private BlockPos _targetLiquid;
 
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
@@ -78,7 +80,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
-            resetChecker();
             _reachTimer.reset();
             return _wanderTask;
         }
@@ -87,7 +88,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
-            resetChecker();
             _reachTimer.reset();
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
@@ -108,14 +108,9 @@ public class CollectBucketLiquidTask extends ResourceTask {
             }
             return true;
         }));
+        _targetLiquid = nearestLiquid;
         if (nearestLiquid != null) {
-            double distToLiquid = mod.getPlayer().squaredDistanceTo(nearestLiquid.getX(), nearestLiquid.getY(), nearestLiquid.getZ());
             // We want to MINIMIZE this distance to liquid.
-            _checker.setProgress(-1 * distToLiquid);
-            if (_checker.failed()) {
-                Debug.logMessage("Failed to get to liquid, wandering for a bit before trying again...");
-                return _wanderTask;
-            }
             setDebugState("Interacting...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
 
@@ -135,7 +130,13 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
             }
 
-            return new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), nearestLiquid);
+            InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), nearestLiquid);
+            //noinspection unchecked
+            task.TimedOut.addListener((empty) -> {
+                Debug.logMessage("Blacklisted " + nearestLiquid);
+                _blacklist.add(nearestLiquid);
+            });
+            return task;
         }
 
         // Oof, no liquid found.
@@ -176,8 +177,4 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
     }
 
-    private void resetChecker() {
-        _checker.setProgress(Double.NEGATIVE_INFINITY);
-        _checker.reset();
-    }
 }

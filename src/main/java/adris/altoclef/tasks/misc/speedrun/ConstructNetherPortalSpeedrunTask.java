@@ -33,10 +33,14 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     // The "portal origin relative to region" corresponds to the portal origin with respect to the "portalable" region (see _portalOrigin).
     // This can only really be explained visually, sorry!
     private static final Vec3i PORTALABLE_REGION_SIZE = new Vec3i(4, 6, 6);
+    // Destroy these blocks too.
     private static final Vec3i[] PORTALABLE_REGION_EXTRA = new Vec3i[] {
-            // Destroy these blocks too.
+            // Bottom two slots
             new Vec3i(0, -1, 0),
             new Vec3i(0, -1, 1),
+            // Water entry to reduce extra water
+            new Vec3i(2, -1, 0),
+            new Vec3i(2, -1, 1)
     };
     private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 0, 2);
 
@@ -53,7 +57,15 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             new Vec3i(1, 0, 0),
             new Vec3i(1, 0, 1),
             new Vec3i(1, 1, 1),
-            new Vec3i(1, 0, 2)
+            new Vec3i(1, 0, 2),
+            // Bonus right side nudge for blocking water
+            new Vec3i(1, 1, 2),
+            new Vec3i(1, 2, 2),
+            new Vec3i(2, 0, 2),
+
+            // Bottom part below the bottom 2 obsidian
+            new Vec3i(0, -2, 0),
+            new Vec3i(0, -2, 1)
     };
 
     // How the lava will be placed to make the portal. (place relative to origin AND what direction it is placed on)
@@ -91,6 +103,8 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
 
     private BlockPos _destroyTarget = null;
 
+    private boolean _firstSearch = false;
+
     @Override
     protected void onStart(AltoClef mod) {
         _isPlacingLiquid = false;
@@ -114,6 +128,10 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             }
             return false;
         });
+
+        _lavaSearchTimer.reset();
+        _firstSearch = true;
+
     }
 
     @Override
@@ -140,7 +158,8 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
 
             boolean foundSpot = false;
 
-            if (_lavaSearchTimer.elapsed()) {
+            if (_firstSearch || _lavaSearchTimer.elapsed()) {
+                _firstSearch = false;
                 _lavaSearchTimer.reset();
                 Debug.logMessage("(Searching for lava lake with portalable spot nearby...)");
                 BlockPos lavaPos = findLavaLake(mod, mod.getPlayer().getBlockPos());
@@ -207,7 +226,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
 
         // Place lava
         for(LavaTarget lavaTarget : PORTAL_FRAME_LAVA) {
-            mod.getConfigState().setAllowWalkThroughFlowingWater(true);
+            //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
             if (!lavaTarget.isSatisfied(_portalOrigin)) {
                 setDebugState("Placing Obsidian");
                 _portalFrameBuilt = false;

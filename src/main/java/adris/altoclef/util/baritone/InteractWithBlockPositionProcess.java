@@ -45,6 +45,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
     private boolean _failed;
 
+    // How close we are expected to travel to get to the block. Increases as we fail.
+    public int reachCounter = 0;
+
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone); _mod = mod;
     }
@@ -62,6 +65,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         _failed = false;
 
         this.arrivalTickCount = 0;
+
+        reachCounter = 0;
     }
     public void getToBlock(BlockPos target, boolean rightClickOnArrival) {
         this.getToBlock(target, rightClickOnArrival, false);
@@ -79,7 +84,13 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
 
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        Goal goal = createGoal(_target);
+
+        if (calcFailed) {
+            logDebug("Failed to calculate path, increasing reach to " + reachCounter);
+            reachCounter++;
+        }
+
+        Goal goal = createGoal(_target, reachCounter);
 
         //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
         if (!_rightClickOnArrival) {
@@ -117,7 +128,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     public String displayName0() {
         return "Get To " + _target;
     }
-    private Goal createGoal(BlockPos pos) {
+    private Goal createGoal(BlockPos pos, int reachDistance) {
 
         if (!sideDoesntMatter()) {
             Vec3i offs = _interactSide.getVector();
@@ -131,7 +142,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return new GoalNear(pos, 1);
+            return new GoalNear(pos, reachDistance);
             //return new GoalGetToBlock(pos);
             // Is the following better? Commented out was the old way copied from baritone.
             //return new _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);

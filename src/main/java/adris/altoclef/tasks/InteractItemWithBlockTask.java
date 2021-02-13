@@ -7,11 +7,14 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
+import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class InteractItemWithBlockTask extends Task {
+
+    private static final int MAX_REACH = 7;
 
     private final ItemTarget _toUse;
 
@@ -22,6 +25,10 @@ public class InteractItemWithBlockTask extends Task {
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
     private final Task _wanderTask = new TimeoutWanderTask(5);
+
+    private int _prevReach = -1;
+
+    public final Action TimedOut = new Action();
 
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target) {
         _toUse = toUse;
@@ -54,6 +61,7 @@ public class InteractItemWithBlockTask extends Task {
         }
         if (!_moveChecker.check(mod)) {
             Debug.logMessage("Failed, wandering.");
+            TimedOut.invoke();
             return _wanderTask;
         }
 
@@ -62,6 +70,11 @@ public class InteractItemWithBlockTask extends Task {
             _trying = true;
             proc(mod).getToBlock(_target, _direction, true, true, false);
             proc(mod).setInteractEquipItem(_toUse);
+        } else {
+            if (_prevReach < MAX_REACH && proc(mod).reachCounter != _prevReach) {
+                _prevReach = proc(mod).reachCounter;
+                _moveChecker.reset();
+            }
         }
 
         return null;
@@ -98,4 +111,5 @@ public class InteractItemWithBlockTask extends Task {
     private InteractWithBlockPositionProcess proc(AltoClef mod) {
         return mod.getCustomBaritone().getInteractWithBlockPositionProcess();
     }
+
 }
