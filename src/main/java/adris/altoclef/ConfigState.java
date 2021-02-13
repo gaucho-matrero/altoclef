@@ -7,6 +7,7 @@ import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.process.MineProcess;
 import baritone.api.utils.RayTraceUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
@@ -101,6 +102,11 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void setPauseOnLostFocus(boolean pauseOnLostFocus) {
+        current().pauseOnLostFocus = pauseOnLostFocus;
+        current().applyState();
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProtected(Item item) {
         // For now nothing is protected.
@@ -148,6 +154,9 @@ public class ConfigState {
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
 
+        // Minecraft config
+        public boolean pauseOnLostFocus = true;
+
         // Hard coded stuff
         public RaycastContext.FluidHandling rayFluidHandling;
         public boolean mineProcSearchAnyFlag;
@@ -161,6 +170,8 @@ public class ConfigState {
             readState(_mod.getClientBaritoneSettings());
 
             readExtraState(_mod.getExtraBaritoneSettings());
+
+            readMinecraftState();
 
             if (toCopy != null) {
                 // Copy over stuff from old one
@@ -199,6 +210,10 @@ public class ConfigState {
             mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
         }
 
+        private void readMinecraftState() {
+            pauseOnLostFocus = MinecraftClient.getInstance().options.pauseOnLostFocus;
+        }
+
         /**
          * Make the current state match our copy
          */
@@ -222,8 +237,12 @@ public class ConfigState {
 
             sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
 
+            // Extra / hard coded
             RayTraceUtils.fluidHandling = rayFluidHandling;
             MineProcess.searchAnyFlag = mineProcSearchAnyFlag;
+
+            // Minecraft
+            MinecraftClient.getInstance().options.pauseOnLostFocus = pauseOnLostFocus;
         }
     }
 }

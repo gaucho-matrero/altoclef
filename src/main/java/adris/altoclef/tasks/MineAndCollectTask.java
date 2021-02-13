@@ -229,6 +229,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (wasRunningBefore) {
                 _moveChecker.reset();
             }
+            // TODO: FIX This gets spammed for some reason???
             Debug.logInternal("Starting to mine.");
         }
 

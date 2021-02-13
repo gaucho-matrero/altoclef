@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Input;
 import adris.altoclef.util.csharpisbetter.Stopwatch;
+import net.minecraft.client.MinecraftClient;
 import org.lwjgl.glfw.GLFW;
 
 // A task chain that runs a user defined task at the same priority.

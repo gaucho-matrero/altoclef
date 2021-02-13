@@ -45,9 +45,16 @@ public class TaskRunner {
     }
 
     public void enable() {
+        if (!_active) {
+            _mod.getConfigState().push();
+            _mod.getConfigState().setPauseOnLostFocus(false);
+        }
         _active = true;
     }
     public void disable() {
+        if (_active) {
+            _mod.getConfigState().pop();
+        }
         for (TaskChain chain : _chains) {
             chain.stop(_mod);
         }
