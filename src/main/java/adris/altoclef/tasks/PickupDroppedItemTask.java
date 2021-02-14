@@ -73,6 +73,7 @@ public class PickupDroppedItemTask extends Task {
                 Debug.logMessage("Failed to get to " + _itemGoal + ", adding to blacklist.");
                 // Cancel so we re-path
                 mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                _itemGoal = null;
                 return null;
             }
         }
