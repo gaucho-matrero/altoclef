@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.SkeletonEntity;
 
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class GoalRunAwayFromHostiles implements Goal {
         List<HostileEntity> hostiles = getHostiles();
         for (HostileEntity hostile : hostiles) {
             if (hostile == null) continue;
+            if (ignore(hostile)) continue;
             double dist = hostile.squaredDistanceTo(x, y, z);
             distSum += dist;
         }
@@ -46,5 +48,9 @@ public class GoalRunAwayFromHostiles implements Goal {
 
     private List<HostileEntity> getHostiles() {
         return _mod.getEntityTracker().getHostiles();
+    }
+
+    private boolean ignore(HostileEntity hostile) {
+        return hostile instanceof SkeletonEntity;
     }
 }
