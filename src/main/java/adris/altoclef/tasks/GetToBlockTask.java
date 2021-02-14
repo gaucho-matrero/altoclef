@@ -85,7 +85,7 @@ public class GetToBlockTask extends Task {
 
     private boolean procActive(AltoClef mod) {
         if (_rightClickOnArrival) {
-            return mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() && mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed();
+            return mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed();
         } else {
             return mod.getClientBaritone().getCustomGoalProcess().isActive();
         }
