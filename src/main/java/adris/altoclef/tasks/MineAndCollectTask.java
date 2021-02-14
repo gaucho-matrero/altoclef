@@ -20,7 +20,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -89,6 +88,7 @@ public class MineAndCollectTask extends ResourceTask {
         _distanceFailCounter = 0;
 
         _moveChecker.reset();
+        _wanderTask.resetWander();
     }
 
     @Override

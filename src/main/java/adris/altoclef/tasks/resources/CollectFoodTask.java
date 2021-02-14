@@ -10,8 +10,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.passive.*;
@@ -20,10 +19,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.function.Predicate;
+
 public class CollectFoodTask extends Task {
 
+    // Actually screw fish baritone does NOT play nice underwater.
     // Fish kinda suck to harvest so heavily penalize them.
-    private static final double FISH_PENALTY = 0.03;
+    private static final double FISH_PENALTY = 0 * 0.03;
 
     // Represents order of preferred mobs to least preferred
     private static final CookableFoodTarget[] COOKABLE_FOODS = new CookableFoodTarget[] {
@@ -125,7 +127,20 @@ public class CollectFoodTask extends Task {
             // Crops
             for (CropTarget target : CROPS) {
                 // If crops are nearby. Do not replant cause we don't care.
-                Task t = pickupBlockTaskOrNull(mod, target.cropBlock, target.cropItem);
+                Task t = pickupBlockTaskOrNull(mod, target.cropBlock, target.cropItem, (blockPos -> {
+                    BlockState s = mod.getWorld().getBlockState(blockPos);
+                    Block b = s.getBlock();
+                    if (b instanceof CropBlock) {
+                        boolean isWheat = !(b instanceof PotatoesBlock || b instanceof CarrotsBlock || b instanceof  BeetrootsBlock);
+                        if (isWheat) {
+                            // Prune if we're not mature/fully grown wheat.
+                            CropBlock crop = (CropBlock) b;
+                            return !crop.isMature(s);
+                        }
+                    }
+                    // We're not wheat so do NOT reject.
+                    return false;
+                }));
                 if (t != null) {
                     setDebugState("Harvesting " + target.cropItem.getTranslationKey());
                     return t;
@@ -225,8 +240,8 @@ public class CollectFoodTask extends Task {
      * Returns a task that mines a block and picks up its output.
      * Returns null if task cannot reasonably run.
      */
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab) {
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), blockToCheck);
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject) {
+        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), blockToCheck, reject);
 
         ItemEntity nearestDrop = null;
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
@@ -243,6 +258,9 @@ public class CollectFoodTask extends Task {
                 }
         }
         return null;
+    }
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab) {
+        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (maybeReject) -> false);
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {

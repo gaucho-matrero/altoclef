@@ -23,7 +23,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     private final Timer _placeTimer = new Timer(5.0);
 
-    private final Task _wanderTask = new TimeoutWanderTask(2);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
 
     public PlaceBlockNearbyTask(Block[] toPlace) {
         _toPlace = toPlace;
@@ -41,6 +41,7 @@ public class PlaceBlockNearbyTask extends Task {
         //Debug.logInternal("DONE? %b %b", isFinished(mod), mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive() );
         _placeTimer.reset();
         _placing = true;
+        _wanderTask.resetWander();
     }
 
     @Override

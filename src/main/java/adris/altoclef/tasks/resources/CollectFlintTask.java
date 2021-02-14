@@ -42,6 +42,11 @@ public class CollectFlintTask extends ResourceTask {
         // We might just want to mine the closest gravel.
         BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.GRAVEL);
 
+        // Update if we break closest.
+        if (_closest != null && mod.getWorld().getBlockState(_closest).getBlock() != Blocks.GRAVEL) {
+            _closest = null;
+        }
+
         // CLOSEST THRESHOLDING: TODO: THIS ISSUE MAY PLAGUE OTHER THINGS.
         if (_closest != null && !_closest.equals(closest)) {
             double distSqCurrentClosest = _closest.getSquaredDistance(mod.getPlayer().getPos(), false);

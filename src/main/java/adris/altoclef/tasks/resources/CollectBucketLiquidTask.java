@@ -38,7 +38,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
     //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
 
-    private Task _wanderTask = new TimeoutWanderTask(6.5f);
+    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6.5f);
 
     private final HashSet<BlockPos> _blacklist = new HashSet<>();
 
@@ -73,6 +73,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
         mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
 
         _blacklist.clear();
+
+        _wanderTask.resetWander();
     }
 
     @Override

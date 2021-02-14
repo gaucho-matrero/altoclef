@@ -41,7 +41,7 @@ public abstract class SearchChunksExploreTask extends Task {
             if (_searcher == null) {
                 setDebugState("Exploring/Searching for valid chunk");
                 // Explore
-                return new TimeoutWanderTask();
+                return new TimeoutWanderTask(true);
             }
 
             if (_searcher.isActive() && _searcher.isFinished(mod)) {

@@ -42,10 +42,11 @@ public abstract class AbstractKillEntityTask extends Task {
     private static final double MAINTAIN_DISTANCE = 3;
 
     private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
-    private final Task _wanderTask = new TimeoutWanderTask();
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask();
 
     @Override
     protected void onStart(AltoClef mod) {
+        _wanderTask.resetWander();
     }
 
     @Override

@@ -22,16 +22,28 @@ public class TimeoutWanderTask extends Task {
 
     private boolean _executingPlanB = false;
 
+    private boolean _forceExplore;
+
     public TimeoutWanderTask(float distanceToWander) {
         _distanceToWander = distanceToWander;
+        _forceExplore = false;
     }
     public TimeoutWanderTask() {
         this(Float.POSITIVE_INFINITY);
+    }
+    public TimeoutWanderTask(boolean forceExplore) {
+        this();
+        _forceExplore = forceExplore;
+    }
+
+    public void resetWander() {
+        _executingPlanB = false;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         _origin = mod.getPlayer().getPos();
+        _distanceProgressChecker.reset();
     }
 
     @Override
@@ -49,16 +61,18 @@ public class TimeoutWanderTask extends Task {
             }
         }
 
-        _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
-        if (_distanceProgressChecker.failed()) {
-            _distanceProgressChecker.reset();
-            // We failed at exploring.
-            Debug.logMessage("Failed exploring.");
-            if (_executingPlanB) {
-                // Cancel current plan B
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+        if (!_forceExplore) {
+            _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
+            if (_distanceProgressChecker.failed()) {
+                _distanceProgressChecker.reset();
+                // We failed at exploring.
+                Debug.logMessage("Failed exploring.");
+                if (_executingPlanB) {
+                    // Cancel current plan B
+                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                }
+                _executingPlanB = true;
             }
-            _executingPlanB = true;
         }
 
         return null;

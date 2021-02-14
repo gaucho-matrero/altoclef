@@ -4,7 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
@@ -22,7 +21,7 @@ public class PlaceStructureBlockTask extends Task {
 
     private LinearProgressChecker _distanceChecker = new LinearProgressChecker(5, 0.1);
 
-    private Task _wanderTask = new TimeoutWanderTask(6);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
 
     public PlaceStructureBlockTask(BlockPos target) {
         _target = target;
@@ -32,6 +31,7 @@ public class PlaceStructureBlockTask extends Task {
     protected void onStart(AltoClef mod) {
         _distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
         _distanceChecker.reset();
+        _wanderTask.resetWander();
     }
 
     @Override

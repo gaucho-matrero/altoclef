@@ -24,7 +24,7 @@ public class InteractItemWithBlockTask extends Task {
     private boolean _trying;
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
-    private final Task _wanderTask = new TimeoutWanderTask(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
 
     private int _prevReach = -1;
 
@@ -44,6 +44,7 @@ public class InteractItemWithBlockTask extends Task {
     protected void onStart(AltoClef mod) {
         _trying = false;
         _moveChecker.reset();
+        _wanderTask.resetWander();
     }
 
     @Override

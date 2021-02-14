@@ -17,7 +17,7 @@ public class DestroyBlockTask extends Task {
     private boolean _failedFirstTry;
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 0.1, 4, 0.01);
-    private final Task _wanderTask = new TimeoutWanderTask(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
 
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
@@ -26,6 +26,7 @@ public class DestroyBlockTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
+        _wanderTask.resetWander();
     }
 
     @Override

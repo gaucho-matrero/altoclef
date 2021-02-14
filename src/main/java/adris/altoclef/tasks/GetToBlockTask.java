@@ -17,7 +17,7 @@ public class GetToBlockTask extends Task {
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 1, 5, 0.1);
 
-    private static Task _wanderTask = new TimeoutWanderTask(10);
+    private static TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
     public GetToBlockTask(BlockPos position, boolean rightClickOnArrival) {
         if (position == null) Debug.logError("Shouldn't be null!");
@@ -30,6 +30,7 @@ public class GetToBlockTask extends Task {
         Debug.logMessage("GOING TO BLOCK");
         startProc(mod);
         _moveChecker.reset();
+        _wanderTask.resetWander();
     }
 
     @Override

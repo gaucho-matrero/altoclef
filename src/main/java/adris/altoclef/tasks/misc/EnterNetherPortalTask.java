@@ -15,7 +15,7 @@ public class EnterNetherPortalTask extends Task {
     private final Dimension _targetDimension;
 
     private Timer _portalTimeout = new Timer(10);
-    private Task _wanderTask = new TimeoutWanderTask(3);
+    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
 
     private boolean _leftPortal;
 
@@ -30,6 +30,8 @@ public class EnterNetherPortalTask extends Task {
         mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
         _leftPortal = false;
         _portalTimeout.reset();
+
+        _wanderTask.resetWander();
     }
 
     @Override
