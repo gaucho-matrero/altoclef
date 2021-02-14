@@ -19,6 +19,8 @@ public class CollectFlintTask extends ResourceTask {
 
     private final int _count;
 
+    private BlockPos _closest = null;
+
     public CollectFlintTask(int targetCount) {
         super(Items.FLINT, targetCount);
         _count = targetCount;
@@ -39,8 +41,20 @@ public class CollectFlintTask extends ResourceTask {
 
         // We might just want to mine the closest gravel.
         BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.GRAVEL);
-        if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
-            return new DestroyBlockTask(closest);
+
+        // CLOSEST THRESHOLDING: TODO: THIS ISSUE MAY PLAGUE OTHER THINGS.
+        if (_closest != null && !_closest.equals(closest)) {
+            double distSqCurrentClosest = _closest.getSquaredDistance(mod.getPlayer().getPos(), false);
+            double distSqNewClosest = closest.getSquaredDistance(mod.getPlayer().getPos(), false);
+            if (distSqNewClosest - distSqCurrentClosest > 100) {
+                _closest = closest;
+            }
+        } else {
+            _closest = closest;
+        }
+
+        if (_closest != null && _closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
+            return new DestroyBlockTask(_closest);
         }
 
         // If we have gravel, place it.
