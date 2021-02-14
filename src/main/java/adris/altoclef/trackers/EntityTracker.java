@@ -13,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
@@ -143,6 +144,7 @@ public class EntityTracker extends Tracker {
     }
 
     public boolean mobFound(Class type) {
+        ensureUpdated();
         return _mobMap.containsKey(type);
     }
 
@@ -258,6 +260,7 @@ public class EntityTracker extends Tracker {
                     proj.position = projEntity.getPos();
                     proj.velocity = projEntity.getVelocity();
                     proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
+                    proj.projectileType = projEntity.getClass();
                     _projectiles.add(proj);
                 }
             }
