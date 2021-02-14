@@ -1,8 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.EntityUtil;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
@@ -38,12 +41,22 @@ public abstract class AbstractKillEntityTask extends Task {
 
     private static final double MAINTAIN_DISTANCE = 3;
 
+    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
+    private final Task _wanderTask = new TimeoutWanderTask();
+
     @Override
     protected void onStart(AltoClef mod) {
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _progress.reset();
+            setDebugState("Failed to get to target, wandering for a bit.");
+            return _wanderTask;
+        }
+
         Entity entity = getEntityTarget(mod);
 
         mod.getMobDefenseChain().setTargetEntity(entity);
@@ -78,6 +91,7 @@ public abstract class AbstractKillEntityTask extends Task {
         }
 
         if (entity.squaredDistanceTo(mod.getPlayer()) < playerReach*playerReach && result != null && result.getType() == HitResult.Type.ENTITY) {
+            _progress.reset();
             // Equip weapon
             equipWeapon(mod);
             if (hitProg >= 0.99) {
@@ -85,6 +99,12 @@ public abstract class AbstractKillEntityTask extends Task {
             }
         } else if (!tooClose) {
             setDebugState("Approaching target");
+
+            if (_progress.check(mod)) {
+                Debug.logMessage("Failed to get to target, wandering.");
+                return _wanderTask;
+            }
+
             // Move to target
 
             return new GetToEntityTask(entity);
