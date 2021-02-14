@@ -15,9 +15,8 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.mob.*;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
@@ -33,6 +32,8 @@ public class MobDefenseChain extends SingleTaskChain {
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 15;
 
     private static final double DANGER_KEEP_DISTANCE = 15;
+
+    private static final double SAFE_KEEP_DISTANCE = 8;
 
     private Entity _targetEntity;
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
@@ -54,6 +55,13 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Tell baritone to avoid mobs if we're vulnurable.
         mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+
+        // Run away if a weird mob is close by.
+        Entity universallyDangerous = getUniversallyDangerousMob(mod);
+        if (universallyDangerous != null) {
+            setTask(new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE));
+            return 70;
+        }
 
         _doingFunkyStuff = false;
         // Run away from creepers
@@ -136,6 +144,15 @@ public class MobDefenseChain extends SingleTaskChain {
 
         try {
             for (CachedProjectile projectile : projectiles) {
+
+                boolean isGhastBall = projectile.projectileType == FireballEntity.class;
+                if (isGhastBall) {
+                    // ignore if it's too far away.
+                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 15)) {
+                        continue;
+                    }
+                }
+
                 Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
 
                 Vec3d delta = mod.getPlayer().getPos().subtract(expectedHit);
@@ -153,6 +170,16 @@ public class MobDefenseChain extends SingleTaskChain {
         return false;
     }
 
+    private Entity getUniversallyDangerousMob(AltoClef mod) {
+        if (mod.getEntityTracker().mobFound(WitherSkeletonEntity.class)) {
+            Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
+            if (entity.squaredDistanceTo(mod.getPlayer()) < 6*6) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
     private boolean isInDanger(AltoClef mod) {
 
         if (isVulnurable(mod)) {
@@ -161,6 +188,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 ClientPlayerEntity player = mod.getPlayer();
                 List<HostileEntity> hostiles = mod.getEntityTracker().getHostiles();
                 for(HostileEntity entity : hostiles) {
+                    // Ignore skeletons
+                    if (entity instanceof SkeletonEntity) continue;
                     if (entity.isInRange(player, DANGER_KEEP_DISTANCE)) {
                         return true;
                     }
