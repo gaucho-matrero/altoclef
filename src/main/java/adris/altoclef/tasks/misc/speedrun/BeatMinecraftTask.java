@@ -10,6 +10,7 @@ import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.MiningRequirement;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
@@ -71,6 +72,7 @@ public class BeatMinecraftTask extends Task {
                     _forceState = ForceState.GETTING_DIAMOND_GEAR;
                 }
             }
+
             if (!diamondArmorEquipped(mod)) {
                 setDebugState("Equipping diamond armor");
                 return new EquipArmorTask(DIAMOND_ARMORS);
@@ -125,7 +127,7 @@ public class BeatMinecraftTask extends Task {
             return new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
         }
         setDebugState("Getting the hell out of here");
-        return new GetToBlockTask(_cachedPortalInNether, false);
+        return new EnterNetherPortalTask(new GetToBlockTask(_cachedPortalInNether, false), Dimension.OVERWORLD);
     }
 
     private Task endTick(AltoClef mod) {
