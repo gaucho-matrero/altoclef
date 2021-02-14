@@ -12,11 +12,12 @@ import net.minecraft.client.network.ServerInfo;
 
 public class DeathMenuChain extends TaskChain {
 
-    // TODO: Implement settings and add auto-respawn to the list.
     private boolean shouldAutoRespawn(AltoClef mod) {
-        return true;
+        return mod.getModSettings().isAutoRespawn();
     }
-    private boolean shouldAutoReconnect(AltoClef mod) { return true; }
+    private boolean shouldAutoReconnect(AltoClef mod) {
+        return mod.getModSettings().isAutoReconnect();
+    }
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
@@ -56,16 +57,26 @@ public class DeathMenuChain extends TaskChain {
             _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
         }
 
-        if (screen instanceof DeathScreen && shouldAutoRespawn(mod)) {
-            _deathCount++;
-            Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
-            assert MinecraftClient.getInstance().player != null;
-            MinecraftClient.getInstance().player.requestRespawn();
-            MinecraftClient.getInstance().openScreen(null);
-        } else if (screen instanceof DisconnectedScreen && shouldAutoReconnect(mod)) {
-            Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
-            _reconnecting = true;
-            MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
+        if (screen instanceof DeathScreen) {
+            if (shouldAutoRespawn(mod)) {
+                _deathCount++;
+                Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
+                assert MinecraftClient.getInstance().player != null;
+                MinecraftClient.getInstance().player.requestRespawn();
+                MinecraftClient.getInstance().openScreen(null);
+            } else {
+                // Cancel if we die and are not auto-respawning.
+                mod.cancelUserTask();
+            }
+        } else if (screen instanceof DisconnectedScreen) {
+            if (shouldAutoReconnect(mod)) {
+                Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
+                _reconnecting = true;
+                MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
+            } else {
+                // Cancel if we disconnect and are not auto-reconnecting.
+                mod.cancelUserTask();
+            }
         } else if (screen instanceof MultiplayerScreen && _reconnecting && _reconnectTimer.elapsed()) {
             _reconnectTimer.reset();
             Debug.logMessage("RECONNECTING: Going ");

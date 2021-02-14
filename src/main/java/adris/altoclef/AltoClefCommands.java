@@ -187,6 +187,8 @@ public class AltoClefCommands extends CommandList {
             new GetCommand(),
             new StopCommand(),
             new TestCommand(),
+            new FoodCommand(),
+            new ReloadSettingsCommand(),
             new GamerCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
@@ -263,6 +265,18 @@ public class AltoClefCommands extends CommandList {
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
             mod.runUserTask(new BeatMinecraftTask());
+        }
+    }
+
+    static class ReloadSettingsCommand extends Command {
+        public ReloadSettingsCommand() {super("reload_settings", "Reloads settings from " + Settings.SETTINGS_PATH);}
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) {
+            if (mod.reloadModSettings() != null) {
+                Debug.logMessage("Reload successful!");
+            } else {
+                Debug.logWarning("Failed to reload settings. Check Minecraft log for Exception.");
+            }
         }
     }
 

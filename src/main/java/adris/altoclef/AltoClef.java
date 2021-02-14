@@ -57,6 +57,10 @@ public class AltoClef implements ModInitializer {
     // Renderers
     private CommandStatusOverlay _commandStatusOverlay;
 
+    // Settings
+    private adris.altoclef.Settings _settings;
+
+    // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
 
     @Override
@@ -72,6 +76,9 @@ public class AltoClef implements ModInitializer {
         // This is the actual start point, controlled by a mixin.
 
         initializeBaritoneSettings();
+
+        // Load settings
+        _settings = adris.altoclef.Settings.load();
 
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
@@ -181,6 +188,16 @@ public class AltoClef implements ModInitializer {
         return Baritone.getAltoClefSettings();
     }
 
+    public adris.altoclef.Settings getModSettings() {return _settings; }
+
+    public adris.altoclef.Settings reloadModSettings() {
+        adris.altoclef.Settings result = adris.altoclef.Settings.load();
+        if (result != null) {
+            _settings = result;
+        }
+        return result;
+    }
+
     public int getTicks() {
         try {
             ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
@@ -205,6 +222,7 @@ public class AltoClef implements ModInitializer {
     public void runUserTask(Task task) {
         _userTaskChain.runTask(this, task);
     }
+    public void cancelUserTask() {_userTaskChain.cancel(this);}
     public FoodChain getFoodChain() {
         return _foodChain;
     }

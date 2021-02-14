@@ -29,11 +29,17 @@ public class UserTaskChain extends SingleTaskChain {
         // Stop shortcut
         if (_mainTask != null && _mainTask.isActive() && Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW.GLFW_KEY_K)) {
             Debug.logMessage("(stop shortcut sent)");
-            stop(mod);
-            onTaskFinish(mod);
+            cancel(mod);
             return;
         }
         super.onTick(mod);
+    }
+
+    public void cancel(AltoClef mod) {
+        if (_mainTask != null && _mainTask.isActive()) {
+            stop(mod);
+            onTaskFinish(mod);
+        }
     }
 
     @Override

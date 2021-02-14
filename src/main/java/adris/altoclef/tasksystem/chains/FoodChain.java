@@ -41,14 +41,16 @@ public class FoodChain extends SingleTaskChain {
 
     private static final int RIGHT_CLICK_KEY = 1 - 100;
 
-    int test = 0;
-
     public FoodChain(TaskRunner runner) {
         super(runner);
     }
 
     @Override
     public float getPriority(AltoClef mod) {
+
+        if (!mod.getModSettings().isAutoEat()) {
+            return Float.NEGATIVE_INFINITY;
+        }
 
         /*
         - Eats if:
@@ -57,11 +59,6 @@ public class FoodChain extends SingleTaskChain {
             - We're very low on health and are even slightly hungry
          */
 
-        if (Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
-            test ++;
-        } else if (Input.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
-            test --;
-        }
 
         // We're in danger, don't eat now!!
         if (mod.getMobDefenseChain().isDoingAcrobatics()) {

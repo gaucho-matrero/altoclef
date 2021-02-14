@@ -47,6 +47,10 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        if (!mod.getModSettings().isMobDefense()) {
+            return Float.NEGATIVE_INFINITY;
+        }
+
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return 0;
 
@@ -74,7 +78,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Dodge projectiles
-        if (isProjectileClose(mod)) {
+        if (mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
             _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
