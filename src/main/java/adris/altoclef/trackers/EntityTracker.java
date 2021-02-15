@@ -187,6 +187,12 @@ public class EntityTracker extends Tracker {
         }
         return null;
     }
+    public PlayerEntity getPlayerEntity(String name) {
+        if (isPlayerLoaded(name)) {
+            return _playerMap.get(name);
+        }
+        return null;
+    }
 
     @Override
     protected synchronized void updateState() {

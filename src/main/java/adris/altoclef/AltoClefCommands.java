@@ -188,6 +188,7 @@ public class AltoClefCommands extends CommandList {
             // List commands here
             new HelpCommand(),
             new GetCommand(),
+            new FollowCommand(),
             new GiveCommand(),
             new StopCommand(),
             new TestCommand(),
@@ -302,7 +303,7 @@ public class AltoClefCommands extends CommandList {
 
     static class GiveCommand extends Command {
         public GiveCommand() throws CommandException {
-            super("give", "Collects a certain amount of food", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
+            super("give", "Collects an item and gives it to you or someone else", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
         }
 
         @Override
@@ -327,6 +328,27 @@ public class AltoClefCommands extends CommandList {
                 mod.log("Task for item does not exist: " + item);
                 finish();
             }
+        }
+    }
+
+    static class FollowCommand extends Command {
+        public FollowCommand() throws CommandException {
+            super("follow", "Follows you or someone else", new Arg(String.class, "username", null, 0));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String username = parser.Get(String.class);
+            if (username == null) {
+                if (mod.getButler().hasCurrentUser()) {
+                    username = mod.getButler().getCurrentUser();
+                } else {
+                    mod.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
+                    finish();
+                    return;
+                }
+            }
+            mod.runUserTask(new FollowPlayerTask(username), nothing -> finish());
         }
     }
 
