@@ -116,7 +116,7 @@ public class CataloguedResourceTask extends Task {
             if (_squashMap.containsKey(type)) {
                 _squashMap.get(type).add(t);
             } else {
-                Debug.logMessage("Unsquashable: " + type + ": " + t);
+                //Debug.logMessage("Unsquashable: " + type + ": " + t);
                 _unSquashableTasks.add(t);
             }
         }

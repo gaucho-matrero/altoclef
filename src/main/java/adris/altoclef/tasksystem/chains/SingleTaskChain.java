@@ -30,7 +30,7 @@ public abstract class SingleTaskChain extends TaskChain {
         }
 
         if (_mainTask != null) {
-            if ((_mainTask.isFinished(mod)) || _mainTask.failed()) {
+            if ((_mainTask.isFinished(mod)) || _mainTask.stopped()) {
                 onTaskFinish(mod);
             } else {
                 _mainTask.tick(mod, this);
@@ -46,7 +46,10 @@ public abstract class SingleTaskChain extends TaskChain {
     }
 
     public void setTask(Task task) {
-        if (_mainTask == null || !_mainTask.equals(task)) _mainTask = task;
+        if (_mainTask == null || !_mainTask.equals(task)) {
+            _mainTask = task;
+            task.reset();
+        }
     }
 
 

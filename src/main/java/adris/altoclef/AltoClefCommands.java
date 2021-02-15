@@ -21,6 +21,7 @@ import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -158,15 +159,17 @@ public class AltoClefCommands extends CommandList {
                         Debug.logMessage("MOVE 3!");
                     }
 
-                    private void sleepSec(double seconds) {
-                        try {
-                            Thread.sleep((int) (1000 * seconds));
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }.start();
                 //mod.getInventoryTracker().equipItem(Items.AIR);
+                break;
+            case "throw":
+                new Thread(() -> {
+                    for (int i = 3; i > 0; --i) {
+                        Debug.logMessage(i + "...");
+                        sleepSec(1);
+                    }
+                    mod.getControllerExtras().dropCurrentStack(true);
+                }).start();
                 break;
             case "food":
                 mod.runUserTask(new CollectFoodTask(20));
@@ -185,6 +188,7 @@ public class AltoClefCommands extends CommandList {
             // List commands here
             new HelpCommand(),
             new GetCommand(),
+            new GiveCommand(),
             new StopCommand(),
             new TestCommand(),
             new FoodCommand(),
@@ -296,6 +300,36 @@ public class AltoClefCommands extends CommandList {
         }
     }
 
+    static class GiveCommand extends Command {
+        public GiveCommand() throws CommandException {
+            super("give", "Collects a certain amount of food", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String username = parser.Get(String.class);
+            if (username == null) {
+                if (mod.getButler().hasCurrentUser()) {
+                    username = mod.getButler().getCurrentUser();
+                } else {
+                    mod.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
+                    finish();
+                    return;
+                }
+            }
+            String item = parser.Get(String.class);
+            int count = parser.Get(Integer.class);
+            if (TaskCatalogue.taskExists(item)) {
+                ItemTarget target = TaskCatalogue.getItemTarget(item, count);
+                Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
+                mod.runUserTask(new GiveItemToPlayerTask(username, target), nothing -> finish());
+            } else {
+                mod.log("Task for item does not exist: " + item);
+                finish();
+            }
+        }
+    }
+
     static class TestCommand extends Command {
 
         public TestCommand() throws CommandException {
@@ -349,4 +383,13 @@ public class AltoClefCommands extends CommandList {
             finish();
         }
     }
+
+    private static void sleepSec(double seconds) {
+        try {
+            Thread.sleep((int) (1000 * seconds));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -13,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -39,6 +40,9 @@ public class EntityTracker extends Tracker {
     private final List<HostileEntity> _hostiles = new ArrayList<>();
 
     private final List<CachedProjectile> _projectiles = new ArrayList<>();
+
+    private final HashMap<String, PlayerEntity> _playerMap = new HashMap<>();
+    private final HashMap<String, Vec3d> _playerLastCoordinates = new HashMap<>();
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
@@ -172,6 +176,18 @@ public class EntityTracker extends Tracker {
         return _hostiles;
     }
 
+    public boolean isPlayerLoaded(String name) {
+        ensureUpdated();
+        return _playerMap.containsKey(name);
+    }
+    public Vec3d getPlayerMostRecentPosition(String name) {
+        ensureUpdated();
+        if (_playerLastCoordinates.containsKey(name)) {
+            return _playerLastCoordinates.get(name);
+        }
+        return null;
+    }
+
     @Override
     protected synchronized void updateState() {
         _itemDropLocations.clear();
@@ -179,6 +195,7 @@ public class EntityTracker extends Tracker {
         _closeEntities.clear();
         _projectiles.clear();
         _hostiles.clear();
+        _playerMap.clear();
         if (MinecraftClient.getInstance().world == null) return;
 
         // Loop through all entities and track 'em
@@ -263,6 +280,11 @@ public class EntityTracker extends Tracker {
                     proj.projectileType = projEntity.getClass();
                     _projectiles.add(proj);
                 }
+            } else if (entity instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) entity;
+                String name = player.getName().getString();
+                _playerMap.put(name, player);
+                _playerLastCoordinates.put(name, player.getPos());
             }
         }
     }

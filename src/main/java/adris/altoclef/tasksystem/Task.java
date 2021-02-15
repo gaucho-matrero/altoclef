@@ -11,7 +11,7 @@ public abstract class Task {
 
     private boolean _first = true;
 
-    private boolean _failed = false;
+    private boolean _stopped = false;
 
     private boolean _active = false;
 
@@ -22,9 +22,9 @@ public abstract class Task {
             _active = true;
             onStart(mod);
             _first = false;
-            _failed = false;
+            _stopped = false;
         }
-        if (_failed) return;
+        if (_stopped) return;
 
         Task newSub = onTick(mod);
         // We have a sub task
@@ -54,7 +54,7 @@ public abstract class Task {
     public void reset() {
         _first = true;
         _active = true;
-        _failed = false;
+        _stopped = false;
     }
 
     protected void stop(AltoClef mod, Task interruptTask) {
@@ -63,19 +63,20 @@ public abstract class Task {
         onStop(mod, interruptTask);
         Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
 
-        if (_sub != null && !_sub.failed()) {
+        if (_sub != null && !_sub.stopped()) {
             _sub.stop(mod, interruptTask);
         }
 
         _first = true;
         _active = false;
+        _stopped = true;
     }
 
     protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
-        if (!condition && !_failed) {
+        if (!condition && !_stopped) {
             Debug.logError("Task assertion failed: " + message);
             stop(mod);
-            _failed = true;
+            _stopped = true;
         }
         return condition;
     }
@@ -100,7 +101,7 @@ public abstract class Task {
 
     public boolean isActive() {return _active;}
 
-    public boolean failed() {return _failed;}
+    public boolean stopped() {return _stopped;}
 
     protected abstract void onStart(AltoClef mod);
 

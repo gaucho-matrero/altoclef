@@ -53,6 +53,13 @@ public class Butler {
         _whisperer.tick();
     }
 
+    public String getCurrentUser() {
+        return _currentUser;
+    }
+    public boolean hasCurrentUser() {
+        return _currentUser != null;
+    }
+
     private void executeWhisper(String username, String message) {
         _currentUser = username;
         sendWhisper("Command Executing: " + message);
