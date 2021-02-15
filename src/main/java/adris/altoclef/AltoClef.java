@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.butler.Butler;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -60,6 +61,9 @@ public class AltoClef implements ModInitializer {
     // Settings
     private adris.altoclef.Settings _settings;
 
+    // Butler
+    private Butler _butler;
+
     // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
 
@@ -104,6 +108,8 @@ public class AltoClef implements ModInitializer {
         // Renderers
         _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
 
+        _butler = new Butler(this);
+
         initializeCommands();
 
     }
@@ -115,6 +121,8 @@ public class AltoClef implements ModInitializer {
 
         _trackerManager.tick();
         _taskRunner.tick();
+
+        _butler.tick();
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
@@ -162,7 +170,7 @@ public class AltoClef implements ModInitializer {
     public TaskRunner getTaskRunner() {
         return _taskRunner;
     }
-    //public UserTaskChain getUserTaskChain() { return _userTaskChain; }
+    public UserTaskChain getUserTaskChain() { return _userTaskChain; }
     public ConfigState getConfigState() { return _configState; }
     public BaritoneCustom getCustomBaritone() {return _baritoneCustom; }
 
@@ -198,6 +206,10 @@ public class AltoClef implements ModInitializer {
         return result;
     }
 
+    public Butler getButler() {
+        return _butler;
+    }
+
     public int getTicks() {
         try {
             ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
@@ -220,7 +232,10 @@ public class AltoClef implements ModInitializer {
 
     // Extra control
     public void runUserTask(Task task) {
-        _userTaskChain.runTask(this, task);
+        runUserTask(task, (nothing) -> {});
+    }
+    public void runUserTask(Task task, Consumer onFinish) {
+        _userTaskChain.runTask(this, task, onFinish);
     }
     public void cancelUserTask() {_userTaskChain.cancel(this);}
     public FoodChain getFoodChain() {
@@ -239,6 +254,15 @@ public class AltoClef implements ModInitializer {
         if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
         if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
         return Dimension.END;
+    }
+
+    public void log(String message) {
+        Debug.logMessage(message);
+        _butler.onLog(message);
+    }
+    public void logWarning(String message) {
+        Debug.logWarning(message);
+        _butler.onLogWarning(message);
     }
 
     public Action<WorldChunk> getOnChunkLoad() {

@@ -83,4 +83,8 @@ public class StaticMixinHookups {
     public static void onChunkUnload(int x, int z) {
         _mod.onChunkUnload(new ChunkPos(x, z));
     }
+
+    public static void onWhisperReceive(String user, String message) {
+        _mod.getButler().receiveWhisper(user, message);
+    }
 }

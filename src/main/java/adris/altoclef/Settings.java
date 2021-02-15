@@ -65,8 +65,67 @@ public class Settings {
      */
     private boolean autoRespawn = true;
 
+    /**
+     * If true, will use blacklist for rejecting users from using your player as a butler
+     */
+    private boolean useButlerBlacklist = true;
+    /**
+     * If true, will use whitelist to only accept users from said whitelist.
+     */
+    private boolean useButlerWhitelist = true;
+
+
     // Internal tracking of whether we're dirty or not.
     private transient boolean _dirty;
+
+    public static Settings load() {
+
+        File loadFrom = new File(SETTINGS_PATH);
+        if (!loadFrom.exists()) {
+            Settings result = new Settings();
+            result.markDirty();
+            result.save();
+            return result;
+        }
+
+        String data;
+        try {
+            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        Gson gson = new Gson();
+
+        Settings result = gson.fromJson(data, Settings.class);
+        result.save();
+        return result;
+    }
+
+    private static void save(Settings settings) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String userJson = gson.toJson(settings);
+
+        try {
+            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Dirty managing
+    private void markDirty() {
+        _dirty = true;
+    }
+    public boolean isDirty() {
+        return _dirty;
+    }
+
+    public void save() {
+        if (!_dirty) return;
+        save(this);
+        _dirty = false;
+    }
 
     public void setSpeedHack(float value) {
         speedHack = value; markDirty();
@@ -117,53 +176,17 @@ public class Settings {
         this.autoRespawn = autoRespawn;
     }
 
-
-
-    // Dirty managing
-    private void markDirty() {
-        _dirty = true;
+    public boolean isUseButlerBlacklist() {
+        return useButlerBlacklist;
     }
-    public boolean isDirty() {
-        return _dirty;
+    public void setUseButlerBlacklist(boolean useButlerBlacklist) {
+        this.useButlerBlacklist = useButlerBlacklist;
     }
 
-    public void save() {
-        if (!_dirty) return;
-        save(this);
-        _dirty = false;
+    public boolean isUseButlerWhitelist() {
+        return useButlerWhitelist;
     }
-
-    public static Settings load() {
-
-        File loadFrom = new File(SETTINGS_PATH);
-        if (!loadFrom.exists()) {
-            Settings result = new Settings();
-            result.markDirty();
-            result.save();
-            return result;
-        }
-
-        String data;
-        try {
-            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        Gson gson = new Gson();
-
-        return gson.fromJson(data, Settings.class);
+    public void setUseButlerWhitelist(boolean useButlerWhitelist) {
+        this.useButlerWhitelist = useButlerWhitelist;
     }
-
-    private static void save(Settings settings) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String userJson = gson.toJson(settings);
-
-        try {
-            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

@@ -203,7 +203,7 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
-            Debug.logMessage("########## HELP: ##########");
+            mod.log("########## HELP: ##########");
             int padSize = 10;
             for(Command c : mod.getCommandExecutor().AllCommands()) {
                 StringBuilder line = new StringBuilder();
@@ -215,9 +215,10 @@ public class AltoClefCommands extends CommandList {
                 }
                 line.append(" ");
                 line.append(c.getDescription());
-                Debug.logMessage(line.toString());
+                mod.log(line.toString());
             }
-            Debug.logMessage("###########################");
+            mod.log("###########################");
+            finish();
         }
     }
 
@@ -230,6 +231,7 @@ public class AltoClefCommands extends CommandList {
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
             mod.getTaskRunner().disable();
+            finish();
         }
     }
 
@@ -248,11 +250,12 @@ public class AltoClefCommands extends CommandList {
 
             if (TaskCatalogue.taskExists(resourceName)) {
                 Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
-                mod.runUserTask(targetTask);
+                mod.runUserTask(targetTask, nothing -> finish());
             } else {
-                Debug.logWarning("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.");
-                Debug.logWarning("Here's a list of everything we can get for you though:");
-                Debug.logWarning(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
+                mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.");
+                mod.log("Here's a list of everything we can get for you though:");
+                mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
+                finish();
             }
         }
     }
@@ -264,19 +267,21 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
-            mod.runUserTask(new BeatMinecraftTask());
+            mod.runUserTask(new BeatMinecraftTask(), nothing -> finish());
         }
     }
 
     static class ReloadSettingsCommand extends Command {
-        public ReloadSettingsCommand() {super("reload_settings", "Reloads settings from " + Settings.SETTINGS_PATH);}
+        public ReloadSettingsCommand() {super("reload_settings", "Reloads bot settings and butler whitelist/blacklist.");}
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
+            mod.getButler().reloadLists();
             if (mod.reloadModSettings() != null) {
-                Debug.logMessage("Reload successful!");
+                mod.log("Reload successful!");
             } else {
-                Debug.logWarning("Failed to reload settings. Check Minecraft log for Exception.");
+                mod.logWarning("Failed to reload some settings. Check Minecraft log for Exception.");
             }
+            finish();
         }
     }
 
@@ -287,7 +292,7 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-            mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)));
+            mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)), nothing -> finish());
         }
     }
 
@@ -300,6 +305,7 @@ public class AltoClefCommands extends CommandList {
         @Override
         protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
             TEMP_TEST_FUNCTION(mod, parser.Get(String.class));
+            finish();
         }
     }
 
@@ -321,6 +327,7 @@ public class AltoClefCommands extends CommandList {
 
             int moved = mod.getInventoryTracker().moveItems(new PlayerSlot(from), new PlayerSlot(to), amount);
             Debug.logMessage("Successfully moved " + moved + " items.");
+            finish();
         }
     }
     static class TestSwapInventoryCommand extends Command {
@@ -339,6 +346,7 @@ public class AltoClefCommands extends CommandList {
 
             mod.getInventoryTracker().swapItems(new PlayerSlot(slot1), new PlayerSlot(slot2));
             Debug.logMessage("Successfully swapped.");
+            finish();
         }
     }
 }
