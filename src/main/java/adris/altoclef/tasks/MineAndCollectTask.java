@@ -46,7 +46,7 @@ public class MineAndCollectTask extends ResourceTask {
     private PathingCommand _cachedCommand = null;
 
     private final Timer _mineCheck = new Timer(10.0);
-    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(5, 0.1, 4, 0.01, 3);
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(3);
 
     private final Timer _tickIntervalCheck = new Timer(1);
 
@@ -121,7 +121,6 @@ public class MineAndCollectTask extends ResourceTask {
             _mineCheck.reset();
 
             setDebugState("CHECK for drops...");
-            //Debug.logMessage("CHECK MINE PROCESS");
             try {
                 onResourceTick(mod);
                 _cachedCommand = mineProc.onTick(false, true);
@@ -216,6 +215,7 @@ public class MineAndCollectTask extends ResourceTask {
 
             mod.getClientBaritone().getMineProcess().cancel();
             mod.getClientBaritone().getMineProcess().mine(bomsArray);
+            assert mod.getClientBaritone().getMineProcess().isActive(); // I may be going a little bit crazy
             // Re-update blacklist
             try {
                 addToProcBlacklistRaw(mod, _cachedBlacklist);
@@ -226,15 +226,14 @@ public class MineAndCollectTask extends ResourceTask {
 
             _targetBoms = boms;
 
+            /*
             if (wasRunningBefore) {
                 _moveChecker.reset();
             }
+             */
             // TODO: FIX This gets spammed for some reason???
-            Debug.logInternal("Starting to mine.");
+            Debug.logInternal("Starting to mine: " + wasRunningBefore + " : " + bomsArray.length);
         }
-
-        boolean failed = false;
-        boolean mining = mod.getController().isBreakingBlock();
 
         if (mod.getFoodChain().isTryingToEat()) {
             _moveChecker.reset();
@@ -242,6 +241,7 @@ public class MineAndCollectTask extends ResourceTask {
 
 
         if (!_moveChecker.check(mod)) {
+            Debug.logMessage("Failed to move to target, blacklisting.");
             try {
                 blacklistCurrentTarget(mod);
             } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -249,6 +249,7 @@ public class MineAndCollectTask extends ResourceTask {
                 Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #1) :(");
                 e.printStackTrace();
             }
+            return _wanderTask;
         }
         return null;
     }

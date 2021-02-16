@@ -26,12 +26,14 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
     @Override
     public void setProgress(Double progress) {
         _currentProgress = progress;
+        if (_first) {
+            _lastProgress = progress;
+            _first = false;
+        }
         if (_timer.elapsed()) {
-            if (!_first) {
-                double improvement = progress - _lastProgress;
-                if (improvement < _minProgress) {
-                    _failed = true;
-                }
+            double improvement = progress - _lastProgress;
+            if (improvement < _minProgress) {
+                _failed = true;
             }
             _first = false;
             _timer.reset();
