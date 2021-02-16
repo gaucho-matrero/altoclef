@@ -91,6 +91,35 @@ public class BlockTracker extends Tracker {
         return _cache.getKnownLocations(blocks);
     }
 
+    public BlockPos getNearestWithinRange(BlockPos pos, double range, Block ...blocks) {
+        return getNearestWithinRange(new Vec3d(pos.getX(), pos.getY(), pos.getZ()), range, blocks);
+    }
+    public BlockPos getNearestWithinRange(Vec3d pos, double range, Block ...blocks) {
+        int minX = (int)Math.round(pos.x - range),
+            maxX = (int)Math.round(pos.x + range),
+            minY = (int)Math.round(pos.y - range),
+            maxY = (int)Math.round(pos.y + range),
+            minZ = (int)Math.round(pos.z - range),
+            maxZ = (int)Math.round(pos.z + range);
+        double closestDistance = Float.POSITIVE_INFINITY;
+        BlockPos nearest = null;
+        for (int x = minX; x <= maxX; ++x) {
+            for (int y = minY; y <= maxY; ++y) {
+                for (int z = minZ; z <= maxZ; ++z) {
+                    BlockPos check = new BlockPos(x, y, z);
+                    if (check.isWithinDistance(pos, range)) {
+                        double sq = check.getSquaredDistance(pos, false);
+                        if (sq < closestDistance) {
+                            closestDistance = sq;
+                            nearest = check;
+                        }
+                    }
+                }
+            }
+        }
+        return nearest;
+    }
+
     private boolean shouldUpdate() {
         return _timer.elapsed();
     }
