@@ -47,6 +47,7 @@ public abstract class AbstractKillEntityTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _wanderTask.resetWander();
+        _progress.reset();
     }
 
     @Override
@@ -101,7 +102,7 @@ public abstract class AbstractKillEntityTask extends Task {
         } else if (!tooClose) {
             setDebugState("Approaching target");
 
-            if (_progress.check(mod)) {
+            if (!_progress.check(mod)) {
                 Debug.logMessage("Failed to get to target, wandering.");
                 return _wanderTask;
             }
