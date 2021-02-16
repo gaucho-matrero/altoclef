@@ -8,12 +8,19 @@ public class MovementProgressChecker {
     private final IProgressChecker<Vec3d> _distanceChecker;
     private final IProgressChecker<Double> _mineChecker;
 
-    public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress, int moveRetries) {
-        _distanceChecker = new ProgressCheckerRetry<>(new DistanceProgressChecker(distanceTimeout, minDistance), moveRetries);
+    public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress, int attempts) {
+        _distanceChecker = new ProgressCheckerRetry<>(new DistanceProgressChecker(distanceTimeout, minDistance), attempts);
         _mineChecker = new LinearProgressChecker(mineTimeout, minMineProgress);
     }
     public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress) {
         this(distanceTimeout, minDistance, mineTimeout, minMineProgress, 1);
+    }
+
+    public MovementProgressChecker(int attempts) {
+        this(4, 0.1, 0.5, 0.001, attempts);
+    }
+    public MovementProgressChecker() {
+        this(1);
     }
 
     public boolean check(AltoClef mod) {
