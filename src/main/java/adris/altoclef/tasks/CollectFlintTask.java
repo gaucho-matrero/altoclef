@@ -1,25 +1,18 @@
-package adris.altoclef.tasks.resources;
+package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
-import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
-/**
- * Collects flint, looking for flint blocks and placing them if it's faster to just place a flint block and mine it.
- */
 public class CollectFlintTask extends ResourceTask {
-
     private static final float CLOSE_ENOUGH_FLINT = 10;
 
     private final int _count;
-
-    private BlockPos _closest = null;
 
     public CollectFlintTask(int targetCount) {
         super(Items.FLINT, targetCount);
@@ -41,25 +34,9 @@ public class CollectFlintTask extends ResourceTask {
 
         // We might just want to mine the closest gravel.
         BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.GRAVEL);
-
-        // Update if we break closest.
-        if (_closest != null && mod.getWorld().getBlockState(_closest).getBlock() != Blocks.GRAVEL) {
-            _closest = null;
-        }
-
-        // CLOSEST THRESHOLDING: TODO: THIS ISSUE MAY PLAGUE OTHER THINGS.
-        if (_closest != null && !_closest.equals(closest)) {
-            double distSqCurrentClosest = _closest.getSquaredDistance(mod.getPlayer().getPos(), false);
-            double distSqNewClosest = closest.getSquaredDistance(mod.getPlayer().getPos(), false);
-            if (distSqNewClosest - distSqCurrentClosest > 100) {
-                _closest = closest;
-            }
-        } else {
-            _closest = closest;
-        }
-
-        if (_closest != null && _closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
-            return new DestroyBlockTask(_closest);
+        if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
+            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), DestroyBlockTask::new, Blocks.GRAVEL);
+            //new DestroyBlockTask(_closest);
         }
 
         // If we have gravel, place it.
@@ -90,4 +67,7 @@ public class CollectFlintTask extends ResourceTask {
     protected String toDebugStringName() {
         return "Collect " + _count + " flint";
     }
+
+
+
 }

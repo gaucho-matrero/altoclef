@@ -89,15 +89,17 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    public Entity getClosestEntity(Vec3d position, Class toFind) {
+    public Entity getClosestEntity(Vec3d position, Class ...entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
-        if (_mobMap.containsKey(toFind)) {
-            for (MobEntity entity : _mobMap.get(toFind)) {
-                double cost = entity.squaredDistanceTo(position);
-                if (cost < minCost) {
-                    minCost = cost;
-                    closestEntity = entity;
+        for (Class toFind : entityTypes) {
+            if (_mobMap.containsKey(toFind)) {
+                for (MobEntity entity : _mobMap.get(toFind)) {
+                    double cost = entity.squaredDistanceTo(position);
+                    if (cost < minCost) {
+                        minCost = cost;
+                        closestEntity = entity;
+                    }
                 }
             }
         }
@@ -147,9 +149,12 @@ public class EntityTracker extends Tracker {
         return false;
     }
 
-    public boolean mobFound(Class type) {
+    public boolean mobFound(Class ...types) {
         ensureUpdated();
-        return _mobMap.containsKey(type);
+        for (Class type : types) {
+            if (_mobMap.containsKey(type)) return true;
+        }
+        return false;
     }
 
     public <T extends MobEntity> List<T> getTrackedMobs(Class<T> type) {

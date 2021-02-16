@@ -69,7 +69,9 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
             if (toKill != null) {
                 setDebugState("Killing blaze");
-                return new KillEntityTask(toKill);
+                return new KillEntitiesTask(BlazeEntity.class);
+                //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
+                //return new KillEntityTask(toKill);
             }
         }
 

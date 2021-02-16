@@ -1,6 +1,7 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.TaskCatalogue;
@@ -8,6 +9,7 @@ import adris.altoclef.trackers.BlockTracker;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -71,7 +73,7 @@ public abstract class DoStuffInContainerTask extends Task {
         Vec3d currentPos = mod.getPlayer().getPos();
         BlockPos override = overrideContainerPosition(mod);
 
-        if (override != null && !BlockTracker.blockIsInvalid(_containerBlock, override)) {
+        if (override != null && !BlockTracker.blockIsInvalid(override, _containerBlock)) {
             // We have an override so go there instead.
             nearest = override;
         } else {
@@ -81,7 +83,7 @@ public abstract class DoStuffInContainerTask extends Task {
         if (nearest == null) {
             // If all else fails, try using our placed task
             nearest = _placeTask.getPlaced();
-            if (nearest != null && BlockTracker.blockIsInvalid(_containerBlock, nearest)) {
+            if (nearest != null && BlockTracker.blockIsInvalid(nearest, _containerBlock)) {
                 nearest = null;
             }
         }
@@ -118,7 +120,11 @@ public abstract class DoStuffInContainerTask extends Task {
             return null;
         }
 
-        return new GetToBlockTask(nearest, true);
+        if (nearest != null) {
+            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, true), _containerBlock);
+        }
+        return null;
+        //return new GetToBlockTask(nearest, true);
     }
 
     // Virtual

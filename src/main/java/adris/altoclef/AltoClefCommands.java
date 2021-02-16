@@ -7,6 +7,7 @@ import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
+import adris.altoclef.tasks.resources.CollectFlintTaskOLD;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
@@ -36,6 +37,7 @@ import java.util.List;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
+    @SuppressWarnings("deprecation")
     private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
         Debug.logMessage("Running test...");
@@ -69,6 +71,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
+                break;
+            case "pickup_bad":
+                mod.runUserTask(new PickupDroppedItemTaskOLD(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
@@ -180,6 +185,13 @@ public class AltoClefCommands extends CommandList {
             case "blaze":
                 mod.runUserTask(new CollectBlazeRodsTask(7));
                 break;
+            case "flint_good":
+                mod.runUserTask(new CollectFlintTask(5));
+                break;
+            case "flint_bad":
+                mod.runUserTask(new CollectFlintTaskOLD(5));
+                break;
+
         }
     }
 
