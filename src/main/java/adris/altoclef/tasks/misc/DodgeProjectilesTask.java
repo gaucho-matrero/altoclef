@@ -45,6 +45,6 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
 
     @Override
     protected Goal newGoal(AltoClef mod) {
-        return new GoalDodgeProjectiles(mod, _distanceHorizontal, _distanceVertical);
+        return new GoalDodgeProjectiles(_distanceHorizontal, _distanceVertical);
     }
 }

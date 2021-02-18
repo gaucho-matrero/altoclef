@@ -28,8 +28,8 @@ import java.util.List;
 public class MobDefenseChain extends SingleTaskChain {
 
     private static final double CREEPER_KEEP_DISTANCE = 10;
-    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 4;
-    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 15;
+    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
+    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
 
     private static final double DANGER_KEEP_DISTANCE = 15;
 
@@ -112,17 +112,24 @@ public class MobDefenseChain extends SingleTaskChain {
             for (Entity entity : entities) {
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer((Monster)entity)) {
-                        if (_targetEntity != null && _targetEntity.equals(entity)) continue;
-                        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
-                            // Equip non-tool
-                            deequipTool(mod);
-                            mod.getControllerExtras().attack(entity);
-                        }
+                        applyForceField(mod, entity);
                     }
+                } else if (entity instanceof FireballEntity) {
+                    // Ghast ball
+                    applyForceField(mod, entity);
                 }
             }
         } catch (Exception e) {
             Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
+        }
+    }
+
+    private void applyForceField(AltoClef mod, Entity entity) {
+        if (_targetEntity != null && _targetEntity.equals(entity)) return;
+        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
+            // Equip non-tool
+            deequipTool(mod);
+            mod.getControllerExtras().attack(entity);
         }
     }
 
@@ -160,7 +167,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
                     // ignore if it's too far away.
-                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 15)) {
+                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 40)) {
                         continue;
                     }
                 }

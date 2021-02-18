@@ -16,14 +16,12 @@ public class GoalDodgeProjectiles implements Goal {
 
     private static final double Y_SCALE = 0.3f;
 
-    private final AltoClef _mod;
     private final double _distanceHorizontal;
     private final double _distanceVertical;
 
     private List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
 
-    public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
-        _mod = mod;
+    public GoalDodgeProjectiles(double distanceHorizontal, double distanceVertical) {
         _distanceHorizontal = distanceHorizontal;
         _distanceVertical = distanceVertical;
     }
@@ -36,7 +34,10 @@ public class GoalDodgeProjectiles implements Goal {
         for (CachedProjectile projectile : projectiles) {
             if (isInvalidProjectile(projectile)) continue;
             try {
-                Vec3d hit = ProjectileUtil.calculateArrowClosestApproach(projectile, p);
+                if (projectile.needsToRecache()) {
+                    projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+                }
+                Vec3d hit = projectile.getCachedHit();
                 //Debug.logMessage("Hit Delta: " + p.subtract(hit));
 
                 if (isHitCloseEnough(hit, p)) return false;
@@ -60,7 +61,10 @@ public class GoalDodgeProjectiles implements Goal {
         for (CachedProjectile projectile : projectiles) {
             if (isInvalidProjectile(projectile)) continue;
 
-            Vec3d hit = ProjectileUtil.calculateArrowClosestApproach(projectile, p);
+            if (projectile.needsToRecache()) {
+                projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+            }
+            Vec3d hit = projectile.getCachedHit();
 
             double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
             //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
