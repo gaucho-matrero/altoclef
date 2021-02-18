@@ -1,6 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
+import adris.altoclef.butler.WhisperPriority;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -257,12 +258,18 @@ public class AltoClef implements ModInitializer {
     }
 
     public void log(String message) {
+        log(message, WhisperPriority.TIMELY);
+    }
+    public void log(String message, WhisperPriority priority) {
         Debug.logMessage(message);
-        _butler.onLog(message);
+        _butler.onLog(message, priority);
     }
     public void logWarning(String message) {
+        logWarning(message, WhisperPriority.TIMELY);
+    }
+    public void logWarning(String message, WhisperPriority priority) {
         Debug.logWarning(message);
-        _butler.onLogWarning(message);
+        _butler.onLogWarning(message, priority);
     }
 
     public Action<WorldChunk> getOnChunkLoad() {

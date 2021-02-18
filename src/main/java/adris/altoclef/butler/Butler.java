@@ -24,7 +24,7 @@ public class Butler {
         _whisperer = new WhisperSender();
         _mod.getUserTaskChain().onTaskFinish.addListener((msg) -> {
             if (_currentUser != null) {
-                sendWhisper("Finished. " + msg);
+                //sendWhisper("Finished. " + msg);
                 _currentUser = null;
             }
         });
@@ -38,18 +38,18 @@ public class Butler {
         if (_userAuth.isUserAuthorized(username)) {
             executeWhisper(username, message);
         } else {
-            sendWhisper(username, "Sorry, you're not authorized!");
+            sendWhisper(username, "Sorry, you're not authorized!", WhisperPriority.UNAUTHORIZED);
         }
     }
 
-    public void onLog(String message) {
+    public void onLog(String message, WhisperPriority priority) {
         if (_currentUser != null) {
-            sendWhisper(message);
+            sendWhisper(message, priority);
         }
     }
-    public void onLogWarning(String message) {
+    public void onLogWarning(String message, WhisperPriority priority) {
         if (_currentUser != null) {
-            sendWhisper("[WARNING:] " + message);
+            sendWhisper("[WARNING:] " + message, priority);
         }
     }
 
@@ -70,10 +70,10 @@ public class Butler {
             _commandInstantRan = true;
             _commandFinished = false;
             _currentUser = username;
-            sendWhisper("Command Executing: " + message);
+            sendWhisper("Command Executing: " + message, WhisperPriority.TIMELY);
             _mod.getCommandExecutor().Execute("@" + message, (nothing) -> {
                 // On finish
-                sendWhisper("Command Finished: " + message);
+                sendWhisper("Command Finished: " + message, WhisperPriority.TIMELY);
                 if (!_commandInstantRan) {
                     _currentUser = null;
                 }
@@ -81,7 +81,7 @@ public class Butler {
             });
             _commandInstantRan = false;
         } catch (CommandException e) {
-            sendWhisper("TASK FAILED: " + e.getMessage());
+            sendWhisper("TASK FAILED: " + e.getMessage(), WhisperPriority.ASAP);
             _currentUser = null;
             e.printStackTrace();
         }
@@ -91,15 +91,14 @@ public class Butler {
         }
     }
 
-
-    private void sendWhisper(String message) {
+    private void sendWhisper(String message, WhisperPriority priority) {
         if (_currentUser != null) {
-            sendWhisper(_currentUser, message);
+            sendWhisper(_currentUser, message, priority);
         } else {
             Debug.logWarning("Failed to send butler message as there are no users present: " + message);
         }
     }
-    private void sendWhisper(String username, String message) {
-        _whisperer.enqueueWhisper(username, message);
+    private void sendWhisper(String username, String message, WhisperPriority priority) {
+        _whisperer.enqueueWhisper(username, message, priority);
     }
 }

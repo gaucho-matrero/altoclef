@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.butler.WhisperPriority;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -226,7 +227,7 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
-            mod.log("########## HELP: ##########");
+            mod.log("########## HELP: ##########", WhisperPriority.OPTIONAL);
             int padSize = 10;
             for(Command c : mod.getCommandExecutor().AllCommands()) {
                 StringBuilder line = new StringBuilder();
@@ -238,9 +239,9 @@ public class AltoClefCommands extends CommandList {
                 }
                 line.append(" ");
                 line.append(c.getDescription());
-                mod.log(line.toString());
+                mod.log(line.toString(), WhisperPriority.OPTIONAL);
             }
-            mod.log("###########################");
+            mod.log("###########################", WhisperPriority.OPTIONAL);
             finish();
         }
     }
@@ -275,9 +276,9 @@ public class AltoClefCommands extends CommandList {
                 Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
                 mod.runUserTask(targetTask, nothing -> finish());
             } else {
-                mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.");
-                mod.log("Here's a list of everything we can get for you though:");
-                mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()));
+                mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", WhisperPriority.OPTIONAL);
+                mod.log("Here's a list of everything we can get for you though:", WhisperPriority.OPTIONAL);
+                mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()), WhisperPriority.OPTIONAL);
                 finish();
             }
         }

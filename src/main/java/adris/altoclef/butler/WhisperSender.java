@@ -5,6 +5,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.client.MinecraftClient;
 
 import java.util.ArrayDeque;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 /**
@@ -17,11 +18,22 @@ public class WhisperSender {
     private static final int FAST_LIMIT = 6;
     private static final int SLOW_LIMIT = 3;
 
-    private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
+    private final PriorityQueue<Whisper> _whisperQueue = new PriorityQueue<>(
+            (left, right) -> {
+                int deltaImportance = right.priority.getImportance() - left.priority.getImportance();
+                if (deltaImportance != 0) {
+                    return deltaImportance;
+                }
+                return right.index - left.index;
+            }
+    );
+    //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
     private final Timer _fastSendTimer = new Timer(0.3f);
     private final Timer _bigSendTimer = new Timer(3.5);
     private final Timer _bigBigSendTimer = new Timer(10);
+
+    private int _whisperCounter = 0;
 
     private int _fastCount;
     private int _slowCount;
@@ -50,8 +62,8 @@ public class WhisperSender {
             }
         }
     }
-    public void enqueueWhisper(String username, String message) {
-        _whisperQueue.add(new Whisper(username, message));
+    public void enqueueWhisper(String username, String message, WhisperPriority priority) {
+        _whisperQueue.add(new Whisper(username, message, priority, _whisperCounter++));
     }
 
 
@@ -66,10 +78,14 @@ public class WhisperSender {
     private static class Whisper {
         public String username;
         public String message;
+        public WhisperPriority priority;
+        public int index;
 
-        public Whisper(String username, String message) {
+        public Whisper(String username, String message, WhisperPriority priority, int index) {
             this.username = username;
             this.message = message;
+            this.priority = priority;
+            this.index = index;
         }
 
     }
