@@ -216,4 +216,14 @@ public class FoodChain extends SingleTaskChain {
         Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
         mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
     }
+
+    // If we need to eat like, NOW.
+    public boolean needsToEatCritical(AltoClef mod) {
+        int foodLevel = mod.getPlayer().getHungerManager().getFoodLevel();
+        float health = mod.getPlayer().getHealth();
+        int armor = mod.getPlayer().getArmor();
+        if (health < 3 && foodLevel < 3) return false; // RUN NOT EAT
+        if (armor >= 15 && foodLevel < 3) return true; // EAT WE CAN TAKE A FEW HITS
+        return false;
+    }
 }

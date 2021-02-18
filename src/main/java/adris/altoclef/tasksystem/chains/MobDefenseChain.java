@@ -52,7 +52,11 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return 0;
+        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+
+        if (prioritizeEating(mod)) {
+            return Float.NEGATIVE_INFINITY;
+        }
 
         // Force field
         doForceField(mod);
@@ -95,6 +99,10 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         return 0;
+    }
+
+    private boolean prioritizeEating(AltoClef mod) {
+        return mod.getFoodChain().needsToEatCritical(mod);
     }
 
     private void doForceField(AltoClef mod) {
