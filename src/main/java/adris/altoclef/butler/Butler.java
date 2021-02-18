@@ -14,6 +14,10 @@ public class Butler {
 
     private String _currentUser = null;
 
+    // Utility variables for command logic
+    private boolean _commandInstantRan = false;
+    private boolean _commandFinished = false;
+
     public Butler(AltoClef mod) {
         _mod = mod;
         _userAuth = new UserAuth(mod);
@@ -61,18 +65,29 @@ public class Butler {
     }
 
     private void executeWhisper(String username, String message) {
-        _currentUser = username;
-        sendWhisper("Command Executing: " + message);
+        String prevUser = _currentUser;
         try {
+            _commandInstantRan = true;
+            _commandFinished = false;
+            _currentUser = username;
+            sendWhisper("Command Executing: " + message);
             _mod.getCommandExecutor().Execute("@" + message, (nothing) -> {
                 // On finish
                 sendWhisper("Command Finished: " + message);
-                _currentUser = null;
+                if (!_commandInstantRan) {
+                    _currentUser = null;
+                }
+                _commandFinished = true;
             });
+            _commandInstantRan = false;
         } catch (CommandException e) {
             sendWhisper("TASK FAILED: " + e.getMessage());
             _currentUser = null;
             e.printStackTrace();
+        }
+        // Only set the current user if we're still running.
+        if (_commandFinished) {
+            _currentUser = prevUser;
         }
     }
 

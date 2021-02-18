@@ -19,6 +19,7 @@ import adris.altoclef.util.slots.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -202,6 +203,11 @@ public class AltoClefCommands extends CommandList {
             new GetCommand(),
             new FollowCommand(),
             new GiveCommand(),
+            new EquipCommand(),
+            new GotoCommand(),
+            new CoordsCommand(),
+            new StatusCommand(),
+            new HasCommand(),
             new StopCommand(),
             new TestCommand(),
             new FoodCommand(),
@@ -361,6 +367,116 @@ public class AltoClefCommands extends CommandList {
                 }
             }
             mod.runUserTask(new FollowPlayerTask(username), nothing -> finish());
+        }
+    }
+
+    static class EquipCommand extends Command {
+        public EquipCommand() throws CommandException {
+            super("equip", "Equip an item or toggle armor equip", new Arg(String.class, "item"));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String item = parser.Get(String.class);
+            Item[] items = TaskCatalogue.getItemMatches(item);
+            if (items == null || items.length == 0) {
+                mod.logWarning("Item \"" + item + "\" not catalogued/not recognized.");
+                finish();
+                return;
+            }
+            for (Item tryEquip : items) {
+                if (mod.getInventoryTracker().hasItem(tryEquip)) {
+                    if (tryEquip instanceof ArmorItem) {
+                        ArmorItem armor = (ArmorItem) tryEquip;
+                        if (mod.getInventoryTracker().isArmorEquipped(armor)) {
+                            // Deequip armor
+                            mod.getInventoryTracker().moveToNonEquippedHotbar(armor, 0);
+                        } else {
+                            // Equip armor
+                            Slot toMove = PlayerSlot.getEquipSlot(armor.getSlotType());
+                            if (toMove == null) {
+                                Debug.logWarning("Invalid armor equip slot for item " + armor.getTranslationKey() + ": " + armor.getSlotType());
+                            } else {
+                                mod.getInventoryTracker().moveItemToSlot(armor, 1, toMove);
+                            }
+                        }
+                    } else {
+                        // Equip item
+                        mod.getInventoryTracker().equipItem(tryEquip);
+                    }
+                    break;
+                }
+            }
+            finish();
+        }
+    }
+
+    static class StatusCommand extends Command {
+        public StatusCommand() {
+            super("status", "Get status of currently executing command");
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) {
+            List<Task> tasks = mod.getUserTaskChain().getTasks();
+            if (tasks.size() == 0) {
+                mod.log("No tasks currently running.");
+            } else {
+                mod.log("CURRENT TASK: " + tasks.get(0).toString());
+            }
+            finish();
+        }
+    }
+    static class CoordsCommand extends Command {
+        public CoordsCommand() {
+            super("coords", "Get bot's current coordinates");
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) {
+            mod.log("CURRENT COORDINATES: " + mod.getPlayer().getBlockPos().toShortString());
+            finish();
+        }
+    }
+    static class HasCommand extends Command {
+        public HasCommand() throws CommandException {
+            super("has", "Returns how many of an item the bot has", new Arg(String.class, "item"));
+        }
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String item = parser.Get(String.class);
+            Item[] matches = TaskCatalogue.getItemMatches(item);
+            if (matches.length == 0) {
+                mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
+                finish();
+                return;
+            }
+            int count = mod.getInventoryTracker().getItemCount(matches);
+            if (count == 0) {
+                mod.log(item + " COUNT: (none)");
+            } else {
+                mod.log(item + " COUNT: " + count);
+            }
+            finish();
+        }
+    }
+
+    static class GotoCommand extends Command {
+        private static final int EMPTY = -1;
+        public GotoCommand() throws CommandException {
+            super("goto", "Tell bot to travel to a set of coordinates.", new Arg(Integer.class, "x"), new Arg(Integer.class, "y", EMPTY, 2), new Arg(Integer.class, "z"));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            int x = parser.Get(Integer.class),
+                y = parser.Get(Integer.class),
+                z = parser.Get(Integer.class);
+            if (y != EMPTY) {
+                mod.runUserTask(new GetToBlockTask(new BlockPos(x, y, z), false), nothing -> finish());
+            } else {
+                mod.runUserTask(new GetToXZTask(x, z), nothing -> finish());
+            }
         }
     }
 
