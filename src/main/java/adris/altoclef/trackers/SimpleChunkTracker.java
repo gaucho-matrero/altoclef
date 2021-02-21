@@ -41,7 +41,7 @@ public class SimpleChunkTracker {
 
     public boolean scanChunk(ChunkPos chunk, Predicate<BlockPos> onBlock) {
         if (!isChunkLoaded(chunk)) return false;
-        Debug.logInternal("SCANNED CHUNK " + chunk.toString());
+        //Debug.logInternal("SCANNED CHUNK " + chunk.toString());
         for (int xx = chunk.getStartX(); xx <= chunk.getEndX(); ++xx) {
             for (int yy = 0; yy <= 255; ++yy) {
                 for (int zz = chunk.getStartZ(); zz <= chunk.getEndZ(); ++zz) {

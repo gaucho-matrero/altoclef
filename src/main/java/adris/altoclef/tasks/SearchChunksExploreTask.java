@@ -53,11 +53,11 @@ public abstract class SearchChunksExploreTask extends Task {
             }
 
             if (_searcher.isActive() && _searcher.isFinished(mod)) {
-                Debug.logWarning("Temple search failed.");
+                Debug.logWarning("Target object search failed.");
                 _alreadyExplored.addAll(_searcher.getSearchedChunks());
                 _searcher = null;
             }
-            setDebugState("Searching for temple...");
+            setDebugState("Searching for target object...");
             return _searcher;
         }
     }
