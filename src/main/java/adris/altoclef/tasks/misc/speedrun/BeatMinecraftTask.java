@@ -9,6 +9,7 @@ import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -30,6 +31,7 @@ public class BeatMinecraftTask extends Task {
     private ForceState _forceState = ForceState.NONE;
 
     private BlockPos _cachedPortalInNether;
+    private CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -61,7 +63,21 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
-        // Get diamond armor first
+        // Get diamond armor + gear first
+        if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
+            return TaskCatalogue.getSquashedItemTask(
+                    new ItemTarget("diamond_chestplate", 1),
+                    new ItemTarget("diamond_leggings", 1),
+                    new ItemTarget("diamond_helmet", 1),
+                    new ItemTarget("diamond_boots", 1),
+                    new ItemTarget("diamond_pickaxe", 1),
+                    new ItemTarget("diamond_sword", 1)
+                    );
+        }
+        if (!diamondArmorEquipped(mod)) {
+            return new EquipArmorTask(DIAMOND_ARMORS);
+        }
+        /*
         if (!diamondArmorEquipped(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
             if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) && _forceState != ForceState.GETTING_DIAMOND_GEAR) {
                 // Get a crafting table first before mining below
@@ -88,7 +104,7 @@ public class BeatMinecraftTask extends Task {
         } else if (_forceState == ForceState.GETTING_DIAMOND_GEAR) {
             // We got our gear.
             _forceState = ForceState.NONE;
-        }
+        }*/
 
         // Get food
         if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD_MIN) {
@@ -123,8 +139,9 @@ public class BeatMinecraftTask extends Task {
 
         if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
             setDebugState("Collecting blazes");
+
             // Go to nether
-            return new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+            return _blazeCollection;
         }
         setDebugState("Getting the hell out of here");
         return new EnterNetherPortalTask(new GetToBlockTask(_cachedPortalInNether, false), Dimension.OVERWORLD);
@@ -137,6 +154,12 @@ public class BeatMinecraftTask extends Task {
     private boolean diamondArmorEquipped(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
+        }
+        return true;
+    }
+    private boolean hasDiamondArmor(AltoClef mod) {
+        for (String armor : DIAMOND_ARMORS) {
+            if (!mod.getInventoryTracker().hasItem(TaskCatalogue.getItemMatches(armor)[0])) return false;
         }
         return true;
     }

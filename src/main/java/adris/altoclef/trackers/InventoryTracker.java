@@ -568,7 +568,6 @@ public class InventoryTracker extends Tracker {
         swapItems(Slot.getFromInventory(found), Slot.getFromInventory(otherSlot));
     }
 
-
     private static Map<Item, Integer> getFuelTimeMap() {
         if (_fuelTimeMap == null) {
             _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();

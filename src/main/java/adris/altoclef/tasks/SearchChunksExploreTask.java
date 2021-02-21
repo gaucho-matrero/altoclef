@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -24,10 +25,17 @@ public abstract class SearchChunksExploreTask extends Task {
 
     private final Set<ChunkPos> _alreadyExplored = new HashSet<>();
 
+    private ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
+        @Override
+        public void invoke(WorldChunk value) {
+            onChunkLoad(value);
+        }
+    };
+
     @Override
     protected void onStart(AltoClef mod) {
         _mod = mod;
-        mod.getOnChunkLoad().addListener(this::onChunkLoad);
+        mod.getOnChunkLoad().addListener(chunkLoadEvent);
 
         // We want to search the currently loaded chunks too!!!
         for (ChunkPos start : mod.getChunkTracker().getLoadedChunks()) {
@@ -56,13 +64,13 @@ public abstract class SearchChunksExploreTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getOnChunkLoad().removeListener(this::onChunkLoad);
+        mod.getOnChunkLoad().removeListener(chunkLoadEvent);
     }
 
     // When we find that desert, start our search there.
     private void onChunkLoad(WorldChunk chunk) {
         if (_searcher != null) return;
-        Biome b = _mod.getWorld().getBiome(chunk.getPos().getStartPos());
+        if (!this.isActive()) return;
         if (isChunkWithinSearchSpace(_mod, chunk.getPos())) {
             synchronized (_searcherMutex) {
                 if (!_alreadyExplored.contains(chunk.getPos())) {

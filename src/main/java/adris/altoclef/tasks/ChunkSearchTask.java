@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
@@ -42,6 +43,13 @@ public abstract class ChunkSearchTask extends Task {
         return _searchedAlready;
     }
 
+    private ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
+        @Override
+        public void invoke(WorldChunk value) {
+            onChunkLoad(value);
+        }
+    };
+
     @Override
     protected void onStart(AltoClef mod) {
         _consideredAlready.clear();
@@ -53,7 +61,7 @@ public abstract class ChunkSearchTask extends Task {
             searchChunkOrQueueSearch(mod, startPos);
         }
 
-        mod.getOnChunkLoad().addListener(this::onChunkLoad);
+        mod.getOnChunkLoad().addListener(chunkLoadEvent);
     }
 
     @Override
@@ -94,7 +102,7 @@ public abstract class ChunkSearchTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getOnChunkLoad().removeListener(this::onChunkLoad);
+        mod.getOnChunkLoad().removeListener(chunkLoadEvent);
     }
 
     @Override

@@ -238,9 +238,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 }
                 int moved = mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
                 int canMove = mod.getInventoryTracker().getItemCount(fuelToUse);
-                if (canMove > 0 && moved != canMove) {
+                /*if (canMove > 0 && moved != canMove) {
                     Debug.logWarning("Failed to move " + canMove + " units of the fuel " + fuelToUse.getTranslationKey() + ". Only moved " + moved + ". Proceeding anyway.");
-                }
+                }*/
             }
 
             // Grab from the output slot

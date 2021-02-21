@@ -3,6 +3,7 @@ package adris.altoclef.butler;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.commands.CommandException;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 
 public class Butler {
 
@@ -22,12 +23,17 @@ public class Butler {
         _mod = mod;
         _userAuth = new UserAuth(mod);
         _whisperer = new WhisperSender();
-        _mod.getUserTaskChain().onTaskFinish.addListener((msg) -> {
-            if (_currentUser != null) {
-                //sendWhisper("Finished. " + msg);
-                _currentUser = null;
-            }
-        });
+        _mod.getUserTaskChain().onTaskFinish.addListener(
+                new ActionListener<String>() {
+                    @Override
+                    public void invoke(String msg) {
+                        if (_currentUser != null) {
+                            //sendWhisper("Finished. " + msg);
+                            _currentUser = null;
+                        }
+                    }
+                }
+        );
     }
 
     public void reloadLists() {

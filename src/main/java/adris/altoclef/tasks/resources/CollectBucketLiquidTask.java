@@ -9,6 +9,7 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
@@ -138,12 +139,17 @@ public class CollectBucketLiquidTask extends ResourceTask {
             }
 
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> {
-                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos);
+                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, false);
                 //noinspection unchecked
-                task.TimedOut.addListener((empty) -> {
-                    Debug.logMessage("Blacklisted " + blockpos);
-                    _blacklist.add(nearestLiquid);
-                });
+                task.TimedOut.addListener(
+                        new ActionListener() {
+                            @Override
+                            public void invoke(Object value) {
+                                Debug.logMessage("Blacklisted " + blockpos);
+                                _blacklist.add(nearestLiquid);
+
+                            }
+                        });
                 return task;
             }, getNearestLiquid, _toCollect);
             //return task;

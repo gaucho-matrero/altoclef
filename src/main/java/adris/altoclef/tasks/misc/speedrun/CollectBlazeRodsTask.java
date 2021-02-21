@@ -2,9 +2,7 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.KillEntityTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
@@ -75,31 +73,34 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
         }
 
+        // If the blaze spawner somehow doesn't exist.
+        if (_foundBlazeSpawner != null && !isValidBlazeSpawner(mod, _foundBlazeSpawner)) {
+            _foundBlazeSpawner = null;
+        }
+
         // If we have a blaze spawner, go near it.
         if (_foundBlazeSpawner != null) {
             if (!_foundBlazeSpawner.isWithinDistance(mod.getPlayer().getPos(), 4)) {
                 setDebugState("Going to blaze spawner");
                 return new GetToBlockTask(_foundBlazeSpawner.up(), false);
             } else {
+
+                // Put out fire that might mess with us.
+                BlockPos nearestFire = mod.getBlockTracker().getNearestWithinRange(_foundBlazeSpawner, 5, Blocks.FIRE);
+                if (nearestFire != null) {
+                    setDebugState("Clearing fire around spawner to prevent loss of blaze rods.");
+                    return new PutOutFireTask(nearestFire);
+                }
+
                 setDebugState("Waiting near blaze spawner for blazes to spawn");
                 return null;
             }
         } else {
             // Search for blaze
             for(BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.SPAWNER)) {
-                BlockState state = mod.getWorld().getBlockState(pos);
-                if (state.getBlock() instanceof SpawnerBlock) {
-                    BlockEntity be = mod.getWorld().getBlockEntity(pos);
-                    if (be instanceof MobSpawnerBlockEntity) {
-                        MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
-                        if (blockEntity.getLogic().getRenderedEntity() instanceof BlazeEntity) {
-                            Debug.logMessage("(Found blaze spawner)");
-                            _foundBlazeSpawner = pos;
-                        } else {
-                            assert blockEntity.getLogic().getRenderedEntity() != null;
-                            Debug.logMessage("FAILED ENTITY SPAWNER: " + blockEntity.getLogic().getRenderedEntity().getEntityName());
-                        }
-                    }
+                if (isValidBlazeSpawner(mod, pos)) {
+                    _foundBlazeSpawner = pos;
+                    break;
                 }
             }
         }
@@ -107,6 +108,20 @@ public class CollectBlazeRodsTask extends ResourceTask {
         // We need to find our fortress.
         setDebugState("Searching for fortress/Traveling around fortress");
         return _searcher;
+    }
+
+    private boolean isValidBlazeSpawner(AltoClef mod, BlockPos pos) {
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() instanceof SpawnerBlock) {
+            BlockEntity be = mod.getWorld().getBlockEntity(pos);
+            if (be instanceof MobSpawnerBlockEntity) {
+                MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
+                if (blockEntity.getLogic().getRenderedEntity() instanceof BlazeEntity) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

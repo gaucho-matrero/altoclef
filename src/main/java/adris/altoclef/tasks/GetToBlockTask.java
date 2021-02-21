@@ -28,7 +28,6 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        Debug.logMessage("GOING TO BLOCK");
         startProc(mod);
         _moveChecker.reset();
         _wanderTask.resetWander();

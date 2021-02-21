@@ -20,17 +20,18 @@ import adris.altoclef.util.slots.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -84,7 +85,7 @@ public class AltoClefCommands extends CommandList {
                 BlockPos targetPos = new BlockPos(0, 6, 0);
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
                 Direction direction = Direction.UP;
-                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos));
+                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
                 //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
                 break;
             }
@@ -193,7 +194,28 @@ public class AltoClefCommands extends CommandList {
             case "flint_bad":
                 mod.runUserTask(new CollectFlintTaskOLD(5));
                 break;
-
+            case "unobtainable":
+                String fname = "unobtainables.txt";
+                try {
+                    int unobtainable = 0;
+                    int total = 0;
+                    File f=new File(fname);
+                    FileWriter fw = new FileWriter(f);
+                    for (Identifier id : Registry.ITEM.getIds()) {
+                        Item item = Registry.ITEM.get(id);
+                        if (!TaskCatalogue.isObtainable(item)) {
+                            ++unobtainable;
+                            fw.write(item.getTranslationKey() + "\n");
+                        }
+                        total ++;
+                    }
+                    fw.flush();
+                    fw.close();
+                    Debug.logMessage(unobtainable + " / " + total + " unobtainable items. Wrote a list of items to \"" + f.getAbsolutePath() + "\".");
+                } catch (IOException e) {
+                    Debug.logWarning(e.toString());
+                }
+                break;
         }
     }
 
@@ -232,12 +254,11 @@ public class AltoClefCommands extends CommandList {
             for(Command c : mod.getCommandExecutor().AllCommands()) {
                 StringBuilder line = new StringBuilder();
                 //line.append("");
-                line.append(c.getName());
+                line.append(c.getName()).append(": ");
                 int toAdd = padSize - c.getName().length();
                 for (int i = 0; i < toAdd; ++i) {
                     line.append(" ");
                 }
-                line.append(" ");
                 line.append(c.getDescription());
                 mod.log(line.toString(), WhisperPriority.OPTIONAL);
             }
@@ -385,28 +406,52 @@ public class AltoClefCommands extends CommandList {
                 finish();
                 return;
             }
+            boolean found = false;
             for (Item tryEquip : items) {
                 if (mod.getInventoryTracker().hasItem(tryEquip)) {
                     if (tryEquip instanceof ArmorItem) {
                         ArmorItem armor = (ArmorItem) tryEquip;
                         if (mod.getInventoryTracker().isArmorEquipped(armor)) {
+                            // Ensure we have the player inventory accessible, not possible when another screen is open.
+                            mod.getPlayer().closeHandledScreen();
                             // Deequip armor
-                            mod.getInventoryTracker().moveToNonEquippedHotbar(armor, 0);
+                            //Debug.logInternal("DE-EQUIPPING ARMOR");
+                            List<Integer> emptyInv = mod.getInventoryTracker().getInventorySlotsWithItem(Items.AIR);
+                            if (emptyInv.size() == 0) {
+                                mod.logWarning("Can't de-equip armor because inventory is full.");
+                                finish();
+                                return;
+                            }
+                            Slot targetEmpty = Slot.getFromInventory(emptyInv.get(0));
+                            for (Slot armorSlot : PlayerSlot.ARMOR_SLOTS) {
+                                if (mod.getInventoryTracker().getItemStackInSlot(armorSlot).getItem().equals(tryEquip)) {
+                                    found = true;
+                                    // armorSlot contains our armor.
+                                    // targetEmpty contains an empty spot.
+                                    assert targetEmpty != null;
+                                    mod.getInventoryTracker().moveItems(armorSlot, targetEmpty, 1);
+                                }
+                            }
+                            //mod.getInventoryTracker().moveToNonEquippedHotbar(armor, 0);
                         } else {
                             // Equip armor
                             Slot toMove = PlayerSlot.getEquipSlot(armor.getSlotType());
                             if (toMove == null) {
                                 Debug.logWarning("Invalid armor equip slot for item " + armor.getTranslationKey() + ": " + armor.getSlotType());
                             } else {
+                                found = true;
                                 mod.getInventoryTracker().moveItemToSlot(armor, 1, toMove);
                             }
                         }
                     } else {
                         // Equip item
-                        mod.getInventoryTracker().equipItem(tryEquip);
+                        found = mod.getInventoryTracker().equipItem(tryEquip);
                     }
                     break;
                 }
+            }
+            if (!found) {
+                mod.logWarning("Failed to equip/deequip item: " + item);
             }
             finish();
         }

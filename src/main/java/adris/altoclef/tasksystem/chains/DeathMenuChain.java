@@ -10,6 +10,8 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
 
+import java.lang.reflect.Type;
+
 public class DeathMenuChain extends TaskChain {
 
     private boolean shouldAutoRespawn(AltoClef mod) {
@@ -31,7 +33,7 @@ public class DeathMenuChain extends TaskChain {
 
     private int _deathCount = 0;
 
-    private Screen _prevScreen = null;
+    private Class _prevScreen = null;
 
     @Override
     protected void onStop(AltoClef mod) {
@@ -54,7 +56,7 @@ public class DeathMenuChain extends TaskChain {
 //        MinecraftClient.getInstance().
         Screen screen = MinecraftClient.getInstance().currentScreen;
 
-        if (screen != _prevScreen) {
+        if (screen != null && screen.getClass() != _prevScreen) {
 
             // Keep track of the last server we were on so we can re-connect.
             if (mod.inGame()) {
@@ -93,8 +95,8 @@ public class DeathMenuChain extends TaskChain {
                     client.openScreen(new ConnectScreen(screen, client, _prevServerEntry));
                 }
             }
+            _prevScreen = screen.getClass();
         }
-        _prevScreen = screen;
         return 0;
     }
 

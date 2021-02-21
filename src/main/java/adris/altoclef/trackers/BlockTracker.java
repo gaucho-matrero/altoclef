@@ -116,6 +116,16 @@ public class BlockTracker extends Tracker {
             for (int y = minY; y <= maxY; ++y) {
                 for (int z = minZ; z <= maxZ; ++z) {
                     BlockPos check = new BlockPos(x, y, z);
+                    assert MinecraftClient.getInstance().world != null;
+                    Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
+                    boolean valid = false;
+                    for (Block type : blocks) {
+                        if (type.is(b)) {
+                            valid = true;
+                            break;
+                        }
+                    }
+                    if (!valid) continue;
                     if (check.isWithinDistance(pos, range)) {
                         double sq = check.getSquaredDistance(pos, false);
                         if (sq < closestDistance) {

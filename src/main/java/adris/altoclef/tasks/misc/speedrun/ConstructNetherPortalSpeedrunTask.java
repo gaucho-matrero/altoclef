@@ -137,6 +137,9 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        // Pre-affirmed thing
+        mod.getConfigState().setAllowWalkThroughFlowingWater(false);
+
         // Get bucket if we don't have one.
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             setDebugState("Getting bucket");
@@ -212,7 +215,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
                 // Place water
                 // south corresponds to +z
                 Direction placeWaterFrom = Direction.SOUTH;
-                return new InteractItemWithBlockTask(new ItemTarget(Items.WATER_BUCKET, 1), placeWaterFrom, waterSourcePos.offset(placeWaterFrom.getOpposite()));
+                return new InteractItemWithBlockTask(new ItemTarget(Items.WATER_BUCKET, 1), placeWaterFrom, waterSourcePos.offset(placeWaterFrom.getOpposite()), true);
             }
         }
         //_isPlacingLiquid = false;
@@ -221,6 +224,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
         // Get lava if we don't have it.
         if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             setDebugState("Getting Lava");
+            _isPlacingLiquid = true;
             return TaskCatalogue.getItemTask("lava_bucket", 1);
         }
 
@@ -229,10 +233,14 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
             if (!lavaTarget.isSatisfied(_portalOrigin)) {
                 setDebugState("Placing Obsidian");
+                _isPlacingLiquid = false;
                 _portalFrameBuilt = false;
-                return lavaTarget.placeTask(_portalOrigin);
+                // Walk through water to get to the bottom, we have to get there to further guarantee placement.
+                mod.getConfigState().setAllowWalkThroughFlowingWater(lavaTarget.isBelow());
+                return lavaTarget.placeTask(_portalOrigin, lavaTarget.isBelow());
             }
         }
+        mod.getConfigState().setAllowWalkThroughFlowingWater(false);
 
         _portalFrameBuilt = true;
 
@@ -244,7 +252,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
 
             if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
                 mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-                return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), waterSourcePos);
+                return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), waterSourcePos, true);
             }
 
             // TODO: If we have a water/lava bucket, empty it out.
@@ -262,7 +270,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractItemWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down());
+        return new InteractItemWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
 
         // Pick up water
         // Clear inner portal area
@@ -468,8 +476,12 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             this.fromWhere = fromWhere;
         }
 
+        public boolean isBelow() {
+            return where.getY() == -1;
+        }
+
         // Place lava at a point, but from a direction.
-        private Task placeTask(BlockPos portalOrigin) {
+        private Task placeTask(BlockPos portalOrigin, boolean below) {
             BlockPos placeAt = portalOrigin.add(where);
             BlockPos placeOn = placeAt.offset(fromWhere.getOpposite());
             // Clear first
@@ -479,7 +491,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
             }
 
             // Place lava there
-            return new InteractItemWithBlockTask(new ItemTarget("lava_bucket", 1), fromWhere, placeOn);
+            return new InteractItemWithBlockTask(new ItemTarget("lava_bucket", 1), fromWhere, placeOn, below);
         }
         private boolean isSatisfied(BlockPos portalOrigin) {
             Block b = MinecraftClient.getInstance().world.getBlockState(portalOrigin.add(where)).getBlock();

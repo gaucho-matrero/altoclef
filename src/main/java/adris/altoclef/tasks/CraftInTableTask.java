@@ -200,6 +200,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             return null;
         }
 
+
+        for (RecipeTarget target : _targets) {
+            if (!mod.getInventoryTracker().targetMet(target.getItem())) {
+                Debug.logMessage("Crafting: " + target.getRecipe());
+                craftInstant(mod, target.getRecipe());
+            }
+        }
+        /*
         // Craft everything
         int i = 0;
         boolean succeeded = false;
@@ -218,6 +226,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         if (succeeded) {
             _craftCount++;
         }
+         */
 
         return null;
     }
