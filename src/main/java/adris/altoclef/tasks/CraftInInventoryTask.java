@@ -1,17 +1,21 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.slots.Slot;
 
 public class CraftInInventoryTask extends ResourceTask {
 
     private CraftingRecipe _recipe;
 
     private Timer _craftTimer = new Timer(0.5);
+
+    private boolean _fullCheckFailed = false;
 
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
         super(target);
@@ -24,7 +28,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        _fullCheckFailed = false;
     }
 
     @Override
@@ -37,6 +41,22 @@ public class CraftInInventoryTask extends ResourceTask {
         // Delay our crafting so the server has time to give us our item back.
         if (_craftTimer.elapsed()) {
             _craftTimer.reset();
+
+            // Free up inventory
+            if (mod.getInventoryTracker().isInventoryFull()) {
+                // Throw away!
+                Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+                if (toThrow != null) {
+                    // Equip then throw
+                    mod.getInventoryTracker().throwSlot(toThrow);
+                } else {
+                    if (!_fullCheckFailed) {
+                        Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
+                    }
+                    _fullCheckFailed = true;
+                }
+            }
+
             craftInstant(mod, _recipe);
         }
 

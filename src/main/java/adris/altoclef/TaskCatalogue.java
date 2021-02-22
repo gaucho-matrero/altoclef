@@ -62,7 +62,7 @@ public class TaskCatalogue {
             mine("gravel", MiningRequirement.HAND, Blocks.GRAVEL, Items.GRAVEL);
 
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
-            smelt("gold_ingot", Items.GOLD_INGOT, "gold_ore");
+            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask.class); // accounts for nether too
 
             tools("iron", "iron_ingot", Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_HOE);
             tools("golden", "gold_ingot", Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD, Items.GOLDEN_AXE, Items.GOLDEN_HOE);

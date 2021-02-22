@@ -18,6 +18,8 @@ import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.util.math.BlockPos;
@@ -90,11 +92,16 @@ public class EntityTracker extends Tracker {
     }
 
     public Entity getClosestEntity(Vec3d position, Class ...entityTypes) {
+        return this.getClosestEntity(position, (entity) -> false, entityTypes);
+    }
+
+    public Entity getClosestEntity(Vec3d position, Predicate<Entity> ignore, Class ...entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
         for (Class toFind : entityTypes) {
             if (_mobMap.containsKey(toFind)) {
                 for (MobEntity entity : _mobMap.get(toFind)) {
+                    if (ignore.test(entity)) continue;
                     double cost = entity.squaredDistanceTo(position);
                     if (cost < minCost) {
                         minCost = cost;
@@ -300,7 +307,7 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public static boolean isAngryAtPlayer(Monster hostile) {
+    public static boolean isAngryAtPlayer(Entity hostile) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
         if (hostile instanceof EndermanEntity) {
@@ -312,6 +319,22 @@ public class EntityTracker extends Tracker {
             // Will ALWAYS be false.
             return zombie.hasAngerTime() && zombie.isAngryAt(player);
         }
+        if (isTradingPiglin(hostile)) {
+            return false;
+        }
         return true;
+    }
+
+    public static boolean isTradingPiglin(Entity entity) {
+        if (entity instanceof PiglinEntity) {
+            PiglinEntity pig = (PiglinEntity) entity;
+            for (ItemStack stack : pig.getItemsHand()) {
+                if (stack.getItem().equals(Items.GOLD_INGOT)) {
+                    // We're trading with this one, ignore it.
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

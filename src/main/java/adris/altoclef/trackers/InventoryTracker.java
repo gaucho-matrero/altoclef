@@ -27,6 +27,10 @@ import java.util.*;
 
 public class InventoryTracker extends Tracker {
 
+    // https://minecraft.gamepedia.com/Inventory.
+    // inventory.size goes to 40, including armor + shield slot which we will ignore.
+    private static final int INVENTORY_SIZE = 36;
+
     private HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private List<Integer> _foodSlots = new ArrayList<>();
@@ -44,6 +48,9 @@ public class InventoryTracker extends Tracker {
     public int getEmptySlotCount() {
         ensureUpdated();
         return _emptySlots;
+    }
+    public boolean isInventoryFull() {
+        return getEmptySlotCount() <= 0;
     }
     public boolean hasItem(Item item) {
         ensureUpdated();
@@ -227,6 +234,50 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public Slot getGarbageSlot() {
+        ensureUpdated();
+        // Downgrade pickaxe maybe?
+        MiningRequirement[] order = new MiningRequirement[] {
+                MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
+        };
+        MiningRequirement currentReq = MiningRequirement.HAND;
+        for (MiningRequirement check : order) {
+            if (miningRequirementMet(check)) {
+                currentReq = check;
+                break;
+            }
+        }
+        for (MiningRequirement check : order) {
+            if (check != currentReq && miningRequirementMet(check)) {
+                // Throw away if we have this item since we already have a BETTER one.
+                Item item = check.getMinimumPickaxe();
+                if (hasItem(item)) {
+                    Debug.logInternal("Throwing away: " + item.getTranslationKey());
+                    return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+                }
+            }
+        }
+
+        // Get stuff that's throwaway by default
+        List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems());
+        if (throwawaySlots.size() != 0) {
+            Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
+            return Slot.getFromInventory(throwawaySlots.get(0));
+        }
+
+        if (_mod.getModSettings().shouldThrowawayUnusedItems()) {
+            // Get the first non-important item. For now there is no measure of value.
+            for(Item item : this._itemSlots.keySet()) {
+                if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
+                    Debug.logInternal("oof");
+                    return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
+                }
+            }
+        }
+
+        return null;
+    }
+
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
         return getRecipeMapping(Collections.emptyMap(), recipe, 1);
     }
@@ -288,7 +339,6 @@ public class InventoryTracker extends Tracker {
     }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
-        setDirty();
 
         if (slot.getWindowSlot() == -1) {
             Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
@@ -298,14 +348,21 @@ public class InventoryTracker extends Tracker {
         // NOT THE CASE! We may have something in the cursor slot to place.
         //if (getItemStackInSlot(slot).isEmpty()) return getItemStackInSlot(slot);
 
+        return clickWindowSlot(slot.getWindowSlot(), mouseButton, type);
+    }
+
+    private ItemStack clickWindowSlot(int windowSlot, int mouseButton, SlotActionType type) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
             return null;
         }
+        setDirty();
         int syncId = player.currentScreenHandler.syncId;
 
-        return _mod.getController().clickSlot(syncId, slot.getWindowSlot(), mouseButton, type, player);
+        return _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+
     }
+
     public ItemStack clickSlot(Slot slot, SlotActionType type) {
         return clickSlot(slot, 0, type);
     }
@@ -342,6 +399,7 @@ public class InventoryTracker extends Tracker {
                 clickSlot(to, SlotActionType.QUICK_MOVE);
                 // If we're moving from a cursor slot, the cursor slot should already be moved to "to" after clicking.
                 if (moveFromCursor) {
+                    setDirty();
                     return getItemStackInSlot(from).getCount();
                 }
             }
@@ -398,7 +456,15 @@ public class InventoryTracker extends Tracker {
         if (!slotIsCursor(slot1)) {
             clickSlot(slot1);
         }
+        setDirty();
         //}
+    }
+
+    public ItemStack throwSlot(Slot slot) {
+        ItemStack pickup = clickSlot(slot);
+        clickWindowSlot(-999, 0, SlotActionType.PICKUP);
+        setDirty();
+        return pickup;
     }
 
     public void grabItem(Slot slot) {
@@ -532,6 +598,11 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public void equipSlot(Slot slot) {
+        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        swapItems(slot, target);
+    }
+
     public boolean equipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
 
@@ -649,7 +720,8 @@ public class InventoryTracker extends Tracker {
         }
         PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
 
-        for (int slot = -1; slot < inventory.size(); ++slot) {
+        // - 1. idk
+        for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
             boolean isCursorStack = (slot == -1);
             ItemStack stack;
             if (isCursorStack) {

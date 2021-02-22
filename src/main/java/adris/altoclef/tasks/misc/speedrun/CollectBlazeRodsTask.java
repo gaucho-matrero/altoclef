@@ -19,7 +19,7 @@ import net.minecraft.util.math.Vec3d;
 
 public class CollectBlazeRodsTask extends ResourceTask {
 
-    private static final double SPAWNER_BLAZE_RADIUS = 16;
+    private static final double SPAWNER_BLAZE_RADIUS = 32;
 
     private static final int TOO_MANY_BLAZES = 5;
     private static final double TOO_LITTLE_HEALTH_BLAZE = 4;
@@ -59,7 +59,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             Entity toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
             if (_foundBlazeSpawner != null) {
                 Vec3d nearest = toKill.getPos();
-                double sqDistanceToSpawner = nearest.squaredDistanceTo(_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
+                double sqDistanceToSpawner = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
                 // Ignore if the blaze is too far away.
                 if (sqDistanceToSpawner > SPAWNER_BLAZE_RADIUS) {
                     toKill = null;

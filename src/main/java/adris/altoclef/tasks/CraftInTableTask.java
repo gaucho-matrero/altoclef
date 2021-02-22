@@ -7,12 +7,14 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -107,6 +109,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private CollectRecipeCataloguedResourcesTask _collectTask;
 
+    private boolean _fullCheckFailed = false;
+
     public DoCraftInTableTask(List<RecipeTarget> targets, boolean collect) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _targets = targets;
@@ -127,6 +131,15 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         _crafted = false;
         _craftCount = 0;
         mod.getPlayer().closeHandledScreen();
+        mod.getConfigState().push();
+        mod.getConfigState().addProtectedItems(getMaterialsArray());
+        _fullCheckFailed = false;
+    }
+
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        super.onStop(mod, interruptTask);
+        mod.getConfigState().pop();
     }
 
     @Override
@@ -191,7 +204,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected Task containerSubTask(AltoClef mod) {
-        Debug.logMessage("GOT TO TABLE. Crafting...");
+        //Debug.logMessage("GOT TO TABLE. Crafting...");
 
         // Have a delay between the crafting
         if (!_craftTimer.elapsed()) {
@@ -203,7 +216,22 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
         for (RecipeTarget target : _targets) {
             if (!mod.getInventoryTracker().targetMet(target.getItem())) {
-                Debug.logMessage("Crafting: " + target.getRecipe());
+                // Free up inventory
+                if (mod.getInventoryTracker().isInventoryFull()) {
+                    // Throw away!
+                    Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+                    if (toThrow != null) {
+                        // Equip then throw
+                        mod.getInventoryTracker().throwSlot(toThrow);
+                    } else {
+                        if (!_fullCheckFailed) {
+                            Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
+                        }
+                        _fullCheckFailed = true;
+                    }
+                }
+
+                //Debug.logMessage("Crafting: " + target.getRecipe());
                 craftInstant(mod, target.getRecipe());
             }
         }
@@ -253,6 +281,20 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             return false;
         }
         return true;
+    }
+
+    private Item[] getMaterialsArray() {
+        List<Item> result = new ArrayList<>();
+        for (RecipeTarget target : _targets) {
+            for (int i = 0; i < target.getRecipe().getSlotCount(); ++i) {
+                ItemTarget materialTarget = target.getRecipe().getSlot(i);
+                if (materialTarget == null) continue;
+                Collections.addAll(result, materialTarget.getMatches());
+            }
+        }
+        Item[] returnthing = new Item[result.size()];
+        result.toArray(returnthing);
+        return returnthing;
     }
 
 }

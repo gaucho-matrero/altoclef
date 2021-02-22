@@ -216,6 +216,23 @@ public class AltoClefCommands extends CommandList {
                     Debug.logWarning(e.toString());
                 }
                 break;
+            case "piglin":
+                mod.runUserTask(new TradeWithPiglinsTask(32, new ItemTarget(Items.ENDER_PEARL, 12)));
+                break;
+            case "throwaway":
+                Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+                if (toThrow != null) {
+                    mod.getInventoryTracker().throwSlot(toThrow);
+                    // Equip then throw
+                    //mod.getInventoryTracker().equipSlot(toThrow);
+                    //mod.getInventoryTracker().equipItem(mod.getInventoryTracker().getItemStackInSlot(toThrow).getItem());
+                    /*int count = mod.getInventoryTracker().getItemStackInSlot(toThrow).getCount();
+                    for (int i = 0; i < count; ++i) {
+                        mod.getControllerExtras().dropCurrentStack(true);
+                    }
+                     */
+                }
+                break;
         }
     }
 

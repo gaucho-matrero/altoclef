@@ -107,10 +107,15 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void addProtectedItems(Item ...items) {
+        Collections.addAll(current().protectedItems, items);
+        current().applyState();
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProtected(Item item) {
         // For now nothing is protected.
-        return false;//current().throwawayItems.contains(item);
+        return current().protectedItems.contains(item);
     }
 
     /// Stack management
@@ -143,6 +148,7 @@ public class ConfigState {
         /// Baritone Params
         public double followOffsetDistance;
         public List<Item> throwawayItems = new ArrayList<>();
+        public List<Item> protectedItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
 
         // Alto Clef params
@@ -176,6 +182,8 @@ public class ConfigState {
             if (toCopy != null) {
                 // Copy over stuff from old one
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
+                protectedItems.clear();
+                protectedItems.addAll(toCopy.protectedItems);
             }
         }
 

@@ -10,6 +10,7 @@ import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.slots.PlayerInventorySlot;
+import adris.altoclef.util.slots.Slot;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -168,7 +169,7 @@ public class MobDefenseChain extends SingleTaskChain {
         try {
             for (Entity entity : entities) {
                 if (entity instanceof Monster) {
-                    if (EntityTracker.isAngryAtPlayer((Monster)entity)) {
+                    if (EntityTracker.isAngryAtPlayer(entity)) {
                         applyForceField(mod, entity);
                     }
                 } else if (entity instanceof FireballEntity) {
@@ -316,7 +317,18 @@ public class MobDefenseChain extends SingleTaskChain {
         Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
         if (equip instanceof ToolItem) {
             // Pick non tool item or air
-            mod.getInventoryTracker().equipItem(Items.AIR);
+            if (mod.getInventoryTracker().getEmptySlotCount() == 0) {
+                for (int i = 0; i < 35; ++i) {
+                    Slot s = Slot.getFromInventory(i);
+                    Item item = mod.getInventoryTracker().getItemStackInSlot(s).getItem();
+                    if (!(item instanceof ToolItem)) {
+                        mod.getInventoryTracker().equipSlot(s);
+                        break;
+                    }
+                }
+            } else {
+                mod.getInventoryTracker().equipItem(Items.AIR);
+            }
         }
     }
 

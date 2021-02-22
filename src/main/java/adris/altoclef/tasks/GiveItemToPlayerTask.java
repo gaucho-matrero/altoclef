@@ -7,6 +7,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -49,9 +50,10 @@ public class GiveItemToPlayerTask extends Task {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Debug.logMessage("THROWING: " + has.get());
-                        mod.getInventoryTracker().equipItem(target);
-                        mod.getControllerExtras().dropCurrentStack(true);
-                        target.targetCount--;
+                        ItemStack stack = mod.getInventoryTracker().throwSlot(Slot.getFromInventory(has.get()));
+                        //mod.getInventoryTracker().equipItem(target);
+                        //mod.getControllerExtras().dropCurrentStack(true);
+                        target.targetCount -= stack.getCount();
                         return null;
                     }
                 }
