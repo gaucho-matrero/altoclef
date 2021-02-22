@@ -1,6 +1,7 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;

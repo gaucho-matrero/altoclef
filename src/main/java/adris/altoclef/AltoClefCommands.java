@@ -20,12 +20,10 @@ import adris.altoclef.util.slots.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -74,9 +72,6 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
-                break;
-            case "pickup_bad":
-                mod.runUserTask(new PickupDroppedItemTaskOLD(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
                 break;
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));

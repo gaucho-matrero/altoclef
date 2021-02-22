@@ -1,17 +1,15 @@
 package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
+import adris.altoclef.tasks.misc.TradeWithPiglinsTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
@@ -26,6 +24,8 @@ public class BeatMinecraftTask extends Task {
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
 
     private static final int TARGET_BLAZE_RODS = 7;
+    private static final int TARGET_ENDER_PEARLS = 12;
+    private static final int PIGLIN_BARTER_GOLD_INGOT_BUFFER = 32;
 
     // A flag to determine whether we should continue doing something.
     private ForceState _forceState = ForceState.NONE;
@@ -120,7 +120,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Get blaze rods by going to nether
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
             setDebugState("Going to nether!");
             // Go to nether
             return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
@@ -137,12 +137,20 @@ public class BeatMinecraftTask extends Task {
             _cachedPortalInNether = mod.getPlayer().getBlockPos();
         }
 
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
-            setDebugState("Collecting blazes");
+        // Piglin Barter
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
+            setDebugState("Collecting Ender Pearls");
 
-            // Go to nether
+            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
+        }
+
+        // Blaze rods
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+            setDebugState("Collecting Blaze Rods");
+
             return _blazeCollection;
         }
+
         setDebugState("Getting the hell out of here");
         return new EnterNetherPortalTask(new GetToBlockTask(_cachedPortalInNether, false), Dimension.OVERWORLD);
     }
