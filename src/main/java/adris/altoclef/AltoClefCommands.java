@@ -497,7 +497,7 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
-            mod.log("CURRENT COORDINATES: " + mod.getPlayer().getBlockPos().toShortString());
+            mod.log("CURRENT COORDINATES: " + mod.getPlayer().getBlockPos().toShortString() + " (Current dimension: " + mod.getCurrentDimension() + ")");
             finish();
         }
     }
