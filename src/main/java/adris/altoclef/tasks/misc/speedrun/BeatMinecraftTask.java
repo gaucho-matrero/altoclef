@@ -3,7 +3,6 @@ package adris.altoclef.tasks.misc.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.misc.TradeWithPiglinsTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;

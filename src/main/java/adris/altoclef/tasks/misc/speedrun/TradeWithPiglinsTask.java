@@ -1,10 +1,11 @@
-package adris.altoclef.tasks.misc;
+package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.AbstractDoToEntityTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.ItemTarget;

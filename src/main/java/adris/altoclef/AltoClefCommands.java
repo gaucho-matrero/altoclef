@@ -8,6 +8,7 @@ import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
+import adris.altoclef.tasks.misc.speedrun.TradeWithPiglinsTask;
 import adris.altoclef.tasks.resources.CollectFlintTaskOLD;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
