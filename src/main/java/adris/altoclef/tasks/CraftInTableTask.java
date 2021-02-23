@@ -288,7 +288,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         for (RecipeTarget target : _targets) {
             for (int i = 0; i < target.getRecipe().getSlotCount(); ++i) {
                 ItemTarget materialTarget = target.getRecipe().getSlot(i);
-                if (materialTarget == null) continue;
+                if (materialTarget == null || materialTarget.getMatches() == null) continue;
                 Collections.addAll(result, materialTarget.getMatches());
             }
         }

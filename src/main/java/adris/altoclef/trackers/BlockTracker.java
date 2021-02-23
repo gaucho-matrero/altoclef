@@ -45,6 +45,12 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    @Override
+    protected void reset() {
+        _trackingBlocks.clear();
+        _cache.clear();
+    }
+
     public boolean isTracking(Block block) {
         return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
     }
@@ -77,6 +83,7 @@ public class BlockTracker extends Tracker {
         }
     }
     public boolean anyFound(Block ...blocks) {
+        updateState();
         return _cache.anyFound(blocks);
     }
 
@@ -160,6 +167,7 @@ public class BlockTracker extends Tracker {
         if (MinecraftClient.getInstance().world != null) {
             for (BlockPos pos : found) {
                 Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+
                 if (_trackingBlocks.containsKey(block)) {
                     _cache.addBlock(block, pos);
                 }
@@ -250,6 +258,10 @@ public class BlockTracker extends Tracker {
                 _cachedBlocks.put(block, new ArrayList<>());
             }
             _cachedBlocks.get(block).addAll(positions);
+        }
+
+        public void clear() {
+            _cachedBlocks.clear();
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit

@@ -50,10 +50,10 @@ public class CollectBlazeRodsTask extends ResourceTask {
         }
 
         // If there is a blaze, kill it.
-        if (mod.getEntityTracker().mobFound(BlazeEntity.class)) {
+        if (mod.getEntityTracker().entityFound(BlazeEntity.class)) {
 
             // If we're in danger and there are too many blazes, run away.
-            if (mod.getEntityTracker().getTrackedMobs(BlazeEntity.class).size() >= TOO_MANY_BLAZES && mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE) {
+            if (mod.getEntityTracker().getTrackedEntities(BlazeEntity.class).size() >= TOO_MANY_BLAZES && mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE) {
                 return new TimeoutWanderTask();
             }
 

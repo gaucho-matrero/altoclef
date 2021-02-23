@@ -757,4 +757,9 @@ public class InventoryTracker extends Tracker {
 
     }
 
+    @Override
+    protected void reset() {
+        // Dirty clears everything
+    }
+
 }

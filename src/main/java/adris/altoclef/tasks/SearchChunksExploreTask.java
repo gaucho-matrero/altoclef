@@ -49,7 +49,7 @@ public abstract class SearchChunksExploreTask extends Task {
             if (_searcher == null) {
                 setDebugState("Exploring/Searching for valid chunk");
                 // Explore
-                return new TimeoutWanderTask(true);
+                return getWanderTask(mod);
             }
 
             if (_searcher.isActive() && _searcher.isFinished(mod)) {
@@ -78,6 +78,10 @@ public abstract class SearchChunksExploreTask extends Task {
                 }
             }
         }
+    }
+
+    protected Task getWanderTask(AltoClef mod) {
+        return new TimeoutWanderTask(true);
     }
 
     protected abstract boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos);

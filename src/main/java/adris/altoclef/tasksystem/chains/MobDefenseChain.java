@@ -22,7 +22,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.Item;
@@ -195,7 +194,7 @@ public class MobDefenseChain extends SingleTaskChain {
         double worstSafety = Float.POSITIVE_INFINITY;
         CreeperEntity target = null;
         try {
-            List<CreeperEntity> creepers = mod.getEntityTracker().getTrackedMobs(CreeperEntity.class);
+            List<CreeperEntity> creepers = mod.getEntityTracker().getTrackedEntities(CreeperEntity.class);
             for (CreeperEntity creeper : creepers) {
 
                 if (creeper == null) continue;
@@ -248,7 +247,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private Entity getUniversallyDangerousMob(AltoClef mod) {
-        if (mod.getEntityTracker().mobFound(WitherSkeletonEntity.class)) {
+        if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity.squaredDistanceTo(mod.getPlayer()) < 6*6) {
                 return entity;

@@ -76,7 +76,11 @@ public class GetToBlockTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
+        if (_rightClickOnArrival) {
+            return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
+        } else {
+            return _position.isWithinDistance(mod.getPlayer().getPos(), 1);
+        }
     }
 
     @Override

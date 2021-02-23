@@ -49,6 +49,12 @@ public class ContainerTracker extends Tracker {
         }
     }
 
+    @Override
+    protected void reset() {
+        _chestMap.clear();
+        _furnaceMap.clear();
+    }
+
     public void onBlockInteract(BlockPos pos, Block block) {
         if (block.is(Blocks.CHEST) || block.is(Blocks.TRAPPED_CHEST)) {
             _chestMap.setInteractBlock(pos);
@@ -135,6 +141,7 @@ public class ContainerTracker extends Tracker {
         protected abstract void updateContainer(BlockPos pos, T screenHandler);
         public abstract void updateBlocks();
         public abstract void deleteBlock(BlockPos pos);
+        public abstract void clear();
     }
 
     static class ChestMap extends ContainerMap<GenericContainerScreenHandler> {
@@ -150,6 +157,11 @@ public class ContainerTracker extends Tracker {
 
         @Override
         public void deleteBlock(BlockPos pos) {
+
+        }
+
+        @Override
+        public void clear() {
 
         }
     }
@@ -245,6 +257,12 @@ public class ContainerTracker extends Tracker {
                     }
                 }
             }
+        }
+
+        @Override
+        public void clear() {
+            _blockData.clear();
+            _materialMap.clear();
         }
     }
 

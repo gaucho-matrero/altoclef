@@ -5,10 +5,7 @@ import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
-import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
-import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
-import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalSpeedrunTask;
-import adris.altoclef.tasks.misc.speedrun.TradeWithPiglinsTask;
+import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFlintTaskOLD;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
@@ -113,7 +110,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER));
                 break;
             case "kill":
-                List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedMobs(ZombieEntity.class);
+                List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
                 if (zombs.size() == 0) {
                     Debug.logWarning("No zombs found.");
                 } else {
@@ -228,6 +225,9 @@ public class AltoClefCommands extends CommandList {
                     }
                      */
                 }
+                break;
+            case "stronghold":
+                mod.runUserTask(new LocateStrongholdTask(12));
                 break;
         }
     }

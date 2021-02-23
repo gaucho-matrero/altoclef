@@ -50,15 +50,21 @@ public abstract class ChunkSearchTask extends Task {
         }
     };
 
+    private boolean _first = true;
+
     @Override
     protected void onStart(AltoClef mod) {
+        /*
         _consideredAlready.clear();
         _searchLater.clear();
         _searchedAlready.clear();
-
-        ChunkPos startPos = mod.getWorld().getChunk(_startPoint).getPos();
-        synchronized (_searchMutex) {
-            searchChunkOrQueueSearch(mod, startPos);
+         */
+        if (_first) {
+            _first = false;
+            ChunkPos startPos = mod.getWorld().getChunk(_startPoint).getPos();
+            synchronized (_searchMutex) {
+                searchChunkOrQueueSearch(mod, startPos);
+            }
         }
 
         mod.getOnChunkLoad().addListener(chunkLoadEvent);

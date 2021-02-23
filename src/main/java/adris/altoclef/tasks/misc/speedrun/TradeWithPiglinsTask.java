@@ -67,7 +67,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
         }
 
         // If we have no piglin nearby, explore until we find piglin.
-        if (!mod.getEntityTracker().mobFound(PiglinEntity.class)) {
+        if (!mod.getEntityTracker().entityFound(PiglinEntity.class)) {
             setDebugState("Wandering");
             return new TimeoutWanderTask(false);
         }

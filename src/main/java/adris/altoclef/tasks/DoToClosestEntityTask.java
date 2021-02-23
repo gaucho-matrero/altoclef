@@ -3,8 +3,6 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.AbstractDoToClosestObjectTask;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
@@ -32,7 +30,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected Entity getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().mobFound(_targetEntities)) return null;
+        if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
         return mod.getEntityTracker().getClosestEntity(pos, _targetEntities);
     }
 

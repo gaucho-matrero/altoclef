@@ -151,7 +151,7 @@ public class CollectFoodTask extends Task {
             Entity bestEntity = null;
             Item bestRawFood = null;
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                if (!mod.getEntityTracker().mobFound(cookable.mobToKill)) continue;
+                if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Entity nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.squaredDistanceTo(mod.getPlayer());

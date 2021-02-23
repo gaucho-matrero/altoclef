@@ -25,4 +25,6 @@ public abstract class Tracker {
     }
 
     protected abstract void updateState();
+
+    protected abstract void reset();
 }
