@@ -52,6 +52,11 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
+        if (mod.getInventoryTracker().totalFoodScore() <= 0) {
+            // Do nothing if we have no food.
+            return Float.NEGATIVE_INFINITY;
+        }
+
         /*
         - Eats if:
         - We're hungry and have food that easily fits
@@ -219,6 +224,8 @@ public class FoodChain extends SingleTaskChain {
 
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {
+        // Don't do this if we have no food
+        if (mod.getInventoryTracker().totalFoodScore() <= 0) return false;
         int foodLevel = mod.getPlayer().getHungerManager().getFoodLevel();
         float health = mod.getPlayer().getHealth();
         int armor = mod.getPlayer().getArmor();

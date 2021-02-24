@@ -49,8 +49,6 @@ public abstract class ResourceTask extends Task {
             if (mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
                 boolean weGood = true;
 
-                Debug.logInternal("EMPTY: " + mod.getInventoryTracker().getEmptySlotCount());
-
                 if (mod.getInventoryTracker().isInventoryFull()) {
                     // Throw away!
                     Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
