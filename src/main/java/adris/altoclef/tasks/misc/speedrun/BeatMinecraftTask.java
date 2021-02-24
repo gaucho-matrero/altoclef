@@ -12,9 +12,14 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 
 /**
  * This is the big kahoona. Plays the whole game.
@@ -31,7 +36,7 @@ public class BeatMinecraftTask extends Task {
     private static final int TARGET_ENDER_EYES = 14;
     private static final int PIGLIN_BARTER_GOLD_INGOT_BUFFER = 32;
 
-    private BlockPos _endPortalPos;
+    private List<BlockPos> _endPortalFrame = null;
 
     // A flag to determine whether we should continue doing something.
     private ForceState _forceState = ForceState.NONE;
@@ -39,7 +44,9 @@ public class BeatMinecraftTask extends Task {
     private BlockPos _cachedPortalInNether;
     private CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
 
-    private LocateStrongholdTask _strongholdLocation = new LocateStrongholdTask(TARGET_ENDER_EYES);
+    private LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
+
+    private int _cachedEndPearlsInFrame = 0;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -86,14 +93,26 @@ public class BeatMinecraftTask extends Task {
             return new EquipArmorTask(DIAMOND_ARMORS);
         }
 
-        if (_strongholdLocation.isActive() && !_strongholdLocation.isFinished(mod)) {
-            setDebugState("Locating end portal.");
-            return _strongholdLocation;
+        // Stronghold portal located.
+        if (portalFound()) {
+            setDebugState("Filling in portal...");
+            int eyes = portalEyesInFrame(mod);
+            Debug.logInternal("EYES: " + eyes);
+            return null;
         }
 
-        // If we have our eyes, start going for the portal.
-        if (_endPortalPos == null && mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= TARGET_ENDER_EYES) {
-            return _strongholdLocation;
+        // Locate stronghold portal
+        if (_strongholdLocater.isActive() && !_strongholdLocater.isFinished(mod)) {
+            setDebugState("Locating end portal.");
+            return _strongholdLocater;
+        } else {
+            if (_endPortalFrame == null && _strongholdLocater.portalFound()) {
+                Debug.logMessage("Now we have our portal position.");
+                _endPortalFrame = _strongholdLocater.getPortalFrame();
+            }
+        }
+        if (_endPortalFrame == null && mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= TARGET_ENDER_EYES) {
+            return _strongholdLocater;
         }
 
         /*
@@ -220,6 +239,30 @@ public class BeatMinecraftTask extends Task {
     @Override
     protected String toDebugString() {
         return "Beating the game";
+    }
+
+    private boolean portalFound() {
+        return _endPortalFrame != null;
+    }
+
+    private int portalEyesInFrame(AltoClef mod) {
+        int count = 0;
+        for (BlockPos b : _endPortalFrame) {
+            //noinspection deprecation
+            if (!mod.getWorld().isChunkLoaded(b)) {
+                return _cachedEndPearlsInFrame;
+            }
+            BlockState state = mod.getWorld().getBlockState(b);
+            if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+                Debug.logWarning("BLOCK POS " + b + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+            }
+            boolean filled = state.get(EndPortalFrameBlock.EYE);
+            if (filled) {
+                count++;
+            }
+        }
+        _cachedEndPearlsInFrame = count;
+        return count;
     }
 
     private enum ForceState {

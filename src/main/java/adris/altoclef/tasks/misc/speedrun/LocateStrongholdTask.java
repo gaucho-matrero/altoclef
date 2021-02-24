@@ -18,13 +18,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LocateStrongholdTask extends Task {
 
     private static final int EYE_THROW_MINIMUM_Y_POSITION = 68;
 
     private static final int EYE_RETHROW_DISTANCE = 1000;
 
-    private BlockPos _cachedPortalPos = null;
+    private final List<BlockPos> _cachedPortalFrame = new ArrayList<>();
 
     private EyeDirection _cachedEyeDirection = null;
     private Entity _currentThrownEye = null;
@@ -81,6 +84,15 @@ public class LocateStrongholdTask extends Task {
             }
         }
 
+        // If we found our portal frame, we're good.
+        if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL_FRAME)) {
+            Debug.logMessage("FOUND PORTAL AT: " + mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).get(0));
+            _cachedPortalFrame.clear();
+            _cachedPortalFrame.addAll(mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME));
+            // We're done.
+            return null;
+        }
+
         // Throw the eye since we don't have any eye info.
         if (_cachedEyeDirection == null) {
             setDebugState("Throwing eye.");
@@ -99,14 +111,6 @@ public class LocateStrongholdTask extends Task {
             // For some reason sneaking is set to true after throwing???
             MinecraftClient.getInstance().options.sneakToggled = false;
             MinecraftClient.getInstance().options.keySneak.setPressed(false);
-            return null;
-        }
-
-        // If we found our portal frame, we're good.
-        if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL_FRAME)) {
-            _cachedPortalPos = mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).get(0);
-            Debug.logMessage("FOUND PORTAL AT: " + _cachedPortalPos);
-            // We're done.
             return null;
         }
 
@@ -136,10 +140,11 @@ public class LocateStrongholdTask extends Task {
     }
 
     public boolean portalFound() {
-        return _cachedPortalPos != null;
+        return _cachedPortalFrame.size() != 0;
     }
-    public BlockPos getPortalPos() {
-        return _cachedPortalPos;
+
+    public List<BlockPos> getPortalFrame() {
+        return _cachedPortalFrame;
     }
 
     @Override

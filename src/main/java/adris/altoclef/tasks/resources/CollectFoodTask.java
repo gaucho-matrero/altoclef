@@ -104,11 +104,11 @@ public class CollectFoodTask extends Task {
                 if (rawCount > 0) {
                     Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getInventoryTracker().getItemCount(cookable.getCooked());
-                    _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.getCooked(), toSmelt), new ItemTarget(cookable.getRaw(), rawCount)));
+                    _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+                    _smeltTask.ignoreMaterials();
                     return _smeltTask;
                 }
             }
-
         } else {
             // Pick up food items from ground
             for(Item item : ITEMS_TO_PICK_UP) {
