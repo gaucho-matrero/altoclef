@@ -99,7 +99,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
         private static final double PIGLIN_NEARBY_RADIUS = 10;
 
         private Entity _currentlyBartering = null;
-        private final Timer _barterTimeout = new Timer(5);
+        private final Timer _barterTimeout = new Timer(2);
         private final Timer _intervalTimeout = new Timer(3);
 
         private final HashSet<Entity> _blacklisted = new HashSet<>();

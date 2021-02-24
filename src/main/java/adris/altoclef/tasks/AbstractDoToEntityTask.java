@@ -4,12 +4,10 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.EntityUtil;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
@@ -57,7 +55,7 @@ public abstract class AbstractDoToEntityTask extends Task {
 
         double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
 
-        EntityHitResult result = EntityUtil.raycast(mod.getPlayer(), entity, playerReach);
+        EntityHitResult result = LookUtil.raycast(mod.getPlayer(), entity, playerReach);
 
         double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
@@ -70,7 +68,7 @@ public abstract class AbstractDoToEntityTask extends Task {
         boolean tooClose = sqDist < _maintainDistance*_maintainDistance;
         // Step away if we're too close
         if (tooClose) {
-            setDebugState("Maintaining distance");
+            //setDebugState("Maintaining distance");
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(_maintainDistance, entity.getBlockPos()));
             }

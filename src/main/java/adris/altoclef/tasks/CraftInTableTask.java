@@ -161,7 +161,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
                 RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
                 _targets.toArray(targetArray);
-                if (!mod.getInventoryTracker().hasRecipeMaterials(targetArray)) {
+                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(targetArray)) {
                     setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
                     return _collectTask;
                 }

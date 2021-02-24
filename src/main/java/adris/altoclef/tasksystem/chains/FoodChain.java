@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Input;
+import adris.altoclef.util.LookUtil;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
@@ -86,8 +87,7 @@ public class FoodChain extends SingleTaskChain {
                 _requestFillup = true;
 
                 // Make sure we're not facing a container
-                if (isCollidingContainer(mod)) {
-                    randomOrientation(mod);
+                if (!LookUtil.tryAvoidingInteractable(mod)) {
                     return Float.NEGATIVE_INFINITY;
                 }
 
@@ -195,43 +195,7 @@ public class FoodChain extends SingleTaskChain {
         super.onStop(mod);
     }
 
-    private boolean isCollidingContainer(AltoClef mod) {
 
-        if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            mod.getPlayer().closeHandledScreen();
-            return true;
-        }
-
-        IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
-        HitResult result = MinecraftClient.getInstance().crosshairTarget;
-        if (result == null) return false;
-        if (result.getType() == HitResult.Type.BLOCK) {
-            Block block = mod.getWorld().getBlockState(new BlockPos(result.getPos())).getBlock();
-            if (block instanceof ChestBlock
-                    || block instanceof EnderChestBlock
-                    || block instanceof CraftingTableBlock
-                    || block instanceof AbstractFurnaceBlock
-                    || block instanceof LoomBlock
-                    || block instanceof CartographyTableBlock
-                    || block instanceof EnchantingTableBlock
-            ) {
-                return true;
-            }
-        } else if (result.getType() == HitResult.Type.ENTITY) {
-            if (result instanceof EntityHitResult) {
-                Entity entity = ((EntityHitResult) result).getEntity();
-                if (entity instanceof MerchantEntity) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void randomOrientation(AltoClef mod) {
-        Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
-        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
-    }
 
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {

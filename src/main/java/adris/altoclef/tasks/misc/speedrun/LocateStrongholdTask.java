@@ -7,6 +7,7 @@ import adris.altoclef.tasks.GoInDirectionXZTask;
 import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
@@ -101,10 +102,12 @@ public class LocateStrongholdTask extends Task {
                 return new GetToYTask(EYE_THROW_MINIMUM_Y_POSITION + 1);
             }
             // Throw it
+            mod.getInventoryTracker().equipItem(Items.ENDER_EYE);
             if (_throwTimer.elapsed()) {
-                mod.getInventoryTracker().equipItem(Items.ENDER_EYE);
-                MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                _throwTimer.reset();
+                if (LookUtil.tryAvoidingInteractable(mod)) {
+                    MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                    _throwTimer.reset();
+                }
             } else {
                 MinecraftClient.getInstance().options.keyUse.setPressed(false);
             }

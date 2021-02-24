@@ -102,7 +102,7 @@ public class AltoClef implements ModInitializer {
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);
         _entityTracker = new EntityTracker(_trackerManager);
-        _blockTracker = new BlockTracker(_trackerManager);
+        _blockTracker = new BlockTracker(this, _trackerManager);
         _containerTracker = new ContainerTracker(this, _trackerManager);
         _chunkTracker = new SimpleChunkTracker(this);
 

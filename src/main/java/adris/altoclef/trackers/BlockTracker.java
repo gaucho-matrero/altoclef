@@ -1,6 +1,7 @@
 
 package adris.altoclef.trackers;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -33,9 +34,10 @@ public class BlockTracker extends Tracker {
     private Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
     //private Block _currentlyTracking = null;
+    private AltoClef _mod;
 
-    public BlockTracker(TrackerManager manager) {
-        super(manager);
+    public BlockTracker(AltoClef mod, TrackerManager manager) {
+        super(manager); _mod = mod;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class BlockTracker extends Tracker {
     }
 
     public void addBlock(Block block, BlockPos pos) {
-        if (!blockIsInvalid(pos, block)) {
+        if (blockIsValid(pos, block)) {
             _cache.addBlock(block, pos);
         }
     }
@@ -99,7 +101,7 @@ public class BlockTracker extends Tracker {
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return _cache.getNearest(pos, isInvalidTest, blocks);
+        return _cache.getNearest(_mod, pos, isInvalidTest, blocks);
     }
 
     public List<BlockPos> getKnownLocations(Block ...blocks) {
@@ -177,35 +179,32 @@ public class BlockTracker extends Tracker {
 
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
-    public static boolean blockIsInvalid(BlockPos pos, Block ...blocks) {
+    public boolean blockIsValid(BlockPos pos, Block ...blocks) {
         // I'm bored
         ClientWorld zaWarudo = MinecraftClient.getInstance().world;
         // No world, therefore we don't assume block is invalid.
         if (zaWarudo == null) {
-            return false;
+            return true;
         }
         try {
             for (Block block : blocks) {
-                if (zaWarudo.isAir(pos) && !(block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
-                    // This tracked block is air when it doesn't think it should.
-                    //Debug.logInternal("(failed aircheck)");
+                if (zaWarudo.isAir(pos) && (block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
                     return true;
                 }
                 // It might be OK to remove this. Will have to test.
-                //noinspection deprecation
-                if (!zaWarudo.isChunkLoaded(pos)) {
+                if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
                     Debug.logInternal("(failed chunkcheck)");
-                    continue;
+                    return true;
                 }
                 BlockState state = zaWarudo.getBlockState(pos);
-                if (!state.getBlock().is(block)) {
+                if (state.getBlock().is(block)) {
                     return true;
                 }
             }
             return false;
         } catch (NullPointerException e) {
             // Probably out of chunk. This means we can't judge its state.
-            return false;
+            return true;
         }
     }
 
@@ -265,7 +264,7 @@ public class BlockTracker extends Tracker {
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(Vec3d position, Predicate<BlockPos> isInvalid, Block ...blocks) {
+        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isInvalid, Block ...blocks) {
             if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
@@ -285,7 +284,7 @@ public class BlockTracker extends Tracker {
                 if (isInvalid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
-                if (blockIsInvalid(pos, blocks)) {
+                if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
                     //Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
                     it.remove();
                     continue;

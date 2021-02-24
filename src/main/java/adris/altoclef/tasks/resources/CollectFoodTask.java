@@ -19,6 +19,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Predicate;
 
 public class CollectFoodTask extends Task {
@@ -283,7 +286,8 @@ public class CollectFoodTask extends Task {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
         if (nearestDrop != null) {
-            return new GetToBlockTask(nearestDrop.getBlockPos(), false);
+            return new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(itemToGrab)));
+            //return new GetToBlockTask(nearestDrop.getBlockPos(), false);
         }
         return null;
     }

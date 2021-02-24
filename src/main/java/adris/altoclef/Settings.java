@@ -80,9 +80,20 @@ public class Settings {
      * If we need to throw away something, throw away these items first.
      */
     private int[] throwawayItems = new int[] {
+            // Overworld junk
+            Item.getRawId(Items.DIORITE),
+            Item.getRawId(Items.ANDESITE),
+            Item.getRawId(Items.GRANITE),
             Item.getRawId(Items.COBBLESTONE),
+            Item.getRawId(Items.DIRT),
+            Item.getRawId(Items.GRAVEL),
+            // Nether junk, to be fair it's mostly tuned for the "beat game" task
             Item.getRawId(Items.NETHERRACK),
-            Item.getRawId(Items.DIRT)
+            Item.getRawId(Items.MAGMA_BLOCK),
+            Item.getRawId(Items.SOUL_SOIL),
+            Item.getRawId(Items.SOUL_SAND),
+            Item.getRawId(Items.NETHER_BRICKS),
+            Item.getRawId(Items.NETHER_BRICK)
     };
 
     /**

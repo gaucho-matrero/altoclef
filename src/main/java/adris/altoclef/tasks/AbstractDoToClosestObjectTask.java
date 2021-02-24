@@ -1,4 +1,4 @@
-package adris.altoclef.util;
+package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;

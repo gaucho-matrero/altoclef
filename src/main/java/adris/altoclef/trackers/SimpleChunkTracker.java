@@ -35,6 +35,9 @@ public class SimpleChunkTracker {
     public boolean isChunkLoaded(ChunkPos pos) {
         return _loaded.contains(pos);
     }
+    public boolean isChunkLoaded(BlockPos pos) {
+        return isChunkLoaded(new ChunkPos(pos));
+    }
     public List<ChunkPos> getLoadedChunks() {
         return new ArrayList<>(_loaded);
     }

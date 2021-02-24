@@ -2,7 +2,6 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.AbstractDoToClosestObjectTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -53,6 +52,8 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     @Override
     protected boolean isValid(AltoClef mod, BlockPos obj) {
+        // Assume we're valid since we're in the same chunk.
+        if (!mod.getChunkTracker().isChunkLoaded(obj)) return true;
         BlockState state = mod.getWorld().getBlockState(obj);
         for (Block block : _targetBlocks) {
             if (state.getBlock().equals(block)) return true;

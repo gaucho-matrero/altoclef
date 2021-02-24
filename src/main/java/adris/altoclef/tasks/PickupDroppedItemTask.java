@@ -1,25 +1,15 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.AbstractDoToClosestObjectTask;
-import adris.altoclef.util.progresscheck.IProgressChecker;
-import adris.altoclef.util.progresscheck.LinearProgressChecker;
-import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.baritone.GoalGetToPosition;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
-import baritone.api.pathing.goals.GoalGetToBlock;
-import baritone.api.pathing.goals.GoalTwoBlocks;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> {
 

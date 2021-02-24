@@ -53,7 +53,7 @@ public class MineAndCollectTask extends ResourceTask {
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
     private int _distanceFailCounter = 0;
 
-    private Timer _mineDropTimer = new Timer(1);
+    private final Timer _mineDropTimer = new Timer(1);
 
     public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
@@ -89,6 +89,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         _moveChecker.reset();
         _wanderTask.resetWander();
+        _mineDropTimer.reset();
     }
 
     @Override
@@ -207,6 +208,12 @@ public class MineAndCollectTask extends ResourceTask {
 
         if (!miningCorrectBlocks(mod, boms)) {
             //Debug.logMessage("New set of blocks to mine...");
+            _mineDropTimer.reset();
+
+            // Avoid mining while interactions are paused
+            if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
+                return null;
+            }
 
             boolean wasRunningBefore = mod.getClientBaritone().getMineProcess().isActive();
 

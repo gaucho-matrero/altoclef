@@ -58,6 +58,9 @@ public class InventoryTracker extends Tracker {
     public boolean hasItem(Item item) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            if (item instanceof ArmorItem) {
+                if (isArmorEquipped(item)) return true;
+            }
             return _itemCounts.containsKey(item);
         }
     }
@@ -76,7 +79,19 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
         if (!hasItem(item)) return 0;
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            return _itemCounts.get(item);
+            int count = 0;
+            if (_itemCounts.containsKey(item)) {
+                count += _itemCounts.get(item);
+            }
+            if (item instanceof ArmorItem) {
+                if (isArmorEquipped(item)) {
+                    // TODO: Impractical but theoretically speaking,
+                    // can we have the same armor equipped in more than one armor slot?
+                    // If so, this will need to update the NUMBER of times this armor is equipped.
+                    count += 1;
+                }
+            }
+            return count;
         }
     }
     public int getItemCount(Item ...items) {
@@ -199,7 +214,7 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public boolean hasRecipeMaterials(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
+    public boolean hasRecipeMaterialsOrTarget(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
             ItemTarget itemTarget = target.getItem();
@@ -220,15 +235,15 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
-    public boolean hasRecipeMaterials(RecipeTarget...targets) {
-        return hasRecipeMaterials(new HashMap<>(), targets);
+    public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
+        return hasRecipeMaterialsOrTarget(new HashMap<>(), targets);
     }
 
-    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
-        return hasRecipeMaterials(recipe, 1);
+    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe) {
+        return hasRecipeMaterialsOrTarget(recipe, 1);
     }
 
-    public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
+    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
         ensureUpdated();
         return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }

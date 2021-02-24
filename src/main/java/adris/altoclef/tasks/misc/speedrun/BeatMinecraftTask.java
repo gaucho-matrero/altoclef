@@ -187,18 +187,16 @@ public class BeatMinecraftTask extends Task {
             _cachedPortalInNether = mod.getPlayer().getBlockPos();
         }
 
-        // Piglin Barter
-        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
-            setDebugState("Collecting Ender Pearls");
-
-            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
-        }
-
         // Blaze rods
         if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
             setDebugState("Collecting Blaze Rods");
-
             return _blazeCollection;
+        }
+
+        // Piglin Barter
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
+            setDebugState("Collecting Ender Pearls");
+            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
 
         setDebugState("Getting the hell out of here");
@@ -248,8 +246,7 @@ public class BeatMinecraftTask extends Task {
     private int portalEyesInFrame(AltoClef mod) {
         int count = 0;
         for (BlockPos b : _endPortalFrame) {
-            //noinspection deprecation
-            if (!mod.getWorld().isChunkLoaded(b)) {
+            if (!mod.getChunkTracker().isChunkLoaded(b)) {
                 return _cachedEndPearlsInFrame;
             }
             BlockState state = mod.getWorld().getBlockState(b);

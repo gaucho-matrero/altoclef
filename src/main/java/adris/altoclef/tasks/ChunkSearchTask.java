@@ -72,6 +72,10 @@ public abstract class ChunkSearchTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        // Backup in case if chunk search fails?
+        onChunkLoad((WorldChunk) mod.getWorld().getChunk(mod.getPlayer().getBlockPos()));
+
         synchronized (_searchMutex) {
             // Search all items from _justLoaded that we ought to search.
             for (ChunkPos justLoaded : _justLoaded) {
@@ -152,7 +156,6 @@ public abstract class ChunkSearchTask extends Task {
         if (_searchedAlready.contains(pos)) {
             return true;
         }
-        boolean loaded = false;
         if (mod.getChunkTracker().isChunkLoaded(pos)) {
             _searchedAlready.add(pos);
             if (isChunkPartOfSearchSpace(mod, pos)) {
@@ -168,6 +171,7 @@ public abstract class ChunkSearchTask extends Task {
     }
 
     private void onChunkLoad(WorldChunk chunk) {
+        if (chunk == null) return;
         synchronized (_searchMutex) {
             if (!_searchedAlready.contains(chunk.getPos())) {
                 _justLoaded.add(chunk.getPos());

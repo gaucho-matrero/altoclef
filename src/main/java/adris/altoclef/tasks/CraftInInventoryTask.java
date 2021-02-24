@@ -33,7 +33,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (!mod.getInventoryTracker().hasRecipeMaterials(_recipe)) {
+        if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_recipe)) {
             // Collect recipe materials
             return collectRecipeSubTask(mod);
         }
