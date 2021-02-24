@@ -201,102 +201,104 @@ public class EntityTracker extends Tracker {
 
     @Override
     protected synchronized void updateState() {
-        _itemDropLocations.clear();
-        _entityMap.clear();
-        _closeEntities.clear();
-        _projectiles.clear();
-        _hostiles.clear();
-        _playerMap.clear();
-        if (MinecraftClient.getInstance().world == null) return;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            _itemDropLocations.clear();
+            _entityMap.clear();
+            _closeEntities.clear();
+            _projectiles.clear();
+            _hostiles.clear();
+            _playerMap.clear();
+            if (MinecraftClient.getInstance().world == null) return;
 
-        // Loop through all entities and track 'em
-        for(Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+            // Loop through all entities and track 'em
+            for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
 
-            Class type = entity.getClass();
-            if (!_entityMap.containsKey(type)) {
-                _entityMap.put(type, new ArrayList<>());
-            }
-            _entityMap.get(type).add(entity);
-
-            if (_mod.getControllerExtras().inRange(entity)) {
-                _closeEntities.add(entity);
-            }
-
-            if (entity instanceof ItemEntity) {
-                ItemEntity ientity = (ItemEntity) entity;
-                Item droppedItem = ientity.getStack().getItem();
-
-                if (!_itemDropLocations.containsKey(droppedItem)) {
-                    _itemDropLocations.put(droppedItem, new ArrayList<>());
+                Class type = entity.getClass();
+                if (!_entityMap.containsKey(type)) {
+                    _entityMap.put(type, new ArrayList<>());
                 }
-                _itemDropLocations.get(droppedItem).add(ientity);
-            } else if (entity instanceof MobEntity) {
-                //MobEntity mob = (MobEntity) entity;
+                _entityMap.get(type).add(entity);
+
+                if (_mod.getControllerExtras().inRange(entity)) {
+                    _closeEntities.add(entity);
+                }
+
+                if (entity instanceof ItemEntity) {
+                    ItemEntity ientity = (ItemEntity) entity;
+                    Item droppedItem = ientity.getStack().getItem();
+
+                    if (!_itemDropLocations.containsKey(droppedItem)) {
+                        _itemDropLocations.put(droppedItem, new ArrayList<>());
+                    }
+                    _itemDropLocations.get(droppedItem).add(ientity);
+                } else if (entity instanceof MobEntity) {
+                    //MobEntity mob = (MobEntity) entity;
 
 
-                if (entity instanceof HostileEntity) {
+                    if (entity instanceof HostileEntity) {
 
-                    // Only run away if the hostile can see us.
-                    HostileEntity hostile = (HostileEntity) entity;
+                        // Only run away if the hostile can see us.
+                        HostileEntity hostile = (HostileEntity) entity;
 
-                    if (hostile.canSee(_mod.getPlayer())) {
-                        // Check if the mob is facing us or is close enough
-                        boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 4);
+                        if (hostile.canSee(_mod.getPlayer())) {
+                            // Check if the mob is facing us or is close enough
+                            boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 4);
 
-                        if (!closeEnough) {
-                            if (hostile.getLookControl().isActive()) {
-                                Vec3d lookTarget = new Vec3d(
-                                        hostile.getLookControl().getLookX(),
-                                        hostile.getLookControl().getLookY(),
-                                        hostile.getLookControl().getLookZ()
-                                );
-                                //Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
-                                if (lookTarget.isInRange(_mod.getPlayer().getPos(), 4f)) {
-                                    closeEnough = true;
+                            if (!closeEnough) {
+                                if (hostile.getLookControl().isActive()) {
+                                    Vec3d lookTarget = new Vec3d(
+                                            hostile.getLookControl().getLookX(),
+                                            hostile.getLookControl().getLookY(),
+                                            hostile.getLookControl().getLookZ()
+                                    );
+                                    //Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
+                                    if (lookTarget.isInRange(_mod.getPlayer().getPos(), 4f)) {
+                                        closeEnough = true;
+                                    }
                                 }
                             }
-                        }
 
-                        //Debug.logInternal("TARGET: " + hostile.is);
-                        if (closeEnough && isAngryAtPlayer(hostile)) {
-                            _hostiles.add(hostile);
+                            //Debug.logInternal("TARGET: " + hostile.is);
+                            if (closeEnough && isAngryAtPlayer(hostile)) {
+                                _hostiles.add(hostile);
+                            }
                         }
                     }
-                }
 
                 /*
                 if (mob instanceof HostileEntity) {
                     HostileEntity hostile = (HostileEntity) mob;
                 }
                  */
-            } else if (entity instanceof ProjectileEntity) {
-                CachedProjectile proj = new CachedProjectile();
-                ProjectileEntity projEntity = (ProjectileEntity)entity;
+                } else if (entity instanceof ProjectileEntity) {
+                    CachedProjectile proj = new CachedProjectile();
+                    ProjectileEntity projEntity = (ProjectileEntity) entity;
 
-                boolean inGround = false;
-                // Get projectile "inGround" variable
-                if (entity instanceof PersistentProjectileEntity) {
-                    try {
-                        Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
-                        inGroundField.setAccessible(true);
-                        inGround = inGroundField.getBoolean(projEntity);
-                    } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    boolean inGround = false;
+                    // Get projectile "inGround" variable
+                    if (entity instanceof PersistentProjectileEntity) {
+                        try {
+                            Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
+                            inGroundField.setAccessible(true);
+                            inGround = inGroundField.getBoolean(projEntity);
+                        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
 
-                if (!inGround) {
-                    proj.position = projEntity.getPos();
-                    proj.velocity = projEntity.getVelocity();
-                    proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
-                    proj.projectileType = projEntity.getClass();
-                    _projectiles.add(proj);
+                    if (!inGround) {
+                        proj.position = projEntity.getPos();
+                        proj.velocity = projEntity.getVelocity();
+                        proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
+                        proj.projectileType = projEntity.getClass();
+                        _projectiles.add(proj);
+                    }
+                } else if (entity instanceof PlayerEntity) {
+                    PlayerEntity player = (PlayerEntity) entity;
+                    String name = player.getName().getString();
+                    _playerMap.put(name, player);
+                    _playerLastCoordinates.put(name, player.getPos());
                 }
-            } else if (entity instanceof PlayerEntity) {
-                PlayerEntity player = (PlayerEntity) entity;
-                String name = player.getName().getString();
-                _playerMap.put(name, player);
-                _playerLastCoordinates.put(name, player.getPos());
             }
         }
     }

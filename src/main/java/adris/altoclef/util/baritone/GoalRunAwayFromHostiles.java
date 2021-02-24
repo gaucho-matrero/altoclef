@@ -23,12 +23,15 @@ public class GoalRunAwayFromHostiles implements Goal {
     @Override
     public boolean isInGoal(int x, int y, int z) {
         List<HostileEntity> hostiles = getHostiles();
-        for (HostileEntity hostile : hostiles) {
-            if (hostile == null) continue;
-            double sqFromMob = hostile.squaredDistanceTo(x, y, z);
-            if (sqFromMob < _distance*_distance) return false;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (HostileEntity hostile : hostiles) {
+                if (hostile == null) continue;
+                double sqFromMob = hostile.squaredDistanceTo(x, y, z);
+                if (sqFromMob < _distance * _distance) return false;
+            }
         }
         return true;
+
     }
 
     @Override
@@ -36,13 +39,15 @@ public class GoalRunAwayFromHostiles implements Goal {
         // The lower the cost, the better.
         double distSum = 0;
         List<HostileEntity> hostiles = getHostiles();
-        for (HostileEntity hostile : hostiles) {
-            if (hostile == null) continue;
-            if (ignore(hostile)) continue;
-            double dist = hostile.squaredDistanceTo(x, y, z);
-            distSum += dist;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (HostileEntity hostile : hostiles) {
+                if (hostile == null) continue;
+                if (ignore(hostile)) continue;
+                double dist = hostile.squaredDistanceTo(x, y, z);
+                distSum += dist;
+            }
+            return -1 * distSum;
         }
-        return -1 * distSum;
         //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
 

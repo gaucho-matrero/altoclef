@@ -20,10 +20,12 @@ public class GoalRunAwayFromCreepers implements Goal {
     @Override
     public boolean isInGoal(int x, int y, int z) {
         List<CreeperEntity> creepers = getCreepers();
-        for (CreeperEntity creepuh : creepers) {
-            if (creepuh == null) continue;
-            double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
-            if (sqFromMob < _distance*_distance) return false;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (CreeperEntity creepuh : creepers) {
+                if (creepuh == null) continue;
+                double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
+                if (sqFromMob < _distance * _distance) return false;
+            }
         }
         return true;
     }
@@ -33,12 +35,14 @@ public class GoalRunAwayFromCreepers implements Goal {
         // The lower the cost, the better.
         double costSum = 0;
         List<CreeperEntity> creepers = getCreepers();
-        for (CreeperEntity creepuh : creepers) {
-            if (creepuh == null) continue;
-            double cost = MobDefenseChain.getCreeperSafety(creepuh);
-            costSum += cost;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (CreeperEntity creepuh : creepers) {
+                if (creepuh == null) continue;
+                double cost = MobDefenseChain.getCreeperSafety(creepuh);
+                costSum += cost;
+            }
+            return -1 * costSum;
         }
-        return -1 * costSum;
         //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
 
