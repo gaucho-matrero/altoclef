@@ -49,11 +49,13 @@ public class FoodChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
 
         if (!mod.getModSettings().isAutoEat()) {
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
         if (mod.getInventoryTracker().totalFoodScore() <= 0) {
             // Do nothing if we have no food.
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -67,6 +69,7 @@ public class FoodChain extends SingleTaskChain {
 
         // We're in danger, don't eat now!!
         if (mod.getMobDefenseChain().isDoingAcrobatics()) {
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -89,19 +92,14 @@ public class FoodChain extends SingleTaskChain {
                 }
 
                 mod.getInventoryTracker().equipItem(toUse);
-                MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                startEat(mod);
             } else {
-                _isTryingToEat = false;
-                _requestFillup = false;
+                stopEat(mod);
             }
         } else if (_isTryingToEat) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
-            _isTryingToEat = false;
-            _requestFillup = false;
+            stopEat(mod);
         }
 
-        // Pause interactions when eating.
-        mod.getExtraBaritoneSettings().setInteractionPaused(_isTryingToEat);
 
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
@@ -110,6 +108,19 @@ public class FoodChain extends SingleTaskChain {
     @Override
     protected void onTaskFinish(AltoClef mod) {
         // Nothing.
+    }
+
+    private void startEat(AltoClef mod) {
+        MinecraftClient.getInstance().options.keyUse.setPressed(true);
+        mod.getExtraBaritoneSettings().setInteractionPaused(true);
+    }
+    private void stopEat(AltoClef mod) {
+        if (_isTryingToEat) {
+            MinecraftClient.getInstance().options.keyUse.setPressed(false);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+            _isTryingToEat = false;
+            _requestFillup = false;
+        }
     }
 
     public boolean needsToEat() {
