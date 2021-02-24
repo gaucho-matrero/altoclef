@@ -16,14 +16,17 @@ import net.minecraft.item.Items;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class TaskCatalogue {
 
     private static HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
     private static HashMap<String, TaskFactory> _nameToResourceTask = new HashMap<>();
+    private static HashSet<Item> _resourcesObtainable = new HashSet<>();
     static {
         /// DEFINE RESOURCE TASKS HERE
         {
@@ -59,7 +62,7 @@ public class TaskCatalogue {
             mine("gravel", MiningRequirement.HAND, Blocks.GRAVEL, Items.GRAVEL);
 
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
-            smelt("gold_ingot", Items.GOLD_INGOT, "gold_ore");
+            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask.class); // accounts for nether too
 
             tools("iron", "iron_ingot", Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_HOE);
             tools("golden", "gold_ingot", Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD, Items.GOLDEN_AXE, Items.GOLDEN_HOE);
@@ -107,6 +110,7 @@ public class TaskCatalogue {
     private static void put(String name, Item[] matches, TaskFactory factory) {
         _nameToResourceTask.put(name, factory);
         _nameToItemMatches.put(name, matches);
+        _resourcesObtainable.addAll(Arrays.asList(matches));
     }
     /*private static void put(String name, Item match, TaskFactory factory) {
         put(name, new Item[]{match}, factory);
@@ -124,6 +128,10 @@ public class TaskCatalogue {
             return null;
         }
         return _nameToItemMatches.get(name);
+    }
+
+    public static boolean isObtainable(Item item) {
+        return _resourcesObtainable.contains(item);
     }
 
     public static ItemTarget getItemTarget(String name, int count) {

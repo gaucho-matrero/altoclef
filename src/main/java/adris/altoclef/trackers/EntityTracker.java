@@ -5,21 +5,17 @@ import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
-import baritone.process.MineProcess;
-import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
-import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
-import net.minecraft.screen.AbstractFurnaceScreenHandler;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Field;
@@ -33,12 +29,15 @@ public class EntityTracker extends Tracker {
 
     private final List<Vec3d> _blacklist = new ArrayList<>();
 
-    private final HashMap<Class, List<MobEntity>> _mobMap = new HashMap<>();
+    private final HashMap<Class, List<Entity>> _entityMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
     private final List<HostileEntity> _hostiles = new ArrayList<>();
 
     private final List<CachedProjectile> _projectiles = new ArrayList<>();
+
+    private final HashMap<String, PlayerEntity> _playerMap = new HashMap<>();
+    private final HashMap<String, Vec3d> _playerLastCoordinates = new HashMap<>();
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
@@ -85,15 +84,22 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    public Entity getClosestEntity(Vec3d position, Class toFind) {
+    public Entity getClosestEntity(Vec3d position, Class ...entityTypes) {
+        return this.getClosestEntity(position, (entity) -> false, entityTypes);
+    }
+
+    public Entity getClosestEntity(Vec3d position, Predicate<Entity> ignore, Class ...entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
-        if (_mobMap.containsKey(toFind)) {
-            for (MobEntity entity : _mobMap.get(toFind)) {
-                double cost = entity.squaredDistanceTo(position);
-                if (cost < minCost) {
-                    minCost = cost;
-                    closestEntity = entity;
+        for (Class toFind : entityTypes) {
+            if (_entityMap.containsKey(toFind)) {
+                for (Entity entity : _entityMap.get(toFind)) {
+                    if (ignore.test(entity)) continue;
+                    double cost = entity.squaredDistanceTo(position);
+                    if (cost < minCost) {
+                        minCost = cost;
+                        closestEntity = entity;
+                    }
                 }
             }
         }
@@ -143,18 +149,21 @@ public class EntityTracker extends Tracker {
         return false;
     }
 
-    public boolean mobFound(Class type) {
+    public boolean entityFound(Class ...types) {
         ensureUpdated();
-        return _mobMap.containsKey(type);
+        for (Class type : types) {
+            if (_entityMap.containsKey(type)) return true;
+        }
+        return false;
     }
 
-    public <T extends MobEntity> List<T> getTrackedMobs(Class<T> type) {
+    public <T extends Entity> List<T> getTrackedEntities(Class<T> type) {
         ensureUpdated();
-        if (!mobFound(type)) {
+        if (!entityFound(type)) {
             return Collections.emptyList();
         }
         //noinspection unchecked
-        return (List<T>) _mobMap.get(type);
+        return (List<T>) _entityMap.get(type);
     }
 
     public List<Entity> getCloseEntities() {
@@ -172,17 +181,42 @@ public class EntityTracker extends Tracker {
         return _hostiles;
     }
 
+    public boolean isPlayerLoaded(String name) {
+        ensureUpdated();
+        return _playerMap.containsKey(name);
+    }
+    public Vec3d getPlayerMostRecentPosition(String name) {
+        ensureUpdated();
+        if (_playerLastCoordinates.containsKey(name)) {
+            return _playerLastCoordinates.get(name);
+        }
+        return null;
+    }
+    public PlayerEntity getPlayerEntity(String name) {
+        if (isPlayerLoaded(name)) {
+            return _playerMap.get(name);
+        }
+        return null;
+    }
+
     @Override
     protected synchronized void updateState() {
         _itemDropLocations.clear();
-        _mobMap.clear();
+        _entityMap.clear();
         _closeEntities.clear();
         _projectiles.clear();
         _hostiles.clear();
+        _playerMap.clear();
         if (MinecraftClient.getInstance().world == null) return;
 
         // Loop through all entities and track 'em
         for(Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+
+            Class type = entity.getClass();
+            if (!_entityMap.containsKey(type)) {
+                _entityMap.put(type, new ArrayList<>());
+            }
+            _entityMap.get(type).add(entity);
 
             if (_mod.getControllerExtras().inRange(entity)) {
                 _closeEntities.add(entity);
@@ -197,13 +231,8 @@ public class EntityTracker extends Tracker {
                 }
                 _itemDropLocations.get(droppedItem).add(ientity);
             } else if (entity instanceof MobEntity) {
-                MobEntity mob = (MobEntity) entity;
-                Class type = entity.getClass();
+                //MobEntity mob = (MobEntity) entity;
 
-                if (!_mobMap.containsKey(type)) {
-                    _mobMap.put(type, new ArrayList<>());
-                }
-                _mobMap.get(type).add(mob);
 
                 if (entity instanceof HostileEntity) {
 
@@ -221,7 +250,7 @@ public class EntityTracker extends Tracker {
                                         hostile.getLookControl().getLookY(),
                                         hostile.getLookControl().getLookZ()
                                 );
-                                Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
+                                //Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
                                 if (lookTarget.isInRange(_mod.getPlayer().getPos(), 4f)) {
                                     closeEnough = true;
                                 }
@@ -263,11 +292,21 @@ public class EntityTracker extends Tracker {
                     proj.projectileType = projEntity.getClass();
                     _projectiles.add(proj);
                 }
+            } else if (entity instanceof PlayerEntity) {
+                PlayerEntity player = (PlayerEntity) entity;
+                String name = player.getName().getString();
+                _playerMap.put(name, player);
+                _playerLastCoordinates.put(name, player.getPos());
             }
         }
     }
 
-    public static boolean isAngryAtPlayer(Monster hostile) {
+    @Override
+    protected void reset() {
+        // Dirty clears everything.
+    }
+
+    public static boolean isAngryAtPlayer(Entity hostile) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
         if (hostile instanceof EndermanEntity) {
@@ -279,6 +318,22 @@ public class EntityTracker extends Tracker {
             // Will ALWAYS be false.
             return zombie.hasAngerTime() && zombie.isAngryAt(player);
         }
+        if (isTradingPiglin(hostile)) {
+            return false;
+        }
         return true;
+    }
+
+    public static boolean isTradingPiglin(Entity entity) {
+        if (entity instanceof PiglinEntity) {
+            PiglinEntity pig = (PiglinEntity) entity;
+            for (ItemStack stack : pig.getItemsHand()) {
+                if (stack.getItem().equals(Items.GOLD_INGOT)) {
+                    // We're trading with this one, ignore it.
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

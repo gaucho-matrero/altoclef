@@ -19,7 +19,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
-public abstract class AbstractKillEntityTask extends Task {
+public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     private static final double OTHER_FORCE_FIELD_RANGE = 2;
 
@@ -41,86 +41,21 @@ public abstract class AbstractKillEntityTask extends Task {
 
     private static final double MAINTAIN_DISTANCE = 3;
 
-    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask();
-
-    @Override
-    protected void onStart(AltoClef mod) {
-        _wanderTask.resetWander();
+    public AbstractKillEntityTask() {
+        super(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
     }
 
     @Override
-    protected Task onTick(AltoClef mod) {
-
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            _progress.reset();
-            setDebugState("Failed to get to target, wandering for a bit.");
-            return _wanderTask;
-        }
-
-        Entity entity = getEntityTarget(mod);
-
-        mod.getMobDefenseChain().setTargetEntity(entity);
-
-        // Oof
-        if (entity == null) {
-            mod.getMobDefenseChain().resetForceField();
-            return null;
-        }
-
-        double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
-
-        EntityHitResult result = EntityUtil.raycast(mod.getPlayer(), entity, playerReach);
-
+    protected Task onEntityInteract(AltoClef mod, Entity entity) {
         float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
 
-        double sqDist = entity.squaredDistanceTo(mod.getPlayer());
-
-        if (sqDist < CONSIDER_COMBAT_RANGE*CONSIDER_COMBAT_RANGE) {
-            mod.getMobDefenseChain().setForceFieldRange(OTHER_FORCE_FIELD_RANGE);
-        } else {
-            mod.getMobDefenseChain().resetForceField();
+        // Equip weapon
+        equipWeapon(mod);
+        if (hitProg >= 0.99) {
+            mod.getController().attackEntity(mod.getPlayer(), entity);
         }
-
-        boolean tooClose = sqDist < MAINTAIN_DISTANCE*MAINTAIN_DISTANCE;
-        // Step away if we're too close
-        if (tooClose) {
-            setDebugState("Maintaining distance");
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(MAINTAIN_DISTANCE, entity.getBlockPos()));
-            }
-        }
-
-        if (entity.squaredDistanceTo(mod.getPlayer()) < playerReach*playerReach && result != null && result.getType() == HitResult.Type.ENTITY) {
-            _progress.reset();
-            // Equip weapon
-            equipWeapon(mod);
-            if (hitProg >= 0.99) {
-                mod.getController().attackEntity(mod.getPlayer(), entity);
-            }
-        } else if (!tooClose) {
-            setDebugState("Approaching target");
-
-            if (_progress.check(mod)) {
-                Debug.logMessage("Failed to get to target, wandering.");
-                return _wanderTask;
-            }
-
-            // Move to target
-
-            return new GetToEntityTask(entity);
-        }
-
         return null;
     }
-
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getMobDefenseChain().setTargetEntity(null);
-        mod.getMobDefenseChain().resetForceField();
-    }
-
-    protected abstract Entity getEntityTarget(AltoClef mod);
 
     private void equipWeapon(AltoClef mod) {
         for (Item item : WEAPON_ITEMS) {

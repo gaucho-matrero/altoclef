@@ -8,7 +8,8 @@
     "ClientUIMixin"
   ],
   "client": [
-    "ChatMixin",
+    "ChatInputMixin",
+    "ChatReadMixin",
     "ClientBlockBreakMixin",
     "ClientOpenScreenMixin",
     "ClientTickMixin",

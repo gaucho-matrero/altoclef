@@ -28,7 +28,7 @@ import net.minecraft.util.math.Vec3i;
 
 public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     private BlockPos _target = null;
-    private boolean _rightClickOnArrival;
+    //private boolean _rightClickOnArrival;
 
     private boolean _walkInto;
     private boolean _blockOnTopMustBeRemoved;
@@ -48,15 +48,17 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     // How close we are expected to travel to get to the block. Increases as we fail.
     public int reachCounter = 0;
 
+    private Input _interactInput = Input.CLICK_RIGHT;
+
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone); _mod = mod;
     }
 
-    public void getToBlock(BlockPos target, Direction interactSide, boolean rightClickOnArrival, boolean blockOnTopMustBeRemoved, boolean walkInto) {
+    public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto) {
         this.onLostControl();
         _target = target;
         _interactSide = interactSide;
-        _rightClickOnArrival = rightClickOnArrival;
+        _interactInput = interactInput;
         _blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
         _walkInto = walkInto;
 
@@ -68,11 +70,11 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         reachCounter = 0;
     }
-    public void getToBlock(BlockPos target, boolean rightClickOnArrival) {
-        this.getToBlock(target, rightClickOnArrival, false);
+    public void getToBlock(BlockPos target, Input interactInput) {
+        this.getToBlock(target, interactInput, false);
     }
-    public void getToBlock(BlockPos target, boolean rightClickOnArrival, boolean blockOnTopMustBeRemoved) {
-        this.getToBlock(target, null, rightClickOnArrival, blockOnTopMustBeRemoved, false);
+    public void getToBlock(BlockPos target, Input interactInput, boolean blockOnTopMustBeRemoved) {
+        this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false);
     }
 
     public boolean isActive() {
@@ -93,7 +95,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         Goal goal = createGoal(_target, reachCounter);
 
         //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
-        if (!_rightClickOnArrival) {
+        if (_interactInput == null) {
             if (goal.isInGoal(this.ctx.player().getBlockPos())) {
                 this.onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -157,7 +159,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
                 if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
-                this.baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
                 //System.out.println(this.ctx.player().playerScreenHandler);
 
                 if (this.arrivalTickCount++ > 20 || _cancelRightClick) {

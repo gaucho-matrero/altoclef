@@ -1,7 +1,9 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -58,7 +60,7 @@ public class EnterNetherPortalTask extends Task {
         BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
         if (portal != null) {
             setDebugState("Going to found portal");
-            return new GetToBlockTask(portal, false);
+            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(),  (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;

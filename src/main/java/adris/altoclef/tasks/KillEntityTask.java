@@ -19,7 +19,7 @@ public class KillEntityTask extends AbstractKillEntityTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
+    protected boolean isSubEqual(AbstractDoToEntityTask obj) {
         if (obj instanceof KillEntityTask) {
             return ((KillEntityTask) obj)._target.equals(_target);
         }

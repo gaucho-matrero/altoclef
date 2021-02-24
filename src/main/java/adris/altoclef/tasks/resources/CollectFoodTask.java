@@ -104,11 +104,11 @@ public class CollectFoodTask extends Task {
                 if (rawCount > 0) {
                     Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getInventoryTracker().getItemCount(cookable.getCooked());
-                    _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.getCooked(), toSmelt), new ItemTarget(cookable.getRaw(), rawCount)));
+                    _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+                    _smeltTask.ignoreMaterials();
                     return _smeltTask;
                 }
             }
-
         } else {
             // Pick up food items from ground
             for(Item item : ITEMS_TO_PICK_UP) {
@@ -151,7 +151,7 @@ public class CollectFoodTask extends Task {
             Entity bestEntity = null;
             Item bestRawFood = null;
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                if (!mod.getEntityTracker().mobFound(cookable.mobToKill)) continue;
+                if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Entity nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.squaredDistanceTo(mod.getPlayer());
@@ -241,7 +241,7 @@ public class CollectFoodTask extends Task {
      * Returns null if task cannot reasonably run.
      */
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject) {
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), blockToCheck, reject);
+        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), reject, blockToCheck);
 
         ItemEntity nearestDrop = null;
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
@@ -251,11 +251,14 @@ public class CollectFoodTask extends Task {
         boolean spotted = nearestBlock != null || nearestDrop != null;
         // Collect hay until we have enough.
         if (spotted) {
-                if (nearestDrop != null) {
-                    return new GetToEntityTask(nearestDrop);
-                } else {
-                    return new DestroyBlockTask(nearestBlock);
-                }
+            if (nearestDrop != null) {
+                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE);
+                //new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), GetToEntityTask::new,)
+                //return new GetToEntityTask(nearestDrop);
+            } else {
+                return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), DestroyBlockTask::new, blockToCheck);
+                //return new DestroyBlockTask(nearestBlock);
+            }
         }
         return null;
     }
@@ -266,7 +269,8 @@ public class CollectFoodTask extends Task {
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
         Task itemPickup = pickupTaskOrNull(mod, itemToGrab);
         if (itemPickup != null) return itemPickup;
-        return new KillEntityTask(entity);
+        return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntityTask::new, entity.getClass());
+        //return new KillEntityTask(entity);
     }
 
     /**

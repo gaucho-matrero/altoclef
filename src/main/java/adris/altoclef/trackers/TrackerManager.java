@@ -10,11 +10,23 @@ public class TrackerManager {
 
     private AltoClef _mod;
 
+    private boolean _wasInGame = false;
+
     public TrackerManager(AltoClef mod) {
         _mod = mod;
     }
 
     public void tick() {
+        boolean inGame = _mod.inGame();
+        if (inGame && !_wasInGame) {
+            // New world
+            for(Tracker tracker : _trackers) {
+                tracker.reset();
+            }
+            _wasInGame = true;
+        }
+        _wasInGame = inGame;
+
         for(Tracker tracker : _trackers) {
             tracker.setDirty();
         }

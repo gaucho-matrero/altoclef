@@ -1,9 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 
 import java.util.Collections;
@@ -23,6 +25,8 @@ public abstract class ResourceTask extends Task {
         this(new ItemTarget(item, targetCount));
     }
 
+    private boolean _fullCheckFailed = false;
+
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
@@ -34,6 +38,7 @@ public abstract class ResourceTask extends Task {
         mod.getConfigState().push();
         mod.getConfigState().removeThrowawayItems(Util.toArray(ItemTarget.class, _itemTargets));
         onResourceStart(mod);
+        _fullCheckFailed = false;
     }
 
     @Override
@@ -42,7 +47,31 @@ public abstract class ResourceTask extends Task {
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
             if (mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
-                setDebugState("Going to dropped items...");
+                boolean weGood = true;
+
+                Debug.logInternal("EMPTY: " + mod.getInventoryTracker().getEmptySlotCount());
+
+                if (mod.getInventoryTracker().isInventoryFull()) {
+                    // Throw away!
+                    Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+                    if (toThrow != null) {
+                        // Equip then throw
+                        mod.getInventoryTracker().throwSlot(toThrow);
+                    } else {
+                        if (!_fullCheckFailed) {
+                            Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
+                        }
+                        weGood = false;
+                        _fullCheckFailed = true;
+                        setDebugState("Inventory full and we can't find any item to throw away. Waiting for user.");
+                    }
+                }
+
+                if (weGood) {
+                    _fullCheckFailed = false;
+                    setDebugState("Going to dropped items...");
+                }
+
                 return new PickupDroppedItemTask(_itemTargets);
             }
         }

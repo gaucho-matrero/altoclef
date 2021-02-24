@@ -3,16 +3,23 @@ package adris.altoclef.tasks.misc.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.ItemTarget;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.EndPortalFrameBlock;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 
 /**
  * This is the big kahoona. Plays the whole game.
@@ -25,11 +32,21 @@ public class BeatMinecraftTask extends Task {
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
 
     private static final int TARGET_BLAZE_RODS = 7;
+    private static final int TARGET_ENDER_PEARLS = 14;
+    private static final int TARGET_ENDER_EYES = 14;
+    private static final int PIGLIN_BARTER_GOLD_INGOT_BUFFER = 32;
+
+    private List<BlockPos> _endPortalFrame = null;
 
     // A flag to determine whether we should continue doing something.
     private ForceState _forceState = ForceState.NONE;
 
     private BlockPos _cachedPortalInNether;
+    private CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+
+    private LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
+
+    private int _cachedEndPearlsInFrame = 0;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -61,7 +78,44 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
-        // Get diamond armor first
+        // Get diamond armor + gear first
+        if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
+            return TaskCatalogue.getSquashedItemTask(
+                    new ItemTarget("diamond_chestplate", 1),
+                    new ItemTarget("diamond_leggings", 1),
+                    new ItemTarget("diamond_helmet", 1),
+                    new ItemTarget("diamond_boots", 1),
+                    new ItemTarget("diamond_pickaxe", 1),
+                    new ItemTarget("diamond_sword", 1)
+                    );
+        }
+        if (!diamondArmorEquipped(mod)) {
+            return new EquipArmorTask(DIAMOND_ARMORS);
+        }
+
+        // Stronghold portal located.
+        if (portalFound()) {
+            setDebugState("Filling in portal...");
+            int eyes = portalEyesInFrame(mod);
+            Debug.logInternal("EYES: " + eyes);
+            return null;
+        }
+
+        // Locate stronghold portal
+        if (_strongholdLocater.isActive() && !_strongholdLocater.isFinished(mod)) {
+            setDebugState("Locating end portal.");
+            return _strongholdLocater;
+        } else {
+            if (_endPortalFrame == null && _strongholdLocater.portalFound()) {
+                Debug.logMessage("Now we have our portal position.");
+                _endPortalFrame = _strongholdLocater.getPortalFrame();
+            }
+        }
+        if (_endPortalFrame == null && mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= TARGET_ENDER_EYES) {
+            return _strongholdLocater;
+        }
+
+        /*
         if (!diamondArmorEquipped(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
             if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) && _forceState != ForceState.GETTING_DIAMOND_GEAR) {
                 // Get a crafting table first before mining below
@@ -88,7 +142,7 @@ public class BeatMinecraftTask extends Task {
         } else if (_forceState == ForceState.GETTING_DIAMOND_GEAR) {
             // We got our gear.
             _forceState = ForceState.NONE;
-        }
+        }*/
 
         // Get food
         if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD_MIN) {
@@ -103,15 +157,27 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
+        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) / 2) - eyes;
+        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+
         // Get blaze rods by going to nether
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
             setDebugState("Going to nether!");
+            //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
             // Go to nether
             return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
+        } else {
+            setDebugState("Crafting our blaze powder + eyes");
+            int powderNeeded = (TARGET_ENDER_EYES - eyes);
+            if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
+                return new CraftInInventoryTask(new ItemTarget(Items.BLAZE_POWDER, powderNeeded), CraftingRecipe.newShapedRecipe("blaze_powder",
+                        new ItemTarget[] {new ItemTarget(Items.BLAZE_ROD, 1), null, null, null}, 2));
+            }
+            // Craft
+            return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, TARGET_ENDER_EYES), CraftingRecipe.newShapedRecipe("ender_eye",
+                    new ItemTarget[] {new ItemTarget(Items.ENDER_PEARL, 1), new ItemTarget(Items.BLAZE_POWDER, 1), null, null}, 1));
         }
-
-        setDebugState("Idk what to do we have our blazes");
-        return null;
     }
 
     private Task netherTick(AltoClef mod) {
@@ -121,11 +187,20 @@ public class BeatMinecraftTask extends Task {
             _cachedPortalInNether = mod.getPlayer().getBlockPos();
         }
 
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
-            setDebugState("Collecting blazes");
-            // Go to nether
-            return new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+        // Piglin Barter
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
+            setDebugState("Collecting Ender Pearls");
+
+            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
+
+        // Blaze rods
+        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+            setDebugState("Collecting Blaze Rods");
+
+            return _blazeCollection;
+        }
+
         setDebugState("Getting the hell out of here");
         return new EnterNetherPortalTask(new GetToBlockTask(_cachedPortalInNether, false), Dimension.OVERWORLD);
     }
@@ -137,6 +212,14 @@ public class BeatMinecraftTask extends Task {
     private boolean diamondArmorEquipped(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
+        }
+        return true;
+    }
+    private boolean hasDiamondArmor(AltoClef mod) {
+        for (String armor : DIAMOND_ARMORS) {
+            Item item = TaskCatalogue.getItemMatches(armor)[0];
+            if (mod.getInventoryTracker().isArmorEquipped(item)) continue;
+            if (!mod.getInventoryTracker().hasItem(item)) return false;
         }
         return true;
     }
@@ -156,6 +239,30 @@ public class BeatMinecraftTask extends Task {
     @Override
     protected String toDebugString() {
         return "Beating the game";
+    }
+
+    private boolean portalFound() {
+        return _endPortalFrame != null;
+    }
+
+    private int portalEyesInFrame(AltoClef mod) {
+        int count = 0;
+        for (BlockPos b : _endPortalFrame) {
+            //noinspection deprecation
+            if (!mod.getWorld().isChunkLoaded(b)) {
+                return _cachedEndPearlsInFrame;
+            }
+            BlockState state = mod.getWorld().getBlockState(b);
+            if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+                Debug.logWarning("BLOCK POS " + b + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+            }
+            boolean filled = state.get(EndPortalFrameBlock.EYE);
+            if (filled) {
+                count++;
+            }
+        }
+        _cachedEndPearlsInFrame = count;
+        return count;
     }
 
     private enum ForceState {

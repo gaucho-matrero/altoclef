@@ -1,18 +1,20 @@
 package adris.altoclef.util.progresscheck;
 
+import adris.altoclef.Debug;
+
 /**
  * A progress checker that can fail a few times before it "actually" fails.
  */
 public class ProgressCheckerRetry<T> implements IProgressChecker<T> {
 
     private final IProgressChecker<T> _subChecker;
-    private final int _allowedFailures;
+    private final int _allowedAttempts;
 
     private int _failCount;
 
-    public ProgressCheckerRetry(IProgressChecker subChecker, int allowedFailures) {
+    public ProgressCheckerRetry(IProgressChecker<T> subChecker, int allowedAttempts) {
         _subChecker = subChecker;
-        _allowedFailures = allowedFailures;
+        _allowedAttempts = allowedAttempts;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class ProgressCheckerRetry<T> implements IProgressChecker<T> {
 
     @Override
     public boolean failed() {
-        return _failCount > _allowedFailures;
+        return _failCount >= _allowedAttempts;
     }
 
     @Override

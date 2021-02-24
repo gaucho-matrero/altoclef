@@ -2,6 +2,9 @@ package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.csharpisbetter.Action;
+
+import java.util.function.Consumer;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class Command {
@@ -13,16 +16,26 @@ public abstract class Command {
     private String _name;
     private String _description;
 
+    private Consumer _onFinish = null;
+
     public Command(String name, String description, ArgBase ...args) {
         _name = name;
         _description = description;
         parser = new ArgParser(args);
     }
 
-    public void Run(AltoClef mod, String line) throws CommandException {
+    public void Run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
+        _onFinish = onFinish;
         _mod = mod;
         parser.LoadArgs(line);
         Call(mod, parser);
+    }
+
+    protected void finish() {
+        if (_onFinish != null)
+            //noinspection unchecked
+            _onFinish.accept(null);
+        _onFinish = null;
     }
 
     public String GetHelpRepresentation()

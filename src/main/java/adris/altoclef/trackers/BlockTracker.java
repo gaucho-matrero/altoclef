@@ -45,50 +45,105 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    @Override
+    protected void reset() {
+        _trackingBlocks.clear();
+        _cache.clear();
+    }
+
     public boolean isTracking(Block block) {
         return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
     }
 
-    public void trackBlock(Block block) {
-        if (!_trackingBlocks.containsKey(block)) {
-            _trackingBlocks.put(block, 0);
+    public void trackBlock(Block ...blocks) {
+        for (Block block : blocks) {
+            if (!_trackingBlocks.containsKey(block)) {
+                _trackingBlocks.put(block, 0);
+            }
+            _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
         }
-        _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
     }
 
-    public void stopTracking(Block block) {
-        if (_trackingBlocks.containsKey(block)) {
-            int current = _trackingBlocks.get(block);
-            if (current == 0) {
-                Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
-            } else {
-                _trackingBlocks.put(block, current - 1);
+    public void stopTracking(Block ...blocks) {
+        for (Block block : blocks) {
+            if (_trackingBlocks.containsKey(block)) {
+                int current = _trackingBlocks.get(block);
+                if (current == 0) {
+                    Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
+                } else {
+                    _trackingBlocks.put(block, current - 1);
+                }
             }
         }
     }
 
     public void addBlock(Block block, BlockPos pos) {
-        if (!blockIsInvalid(block, pos)) {
+        if (!blockIsInvalid(pos, block)) {
             _cache.addBlock(block, pos);
         }
     }
-
-    public BlockPos getNearestTracking(Vec3d pos, Block block) {
-        return getNearestTracking(pos, block, (p) -> false);
+    public boolean anyFound(Block ...blocks) {
+        updateState();
+        return _cache.anyFound(blocks);
     }
-    public BlockPos getNearestTracking(Vec3d pos, Block block, Predicate<BlockPos> isInvalidTest) {
-        if (!_trackingBlocks.containsKey(block)) {
-            Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
-            return null;
+
+    public BlockPos getNearestTracking(Vec3d pos, Block ...blocks) {
+        return getNearestTracking(pos, (p) -> false, blocks);
+    }
+    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isInvalidTest, Block... blocks) {
+        for (Block block : blocks) {
+            if (!_trackingBlocks.containsKey(block)) {
+                Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
+                return null;
+            }
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return _cache.getNearest(block, pos, isInvalidTest);
+        return _cache.getNearest(pos, isInvalidTest, blocks);
     }
 
     public List<BlockPos> getKnownLocations(Block ...blocks) {
         updateState();
         return _cache.getKnownLocations(blocks);
+    }
+
+    public BlockPos getNearestWithinRange(BlockPos pos, double range, Block ...blocks) {
+        return getNearestWithinRange(new Vec3d(pos.getX(), pos.getY(), pos.getZ()), range, blocks);
+    }
+    public BlockPos getNearestWithinRange(Vec3d pos, double range, Block ...blocks) {
+        int minX = (int)Math.round(pos.x - range),
+            maxX = (int)Math.round(pos.x + range),
+            minY = (int)Math.round(pos.y - range),
+            maxY = (int)Math.round(pos.y + range),
+            minZ = (int)Math.round(pos.z - range),
+            maxZ = (int)Math.round(pos.z + range);
+        double closestDistance = Float.POSITIVE_INFINITY;
+        BlockPos nearest = null;
+        for (int x = minX; x <= maxX; ++x) {
+            for (int y = minY; y <= maxY; ++y) {
+                for (int z = minZ; z <= maxZ; ++z) {
+                    BlockPos check = new BlockPos(x, y, z);
+                    assert MinecraftClient.getInstance().world != null;
+                    Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
+                    boolean valid = false;
+                    for (Block type : blocks) {
+                        if (type.is(b)) {
+                            valid = true;
+                            break;
+                        }
+                    }
+                    if (!valid) continue;
+                    if (check.isWithinDistance(pos, range)) {
+                        double sq = check.getSquaredDistance(pos, false);
+                        if (sq < closestDistance) {
+                            closestDistance = sq;
+                            nearest = check;
+                        }
+                    }
+                }
+            }
+        }
+        return nearest;
     }
 
     private boolean shouldUpdate() {
@@ -112,6 +167,7 @@ public class BlockTracker extends Tracker {
         if (MinecraftClient.getInstance().world != null) {
             for (BlockPos pos : found) {
                 Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+
                 if (_trackingBlocks.containsKey(block)) {
                     _cache.addBlock(block, pos);
                 }
@@ -121,7 +177,7 @@ public class BlockTracker extends Tracker {
 
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
-    public static boolean blockIsInvalid(Block block, BlockPos pos) {
+    public static boolean blockIsInvalid(BlockPos pos, Block ...blocks) {
         // I'm bored
         ClientWorld zaWarudo = MinecraftClient.getInstance().world;
         // No world, therefore we don't assume block is invalid.
@@ -129,19 +185,24 @@ public class BlockTracker extends Tracker {
             return false;
         }
         try {
-            if (zaWarudo.isAir(pos) && !(block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
-                // This tracked block is air when it doesn't think it should.
-                //Debug.logInternal("(failed aircheck)");
-                return true;
+            for (Block block : blocks) {
+                if (zaWarudo.isAir(pos) && !(block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
+                    // This tracked block is air when it doesn't think it should.
+                    //Debug.logInternal("(failed aircheck)");
+                    return true;
+                }
+                // It might be OK to remove this. Will have to test.
+                //noinspection deprecation
+                if (!zaWarudo.isChunkLoaded(pos)) {
+                    Debug.logInternal("(failed chunkcheck)");
+                    continue;
+                }
+                BlockState state = zaWarudo.getBlockState(pos);
+                if (!state.getBlock().is(block)) {
+                    return true;
+                }
             }
-            // It might be OK to remove this. Will have to test.
-            //noinspection deprecation
-            if (!zaWarudo.isChunkLoaded(pos)) {
-                Debug.logInternal("(failed chunkcheck)");
-                return false;
-            }
-            BlockState state = zaWarudo.getBlockState(pos);
-            return !state.getBlock().is(block);
+            return false;
         } catch (NullPointerException e) {
             // Probably out of chunk. This means we can't judge its state.
             return false;
@@ -161,8 +222,11 @@ public class BlockTracker extends Tracker {
             _cutoffRadius = cutoffRadius;
         }
 
-        public boolean anyFound(Block block) {
-            return _cachedBlocks.containsKey(block);
+        public boolean anyFound(Block ...blocks) {
+            for (Block block : blocks) {
+                if (_cachedBlocks.containsKey(block)) return true;
+            }
+            return false;
         }
 
         public List<BlockPos> getKnownLocations(Block ...blocks) {
@@ -196,16 +260,20 @@ public class BlockTracker extends Tracker {
             _cachedBlocks.get(block).addAll(positions);
         }
 
+        public void clear() {
+            _cachedBlocks.clear();
+        }
+
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(Block block, Vec3d position, Predicate<BlockPos> isInvalid) {
-            if (!anyFound(block)) {
+        public BlockPos getNearest(Vec3d position, Predicate<BlockPos> isInvalid, Block ...blocks) {
+            if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
             }
             BlockPos closest = null;
             double minScore = Double.POSITIVE_INFINITY;
 
-            List<BlockPos> blockList = getKnownLocations(block);
+            List<BlockPos> blockList = getKnownLocations(blocks);
 
             int toPurge = blockList.size() - _cutoffSize;
 
@@ -217,7 +285,7 @@ public class BlockTracker extends Tracker {
                 if (isInvalid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
-                if (blockIsInvalid(block, pos)) {
+                if (blockIsInvalid(pos, blocks)) {
                     //Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
                     it.remove();
                     continue;

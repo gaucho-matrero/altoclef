@@ -10,26 +10,35 @@ import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.slots.PlayerInventorySlot;
+import adris.altoclef.util.slots.Slot;
+import baritone.Baritone;
+import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
+import baritone.api.utils.input.Input;
+import net.minecraft.block.AbstractFireBlock;
+import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Optional;
 
 public class MobDefenseChain extends SingleTaskChain {
 
     private static final double CREEPER_KEEP_DISTANCE = 10;
-    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 4;
-    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 15;
+    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
+    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
 
     private static final double DANGER_KEEP_DISTANCE = 15;
 
@@ -39,6 +48,8 @@ public class MobDefenseChain extends SingleTaskChain {
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
 
     private boolean _doingFunkyStuff = false;
+
+    private boolean _wasPuttingOutFire = false;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -52,7 +63,21 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return 0;
+        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+
+        // Put out fire if we're standing on one like an idiot
+        BlockPos fireBlock = isInsideFireAndOnFire(mod);
+        if (fireBlock != null) {
+            putOutFire(mod, fireBlock);
+        } else if (_wasPuttingOutFire) {
+            // Stop putting stuff out if we no longer need to put out a fire.
+            mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+            _wasPuttingOutFire = false;
+        }
+
+        if (prioritizeEating(mod)) {
+            return Float.NEGATIVE_INFINITY;
+        }
 
         // Force field
         doForceField(mod);
@@ -97,20 +122,58 @@ public class MobDefenseChain extends SingleTaskChain {
         return 0;
     }
 
+    private BlockPos isInsideFireAndOnFire(AltoClef mod) {
+        boolean onFire = mod.getPlayer().isOnFire();
+        if (!onFire) return null;
+        BlockPos p = mod.getPlayer().getBlockPos();
+        BlockPos[] toCheck = new BlockPos[] {
+            p,
+            p.add(1, 0, 0),
+                p.add(1, 0, 1),
+                p.add(1, 0, -1),
+                p.add(0, 0, 1),
+                p.add(0, 0, -1),
+                p.add(-1, 0, 1),
+                p.add(-1, 0, -1)
+        };
+        for (BlockPos check : toCheck) {
+            Block b = mod.getWorld().getBlockState(check).getBlock();
+            if (b instanceof AbstractFireBlock) {
+                return check;
+            }
+        }
+        return null;
+    }
+
+    private void putOutFire(AltoClef mod, BlockPos pos) {
+        Baritone b = mod.getClientBaritone();
+        IPlayerContext ctx = b.getPlayerContext();
+        Optional<Rotation> reachable = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) , ctx.playerController().getBlockReachDistance(), false);
+        if (reachable.isPresent()) {
+            b.getLookBehavior().updateTarget(reachable.get(), true);
+            if (ctx.isLookingAt(pos)) {
+                _wasPuttingOutFire = true;
+                b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+            }
+        }
+    }
+
+    private boolean prioritizeEating(AltoClef mod) {
+        return mod.getFoodChain().needsToEatCritical(mod);
+    }
+
     private void doForceField(AltoClef mod) {
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
             for (Entity entity : entities) {
                 if (entity instanceof Monster) {
-                    if (EntityTracker.isAngryAtPlayer((Monster)entity)) {
-                        if (_targetEntity != null && _targetEntity.equals(entity)) continue;
-                        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
-                            // Equip non-tool
-                            deequipTool(mod);
-                            mod.getControllerExtras().attack(entity);
-                        }
+                    if (EntityTracker.isAngryAtPlayer(entity)) {
+                        applyForceField(mod, entity);
                     }
+                } else if (entity instanceof FireballEntity) {
+                    // Ghast ball
+                    applyForceField(mod, entity);
                 }
             }
         } catch (Exception e) {
@@ -118,11 +181,20 @@ public class MobDefenseChain extends SingleTaskChain {
         }
     }
 
+    private void applyForceField(AltoClef mod, Entity entity) {
+        if (_targetEntity != null && _targetEntity.equals(entity)) return;
+        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
+            // Equip non-tool
+            deequipTool(mod);
+            mod.getControllerExtras().attack(entity);
+        }
+    }
+
     private CreeperEntity getClosestFusingCreeper(AltoClef mod) {
         double worstSafety = Float.POSITIVE_INFINITY;
         CreeperEntity target = null;
         try {
-            List<CreeperEntity> creepers = mod.getEntityTracker().getTrackedMobs(CreeperEntity.class);
+            List<CreeperEntity> creepers = mod.getEntityTracker().getTrackedEntities(CreeperEntity.class);
             for (CreeperEntity creeper : creepers) {
 
                 if (creeper == null) continue;
@@ -152,7 +224,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
                     // ignore if it's too far away.
-                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 15)) {
+                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 40)) {
                         continue;
                     }
                 }
@@ -175,7 +247,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private Entity getUniversallyDangerousMob(AltoClef mod) {
-        if (mod.getEntityTracker().mobFound(WitherSkeletonEntity.class)) {
+        if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity.squaredDistanceTo(mod.getPlayer()) < 6*6) {
                 return entity;
@@ -244,7 +316,18 @@ public class MobDefenseChain extends SingleTaskChain {
         Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
         if (equip instanceof ToolItem) {
             // Pick non tool item or air
-            mod.getInventoryTracker().equipItem(Items.AIR);
+            if (mod.getInventoryTracker().getEmptySlotCount() == 0) {
+                for (int i = 0; i < 35; ++i) {
+                    Slot s = Slot.getFromInventory(i);
+                    Item item = mod.getInventoryTracker().getItemStackInSlot(s).getItem();
+                    if (!(item instanceof ToolItem)) {
+                        mod.getInventoryTracker().equipSlot(s);
+                        break;
+                    }
+                }
+            } else {
+                mod.getInventoryTracker().equipItem(Items.AIR);
+            }
         }
     }
 

@@ -2,6 +2,8 @@ package adris.altoclef;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,8 +67,110 @@ public class Settings {
      */
     private boolean autoRespawn = true;
 
+    /**
+     * If true, will use blacklist for rejecting users from using your player as a butler
+     */
+    private boolean useButlerBlacklist = true;
+    /**
+     * If true, will use whitelist to only accept users from said whitelist.
+     */
+    private boolean useButlerWhitelist = true;
+
+    /**
+     * If we need to throw away something, throw away these items first.
+     */
+    private int[] throwawayItems = new int[] {
+            Item.getRawId(Items.COBBLESTONE),
+            Item.getRawId(Items.NETHERRACK),
+            Item.getRawId(Items.DIRT)
+    };
+
+    /**
+     * If we need to throw away something but we don't have any "throwaway Items",
+     * throw away any unimportant item that's not currently needed in our task chain.
+     *
+     * Careful with this! If true, any item not in "importantItems" is liable to be thrown away.
+     */
+    private boolean throwAwayUnusedItems = false;
+
+    /**
+     * We will NEVER throw away these items.
+     * Even if "throwAwayUnusedItems" is true and one of these items is not used in a task.
+     */
+    private int[] importantItems = new int[] {
+            Item.getRawId(Items.ENCHANTED_GOLDEN_APPLE),
+            Item.getRawId(Items.ENDER_EYE),
+            // Don't throw away shulker boxes that would be pretty bad lol
+            Item.getRawId(Items.SHULKER_BOX),
+            Item.getRawId(Items.BLACK_SHULKER_BOX),
+            Item.getRawId(Items.BLUE_SHULKER_BOX),
+            Item.getRawId(Items.BROWN_SHULKER_BOX),
+            Item.getRawId(Items.CYAN_SHULKER_BOX),
+            Item.getRawId(Items.GRAY_SHULKER_BOX),
+            Item.getRawId(Items.GREEN_SHULKER_BOX),
+            Item.getRawId(Items.LIGHT_BLUE_SHULKER_BOX),
+            Item.getRawId(Items.LIGHT_GRAY_SHULKER_BOX),
+            Item.getRawId(Items.LIME_SHULKER_BOX),
+            Item.getRawId(Items.MAGENTA_SHULKER_BOX),
+            Item.getRawId(Items.ORANGE_SHULKER_BOX),
+            Item.getRawId(Items.PINK_SHULKER_BOX),
+            Item.getRawId(Items.PURPLE_SHULKER_BOX),
+            Item.getRawId(Items.RED_SHULKER_BOX),
+            Item.getRawId(Items.WHITE_SHULKER_BOX),
+            Item.getRawId(Items.YELLOW_SHULKER_BOX)
+    };
+
     // Internal tracking of whether we're dirty or not.
     private transient boolean _dirty;
+
+    public static Settings load() {
+
+        File loadFrom = new File(SETTINGS_PATH);
+        if (!loadFrom.exists()) {
+            Settings result = new Settings();
+            result.markDirty();
+            result.save();
+            return result;
+        }
+
+        String data;
+        try {
+            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        Gson gson = new Gson();
+
+        Settings result = gson.fromJson(data, Settings.class);
+        result.save();
+        return result;
+    }
+
+    private static void save(Settings settings) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String userJson = gson.toJson(settings);
+
+        try {
+            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Dirty managing
+    private void markDirty() {
+        _dirty = true;
+    }
+    public boolean isDirty() {
+        return _dirty;
+    }
+
+    public void save() {
+        if (!_dirty) return;
+        save(this);
+        _dirty = false;
+    }
 
     public void setSpeedHack(float value) {
         speedHack = value; markDirty();
@@ -117,53 +221,42 @@ public class Settings {
         this.autoRespawn = autoRespawn;
     }
 
-
-
-    // Dirty managing
-    private void markDirty() {
-        _dirty = true;
+    public boolean isUseButlerBlacklist() {
+        return useButlerBlacklist;
     }
-    public boolean isDirty() {
-        return _dirty;
+    public void setUseButlerBlacklist(boolean useButlerBlacklist) {
+        this.useButlerBlacklist = useButlerBlacklist;
     }
 
-    public void save() {
-        if (!_dirty) return;
-        save(this);
-        _dirty = false;
+    public boolean isUseButlerWhitelist() {
+        return useButlerWhitelist;
+    }
+    public void setUseButlerWhitelist(boolean useButlerWhitelist) {
+        this.useButlerWhitelist = useButlerWhitelist;
     }
 
-    public static Settings load() {
-
-        File loadFrom = new File(SETTINGS_PATH);
-        if (!loadFrom.exists()) {
-            Settings result = new Settings();
-            result.markDirty();
-            result.save();
-            return result;
+    public boolean isThrowaway(Item item) {
+        return idArrayContainsItem(item, throwawayItems);
+    }
+    public boolean isImportant(Item item) {
+        return idArrayContainsItem(item, importantItems);
+    }
+    public boolean shouldThrowawayUnusedItems() {
+        return this.throwAwayUnusedItems;
+    }
+    public Item[] getThrowawayItems() {
+        Item[] result = new Item[throwawayItems.length];
+        for (int i = 0; i < throwawayItems.length; ++i) {
+            result[i] = Item.byRawId(throwawayItems[i]);
         }
-
-        String data;
-        try {
-            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        Gson gson = new Gson();
-
-        return gson.fromJson(data, Settings.class);
+        return result;
     }
 
-    private static void save(Settings settings) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String userJson = gson.toJson(settings);
-
-        try {
-            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
+    private static boolean idArrayContainsItem(Item item, int[] ids) {
+        int id = Item.getRawId(item);
+        for (int check : ids) {
+            if (check == id) return true;
         }
+        return false;
     }
-
 }

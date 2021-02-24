@@ -43,6 +43,6 @@ public class GoalRunAwayFromCreepers implements Goal {
     }
 
     private List<CreeperEntity> getCreepers() {
-        return _mod.getEntityTracker().getTrackedMobs(CreeperEntity.class);
+        return _mod.getEntityTracker().getTrackedEntities(CreeperEntity.class);
     }
 }

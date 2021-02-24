@@ -5,6 +5,7 @@ import adris.altoclef.AltoClef;
 import java.security.InvalidKeyException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 public class CommandExecutor {
 
@@ -30,7 +31,7 @@ public class CommandExecutor {
         return line.startsWith(_commandPrefix);
     }
 
-    public void Execute(String line) throws CommandException {
+    public void Execute(String line, Consumer onFinish) throws CommandException {
         if (!isClientCommand(line)) return;
         line = line.substring(_commandPrefix.length());
         Command c = GetCommand(line);
@@ -38,13 +39,16 @@ public class CommandExecutor {
         {
             try
             {
-                c.Run(_mod, line);
+                c.Run(_mod, line, onFinish);
             }
             catch (CommandException ae)
             {
                 throw new CommandException(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
             }
         }
+    }
+    public void Execute(String line) throws CommandException {
+        Execute(line, null);
     }
     private Command GetCommand(String line) throws CommandException {
 

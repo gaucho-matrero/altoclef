@@ -2,13 +2,11 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.KillEntitiesTask;
-import adris.altoclef.tasks.KillEntityTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.Arrays;
 
 public class KillAndLooktTask extends ResourceTask {
@@ -32,7 +30,7 @@ public class KillAndLooktTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (!mod.getEntityTracker().mobFound(_toKill)) {
+        if (!mod.getEntityTracker().entityFound(_toKill)) {
             setDebugState("Searching for mob...");
             return new TimeoutWanderTask(999999);
         }

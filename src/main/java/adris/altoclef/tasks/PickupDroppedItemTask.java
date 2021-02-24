@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.AbstractDoToClosestObjectTask;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.baritone.BaritoneHelper;
@@ -20,22 +21,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class PickupDroppedItemTask extends Task {
+public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> {
 
     private final List<ItemTarget> _itemTargets;
 
-    private AltoClef _mod;
-
-    private final TargetPredicate _targetPredicate = new TargetPredicate();
-
-    private Vec3d _itemGoal;
-
-    private IProgressChecker<Double> _progressChecker;
-
     public PickupDroppedItemTask(List<ItemTarget> itemTargets) {
         _itemTargets = itemTargets;
-        _itemGoal = null;
-        _progressChecker = new LinearProgressChecker(7.0, 0.1);
     }
 
     public PickupDroppedItemTask(Item item, int targetCount) {
@@ -44,74 +35,13 @@ public class PickupDroppedItemTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        _mod = mod;
-
-        // Config
-        mod.getConfigState().push();
-        mod.getConfigState().setFollowDistance(0);
-
-        // Reset baritone process
-        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-
-        _progressChecker.reset();
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    protected Task onTick(AltoClef mod) {
-
-        Vec3d playerPos = mod.getPlayer().getPos();
-
-        boolean isPathing = _itemGoal != null;
-        if (isPathing) {
-            setDebugState("Going to " + _itemGoal);
-            // Update blacklist if we're not making good progress.
-            double progress = -1 * BaritoneHelper.calculateGenericHeuristic(playerPos, _itemGoal);
-            _progressChecker.setProgress(progress);
-            if (_progressChecker.failed()) {
-                mod.getEntityTracker().blacklist(_itemGoal);
-                Debug.logMessage("Failed to get to " + _itemGoal + ", adding to blacklist.");
-                // Cancel so we re-path
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                _itemGoal = null;
-                return null;
-            }
-        }
-
-        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(playerPos, Util.toArray(ItemTarget.class, _itemTargets));
-
-        if (!taskAssert(mod, closest != null, "Failed to find any items to pick up. Should have checked this condition earlier")) {
-            return null;
-        }
-
-//        setDebugState("FOUND: " + (closest.getStack() != null? closest.getStack().getItem().getTranslationKey() : " (nothing)"));
-
-        // These two lines must be paired in this order. path must be called once.
-        // Setting goal makes the goal process active, but not pathing! This is undesirable.
-        Vec3d goal = closest.getPos();
-        boolean wasActive = mod.getClientBaritone().getCustomGoalProcess().isActive();
-        if (!wasActive || !isPathing || _itemGoal.squaredDistanceTo(goal) > 1) {
-            Debug.logInternal("Pickup: Restarting goal process");
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(closest.getBlockPos()));//new GoalGetToPosition(goal));//new GoalGetToPosition(goal));
-            _itemGoal = goal;
-            // If this check isn't here, the check will NEVER fail if the goal process fails frequently.
-            if (wasActive) {
-                _progressChecker.reset();
-            }
-        }
-
-        return null;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
-        // Stop baritone IF the other task isn't an item task.
-        if (!(interruptTask instanceof PickupDroppedItemTask)) {
-            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-            //_mod.getClientBaritone().getFollowProcess().cancel();
-        }
+
     }
+
 
     @Override
     protected boolean isEqual(Task other) {
@@ -142,25 +72,30 @@ public class PickupDroppedItemTask extends Task {
         return result.toString();
     }
 
-    class TargetPredicate implements Predicate<Entity> {
-
-        @Override
-        public boolean test(Entity entity) {
-            if (entity instanceof ItemEntity) {
-                ItemEntity iEntity = (ItemEntity) entity;
-                for (ItemTarget target : _itemTargets) {
-                    // If we already have this item, ignore it
-                    if (_mod.getInventoryTracker().targetMet(target)) continue;
-
-                    // Match for item
-                    if (target.matches(iEntity.getStack().getItem())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+    @Override
+    protected Vec3d getPos(AltoClef mod, ItemEntity obj) {
+        return obj.getPos();
     }
 
+    @Override
+    protected ItemEntity getClosestTo(AltoClef mod, Vec3d pos) {
+        if (!mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) return null;
+        return mod.getEntityTracker().getClosestItemDrop(pos, Util.toArray(ItemTarget.class, _itemTargets));
+    }
+
+    @Override
+    protected Vec3d getOriginPos(AltoClef mod) {
+        return mod.getPlayer().getPos();
+    }
+
+    @Override
+    protected Task getGoalTask(ItemEntity obj) {
+        return new GetToEntityTask(obj);
+    }
+
+    @Override
+    protected boolean isValid(AltoClef mod, ItemEntity obj) {
+        return obj.isAlive();
+    }
 
 }

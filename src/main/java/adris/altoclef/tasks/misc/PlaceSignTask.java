@@ -61,7 +61,7 @@ public class PlaceSignTask extends Task {
                 return new DestroyBlockTask(_target);
             }
 
-            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down());
+            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down(), true);
         }
     }
 

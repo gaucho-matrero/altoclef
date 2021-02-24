@@ -3,11 +3,13 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
@@ -22,10 +24,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
@@ -94,8 +98,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
-        // Find nearest water and right click it
-        BlockPos nearestLiquid = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _toCollect, (blockPos -> {
+        Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
             assert MinecraftClient.getInstance().world != null;
             BlockState s = MinecraftClient.getInstance().world.getBlockState(blockPos);
@@ -109,7 +112,10 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 return level != 8;
             }
             return true;
-        }));
+        }), _toCollect);
+
+        // Find nearest water and right click it
+        BlockPos nearestLiquid = getNearestLiquid.apply(mod.getPlayer().getPos());
         _targetLiquid = nearestLiquid;
         if (nearestLiquid != null) {
             // We want to MINIMIZE this distance to liquid.
@@ -132,13 +138,21 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
             }
 
-            InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), nearestLiquid);
-            //noinspection unchecked
-            task.TimedOut.addListener((empty) -> {
-                Debug.logMessage("Blacklisted " + nearestLiquid);
-                _blacklist.add(nearestLiquid);
-            });
-            return task;
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> {
+                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, false);
+                //noinspection unchecked
+                task.TimedOut.addListener(
+                        new ActionListener() {
+                            @Override
+                            public void invoke(Object value) {
+                                Debug.logMessage("Blacklisted " + blockpos);
+                                _blacklist.add(nearestLiquid);
+
+                            }
+                        });
+                return task;
+            }, getNearestLiquid, _toCollect);
+            //return task;
         }
 
         // Oof, no liquid found.

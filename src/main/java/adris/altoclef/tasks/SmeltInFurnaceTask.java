@@ -78,6 +78,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
     }
 
     @Override
+    public boolean isFinished(AltoClef mod) {
+        return super.isFinished(mod) || _doTask.isFinished(mod);
+    }
+
+    @Override
     protected boolean isEqualResource(ResourceTask obj) {
 
         if (obj instanceof SmeltInFurnaceTask) {
@@ -105,6 +110,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         private boolean _ignoreMaterials = false;
 
+        private boolean _ranOutOfMaterials = false;
+
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, "furnace");
             _target = target;
@@ -127,6 +134,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
         protected boolean isContainerOpen(AltoClef mod) {
             //Debug.logMessage("FURNACE OPEN? " + open);
             return (mod.getPlayer().currentScreenHandler instanceof FurnaceScreenHandler);
+        }
+
+        @Override
+        protected void onStart(AltoClef mod) {
+            super.onStart(mod);
+            _ranOutOfMaterials = false;
         }
 
         @Override
@@ -202,13 +215,21 @@ public class SmeltInFurnaceTask extends ResourceTask {
             ItemStack output = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             int outputCount = _target.getItem().matches(output.getItem())?  output.getCount() : 0;
             int materialCount = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount();
+
             int currentlyHeld = mod.getInventoryTracker().getItemCount(_target.getItem());
             int targetCount = _target.getItem().targetCount;
             // How many MORE materials do we need in the slot to end up with the correct number of items?
             int toMove = targetCount - (outputCount + materialCount + currentlyHeld);
             if (_ignoreMaterials) {
                 toMove = mod.getInventoryTracker().getItemCount(this._target.getMaterial());
-                Debug.logInternal("OOF: " + toMove + " : " + this._target.getMaterial().getMatches()[0].getTranslationKey());
+
+                if (toMove == 0 && materialCount == 0 && outputCount == 0) {
+                    Debug.logMessage("We ran out of materials.");
+                    _ranOutOfMaterials = true;
+                    return null;
+                }
+
+                //Debug.logInternal("OOF: " + toMove + " : " + this._target.getMaterial().getMatches()[0].getTranslationKey());
             }
             if (toMove > 0) {
                 ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial());
@@ -237,9 +258,10 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     targetFuelItemCount -= fuelStack.getCount();
                 }
                 int moved = mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
-                if (targetFuelItemCount > 0 && moved != targetFuelItemCount) {
-                    Debug.logWarning("Failed to move " + targetFuelItemCount + " units of the fuel " + fuelToUse.getTranslationKey() + ". Only moved " + moved + ". Proceeding anyway.");
-                }
+                int canMove = mod.getInventoryTracker().getItemCount(fuelToUse);
+                /*if (canMove > 0 && moved != canMove) {
+                    Debug.logWarning("Failed to move " + canMove + " units of the fuel " + fuelToUse.getTranslationKey() + ". Only moved " + moved + ". Proceeding anyway.");
+                }*/
             }
 
             // Grab from the output slot
@@ -291,6 +313,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // If we have a valid container position, KEEP it.
             // TODO: Maybe use containertracker to check for places that have our materials?
             return getTargetContainerPosition();
+        }
+
+        @Override
+        public boolean isFinished(AltoClef mod) {
+            return _ranOutOfMaterials;
         }
 
         @Override

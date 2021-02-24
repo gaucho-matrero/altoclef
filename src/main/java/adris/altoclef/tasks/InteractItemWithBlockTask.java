@@ -9,6 +9,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.utils.input.Input;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -21,6 +22,8 @@ public class InteractItemWithBlockTask extends Task {
     private final Direction _direction;
     private final BlockPos _target;
 
+    private Input _interactInput;
+
     private boolean _trying;
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
@@ -30,14 +33,21 @@ public class InteractItemWithBlockTask extends Task {
 
     public final Action TimedOut = new Action();
 
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target) {
+    private boolean _walkInto;
+
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto) {
         _toUse = toUse;
         _direction = direction;
         _target = target;
+        _interactInput = interactInput;
+        _walkInto = walkInto;
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target) {
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
+        this(toUse, direction, target, Input.CLICK_RIGHT, walkInto);
+    }
+    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
         // null means any side is OK
-        this(toUse, null, target);
+        this(toUse, null, target, walkInto);
     }
 
     @Override
@@ -50,7 +60,7 @@ public class InteractItemWithBlockTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        if (!mod.getInventoryTracker().targetMet(_toUse)) {
+        if (_toUse != null && !mod.getInventoryTracker().targetMet(_toUse)) {
             _moveChecker.reset();
             return TaskCatalogue.getItemTask(_toUse);
         }
@@ -69,8 +79,10 @@ public class InteractItemWithBlockTask extends Task {
         if (!proc(mod).isActive()) {
             Debug.logMessage("Interact with block process restarting");
             _trying = true;
-            proc(mod).getToBlock(_target, _direction, true, true, false);
-            proc(mod).setInteractEquipItem(_toUse);
+            proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto);
+            if (_toUse != null) {
+                proc(mod).setInteractEquipItem(_toUse);
+            }
         } else {
             if (_prevReach < MAX_REACH && proc(mod).reachCounter != _prevReach) {
                 _prevReach = proc(mod).reachCounter;
@@ -97,8 +109,11 @@ public class InteractItemWithBlockTask extends Task {
             InteractItemWithBlockTask task = (InteractItemWithBlockTask) obj;
             if ((task._direction == null) != (_direction == null)) return false;
             if (task._direction != null && !task._direction.equals(_direction)) return false;
-            if (!task._toUse.equals(_toUse)) return false;
+            if ((task._toUse == null) != (_toUse == null)) return false;
+            if (task._toUse != null && !task._toUse.equals(_toUse)) return false;
             if (!task._target.equals(_target)) return false;
+            if (!task._interactInput.equals(_interactInput)) return false;
+            if (task._walkInto != _walkInto) return false;
             return true;
         }
         return false;

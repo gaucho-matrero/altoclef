@@ -6,6 +6,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.*;
 import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.utils.input.Input;
 import net.minecraft.util.math.BlockPos;
 
 public class GetToBlockTask extends Task {
@@ -27,7 +28,6 @@ public class GetToBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        Debug.logMessage("GOING TO BLOCK");
         startProc(mod);
         _moveChecker.reset();
         _wanderTask.resetWander();
@@ -76,7 +76,11 @@ public class GetToBlockTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
+        if (_rightClickOnArrival) {
+            return _running && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().failed() && !mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive();
+        } else {
+            return _position.isWithinDistance(mod.getPlayer().getPos(), 1);
+        }
     }
 
     @Override
@@ -93,7 +97,7 @@ public class GetToBlockTask extends Task {
     }
     private void startProc(AltoClef mod) {
         if (_rightClickOnArrival) {
-            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival);
+            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival? Input.CLICK_RIGHT : null);
         } else {
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(_position));
         }
