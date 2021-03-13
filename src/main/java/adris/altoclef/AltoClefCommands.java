@@ -430,7 +430,7 @@ public class AltoClefCommands extends CommandList {
                             mod.getPlayer().closeHandledScreen();
                             // Deequip armor
                             //Debug.logInternal("DE-EQUIPPING ARMOR");
-                            List<Integer> emptyInv = mod.getInventoryTracker().getInventorySlotsWithItem(Items.AIR);
+                            List<Integer> emptyInv = mod.getInventoryTracker().getEmptyInventorySlots();
                             if (emptyInv.size() == 0) {
                                 mod.logWarning("Can't de-equip armor because inventory is full.");
                                 finish();

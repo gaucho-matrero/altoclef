@@ -106,7 +106,7 @@ public abstract class ResourceTask extends Task {
             Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
             if (toThrow != null) {
                 // Equip then throw
-                Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
+                //Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
                 mod.getInventoryTracker().throwSlot(toThrow);
                 return true;
             } else {

@@ -130,6 +130,9 @@ public class InventoryTracker extends Tracker {
             return result;
         }
     }
+    public List<Integer> getEmptyInventorySlots() {
+        return getInventorySlotsWithItem(Items.AIR);
+    }
 
     public boolean targetMet(ItemTarget ...targets) {
         ensureUpdated();

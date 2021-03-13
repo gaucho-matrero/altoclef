@@ -138,8 +138,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 offs = offs.down();
             }
             pos = pos.add(offs);
-
-
         }
 
         if (_walkInto) {

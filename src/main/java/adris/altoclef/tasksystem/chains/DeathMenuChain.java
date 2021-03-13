@@ -109,7 +109,7 @@ public class DeathMenuChain extends TaskChain {
             }
             _prevScreen = screen.getClass();
         }
-        return 0;
+        return Float.NEGATIVE_INFINITY;
     }
 
     @Override
