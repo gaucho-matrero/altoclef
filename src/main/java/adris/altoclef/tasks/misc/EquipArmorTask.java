@@ -7,6 +7,7 @@ import adris.altoclef.tasks.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
@@ -94,11 +95,7 @@ public class EquipArmorTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof EquipArmorTask) {
             EquipArmorTask other = (EquipArmorTask) obj;
-            if (other._toEquip.length != _toEquip.length) return false;
-            for (int i = 0; i < _toEquip.length; ++i) {
-                if (!other._toEquip[i].equals(_toEquip[i])) return false;
-            }
-            return true;
+            return Util.arraysEqual(other._toEquip, _toEquip);
         }
         return false;
     }

@@ -11,11 +11,11 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -23,7 +23,6 @@ import net.minecraft.screen.FurnaceScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 // Ref
@@ -31,25 +30,26 @@ import java.util.List;
 
 public class SmeltInFurnaceTask extends ResourceTask {
 
-    private List<SmeltTarget> _targets;
+    private final SmeltTarget[] _targets;
 
-    private DoSmeltInFurnaceTask _doTask;
+    private final DoSmeltInFurnaceTask _doTask;
 
-    public SmeltInFurnaceTask(List<SmeltTarget> targets) {
+    public SmeltInFurnaceTask(SmeltTarget[] targets) {
         super(extractItemTargets(targets));
+        _targets = targets;
         // TODO: Do them in order.
-        _doTask = new DoSmeltInFurnaceTask(targets.get(0));
+        _doTask = new DoSmeltInFurnaceTask(targets[0]);
     }
     public SmeltInFurnaceTask(SmeltTarget target) {
-        this(Collections.singletonList(target));
+        this(new SmeltTarget[] {target});
     }
 
-    private static List<ItemTarget> extractItemTargets(List<SmeltTarget> recipeTargets) {
-        List<ItemTarget> result = new ArrayList<>(recipeTargets.size());
+    private static ItemTarget[] extractItemTargets(SmeltTarget[] recipeTargets) {
+        List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
         for (SmeltTarget target : recipeTargets) {
             result.add(target.getItem());
         }
-        return result;
+        return Util.toArray(ItemTarget.class, result);
     }
 
     public void ignoreMaterials() {
@@ -63,7 +63,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        if (_targets.length != 1) {
+            Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
+        }
     }
 
     @Override
@@ -99,14 +101,14 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask implements ITaskWithDowntime {
 
-        private SmeltTarget _target;
+        private final SmeltTarget _target;
 
         private ContainerTracker.FurnaceData _currentFurnace;
 
         // When we're expected to run out of fuel.
         private int _runOutOfFuelExpectedTick;
 
-        private IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
+        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
 
         private boolean _ignoreMaterials = false;
 

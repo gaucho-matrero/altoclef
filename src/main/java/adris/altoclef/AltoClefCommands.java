@@ -69,7 +69,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
                 break;
             case "pickup":
-                mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
+                mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3)));
                 break;
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
@@ -77,7 +77,7 @@ public class AltoClefCommands extends CommandList {
             case "place": {
                 BlockPos targetPos = new BlockPos(0, 6, 0);
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
-                Direction direction = Direction.UP;
+                Direction direction = Direction.WEST;
                 mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
                 //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
                 break;
@@ -97,7 +97,7 @@ public class AltoClefCommands extends CommandList {
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
-                mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
+                mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
                 break;
             case "avoid":
                 // Test block break predicate
@@ -128,7 +128,7 @@ public class AltoClefCommands extends CommandList {
                             sleepSec(1);
                         }
 
-                        Item toEquip = Items.AIR;
+                        Item toEquip = Items.FLINT_AND_STEEL;//Items.AIR;
                         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
                         // Already equipped
@@ -248,7 +248,8 @@ public class AltoClefCommands extends CommandList {
             new TestCommand(),
             new FoodCommand(),
             new ReloadSettingsCommand(),
-            new GamerCommand()
+            new GamerCommand(),
+            new PunkCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );
@@ -539,6 +540,7 @@ public class AltoClefCommands extends CommandList {
         }
     }
 
+
     static class TestCommand extends Command {
 
         public TestCommand() throws CommandException {
@@ -590,6 +592,18 @@ public class AltoClefCommands extends CommandList {
             mod.getInventoryTracker().swapItems(new PlayerSlot(slot1), new PlayerSlot(slot2));
             Debug.logMessage("Successfully swapped.");
             finish();
+        }
+    }
+
+    static class PunkCommand extends Command {
+        public PunkCommand() throws CommandException {
+            super("punk", "Punk 'em", new Arg(String.class, "playerName"));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String playerName = parser.Get(String.class);
+            mod.runUserTask(new KillPlayerTask(playerName), nothing -> finish());
         }
     }
 

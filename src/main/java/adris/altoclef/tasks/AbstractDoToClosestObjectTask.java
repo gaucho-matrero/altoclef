@@ -17,7 +17,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     private T _currentlyPursuing = null;
 
-    private HashMap<T, Double> _heuristicMap = new HashMap<>();
+    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
     protected abstract T getClosestTo(AltoClef mod, Vec3d pos);

@@ -2,274 +2,116 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.progresscheck.*;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.process.PathingCommand;
-import baritone.api.utils.BlockOptionalMeta;
+import adris.altoclef.util.slots.CursorInventorySlot;
+import adris.altoclef.util.slots.PlayerInventorySlot;
+import baritone.Baritone;
+import baritone.api.BaritoneAPI;
+import baritone.pathing.movement.CalculationContext;
+import baritone.pathing.movement.MovementHelper;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.PickaxeItem;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class MineAndCollectTask extends ResourceTask {
 
-    private List<Block> _blocksToMine;
-
-    private List<BlockOptionalMeta> _targetBoms = new ArrayList<>();
+    private final Block[] _blocksToMine;
 
     private final MiningRequirement _requirement;
 
-    private BlockPos _cachedTargetMineBlock;
+    private final Timer _cursorStackTimer = new Timer(3);
 
-    private static final float STOP_MINING_ITEM_DROP_IS_CLOSE_ENOUGH_THRESHOLD = 20f;
-    private static final float KEEP_MINING_THRESHOLD = 6;
-    private static final int DISTANCE_FAIL_TOO_MUCH_COUNT = 3;
+    private final List<BlockPos> _cachedBlacklist = new ArrayList<>();
 
-    private List<BlockPos> _cachedBlacklist = new ArrayList<>();
+    private final MineOrCollectTask _subtask;
 
-    private PathingCommand _cachedCommand = null;
-
-    private final Timer _mineCheck = new Timer(10.0);
-    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(3);
-
-    private final Timer _tickIntervalCheck = new Timer(1);
-
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(40);
-    private int _distanceFailCounter = 0;
-
-    private final Timer _mineDropTimer = new Timer(1);
-
-    public MineAndCollectTask(List<ItemTarget> itemTargets, List<Block> blocksToMine, MiningRequirement requirement) {
+    public MineAndCollectTask(ItemTarget[] itemTargets, Block[] blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
         _requirement = requirement;
         _blocksToMine = blocksToMine;
+        _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
     }
 
     public MineAndCollectTask(ItemTarget target, Block[] blocksToMine, MiningRequirement requirement) {
-        this(Collections.singletonList(target), Arrays.asList(blocksToMine), requirement);
+        this(new ItemTarget[] {target}, blocksToMine, requirement);
     }
-    public MineAndCollectTask(List<ItemTarget> blocksToMine, MiningRequirement requirement) {
+    public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
         this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
     }
 
-    private static List<Block> itemTargetToBlockList(List<ItemTarget> targets) {
-        List<Block> result = new ArrayList<>(targets.size());
+    private static Block[] itemTargetToBlockList(ItemTarget[] targets) {
+        List<Block> result = new ArrayList<>(targets.length);
         for (ItemTarget target : targets) {
             for(Item item : target.getMatches()) {
                 result.add(Block.getBlockFromItem(item));
             }
         }
-        return result;
+        return Util.toArray(Block.class, result);
     }
 
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getConfigState().push();
-        // Set to false b/c Baritone is buggy here. For example:
-        // If I try to mine diamonds, it will stop and grab every egg on the ground.
-        mod.getConfigState().setMineScanDroppedItems(false);
-        _cachedBlacklist.clear();
-        _distanceFailCounter = 0;
+        mod.getBlockTracker().trackBlock(_blocksToMine);
 
-        _moveChecker.reset();
-        _wanderTask.resetWander();
-        _mineDropTimer.reset();
+        _cachedBlacklist.clear();
+
+        _subtask.resetSearch();
+
+        Debug.logMessage("START");
     }
 
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
-        // These are the conditions for which we pick up:
-        // 1) It is closer to pick up the item than finding the next mining thing
-        // 2) The dropped entities contain enough items to finish our task (and they are close enough)
-
-        ClientPlayerEntity player = mod.getPlayer();
-
-        if (!mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
-            // I mean, yeah we should avoid picking up since no items were found.
-            return true;
-        }
-
-        // We're still mining, wait a little for our mining to continue.
-        if (!_mineDropTimer.elapsed()) {
-            return true;
-        }
-
-        ItemEntity closestDrop = mod.getEntityTracker().getClosestItemDrop(player.getPos(), Util.toArray(ItemTarget.class, _itemTargets));
-
-        // Get mining heuristic
-        MineProcess mineProc = mod.getClientBaritone().getMineProcess();
-
-        if (mineProc == null) return false;
-
-        if (_mineCheck.elapsed()) {
-
-            _mineCheck.reset();
-
-            setDebugState("CHECK for drops...");
-            try {
-                onResourceTick(mod);
-                _cachedCommand = mineProc.onTick(false, true);
-                mineProc.cancel();
-            } catch (NullPointerException e) {
-                return false;
-            }
-        }
-        if (_cachedCommand == null) return false;
-        Goal goal = _cachedCommand.goal;
-        if (goal == null) return false;
-        double playerMineCost = goal.heuristic(player.getBlockPos());
-
-        // Get drop heuristic
-        double playerPickupCost = BaritoneHelper.calculateGenericHeuristic(player.getPos(), closestDrop.getPos());
-
-        if (playerPickupCost < playerMineCost && playerMineCost > KEEP_MINING_THRESHOLD) {
-            // It's better to get the drop, considering we might have to go out of our way to mine.
-            return false;
-        } else {
-            // It MIGHT be better to keep mining.
-            // HOWEVER: We might have enough items laying around so that we can just pick them up.
-            Item item = closestDrop.getStack().getItem();
-            int count = closestDrop.getStack().getCount();
-
-            int currentCount = mod.getInventoryTracker().getItemCount(item);
-            // Calculate target
-            int target = 0;
-            for (ItemTarget t : _itemTargets) {
-                if (t.matches(item)) {
-                    target = t.targetCount;
-                    break;
-                }
-            }
-
-            int howManyStillNeeded = target - currentCount;
-
-            // We have enough in the stack and the stack is still close enough.
-            //noinspection RedundantIfStatement
-            if (count > howManyStillNeeded && playerPickupCost < STOP_MINING_ITEM_DROP_IS_CLOSE_ENOUGH_THRESHOLD) {
-                return false;
-            }
-
-            return true;
-        }
+        // Picking up is controlled by a separate task here.
+        return true;
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
-        if (_tickIntervalCheck.elapsed()) {
-            // The time between ticks is big enough so we gotta reset
-            _moveChecker.reset();
-        }
-        _tickIntervalCheck.reset();
-
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            _moveChecker.reset();
-            setDebugState("Wandering...");
-            return _wanderTask;
-        }
-
-        // If we don't have the proper tool, satisfy it.
         if (!mod.getInventoryTracker().miningRequirementMet(_requirement)) {
-            setDebugState("Getting tool: " + _requirement);
             return new SatisfyMiningRequirementTask(_requirement);
         }
 
-        // Mine
-        List<BlockOptionalMeta> boms = new ArrayList<>();
-
-        StringBuilder state = new StringBuilder();
-        state.append(" ----- ");
-        for (ItemTarget target : _itemTargets) {
-            if (mod.getInventoryTracker().targetMet(target)) continue;
-            state.append("Need ").append(target.toString()).append(" ----- ");
-            for (Block block : _blocksToMine) {
-                BlockOptionalMeta bom = new BlockOptionalMeta(block);
-                boms.add(bom);
-            }
+        if (_subtask.isMining()) {
+            makeSureToolIsEquipped(mod);
         }
 
-        setDebugState(state.toString());
-
-        if (!miningCorrectBlocks(mod, boms)) {
-            //Debug.logMessage("New set of blocks to mine...");
-            _mineDropTimer.reset();
-
-            // Avoid mining while interactions are paused
-            if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
-                return null;
-            }
-
-            boolean wasRunningBefore = mod.getClientBaritone().getMineProcess().isActive();
-
-            BlockOptionalMeta[] bomsArray = new BlockOptionalMeta[boms.size()];
-            boms.toArray(bomsArray);
-
-            mod.getClientBaritone().getMineProcess().cancel();
-            mod.getClientBaritone().getMineProcess().mine(bomsArray);
-            assert mod.getClientBaritone().getMineProcess().isActive(); // I may be going a little bit crazy
-            // Re-update blacklist
-            try {
-                addToProcBlacklistRaw(mod, _cachedBlacklist);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #2) :(");
-                e.printStackTrace();
-            }
-
-            _targetBoms = boms;
-
-            /*
-            if (wasRunningBefore) {
-                _moveChecker.reset();
-            }
-             */
-            // TODO: FIX This gets spammed for some reason???
-            Debug.logInternal("Starting to mine: " + wasRunningBefore + " : " + bomsArray.length);
-        }
-
-        if (mod.getFoodChain().isTryingToEat()) {
-            _moveChecker.reset();
-        }
-
-
-        if (!_moveChecker.check(mod)) {
-            Debug.logMessage("Failed to move to target, blacklisting.");
-            try {
-                blacklistCurrentTarget(mod);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                // oof
-                Debug.logMessage("oof, this might mean something was imported or compiled incorrectly (place #1) :(");
-                e.printStackTrace();
-            }
-            return _wanderTask;
-        }
-        return null;
+        return _subtask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritone().getMineProcess().cancel();
+        Debug.logMessage("STOP");
+        mod.getBlockTracker().stopTracking(_blocksToMine);
         mod.getConfigState().pop();
     }
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
-        return other instanceof MineAndCollectTask;
+        if (other instanceof MineAndCollectTask) {
+            MineAndCollectTask task = (MineAndCollectTask) other;
+            return Util.arraysEqual(task._blocksToMine, _blocksToMine);
+        }
+        return false;
     }
 
     @Override
@@ -277,71 +119,172 @@ public class MineAndCollectTask extends ResourceTask {
         return "Mine And Collect";
     }
 
-    private boolean miningCorrectBlocks(AltoClef mod, List<BlockOptionalMeta> targetBoms) {
-        MineProcess p = mod.getClientBaritone().getMineProcess();
-        // If we're not mining, of course we're not correct!
-        if (!p.isActive()) return false;
-
-        // Our target boms much match
-        if (_targetBoms.size() != targetBoms.size()) return false;
-        for (int i = 0; i < _targetBoms.size(); ++i) {
-            BlockOptionalMeta us = _targetBoms.get(i);
-            BlockOptionalMeta them = targetBoms.get(i);
-            if (!us.matches(them.getBlock())) return false;
-            //if (!us.matches(them.getAnyBlockState())) return false;
+    private void makeSureToolIsEquipped(AltoClef mod) {
+        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().isTryingToEat()) {
+            assert MinecraftClient.getInstance().player != null;
+            ItemStack cursorStack = MinecraftClient.getInstance().player.inventory.getCursorStack();
+            if (cursorStack != null && !cursorStack.isEmpty()) {
+                // We have something in our cursor stack
+                Item item = cursorStack.getItem();
+                if (item.isEffectiveOn(mod.getWorld().getBlockState(_subtask.miningPos()))) {
+                    // Our cursor stack would help us mine our current block
+                    Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+                    if (item instanceof MiningToolItem) {
+                        if (currentlyEquipped instanceof MiningToolItem) {
+                            MiningToolItem currentPick = (MiningToolItem) currentlyEquipped;
+                            MiningToolItem swapPick = (MiningToolItem) item;
+                            if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
+                                // We can equip a better pickaxe.
+                                mod.getInventoryTracker().equipSlot(new CursorInventorySlot());
+                            }
+                        } else {
+                            // We're not equipped with a pickaxe...
+                            mod.getInventoryTracker().equipSlot(new CursorInventorySlot());
+                        }
+                    }
+                }
+            }
+            _cursorStackTimer.reset();
         }
-        return true;
     }
 
-    /*
-    private void addToMineProcessBlacklist(AltoClef mod, BlockPos block) throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        // This object will be used for access
-        //UserClass userClassObj = new UserClass();
-        MineProcess proc = mod.getClientBaritone().getMineProcess();
-        // Single Field Access
-        Field f = MineProcess.class.getDeclaredField("blacklist");
-        // Set flag true for accessing private field
-        f.setAccessible(true);
-        Object list = f.get(proc);
+    private static class MineOrCollectTask extends AbstractDoToClosestObjectTask<Object> {
 
-        Method addItem = list.getClass().getDeclaredMethod("add", Object.class);
-        addItem.setAccessible(true);
-        addItem.invoke(list, block);
-    }
-     */
+        private final Block[] _blocks;
+        private final ItemTarget[] _targets;
 
-    @SuppressWarnings("unchecked")
-    private void blacklistCurrentTarget(AltoClef mod) throws NoSuchFieldException, IllegalAccessException {
-        // This object will be used for access
-        //UserClass userClassObj = new UserClass();
-        MineProcess proc = mod.getClientBaritone().getMineProcess();
-        Field knownField = MineProcess.class.getDeclaredField("knownOreLocations");
-        knownField.setAccessible(true);
+        private BlockPos _miningPos;
 
-        List<BlockPos> knownLocations = (List<BlockPos>) knownField.get(proc);
+        private AltoClef _mod;
 
-        addToProcBlacklistRaw(mod, knownLocations);
+        public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
+            _blocks = blocks;
+            _targets = targets;
+        }
 
-        knownLocations.clear();
+        @Override
+        protected Vec3d getPos(AltoClef mod, Object obj) {
+            if (obj instanceof BlockPos) {
+                BlockPos b = (BlockPos) obj;
+                return new Vec3d(b.getX(), b.getY(), b.getZ());
+            }
+            if (obj instanceof ItemEntity) {
+                ItemEntity item = (ItemEntity) obj;
+                return item.getPos();
+            }
+            throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+        }
 
-        /*
-        Method addItem = list.getClass().getDeclaredMethod("add", Object.class);
-        addItem.setAccessible(true);
-        addItem.invoke(list, block);
-         */
-    }
+        @Override
+        protected Object getClosestTo(AltoClef mod, Vec3d pos) {
+            BlockPos closestBlock = null;
+            if (mod.getBlockTracker().anyFound(_blocks)) {
+                closestBlock = mod.getBlockTracker().getNearestTracking(pos, (check) -> {
+                    // Filter out blocks that will get us into trouble. TODO: Blacklist
+                    if (!MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check)) {
+                        return true;
+                    }
+                    return false;
+                }, _blocks);
+            }
+            ItemEntity closestDrop = null;
+            if (mod.getEntityTracker().itemDropped(_targets)) {
+                closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
+            }
 
-    private void addToProcBlacklistRaw(AltoClef mod, List<BlockPos> toAdd) throws NoSuchFieldException, IllegalAccessException {
-        MineProcess proc = mod.getClientBaritone().getMineProcess();
-        Field blacklistField = MineProcess.class.getDeclaredField("blacklist");
-        blacklistField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        List<BlockPos> blackList = (List<BlockPos>) blacklistField.get(proc);
-        blackList.addAll(toAdd);
+            double blockSq = closestBlock == null? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
+            double dropSq = closestDrop == null? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos);
 
-        _cachedBlacklist.clear();
-        _cachedBlacklist.addAll(blackList);
-        //Debug.logInternal("SIZE: " + _cachedBlacklist.size());
+            // We can't mine right now.
+            if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
+                Debug.logInternal("(temp) interactions are paused");
+                return closestDrop;
+            }
+
+            if (dropSq <= blockSq) {
+                return closestDrop;
+            } else {
+                return closestBlock;
+            }
+        }
+
+        @Override
+        protected Vec3d getOriginPos(AltoClef mod) {
+            return mod.getPlayer().getPos();
+        }
+
+        @Override
+        protected Task onTick(AltoClef mod) {
+            _mod = mod;
+            return super.onTick(mod);
+        }
+
+        @Override
+        protected Task getGoalTask(Object obj) {
+            if (obj instanceof BlockPos) {
+                _miningPos = (BlockPos) obj;
+                return new DestroyBlockTask(_miningPos);
+            }
+            if (obj instanceof ItemEntity) {
+                _miningPos = null;
+
+                if (!ResourceTask.ensureInventoryFree(_mod)) {
+                    Debug.logInternal("FAILED TO DROP ITEMS");
+                }
+
+                return new PickupDroppedItemTask(_targets);
+            }
+            throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+        }
+
+        @Override
+        protected boolean isValid(AltoClef mod, Object obj) {
+            if (obj instanceof BlockPos) {
+                BlockPos b = (BlockPos) obj;
+                return mod.getBlockTracker().blockIsValid(b, _blocks);
+            }
+            if (obj instanceof ItemEntity) {
+                ItemEntity drop = (ItemEntity) obj;
+                Item item = drop.getStack().getItem();
+                for (ItemTarget target : _targets) {
+                    if (target.matches(item)) return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        @Override
+        protected void onStart(AltoClef mod) {
+            _miningPos = null;
+        }
+
+        @Override
+        protected void onStop(AltoClef mod, Task interruptTask) {
+
+        }
+
+        @Override
+        protected boolean isEqual(Task obj) {
+            if (obj instanceof MineOrCollectTask) {
+                MineOrCollectTask task = (MineOrCollectTask) obj;
+                return Util.arraysEqual(task._blocks, _blocks) && Util.arraysEqual(task._targets, _targets);
+            }
+            return false;
+        }
+
+        @Override
+        protected String toDebugString() {
+            return "Mining or Collecting";
+        }
+
+        public boolean isMining() {
+            return _miningPos != null;
+        }
+
+        public BlockPos miningPos() {
+            return _miningPos;
+        }
     }
 
 }

@@ -6,6 +6,7 @@ import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
@@ -31,12 +32,16 @@ public abstract class DoStuffInContainerTask extends Task {
     private String _containerCatalogueName;
     private Block _containerBlock;
 
-    private PlaceBlockNearbyTask _placeTask;
+    private final PlaceBlockNearbyTask _placeTask;
 
     private BlockPos _cachedContainerPosition = null;
 
-    // Introduce a delay after placing to wait for the server to catch up.
-    //private Timer _postPlaceTimer = new Timer(0.5f);
+
+    // If we decided on placing, force place for at least 10 seconds
+    private final Timer _placeForceTimer = new Timer(10);
+
+    // If we just placed something, stop placing and try going to the nearest container.
+    private final Timer _justPlacedTimer = new Timer(3);
 
     public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
         _containerBlock = containerBlock;
@@ -89,7 +94,12 @@ public abstract class DoStuffInContainerTask extends Task {
             costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, Util.toVec3d(nearest));
         }
 
+        // Make a new container if going to the container is a pretty bad cost.
+        // Also keep on making the container if we're stuck in some
         if (costToWalk > getCostToMakeNew(mod)) {
+            _placeForceTimer.reset();
+        }
+        if (nearest == null || (!_placeForceTimer.elapsed() && _justPlacedTimer.elapsed())) {
             // It's cheaper to make a new one, or our only option.
 
             // We're no longer going to our previous container.
@@ -104,6 +114,9 @@ public abstract class DoStuffInContainerTask extends Task {
                 return TaskCatalogue.getItemTask(_containerCatalogueName, 1);
             }
 
+            setDebugState("Placing container... Oof.");
+
+            _justPlacedTimer.reset();
             // Now place!
             return _placeTask;
         }

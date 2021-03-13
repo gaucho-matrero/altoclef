@@ -23,12 +23,14 @@ public class SimpleChunkTracker {
         _mod = mod;
     }
 
-    private Set<ChunkPos> _loaded = new HashSet<>();
+    private final Set<ChunkPos> _loaded = new HashSet<>();
 
     public void onLoad(ChunkPos pos) {
+        //Debug.logInternal("LOADED: " + pos);
         _loaded.add(pos);
     }
     public void onUnload(ChunkPos pos) {
+        //Debug.logInternal("unloaded: " + pos);
         _loaded.remove(pos);
     }
 
@@ -53,6 +55,11 @@ public class SimpleChunkTracker {
             }
         }
         return false;
+    }
+
+    public void reset(AltoClef mod) {
+        Debug.logInternal("CHUNKS RESET");
+        _loaded.clear();
     }
 
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {

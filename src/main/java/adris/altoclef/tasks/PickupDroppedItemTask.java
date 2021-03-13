@@ -13,14 +13,17 @@ import java.util.List;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> {
 
-    private final List<ItemTarget> _itemTargets;
+    private final ItemTarget[] _itemTargets;
 
-    public PickupDroppedItemTask(List<ItemTarget> itemTargets) {
+    public PickupDroppedItemTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
+    }
+    public PickupDroppedItemTask(ItemTarget target) {
+        this(new ItemTarget[] {target});
     }
 
     public PickupDroppedItemTask(Item item, int targetCount) {
-        this(Collections.singletonList(new ItemTarget(item, targetCount)));
+        this(new ItemTarget(item, targetCount));
     }
 
     @Override
@@ -38,11 +41,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         // Same target items
         if (other instanceof PickupDroppedItemTask) {
             PickupDroppedItemTask t = (PickupDroppedItemTask) other;
-            if (t._itemTargets.size() != _itemTargets.size()) return false;
-            for (int i = 0; i < _itemTargets.size(); ++i) {
-                if (!_itemTargets.get(i).equals(t._itemTargets.get(i))) return false;
-            }
-            return true;
+            return Util.arraysEqual(t._itemTargets, _itemTargets);
         }
         return false;
     }
@@ -54,7 +53,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         int c = 0;
         for (ItemTarget target : _itemTargets) {
             result.append(target.toString());
-            if (++c != _itemTargets.size()) {
+            if (++c != _itemTargets.length) {
                 result.append(", ");
             }
         }
@@ -69,8 +68,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected ItemEntity getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) return null;
-        return mod.getEntityTracker().getClosestItemDrop(pos, Util.toArray(ItemTarget.class, _itemTargets));
+        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return null;
+        return mod.getEntityTracker().getClosestItemDrop(pos, _itemTargets);
     }
 
     @Override

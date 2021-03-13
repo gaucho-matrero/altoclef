@@ -42,11 +42,13 @@ public class BeatMinecraftTask extends Task {
     private ForceState _forceState = ForceState.NONE;
 
     private BlockPos _cachedPortalInNether;
-    private CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+    private final CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
 
-    private LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
+    private final LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
 
     private int _cachedEndPearlsInFrame = 0;
+
+    private BlockPos _netherPortalPos;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -115,35 +117,6 @@ public class BeatMinecraftTask extends Task {
             return _strongholdLocater;
         }
 
-        /*
-        if (!diamondArmorEquipped(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) && _forceState != ForceState.GETTING_DIAMOND_GEAR) {
-                // Get a crafting table first before mining below
-                if (!mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)) {
-                    setDebugState("Getting crafting table before going down for diamonds");
-                    return TaskCatalogue.getItemTask("crafting_table", 1);
-                } else {
-                    _forceState = ForceState.GETTING_DIAMOND_GEAR;
-                }
-            }
-
-            if (!diamondArmorEquipped(mod)) {
-                setDebugState("Equipping diamond armor");
-                return new EquipArmorTask(DIAMOND_ARMORS);
-            } else {
-                if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
-                    setDebugState("Getting diamond pickaxe");
-                    return TaskCatalogue.getItemTask("diamond_pickaxe", 1);
-                } else if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-                    setDebugState("Getting diamond sword");
-                    return TaskCatalogue.getItemTask("diamond_sword", 1);
-                }
-            }
-        } else if (_forceState == ForceState.GETTING_DIAMOND_GEAR) {
-            // We got our gear.
-            _forceState = ForceState.NONE;
-        }*/
-
         // Get food
         if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD_MIN) {
             _forceState = ForceState.GETTING_FOOD;
@@ -166,6 +139,22 @@ public class BeatMinecraftTask extends Task {
             setDebugState("Going to nether!");
             //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
             // Go to nether
+            if (_netherPortalPos != null) {
+                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                    if (!mod.getBlockTracker().blockIsValid(_netherPortalPos, Blocks.NETHER_PORTAL)) {
+                        _netherPortalPos = null;
+                    }
+                }
+                if (_netherPortalPos != null) {
+                    return new EnterNetherPortalTask(new GetToBlockTask(_netherPortalPos, false), Dimension.NETHER);
+                }
+            }
+            if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
+                    _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+                }
+            }
+
             return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
         } else {
             setDebugState("Crafting our blaze powder + eyes");

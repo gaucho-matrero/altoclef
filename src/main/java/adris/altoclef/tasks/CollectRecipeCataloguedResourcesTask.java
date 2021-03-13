@@ -7,6 +7,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.Item;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -85,11 +86,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectRecipeCataloguedResourcesTask) {
             CollectRecipeCataloguedResourcesTask other = (CollectRecipeCataloguedResourcesTask) obj;
-            if (other._targets.length != _targets.length) return false;
-            for (int i = 0; i < _targets.length; ++i) {
-                if (!other._targets[i].equals(_targets[i])) return false;
-            }
-            return true;
+            return Util.arraysEqual(other._targets, _targets);
         }
         return false;
     }

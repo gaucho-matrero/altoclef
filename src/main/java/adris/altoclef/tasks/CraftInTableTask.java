@@ -7,6 +7,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
@@ -20,19 +21,18 @@ import java.util.List;
 
 public class CraftInTableTask extends ResourceTask {
 
-    private List<RecipeTarget> _targets;
+    private final RecipeTarget[] _targets;
 
-    private DoCraftInTableTask _craftTask;
+    private final DoCraftInTableTask _craftTask;
 
-    public CraftInTableTask(List<RecipeTarget> targets) {
+    public CraftInTableTask(RecipeTarget[] targets) {
         super(extractItemTargets(targets));
         _targets = targets;
         _craftTask = new DoCraftInTableTask(_targets);
     }
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect) {
         super(target);
-        _targets = new ArrayList<>(1);
-        _targets.add(new RecipeTarget(target, recipe));
+        _targets = new RecipeTarget[] {new RecipeTarget(target, recipe)};
         _craftTask = new DoCraftInTableTask(_targets, collect);
     }
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
@@ -45,12 +45,12 @@ public class CraftInTableTask extends ResourceTask {
         this(new ItemTarget(item, count), recipe);
     }
 
-    private static List<ItemTarget> extractItemTargets(List<RecipeTarget> recipeTargets) {
-        List<ItemTarget> result = new ArrayList<>(recipeTargets.size());
+    private static ItemTarget[] extractItemTargets(RecipeTarget[] recipeTargets) {
+        List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
         for(RecipeTarget target : recipeTargets) {
             result.add(target.getItem());
         }
-        return result;
+        return Util.toArray(ItemTarget.class, result);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class CraftInTableTask extends ResourceTask {
         return _craftTask.toDebugString();
     }
 
-    public List<RecipeTarget> getRecipeTargets() {
+    public RecipeTarget[] getRecipeTargets() {
         return _targets;
     }
 }
@@ -97,38 +97,30 @@ public class CraftInTableTask extends ResourceTask {
 
 class DoCraftInTableTask extends DoStuffInContainerTask {
 
-    private List<RecipeTarget> _targets;
+    private final RecipeTarget[] _targets;
 
-    private boolean _crafted;
+    private final Timer _craftTimer = new Timer(0.5);
 
-    private Timer _craftTimer;
+    private final boolean _collect;
 
-    private int _craftCount;
-
-    private boolean _collect;
-
-    private CollectRecipeCataloguedResourcesTask _collectTask;
+    private final CollectRecipeCataloguedResourcesTask _collectTask;
 
     private boolean _fullCheckFailed = false;
+    private int _craftCount;
 
-    public DoCraftInTableTask(List<RecipeTarget> targets, boolean collect) {
+    public DoCraftInTableTask(RecipeTarget[] targets, boolean collect) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _targets = targets;
         _collect = collect;
-        _craftTimer = new Timer(0.5);
-
-        RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
-        _targets.toArray(targetArray);
-        _collectTask = new CollectRecipeCataloguedResourcesTask(targetArray);
+        _collectTask = new CollectRecipeCataloguedResourcesTask(targets);
     }
-    public DoCraftInTableTask(List<RecipeTarget> targets) {
+    public DoCraftInTableTask(RecipeTarget[] targets) {
         this(targets, true);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         super.onStart(mod);
-        _crafted = false;
         _craftCount = 0;
         mod.getPlayer().closeHandledScreen();
         mod.getConfigState().push();
@@ -159,10 +151,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         if (_collect) {
             if (!_collectTask.isFinished(mod)) {
 
-                RecipeTarget[] targetArray = new RecipeTarget[_targets.size()];
-                _targets.toArray(targetArray);
-                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(targetArray)) {
-                    setDebugState("craft does NOT have RECIPE MATERIALS: " + ArrayUtils.toString(targetArray));
+                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_targets)) {
+                    setDebugState("craft does NOT have RECIPE MATERIALS: " + Util.arrayToString(_targets));
                     return _collectTask;
                 }
             }
@@ -185,14 +175,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         if (obj instanceof DoCraftInTableTask) {
             DoCraftInTableTask other = (DoCraftInTableTask) obj;
 
-            if (other._targets.size() != _targets.size()) return false;
-            for (int i = 0; i < _targets.size(); ++i) {
-                if (!other._targets.get(i).getRecipe().equals(_targets.get(i).getRecipe())) {
-                    //Debug.logInternal(other._targets.get(i).getRecipe() + " != " + _targets.get(i).getRecipe());
-                    return false;
-                }
-            }
-            return true;
+            return Util.arraysEqual(other._targets, _targets);
         }
         return false;
     }
@@ -261,7 +244,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _craftCount >= _targets.size();//_crafted;
+        return _craftCount >= _targets.length;//_crafted;
     }
 
     @Override

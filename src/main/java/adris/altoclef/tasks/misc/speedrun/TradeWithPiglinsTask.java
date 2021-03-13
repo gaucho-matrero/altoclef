@@ -29,7 +29,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
     // If we're too far away from a trading piglin, we risk deloading them and losing the trade.
     private static final double TRADING_PIGLIN_TOO_FAR_AWAY = 64 + 8;
 
-    public TradeWithPiglinsTask(int goldBuffer, List<ItemTarget> itemTargets) {
+    public TradeWithPiglinsTask(int goldBuffer, ItemTarget[] itemTargets) {
         super(itemTargets);
         _goldBuffer = goldBuffer;
     }

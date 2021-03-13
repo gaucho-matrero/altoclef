@@ -62,11 +62,11 @@ public class FoodChain extends SingleTaskChain {
 
         /*
         - Eats if:
-        - We're hungry and have food that easily fits
+        - We're hungry and have food that fits
             - We're low on health and maybe a little bit hungry
             - We're very low on health and are even slightly hungry
+        - We're kind of hungry and have food that fits perfectly
          */
-
 
         // We're in danger, don't eat now!!
         if (mod.getMobDefenseChain().isDoingAcrobatics()) {
@@ -79,7 +79,7 @@ public class FoodChain extends SingleTaskChain {
             _requestFillup = false;
         }
 
-        if (needsToEat() || _requestFillup) {
+        if (needsToEat(mod) || _requestFillup) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
                 //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
@@ -123,7 +123,7 @@ public class FoodChain extends SingleTaskChain {
         }
     }
 
-    public boolean needsToEat() {
+    public boolean needsToEat(AltoClef mod) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         assert player != null;
         int foodLevel = player.getHungerManager().getFoodLevel();
@@ -148,6 +148,15 @@ public class FoodChain extends SingleTaskChain {
                 return true;
             }
         }
+
+        // Eat if we're more than 2.5 units hungry and we have a perfect fit.
+        if (foodLevel < 20 - 5) {
+            int need = 20 - foodLevel;
+            Item best = getBestItemToEat(mod);
+            int fills = (best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            if (fills == need) return true;
+        }
+
         return false;
     }
 

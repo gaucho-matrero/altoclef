@@ -4,13 +4,17 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
@@ -23,8 +27,10 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
@@ -76,7 +82,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         mod.getConfigState().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
         mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
 
-        _blacklist.clear();
+        //_blacklist.clear();
 
         _wanderTask.resetWander();
     }
@@ -101,7 +107,12 @@ public class CollectBucketLiquidTask extends ResourceTask {
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
             assert MinecraftClient.getInstance().world != null;
-            BlockState s = MinecraftClient.getInstance().world.getBlockState(blockPos);
+
+            // Block above must not have liquid
+            BlockState above = mod.getWorld().getBlockState(blockPos.up());
+            if (above.getBlock() instanceof FluidBlock) return true;
+
+            BlockState s = mod.getWorld().getBlockState(blockPos);
             if (s.getBlock() instanceof FluidBlock) {
                 float height = s.getFluidState().getHeight();
                 // Only accept still fluids.
@@ -138,19 +149,64 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
             }
 
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> {
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
+                //Vec3d center = new Vec3d(blockpos.getX() + 0.5, blockpos.getY() + 0.5, blockpos.getZ() + 0.5);
+                //BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), center, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.SOURCE_ONLY, mod.getPlayer()));
+                //if (hit.getBlockPos().equals(blockpos)) {
                 InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, false);
                 //noinspection unchecked
                 task.TimedOut.addListener(
                         new ActionListener() {
                             @Override
                             public void invoke(Object value) {
+                                Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(_blacklist.toArray()));
                                 Debug.logMessage("Blacklisted " + blockpos);
                                 _blacklist.add(nearestLiquid);
 
                             }
                         });
                 return task;
+                //} else {
+                /*
+                    if (!mod.getWorld().getBlockState(blockpos.up()).isAir()) {
+                        // If above is solid and we're stuck, break the top off.
+                        return new DestroyBlockTask(blockpos.up());
+                    } else {
+                        // Try to get close.
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            for (int dz = -1; dz <= 1; ++dz) {
+                                boolean good = true;
+                                BlockPos currentTry = blockpos.add(dx, 1, dz);
+                                // Check if lava is around us
+                                Vec3i[] checkDeltas = new Vec3i[] {
+                                        new Vec3i(-1, 0, 0),
+                                        new Vec3i(1, 0, 0),
+                                        new Vec3i(0, 0, -1),
+                                        new Vec3i(0, 0, 1),
+
+                                        new Vec3i(-1, 1, 0),
+                                        new Vec3i(1, 1, 0),
+                                        new Vec3i(0, 1, -1),
+                                        new Vec3i(0, 1, 1)
+                                };
+                                for (Vec3i deltaCheck : checkDeltas) {
+                                    BlockPos check = currentTry.add(deltaCheck);
+                                    if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) {
+                                        good = false;
+                                        break;
+                                    }
+                                }
+                                if (good) {
+                                    return new GetToBlockTask(currentTry, false);
+                                }
+                            }
+                        }
+                        // We're kinda screwed I think...
+                        return null;
+                    }
+                }
+
+                 */
             }, getNearestLiquid, _toCollect);
             //return task;
         }

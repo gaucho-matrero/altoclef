@@ -285,7 +285,7 @@ public class InventoryTracker extends Tracker {
                     // Throw away if we have this item since we already have a BETTER one.
                     Item item = check.getMinimumPickaxe();
                     if (hasItem(item)) {
-                        Debug.logInternal("Throwing away: " + item.getTranslationKey());
+                        //Debug.logInternal("Throwing away: " + item.getTranslationKey());
                         return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
                     }
                 }
@@ -497,6 +497,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public ItemStack throwSlot(Slot slot) {
+        ensureUpdated();
         ItemStack pickup = clickSlot(slot);
         clickWindowSlot(-999, 0, SlotActionType.PICKUP);
         setDirty();

@@ -2,6 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
@@ -58,11 +59,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     protected boolean isEqual(Task obj) {
         if (obj instanceof DoToClosestEntityTask) {
             DoToClosestEntityTask task = (DoToClosestEntityTask) obj;
-            if (task._targetEntities.length != _targetEntities.length) return false;
-            for (int i = 0; i < _targetEntities.length; ++i) {
-                if (!task._targetEntities[i].equals(_targetEntities[i])) return false;
-            }
-            return true;
+            return Util.arraysEqual(task._targetEntities, _targetEntities);
         }
         return false;
     }

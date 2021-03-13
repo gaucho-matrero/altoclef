@@ -7,9 +7,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalNear;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.Rotation;
@@ -132,22 +130,39 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
     private Goal createGoal(BlockPos pos, int reachDistance) {
 
-        if (!sideDoesntMatter()) {
+        boolean sideMatters = !sideDoesntMatter();
+        if (sideMatters) {
             Vec3i offs = _interactSide.getVector();
             if (offs.getY() == -1) {
                 // If we're below, place ourselves two blocks below.
                 offs = offs.down();
             }
             pos = pos.add(offs);
+
+
         }
 
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return new GoalNear(pos, reachDistance);
-            //return new GoalGetToBlock(pos);
-            // Is the following better? Commented out was the old way copied from baritone.
-            //return new _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
+            if (sideMatters) {
+                // Make sure we're on the right side of the block.
+                /*
+                Vec3i offs = _interactSide.getVector();
+                Goal sideGoal;
+                if (offs.getY() == 1) {
+                    sideGoal = new GoalYLevel(_target.getY() + 1);
+                } else if (offs.getY() == -1) {
+                    sideGoal = new GoalYLevel(_target.getY() - 1);
+                } else {
+                    sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
+                }*/
+                Goal sideGoal = new GoalBlockSide(_target, _interactSide, 1);
+                return new GoalAnd(sideGoal, new GoalNear(pos, reachDistance));
+            } else {
+                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
+                return new GoalNear(pos, reachDistance);
+            }
         }
     }
 

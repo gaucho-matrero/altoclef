@@ -65,12 +65,12 @@ public class CollectBlazeRodsTask extends ResourceTask {
             if (_foundBlazeSpawner != null) {
                 Vec3d nearest = toKill.getPos();
 
-                double sqDistanceToSpawner = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
+                double sqDistanceToPlayer = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
                 // Ignore if the blaze is too far away.
-                if (sqDistanceToSpawner > SPAWNER_BLAZE_RADIUS) {
+                if (sqDistanceToPlayer > SPAWNER_BLAZE_RADIUS*SPAWNER_BLAZE_RADIUS) {
                     // If the blaze can see us it needs to go lol
                     BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), toKill.getCameraPosVec(1.0F), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mod.getPlayer()));
-                    if (hit != null) {
+                    if (hit != null && hit.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), false) < sqDistanceToPlayer) {
                         toKill = null;
                     }
                 }
