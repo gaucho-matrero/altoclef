@@ -15,6 +15,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
@@ -29,7 +30,7 @@ public class BlockTracker extends Tracker {
 
     private final PosCache _cache = new PosCache(100, 64*1.5);
 
-    private final Timer _timer = new Timer(5.0);
+    private final Timer _timer = new Timer(7.0);
 
     private Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
@@ -60,6 +61,8 @@ public class BlockTracker extends Tracker {
     public void trackBlock(Block ...blocks) {
         for (Block block : blocks) {
             if (!_trackingBlocks.containsKey(block)) {
+                // We're tracking a new block, so we're not updated.
+                setDirty();
                 _trackingBlocks.put(block, 0);
             }
             _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
@@ -74,6 +77,9 @@ public class BlockTracker extends Tracker {
                     Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
                 } else {
                     _trackingBlocks.put(block, current - 1);
+                    if (_trackingBlocks.get(block) <= 0) {
+                        _trackingBlocks.remove(block);
+                    }
                 }
             }
         }
@@ -163,6 +169,15 @@ public class BlockTracker extends Tracker {
         Block[] blocksToScan = new Block[_trackingBlocks.size()];
         _trackingBlocks.keySet().toArray(blocksToScan);
         List<BlockPos> knownBlocks = _cache.getKnownLocations(blocksToScan);
+
+        // Clear invalid block pos before rescan
+        for (BlockPos check : knownBlocks) {
+            if (!blockIsValid(check, blocksToScan)) {
+                //Debug.logInternal("Removed at " + check);
+                _cache.removeBlock(check, blocksToScan);
+            }
+        }
+
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
         List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, knownBlocks, Collections.emptyList(), Collections.emptyList());
 
@@ -171,15 +186,26 @@ public class BlockTracker extends Tracker {
                 Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
 
                 if (_trackingBlocks.containsKey(block)) {
+                    //Debug.logInternal("Good: " + block + " at " + pos);
                     _cache.addBlock(block, pos);
+                } else {
+                    //Debug.logInternal("INVALID??? FOUND: " + block + " at " + pos);
                 }
             }
+
+            // Purge if we have too many blocks tracked at once.
+            _cache.smartPurge(_mod.getPlayer().getPos());
         }
     }
 
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
     public boolean blockIsValid(BlockPos pos, Block ...blocks) {
+        // It might be OK to remove this. Will have to test.
+        if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
+            Debug.logInternal("(failed chunkcheck: " + new ChunkPos(pos) + ")");
+            return true;
+        }
         // I'm bored
         ClientWorld zaWarudo = MinecraftClient.getInstance().world;
         // No world, therefore we don't assume block is invalid.
@@ -189,11 +215,6 @@ public class BlockTracker extends Tracker {
         try {
             for (Block block : blocks) {
                 if (zaWarudo.isAir(pos) && (block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
-                    return true;
-                }
-                // It might be OK to remove this. Will have to test.
-                if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
-                    Debug.logInternal("(failed chunkcheck)");
                     return true;
                 }
                 BlockState state = zaWarudo.getBlockState(pos);
@@ -210,11 +231,13 @@ public class BlockTracker extends Tracker {
 
 
     static class PosCache {
-        private HashMap<Block, List<BlockPos>> _cachedBlocks = new HashMap<>();
+        private final HashMap<Block, List<BlockPos>> _cachedBlocks = new HashMap<>();
+
+        private final HashMap<BlockPos, Block> _cachedByPosition = new HashMap<>();
 
         // Once we have too many blocks, start cutting them off. First only the ones that are far enough.
-        private double _cutoffRadius;
-        private int _cutoffSize;
+        private final double _cutoffRadius;
+        private final int _cutoffSize;
 
         public PosCache(int cutoffSize, double cutoffRadius) {
             _cutoffSize = cutoffSize;
@@ -239,28 +262,47 @@ public class BlockTracker extends Tracker {
             return result;
         }
 
-        public void removeBlock(Block block, BlockPos pos) {
-            if (anyFound(block)) {
-                _cachedBlocks.get(block).remove(pos);
+        public void removeBlock(BlockPos pos, Block ...blocks) {
+            for (Block block : blocks) {
+                if (anyFound(block)) {
+                    _cachedBlocks.get(block).remove(pos);
+                    _cachedByPosition.remove(pos);
+                    if (_cachedBlocks.get(block).size() == 0) {
+                        _cachedBlocks.remove(block);
+                    }
+                }
             }
         }
 
         public void addBlock(Block block, BlockPos pos) {
+            if (_cachedByPosition.containsKey(pos)) {
+                if (_cachedByPosition.get(pos) == block) {
+                    // We're already tracked
+                    return;
+                } else {
+                    // We're tracked incorrectly, fix
+                    removeBlock(pos, block);
+                }
+            }
             if (!anyFound(block)) {
                 _cachedBlocks.put(block, new ArrayList<>());
             }
             _cachedBlocks.get(block).add(pos);
-        }
-
-        public void addBlocks(Block block, List<BlockPos> positions) {
-            if (!anyFound(block)) {
-                _cachedBlocks.put(block, new ArrayList<>());
-            }
-            _cachedBlocks.get(block).addAll(positions);
+            _cachedByPosition.put(pos, block);
         }
 
         public void clear() {
+            Debug.logInternal("CLEARED BLOCK CACHE");
             _cachedBlocks.clear();
+            _cachedByPosition.clear();
+        }
+
+        public int getBlockTrackCount() {
+            int count = 0;
+            for (List<BlockPos> list : _cachedBlocks.values()) {
+                count += list.size();
+            }
+            return count;
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
@@ -269,6 +311,7 @@ public class BlockTracker extends Tracker {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
             }
+
             BlockPos closest = null;
             double minScore = Double.POSITIVE_INFINITY;
 
@@ -278,15 +321,16 @@ public class BlockTracker extends Tracker {
 
             boolean closestPurged = false;
 
-            ListIterator<BlockPos> it = blockList.listIterator();
-            while (it.hasNext()) {
-                BlockPos pos = it.next();
+            for (BlockPos pos : blockList) {
                 if (isInvalid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
-                    //Debug.logInternal("BlockTracker Removed " + block.getTranslationKey() + " at " + pos);
-                    it.remove();
+                    for (Block block : blocks) {
+                        if (_cachedBlocks.containsKey(block)) {
+                            removeBlock(pos, blocks);
+                        }
+                    }
                     continue;
                 }
 
@@ -305,7 +349,11 @@ public class BlockTracker extends Tracker {
                     double sqDist = position.squaredDistanceTo(Util.toVec3d(pos));
                     if (sqDist > _cutoffRadius*_cutoffRadius) {
                         // cut this one off.
-                        it.remove();
+                        for (Block block : blocks) {
+                            if (_cachedBlocks.containsKey(block)) {
+                                removeBlock(pos, block);
+                            }
+                        }
                         toPurge --;
                         purged = true;
                     }
@@ -335,5 +383,29 @@ public class BlockTracker extends Tracker {
             return closest;
         }
 
+        /**
+         * Purge enough blocks so our size is small enough
+         */
+        public void smartPurge(Vec3d playerPos) {
+            for (Block block : _cachedBlocks.keySet()) {
+                List<BlockPos> tracking = _cachedBlocks.get(block);
+                if (tracking.size() > _cutoffSize) {
+                    tracking.sort((BlockPos left, BlockPos right) -> {
+                        double leftDist = left.getSquaredDistance(playerPos, false);
+                        double rightDist = right.getSquaredDistance(playerPos, false);
+                        // 1 if left is further
+                        // -1 if left is closer
+                        if (leftDist > rightDist) {
+                            return 1;
+                        }
+                        return -1;
+                    });
+                    // Now, the further elements will be further away.
+                    while (tracking.size() > _cutoffSize) {
+                        tracking.remove(tracking.size() - 1);
+                    }
+                }
+            }
+        }
     }
 }
