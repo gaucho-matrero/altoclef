@@ -6,6 +6,7 @@ package adris.altoclef.util.baritone;//
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
@@ -171,7 +172,11 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
-                if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
+                if (_equipTarget != null) {
+                    if (!_mod.getInventoryTracker().equipItem(_equipTarget)) {
+                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(_equipTarget.getMatches()));
+                    }
+                }
                 this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
                 //System.out.println(this.ctx.player().playerScreenHandler);
 
@@ -218,7 +223,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
                 if (dot < 0) {
                     // We're perpendicular and cannot face.
-                    Debug.logMessage("DOT PRODUCT FAIL: " + dot);
                     return Optional.empty();
                 }
             }

@@ -6,7 +6,6 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
-import adris.altoclef.tasks.resources.CollectFlintTaskOLD;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
@@ -29,14 +28,12 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
-    @SuppressWarnings("deprecation")
     private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
         Debug.logMessage("Running test...");
@@ -107,7 +104,7 @@ public class AltoClefCommands extends CommandList {
                 Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
                 break;
             case "portal":
-                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER));
+                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER));
                 break;
             case "kill":
                 List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
@@ -181,11 +178,8 @@ public class AltoClefCommands extends CommandList {
             case "blaze":
                 mod.runUserTask(new CollectBlazeRodsTask(7));
                 break;
-            case "flint_good":
+            case "flint":
                 mod.runUserTask(new CollectFlintTask(5));
-                break;
-            case "flint_bad":
-                mod.runUserTask(new CollectFlintTaskOLD(5));
                 break;
             case "unobtainable":
                 String fname = "unobtainables.txt";

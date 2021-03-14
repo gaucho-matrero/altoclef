@@ -77,7 +77,6 @@ public class InteractItemWithBlockTask extends Task {
         }
 
         if (!proc(mod).isActive()) {
-            Debug.logMessage("Interact with block process restarting");
             _trying = true;
             proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto);
             if (_toUse != null) {

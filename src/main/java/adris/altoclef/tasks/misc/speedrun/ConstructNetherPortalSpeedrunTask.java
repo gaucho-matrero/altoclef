@@ -5,10 +5,10 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Block;
@@ -19,18 +19,24 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
 
 @SuppressWarnings("ALL")
-public class ConstructNetherPortalSpeedrunTask extends Task {
+/**
+ * NOTE: This is somewhat unreliable, I'd give it roughly 70% odds of success at best.
+ * The problem here is that the water source ocassionally spills everywhere, and this causes
+ * Baritone to get stuck
+ * Use "ConstructNetherPortalBucketTask" which is much more methodical and doesn't have this pitfall.
+ */
+@Deprecated
+public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem.Task {
 
     // Corresponds to the LEFT most side of where the player will stand on the portal.
     private BlockPos _portalOrigin = null;
     private final Timer _lavaSearchTimer = new Timer(5);
 
-    private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
+    private final adris.altoclef.tasksystem.Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
 
     // The "portalable" region includes the portal (1 x 6 x 4 structure) and an outer buffer for its construction and water bullshit.
     // The "portal origin relative to region" corresponds to the portal origin with respect to the "portalable" region (see _portalOrigin).
@@ -143,7 +149,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     }
 
     @Override
-    protected Task onTick(AltoClef mod) {
+    protected adris.altoclef.tasksystem.Task onTick(AltoClef mod) {
 
         // Pre-affirmed thing
         mod.getConfigState().setAllowWalkThroughFlowingWater(false);
@@ -286,13 +292,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
         if (waterSource.getBlock() == Blocks.WATER) {
             setDebugState("Removing water source");
 
-            if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
-                mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-                return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), waterSourcePos, true);
-            }
-
-            // TODO: If we have a water/lava bucket, empty it out.
-            return new PlaceStructureBlockTask(waterSourcePos);
+            return new ClearLiquidTask(waterSourcePos);
         }
 
         // Clear inside of portal
@@ -329,13 +329,13 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
     }
 
     @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
+    protected void onStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);
         mod.getConfigState().pop();
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
+    protected boolean isEqual(adris.altoclef.tasksystem.Task obj) {
         return obj instanceof ConstructNetherPortalSpeedrunTask;
     }
 
@@ -529,7 +529,7 @@ public class ConstructNetherPortalSpeedrunTask extends Task {
         }
 
         // Place lava at a point, but from a direction.
-        private Task placeTask(BlockPos portalOrigin, boolean below) {
+        private adris.altoclef.tasksystem.Task placeTask(BlockPos portalOrigin, boolean below) {
             BlockPos placeAt = portalOrigin.add(where);
             BlockPos placeOn = placeAt.offset(fromWhere.getOpposite());
             // Clear first

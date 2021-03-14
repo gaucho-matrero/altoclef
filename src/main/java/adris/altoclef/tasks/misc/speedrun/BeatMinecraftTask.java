@@ -155,7 +155,7 @@ public class BeatMinecraftTask extends Task {
                 }
             }
 
-            return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
+            return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
         } else {
             setDebugState("Crafting our blaze powder + eyes");
             int powderNeeded = (TARGET_ENDER_EYES - eyes);

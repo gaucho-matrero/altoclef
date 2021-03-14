@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
@@ -78,7 +79,7 @@ public class PlaceStructureBlockTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
-        return MinecraftClient.getInstance().world.getBlockState(_target).isSolidBlock(MinecraftClient.getInstance().world, _target);
+        return WorldUtil.isSolid(mod, _target);
     }
 
     @Override
