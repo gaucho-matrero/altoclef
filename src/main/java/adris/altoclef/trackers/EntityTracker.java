@@ -242,21 +242,7 @@ public class EntityTracker extends Tracker {
 
                         if (hostile.canSee(_mod.getPlayer())) {
                             // Check if the mob is facing us or is close enough
-                            boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 4);
-
-                            if (!closeEnough) {
-                                if (hostile.getLookControl().isActive()) {
-                                    Vec3d lookTarget = new Vec3d(
-                                            hostile.getLookControl().getLookX(),
-                                            hostile.getLookControl().getLookY(),
-                                            hostile.getLookControl().getLookZ()
-                                    );
-                                    //Debug.logInternal("LOOK: " + lookTarget + " : " + lookTarget.subtract(_mod.getPlayer().getPos()));
-                                    if (lookTarget.isInRange(_mod.getPlayer().getPos(), 4f)) {
-                                        closeEnough = true;
-                                    }
-                                }
-                            }
+                            boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 26);
 
                             //Debug.logInternal("TARGET: " + hostile.is);
                             if (closeEnough && isAngryAtPlayer(hostile)) {

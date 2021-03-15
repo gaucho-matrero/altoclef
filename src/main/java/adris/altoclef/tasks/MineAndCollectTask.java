@@ -9,6 +9,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorInventorySlot;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import baritone.Baritone;
@@ -28,7 +29,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MineAndCollectTask extends ResourceTask {
 
@@ -154,6 +157,10 @@ public class MineAndCollectTask extends ResourceTask {
 
         private AltoClef _mod;
 
+        private final Set<BlockPos> _blacklist = new HashSet<>();
+
+        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
             _targets = targets;
@@ -177,6 +184,7 @@ public class MineAndCollectTask extends ResourceTask {
             BlockPos closestBlock = null;
             if (mod.getBlockTracker().anyFound(_blocks)) {
                 closestBlock = mod.getBlockTracker().getNearestTracking(pos, (check) -> {
+                    if (_blacklist.contains(check)) return true;
                     // Filter out blocks that will get us into trouble. TODO: Blacklist
                     if (!MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check)) {
                         return true;
@@ -213,13 +221,22 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected Task onTick(AltoClef mod) {
             _mod = mod;
+            if (_miningPos != null && !_progressChecker.check(mod)) {
+                Debug.logMessage("Failed to mine block at " + _miningPos + ". Blacklisting.");
+                _blacklist.add(_miningPos);
+                _miningPos = null;
+            }
             return super.onTick(mod);
         }
 
         @Override
         protected Task getGoalTask(Object obj) {
             if (obj instanceof BlockPos) {
-                _miningPos = (BlockPos) obj;
+                BlockPos newPos = (BlockPos) obj;
+                if (_miningPos == null || !_miningPos.equals(newPos)) {
+                    _progressChecker.reset();
+                }
+                _miningPos = newPos;
                 return new DestroyBlockTask(_miningPos);
             }
             if (obj instanceof ItemEntity) {
@@ -253,6 +270,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected void onStart(AltoClef mod) {
+            _progressChecker.reset();
             _miningPos = null;
         }
 

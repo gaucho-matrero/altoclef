@@ -2,13 +2,17 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.KillEntitiesTask;
 import adris.altoclef.tasks.misc.DodgeProjectilesTask;
 import adris.altoclef.tasks.misc.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.misc.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.ProjectileUtil;
+import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.Baritone;
@@ -24,15 +28,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
+import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class MobDefenseChain extends SingleTaskChain {
 
@@ -50,6 +50,8 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean _doingFunkyStuff = false;
 
     private boolean _wasPuttingOutFire = false;
+
+    private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -103,7 +105,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Dodge projectiles
-        if (mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
             _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
@@ -116,6 +118,100 @@ public class MobDefenseChain extends SingleTaskChain {
             if (_targetEntity == null) {
                 setTask(new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE));
                 return 70;
+            }
+        }
+
+        if (mod.getModSettings().shouldDealWithSkeletons()) {
+            // Deal with skeletons because they are annoying.
+            List<SkeletonEntity> skeletons;
+            // TODO: I don't think this lock is necessary at all.
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                skeletons = mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class);
+            }
+
+            ToolItem bestSword = null;
+            Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
+            for (Item item : SWORDS) {
+                if (mod.getInventoryTracker().hasItem(item)) {
+                    bestSword = (ToolItem) item;
+                    break;
+                }
+            }
+
+
+            List<SkeletonEntity> toDealWith = new ArrayList<>();
+
+            // TODO: I don't think this lock is necessary at all.
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                for (SkeletonEntity skeleton : skeletons) {
+                    boolean isClose = skeleton.isInRange(mod.getPlayer(), 18);
+
+                    if (isClose) {
+                        isClose = LookUtil.seesPlayer(skeleton, mod.getPlayer(), 20);
+                    }
+
+                    // Give each skeleton a timer, if they're close for too long deal with them.
+                    if (isClose) {
+                        if (!_closeAnnoyingEntities.containsKey(skeleton)) {
+                            _closeAnnoyingEntities.put(skeleton, new Timer(12));
+                            _closeAnnoyingEntities.get(skeleton).reset();
+                        }
+                        if (_closeAnnoyingEntities.get(skeleton).elapsed()) {
+                            toDealWith.add(skeleton);
+                        }
+                    } else {
+                        _closeAnnoyingEntities.remove(skeleton);
+                    }
+                }
+
+                // Clear dead/non existing skeletons
+                List<Entity> toRemove = new ArrayList<>();
+                for (Entity check : _closeAnnoyingEntities.keySet()) {
+                    if (!check.isAlive()) {
+                        toRemove.add(check);
+                    }
+                }
+                for (Entity remove : toRemove) _closeAnnoyingEntities.remove(remove);
+
+                int numberOfProblematicSkeletons = toDealWith.size();
+
+                if (numberOfProblematicSkeletons > 0) {
+
+                    // Depending on our weapons/armor, we may chose to straight up kill skeletons if we're not dodging their arrows.
+
+                    // wood 0 : 1 skeleton
+                    // stone 1 : 1 skeleton
+                    // iron 2 : 2 skeletons
+                    // diamond 3 : 3 skeletons
+                    // netherite 4 : 4 skeletons
+
+                    // Armor:
+                    // leather: 1 skeleton
+                    // iron: 2 skeletons
+                    // diamond: 3 skeletons
+
+                    // 7 is full set of leather
+                    // 15 is full set of iron.
+                    // 20 is full set of diamond.
+                    // Diamond+netherite have bonus "toughness" parameter (we can simply add them I think, for now.)
+                    // full diamond has 8 bonus toughness
+                    // full netherite has 12 bonus toughness
+                    int armor = mod.getPlayer().getArmor();
+                    float damage = bestSword == null? 0 : (1 + bestSword.getMaterial().getAttackDamage());
+
+                    int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
+                    if (canDealWith > numberOfProblematicSkeletons) {
+                        // We can deal with it.
+                        setTask(new KillEntitiesTask(
+                                entity -> !(entity instanceof SkeletonEntity) || !toDealWith.contains(entity),
+                                SkeletonEntity.class));
+                        return 65;
+                    } else {
+                        // We can't deal with it
+                        setTask(new RunAwayFromHostilesTask(22));
+                        return 80;
+                    }
+                }
             }
         }
 
@@ -169,7 +265,9 @@ public class MobDefenseChain extends SingleTaskChain {
             for (Entity entity : entities) {
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer(entity)) {
-                        applyForceField(mod, entity);
+                        if (LookUtil.seesPlayer(entity, mod.getPlayer(), 10)) {
+                            applyForceField(mod, entity);
+                        }
                     }
                 } else if (entity instanceof FireballEntity) {
                     // Ghast ball

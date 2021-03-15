@@ -53,6 +53,14 @@ public class Settings {
     private boolean dodgeProjectiles = true;
 
     /**
+     * Skeletons are a huge pain, so if you chose
+     * the bot may either kill or run away from
+     * any skeleton it sees if it's at low health.
+     *
+     */
+    private boolean killOrAvoidSkeletons = true;
+
+    /**
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
@@ -250,6 +258,8 @@ public class Settings {
     public void setUseButlerWhitelist(boolean useButlerWhitelist) {
         this.useButlerWhitelist = useButlerWhitelist;
     }
+
+    public boolean shouldDealWithSkeletons() {return killOrAvoidSkeletons;}
 
     public boolean isThrowaway(Item item) {
         return idArrayContainsItem(item, throwawayItems);

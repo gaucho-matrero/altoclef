@@ -19,6 +19,7 @@ public class DestroyBlockTask extends Task {
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
 
+
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
     }
@@ -39,6 +40,7 @@ public class DestroyBlockTask extends Task {
         }
         if (!_moveChecker.check(mod)) {
             Debug.logMessage("Failed, wandering for a bit...");
+            _failedFirstTry = !_failedFirstTry;
             return _wanderTask;
         }
 

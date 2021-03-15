@@ -2,18 +2,22 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.RotationUtils;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 public class LookUtil {
 
@@ -25,12 +29,27 @@ public class LookUtil {
         return ProjectileUtil.raycast(from, fromPos, fromPos.add(direction), box, entity -> entity.equals(to), 0);
     }
 
+    public static boolean seesPlayer(Entity entity, Entity player, double maxRange) {
+        return seesPlayerOffset(entity, player, maxRange, Vec3d.ZERO) || seesPlayerOffset(entity, player, maxRange, new Vec3d(0, -1, 0));
+    }
+
     public static boolean tryAvoidingInteractable(AltoClef mod) {
         if (isCollidingContainer(mod)) {
             randomOrientation(mod);
             return false;
         }
         return true;
+    }
+
+    private static boolean seesPlayerOffset(Entity entity, Entity player, double maxRange, Vec3d offset) {
+        Vec3d start = entity.getCameraPosVec(1f);
+        Vec3d end = player.getCameraPosVec(1f).add(offset);
+        Vec3d delta = end.subtract(start);
+        if (delta.lengthSquared() > maxRange*maxRange) {
+            end = start.add(delta.normalize().multiply(maxRange));
+        }
+        BlockHitResult b =  entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+        return b.getType() == HitResult.Type.MISS;
     }
 
     private static boolean isCollidingContainer(AltoClef mod) {

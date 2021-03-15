@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
@@ -17,10 +18,16 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     private final Function<Entity, Task> _getTargetTask;
 
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class ...entities) {
+    private final Predicate<Entity> _ignorePredicate;
+
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class ...entities) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
+        _ignorePredicate = ignorePredicate;
         _targetEntities = entities;
+    }
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class ...entities) {
+        this(getOriginSupplier, getTargetTask, entity -> false, entities);
     }
 
     @Override

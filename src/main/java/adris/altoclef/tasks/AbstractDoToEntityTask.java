@@ -55,6 +55,7 @@ public abstract class AbstractDoToEntityTask extends Task {
 
         double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
 
+        // TODO: This is basically useless.
         EntityHitResult result = LookUtil.raycast(mod.getPlayer(), entity, playerReach);
 
         double sqDist = entity.squaredDistanceTo(mod.getPlayer());
