@@ -13,13 +13,13 @@ import java.util.List;
 
 public abstract class ResourceTask extends Task {
 
-    protected final List<ItemTarget> _itemTargets;
+    protected final ItemTarget[] _itemTargets;
 
-    public ResourceTask(List<ItemTarget> itemTargets) {
+    public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
     }
     public ResourceTask(ItemTarget target) {
-        this(Collections.singletonList(target));
+        this(new ItemTarget[] {target});
     }
     public ResourceTask(Item item, int targetCount) {
         this(new ItemTarget(item, targetCount));
@@ -30,13 +30,13 @@ public abstract class ResourceTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
-        return mod.getInventoryTracker().targetMet(Util.toArray(ItemTarget.class, _itemTargets));
+        return mod.getInventoryTracker().targetMet(_itemTargets);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
-        mod.getConfigState().removeThrowawayItems(Util.toArray(ItemTarget.class, _itemTargets));
+        mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
         onResourceStart(mod);
         _fullCheckFailed = false;
     }
@@ -46,30 +46,18 @@ public abstract class ResourceTask extends Task {
 
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
-            if (mod.getEntityTracker().itemDropped(Util.toArray(ItemTarget.class, _itemTargets))) {
-                boolean weGood = true;
-
-                Debug.logInternal("EMPTY: " + mod.getInventoryTracker().getEmptySlotCount());
-
-                if (mod.getInventoryTracker().isInventoryFull()) {
-                    // Throw away!
-                    Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-                    if (toThrow != null) {
-                        // Equip then throw
-                        mod.getInventoryTracker().throwSlot(toThrow);
-                    } else {
-                        if (!_fullCheckFailed) {
-                            Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                        }
-                        weGood = false;
-                        _fullCheckFailed = true;
-                        setDebugState("Inventory full and we can't find any item to throw away. Waiting for user.");
-                    }
-                }
+            if (mod.getEntityTracker().itemDropped(_itemTargets)) {
+                boolean weGood = ensureInventoryFree(mod);
 
                 if (weGood) {
                     _fullCheckFailed = false;
                     setDebugState("Going to dropped items...");
+                } else {
+                    if (!_fullCheckFailed) {
+                        Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
+                    }
+                    _fullCheckFailed = true;
+                    setDebugState("Inventory full and we can't find any item to throw away. Waiting for user.");
                 }
 
                 return new PickupDroppedItemTask(_itemTargets);
@@ -91,11 +79,7 @@ public abstract class ResourceTask extends Task {
         if (other instanceof ResourceTask) {
             ResourceTask t = (ResourceTask) other;
             if (!isEqualResource(t)) return false;
-            if (t._itemTargets.size() != _itemTargets.size()) return false;
-            for (int i = 0; i < _itemTargets.size(); ++i) {
-                if (!_itemTargets.get(i).equals(t._itemTargets.get(i))) return false;
-            }
-            return true;
+            return Util.arraysEqual(t._itemTargets, _itemTargets);
         }
         return false;
     }
@@ -107,12 +91,29 @@ public abstract class ResourceTask extends Task {
         int c = 0;
         for (ItemTarget target : _itemTargets) {
             result.append(target.toString());
-            if (++c != _itemTargets.size()) {
+            if (++c != _itemTargets.length) {
                 result.append(", ");
             }
         }
         result.append("]");
         return result.toString();
+    }
+
+    // Returns: Whether this failed.
+    public static boolean ensureInventoryFree(AltoClef mod) {
+        if (mod.getInventoryTracker().isInventoryFull()) {
+            // Throw away!
+            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+            if (toThrow != null) {
+                // Equip then throw
+                //Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
+                mod.getInventoryTracker().throwSlot(toThrow);
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected abstract boolean shouldAvoidPickingUp(AltoClef mod);

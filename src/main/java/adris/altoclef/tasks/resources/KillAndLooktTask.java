@@ -11,10 +11,10 @@ import java.util.Arrays;
 
 public class KillAndLooktTask extends ResourceTask {
 
-    private Class _toKill;
+    private final Class _toKill;
 
     public KillAndLooktTask(Class toKill, ItemTarget ...itemTargets) {
-        super(Arrays.asList(itemTargets.clone()));
+        super(itemTargets.clone());
         _toKill = toKill;
     }
 

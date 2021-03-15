@@ -33,7 +33,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (!mod.getInventoryTracker().hasRecipeMaterials(_recipe)) {
+        if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_recipe)) {
             // Collect recipe materials
             return collectRecipeSubTask(mod);
         }
@@ -89,7 +89,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-        return new CollectRecipeCataloguedResourcesTask(new RecipeTarget(_itemTargets.get(0), _recipe));
+        return new CollectRecipeCataloguedResourcesTask(new RecipeTarget(_itemTargets[0], _recipe));
     }
 
     protected String toCraftingDebugStringName() {

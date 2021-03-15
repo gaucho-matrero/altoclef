@@ -7,6 +7,7 @@ import adris.altoclef.tasks.misc.PutOutFireTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SpawnerBlock;
@@ -15,15 +16,17 @@ import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.item.Items;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 
 public class CollectBlazeRodsTask extends ResourceTask {
 
     private static final double SPAWNER_BLAZE_RADIUS = 32;
 
     private static final int TOO_MANY_BLAZES = 5;
-    private static final double TOO_LITTLE_HEALTH_BLAZE = 4;
+    private static final double TOO_LITTLE_HEALTH_BLAZE = 5;
 
     private BlockPos _foundBlazeSpawner = null;
 
@@ -54,16 +57,22 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
             // If we're in danger and there are too many blazes, run away.
             if (mod.getEntityTracker().getTrackedEntities(BlazeEntity.class).size() >= TOO_MANY_BLAZES && mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE) {
+                setDebugState("Running away as there are too many blazes nearby.");
                 return new TimeoutWanderTask();
             }
 
             Entity toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
             if (_foundBlazeSpawner != null) {
                 Vec3d nearest = toKill.getPos();
-                double sqDistanceToSpawner = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
+
+                double sqDistanceToPlayer = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
                 // Ignore if the blaze is too far away.
-                if (sqDistanceToSpawner > SPAWNER_BLAZE_RADIUS) {
-                    toKill = null;
+                if (sqDistanceToPlayer > SPAWNER_BLAZE_RADIUS*SPAWNER_BLAZE_RADIUS) {
+                    // If the blaze can see us it needs to go lol
+                    BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), toKill.getCameraPosVec(1.0F), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mod.getPlayer()));
+                    if (hit != null && hit.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), false) < sqDistanceToPlayer) {
+                        toKill = null;
+                    }
                 }
             }
             if (toKill != null) {
@@ -76,6 +85,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
         // If the blaze spawner somehow doesn't exist.
         if (_foundBlazeSpawner != null && !isValidBlazeSpawner(mod, _foundBlazeSpawner)) {
+            Debug.logMessage("Blaze spawner at " + _foundBlazeSpawner + " too far away or invalid. Re-searching.");
             _foundBlazeSpawner = null;
         }
 
@@ -112,6 +122,10 @@ public class CollectBlazeRodsTask extends ResourceTask {
     }
 
     private boolean isValidBlazeSpawner(AltoClef mod, BlockPos pos) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos)) {
+            // If unloaded, go to it. Unless it's super far away.
+            return pos.isWithinDistance(mod.getPlayer().getPos(),3000);
+        }
         BlockState state = mod.getWorld().getBlockState(pos);
         if (state.getBlock() instanceof SpawnerBlock) {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);

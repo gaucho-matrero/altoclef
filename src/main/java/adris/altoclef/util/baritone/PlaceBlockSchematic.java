@@ -58,7 +58,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         }
         // If a block already exists there, place it.
         if (_skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
-            System.out.println("PlaceBlockNearbySchematic (already exists)");
+            //System.out.println("PlaceBlockNearbySchematic (already exists)");
             _targetPlace = blockState;
         }
         boolean isDone = (_targetPlace != null);
@@ -69,12 +69,12 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         for (BlockState possible : list) {
             //System.out.print(possible.getBlock().getTranslationKey() + " ");
             if (blockIsTarget(possible.getBlock())) {
-                System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
+                //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
                 _targetPlace = possible;
                 return possible;
             }
         }
-        System.out.println("] ( :(((((( )");
+        //System.out.println("] ( :(((((( )");
         return blockState;
     }
 

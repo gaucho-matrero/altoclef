@@ -1,7 +1,8 @@
-package adris.altoclef.util;
+package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.Vec3d;
 
@@ -17,13 +18,18 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     private T _currentlyPursuing = null;
 
-    private HashMap<T, Double> _heuristicMap = new HashMap<>();
+    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
     protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
     protected abstract Vec3d getOriginPos(AltoClef mod);
     protected abstract Task getGoalTask(T obj);
     protected abstract boolean isValid(AltoClef mod, T obj);
+
+    // Virtual
+    protected Task getWanderTask(AltoClef mod) {
+        return new TimeoutWanderTask(true);
+    }
 
     private Task _goalTask = null;
 
@@ -91,18 +97,13 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
             _goalTask = null;
         }
 
-        /*
-        If different object:
-     *          If previous object was null, accept and get to.
-     *          If we're not running our GOTO task/process, ignore and keep going to previous object.
-     *          If we ARE running our GOTO task/process, GET CURRENT CALCULATED HEURISTIC and MAP.
-     *          If the NEW object has a MAPPING to a calculated heuristic:
-     *              If PREVIOUS object has BETTER heuristic, accept previous object.
-     *          If the NEW object does NOT have a mapping to a calculated heuristic, ACCEPT IT!
-     *      - If same object, keep running the GOTO Task (if no goto task, create one)
-         */
+        //noinspection ConstantConditions
+        if (newClosest == null && _currentlyPursuing == null) {
+            setDebugState("Waiting for calculations I think (wandering)");
+            return getWanderTask(mod);
+        }
 
-        setDebugState("Waiting for calculations I think...");
+        setDebugState("Waiting for calculations I think (NOT wandering)");
         return null;
     }
 

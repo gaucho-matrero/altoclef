@@ -53,7 +53,7 @@ public abstract class Task {
 
     public void reset() {
         _first = true;
-        _active = true;
+        _active = false;
         _stopped = false;
     }
 

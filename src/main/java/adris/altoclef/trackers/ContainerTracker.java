@@ -236,7 +236,7 @@ public class ContainerTracker extends Tracker {
         public void updateBlocks() {
             // Check for deleted blocks and delete if they no longer exist
             for (BlockPos blockToCheck : _blockData.keySet()) {
-                if (BlockTracker.blockIsInvalid(blockToCheck, Blocks.FURNACE)) {
+                if (!_mod.getBlockTracker().blockIsValid(blockToCheck, Blocks.FURNACE)) {
                     deleteBlock(blockToCheck);
                 }
             }

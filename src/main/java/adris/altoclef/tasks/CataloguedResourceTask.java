@@ -6,6 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -75,15 +76,7 @@ public class CataloguedResourceTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CataloguedResourceTask) {
             CataloguedResourceTask other = (CataloguedResourceTask) obj;
-
-            if (other._targets.length != _targets.length) return false;
-            for (int i = 0; i < _targets.length; ++i) {
-                if ((other._targets[i] == null) != (_targets[i] == null)) return false;
-                if (other._targets[i] != null) {
-                    if (!other._targets[i].equals(_targets[i])) return false;
-                }
-            }
-            return true;
+            return Util.arraysEqual(other._targets, _targets);
         }
         return false;
     }
@@ -146,12 +139,12 @@ public class CataloguedResourceTask extends Task {
             List<RecipeTarget> targetRecipies = new ArrayList<>();
 
             for(CraftInTableTask task : tasks) {
-                targetRecipies.addAll(task.getRecipeTargets());
+                targetRecipies.addAll(Arrays.asList(task.getRecipeTargets()));
             }
 
             //Debug.logMessage("Squashed " + targetRecipies.size());
 
-            return Collections.singletonList(new CraftInTableTask(targetRecipies));
+            return Collections.singletonList(new CraftInTableTask(Util.toArray(RecipeTarget.class, targetRecipies)));
         }
     }
 

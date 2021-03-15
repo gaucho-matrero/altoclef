@@ -42,15 +42,21 @@ public class BeatMinecraftTask extends Task {
     private ForceState _forceState = ForceState.NONE;
 
     private BlockPos _cachedPortalInNether;
-    private CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
+    private final CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
 
-    private LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
+    private final LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
 
     private int _cachedEndPearlsInFrame = 0;
+
+    private BlockPos _netherPortalPos;
 
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
+        mod.getConfigState().push();
+        // Add some protections so we don't throw these away at any point.
+        mod.getConfigState().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
+        mod.getConfigState().addProtectedItems(ItemTarget.BED);
     }
 
     @Override
@@ -115,35 +121,6 @@ public class BeatMinecraftTask extends Task {
             return _strongholdLocater;
         }
 
-        /*
-        if (!diamondArmorEquipped(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) && _forceState != ForceState.GETTING_DIAMOND_GEAR) {
-                // Get a crafting table first before mining below
-                if (!mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)) {
-                    setDebugState("Getting crafting table before going down for diamonds");
-                    return TaskCatalogue.getItemTask("crafting_table", 1);
-                } else {
-                    _forceState = ForceState.GETTING_DIAMOND_GEAR;
-                }
-            }
-
-            if (!diamondArmorEquipped(mod)) {
-                setDebugState("Equipping diamond armor");
-                return new EquipArmorTask(DIAMOND_ARMORS);
-            } else {
-                if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
-                    setDebugState("Getting diamond pickaxe");
-                    return TaskCatalogue.getItemTask("diamond_pickaxe", 1);
-                } else if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-                    setDebugState("Getting diamond sword");
-                    return TaskCatalogue.getItemTask("diamond_sword", 1);
-                }
-            }
-        } else if (_forceState == ForceState.GETTING_DIAMOND_GEAR) {
-            // We got our gear.
-            _forceState = ForceState.NONE;
-        }*/
-
         // Get food
         if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD_MIN) {
             _forceState = ForceState.GETTING_FOOD;
@@ -163,10 +140,34 @@ public class BeatMinecraftTask extends Task {
 
         // Get blaze rods by going to nether
         if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
-            setDebugState("Going to nether!");
             //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
             // Go to nether
-            return new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER);
+            if (_netherPortalPos != null) {
+                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                    if (!mod.getBlockTracker().blockIsValid(_netherPortalPos, Blocks.NETHER_PORTAL)) {
+                        double MAX_PORTAL_DISTANCE = 2000;
+                        // Reset portal if it's far away or we confirmed it being incorrect in this chunk.
+                        if (mod.getChunkTracker().isChunkLoaded(_netherPortalPos) || _netherPortalPos.getSquaredDistance(mod.getPlayer().getPos(), false) > MAX_PORTAL_DISTANCE*MAX_PORTAL_DISTANCE) {
+                            Debug.logMessage("Invalid portal position detected at " + _netherPortalPos + ", finding new nether portal.");
+                            _netherPortalPos = null;
+                        }
+                    }
+                }
+                if (_netherPortalPos != null) {
+                    setDebugState("Going to previously created nether portal...");
+                    return new EnterNetherPortalTask(new GetToBlockTask(_netherPortalPos, false), Dimension.NETHER);
+                }
+            } else {
+                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                    if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
+                        _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+                        Debug.logMessage("Tracked portal at " + _netherPortalPos);
+                    }
+                }
+            }
+
+            setDebugState("Build nether portal + go to nether");
+            return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
         } else {
             setDebugState("Crafting our blaze powder + eyes");
             int powderNeeded = (TARGET_ENDER_EYES - eyes);
@@ -187,18 +188,16 @@ public class BeatMinecraftTask extends Task {
             _cachedPortalInNether = mod.getPlayer().getBlockPos();
         }
 
-        // Piglin Barter
-        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
-            setDebugState("Collecting Ender Pearls");
-
-            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
-        }
-
         // Blaze rods
         if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
             setDebugState("Collecting Blaze Rods");
-
             return _blazeCollection;
+        }
+
+        // Piglin Barter
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
+            setDebugState("Collecting Ender Pearls");
+            return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
 
         setDebugState("Getting the hell out of here");
@@ -228,7 +227,7 @@ public class BeatMinecraftTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
-
+        mod.getConfigState().pop();
     }
 
     @Override
@@ -248,8 +247,7 @@ public class BeatMinecraftTask extends Task {
     private int portalEyesInFrame(AltoClef mod) {
         int count = 0;
         for (BlockPos b : _endPortalFrame) {
-            //noinspection deprecation
-            if (!mod.getWorld().isChunkLoaded(b)) {
+            if (!mod.getChunkTracker().isChunkLoaded(b)) {
                 return _cachedEndPearlsInFrame;
             }
             BlockState state = mod.getWorld().getBlockState(b);

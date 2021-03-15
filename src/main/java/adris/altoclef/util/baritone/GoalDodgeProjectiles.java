@@ -16,12 +16,15 @@ public class GoalDodgeProjectiles implements Goal {
 
     private static final double Y_SCALE = 0.3f;
 
+    private final AltoClef _mod;
+
     private final double _distanceHorizontal;
     private final double _distanceVertical;
 
     private List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
 
-    public GoalDodgeProjectiles(double distanceHorizontal, double distanceVertical) {
+    public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
+        _mod = mod;
         _distanceHorizontal = distanceHorizontal;
         _distanceVertical = distanceVertical;
     }
@@ -31,22 +34,24 @@ public class GoalDodgeProjectiles implements Goal {
         List<CachedProjectile> projectiles = getProjectiles();
         Vec3d p = new Vec3d(x, y, z);
         //Debug.logMessage("SIZE: " + projectiles.size());
-        for (CachedProjectile projectile : projectiles) {
-            if (isInvalidProjectile(projectile)) continue;
-            try {
-                if (projectile.needsToRecache()) {
-                    projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
-                }
-                Vec3d hit = projectile.getCachedHit();
-                //Debug.logMessage("Hit Delta: " + p.subtract(hit));
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (CachedProjectile projectile : projectiles) {
+                if (isInvalidProjectile(projectile)) continue;
+                try {
+                    if (projectile.needsToRecache()) {
+                        projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+                    }
+                    Vec3d hit = projectile.getCachedHit();
+                    //Debug.logMessage("Hit Delta: " + p.subtract(hit));
 
-                if (isHitCloseEnough(hit, p)) return false;
-            } catch (Exception e) {
-                Debug.logWarning("Weird exception caught while checking for goal: " + e.getMessage());
-                /// ????? No clue why a nullptrexception happens here.
+                    if (isHitCloseEnough(hit, p)) return false;
+                } catch (Exception e) {
+                    Debug.logWarning("Weird exception caught while checking for goal: " + e.getMessage());
+                    /// ????? No clue why a nullptrexception happens here.
+                }
+                //double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
+                //if (sqFromMob < _distance*_distance) return false;
             }
-            //double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
-            //if (sqFromMob < _distance*_distance) return false;
         }
         //Debug.logMessage("COMFY: " + p.subtract(MinecraftClient.getInstance().player.getPos()));
         return true;
@@ -57,20 +62,23 @@ public class GoalDodgeProjectiles implements Goal {
         Vec3d p = new Vec3d(x, y, z);
         // The HIGHER the cost, the better (total distance from arrows)
         double costFactor = 0;
+
         List<CachedProjectile> projectiles = getProjectiles();
-        for (CachedProjectile projectile : projectiles) {
-            if (isInvalidProjectile(projectile)) continue;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            for (CachedProjectile projectile : projectiles) {
+                if (isInvalidProjectile(projectile)) continue;
 
-            if (projectile.needsToRecache()) {
-                projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
-            }
-            Vec3d hit = projectile.getCachedHit();
+                if (projectile.needsToRecache()) {
+                    projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+                }
+                Vec3d hit = projectile.getCachedHit();
 
-            double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
-            //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
+                double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
+                //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
 
-            if (isHitCloseEnough(hit, p)) {
-                costFactor += arrowPenalty;
+                if (isHitCloseEnough(hit, p)) {
+                    costFactor += arrowPenalty;
+                }
             }
         }
         return -1 * costFactor;
@@ -91,11 +99,6 @@ public class GoalDodgeProjectiles implements Goal {
     }
 
     private List<CachedProjectile> getProjectiles() {
-        return _cachedProjectiles;
-    }
-
-    public void setProjectileList(List<CachedProjectile> projectiles) {
-        _cachedProjectiles.clear();
-        _cachedProjectiles.addAll(projectiles);
+        return _mod.getEntityTracker().getProjectiles();
     }
 }

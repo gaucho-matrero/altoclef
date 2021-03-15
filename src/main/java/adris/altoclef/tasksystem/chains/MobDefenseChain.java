@@ -223,10 +223,14 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
+                    continue;
+                    // Ignore ghast balls
+                    /*
                     // ignore if it's too far away.
                     if (!projectile.position.isInRange(mod.getPlayer().getPos(), 40)) {
                         continue;
                     }
+                     */
                 }
 
                 Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
@@ -247,10 +251,23 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private Entity getUniversallyDangerousMob(AltoClef mod) {
+        // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
+        // If we merely force field them, we will run into them and get the wither effect which will kill us.
         if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity.squaredDistanceTo(mod.getPlayer()) < 6*6) {
                 return entity;
+            }
+        }
+        // Hoglins are dangerous because we can't push them with the force field.
+        // If we merely force field them and stand still our health will slowly be chipped away until we die
+        if (mod.getEntityTracker().entityFound(HoglinEntity.class, ZoglinEntity.class)) {
+            if (mod.getPlayer().getHealth() < 5) {
+                Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
+                int range = 7;
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range*range) {
+                    return entity;
+                }
             }
         }
         return null;

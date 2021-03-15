@@ -85,6 +85,7 @@ public class TimeoutWanderTask extends Task {
 
             BlockPos fenceStuck = stuckInFence(mod);
             if (fenceStuck != null) {
+                Debug.logMessage("Failed exploring, found fence nearby.");
                 _unstuckTask = getFenceUnstuckTask(mod, fenceStuck);
                 return _unstuckTask;
             }
@@ -156,7 +157,7 @@ public class TimeoutWanderTask extends Task {
             }
         }
         BlockPos[] toCheckHigh = generateSides(p.up());
-        Debug.logMessage("oof: " + p.toShortString());
+        //Debug.logMessage("oof: " + p.toShortString());
         for (BlockPos check : toCheckHigh) {
             //Block temp = mod.getWorld().getBlockState(check).getBlock();
             //Debug.logMessage(check.toShortString() + " = " + temp.getTranslationKey() + " : " + temp.getClass());
@@ -170,24 +171,6 @@ public class TimeoutWanderTask extends Task {
         return mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock;
     }
     private Task getFenceUnstuckTask(AltoClef mod, BlockPos fencePos) {
-        /*
-        final BlockPos[] toCheck = generateSides(fencePos);
-        List<BlockPos> viableSpots = new ArrayList<>();
-        for (BlockPos check : toCheck) {
-            if (mod.getWorld().getBlockState(check).getBlock() instanceof AirBlock
-            && mod.getWorld().getBlockState(check.up()).getBlock() instanceof AirBlock) {
-                viableSpots.add(check);
-            }
-        }
-        BlockPos target;
-        // If we find no free spot, force our way out anyway.
-        if (viableSpots.size() == 0) {
-            target = toCheck[(int) (toCheck.length * Math.random())];
-        } else {
-            target = viableSpots.get((int) (viableSpots.size() * Math.random()));
-        }
-        return new GetToBlockTask(target, false);
-         */
         return new DestroyBlockTask(fencePos);
     }
 

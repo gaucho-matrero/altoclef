@@ -13,12 +13,16 @@ import adris.altoclef.util.SmeltTarget;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Predicate;
 
 public class CollectFoodTask extends Task {
@@ -102,7 +106,7 @@ public class CollectFoodTask extends Task {
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 int rawCount = mod.getInventoryTracker().getItemCount(cookable.getRaw());
                 if (rawCount > 0) {
-                    Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
+                    //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getInventoryTracker().getItemCount(cookable.getCooked());
                     _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
                     _smeltTask.ignoreMaterials();
@@ -153,6 +157,10 @@ public class CollectFoodTask extends Task {
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Entity nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
+                if (nearest instanceof LivingEntity) {
+                    // Peta
+                    if (((LivingEntity) nearest).isBaby()) continue;
+                }
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.squaredDistanceTo(mod.getPlayer());
                 double score = (double)100 * hungerPerformance / (sqDistance);
@@ -263,7 +271,7 @@ public class CollectFoodTask extends Task {
         return null;
     }
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab) {
-        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (maybeReject) -> false);
+        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (toReject) -> false);
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
@@ -283,7 +291,8 @@ public class CollectFoodTask extends Task {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
         if (nearestDrop != null) {
-            return new GetToBlockTask(nearestDrop.getBlockPos(), false);
+            return new PickupDroppedItemTask(new ItemTarget(itemToGrab));
+            //return new GetToBlockTask(nearestDrop.getBlockPos(), false);
         }
         return null;
     }

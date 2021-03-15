@@ -15,7 +15,7 @@ public abstract class CustomBaritoneGoalTask extends Task {
 
     private final boolean _wander;
     private final Task _wanderTask = new TimeoutWanderTask(10);
-    private final MovementProgressChecker _checker = new MovementProgressChecker();
+    protected MovementProgressChecker _checker = new MovementProgressChecker();
 
     public CustomBaritoneGoalTask(boolean wander) {
         _wander = wander;

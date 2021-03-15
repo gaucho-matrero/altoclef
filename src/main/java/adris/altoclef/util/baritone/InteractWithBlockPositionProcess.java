@@ -6,10 +6,9 @@ package adris.altoclef.util.baritone;//
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
-import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalNear;
-import baritone.api.pathing.goals.GoalTwoBlocks;
+import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.Rotation;
@@ -67,6 +66,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         _failed = false;
 
         this.arrivalTickCount = 0;
+
+        this._equipTarget = null;
 
         reachCounter = 0;
     }
@@ -132,7 +133,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
     private Goal createGoal(BlockPos pos, int reachDistance) {
 
-        if (!sideDoesntMatter()) {
+        boolean sideMatters = !sideDoesntMatter();
+        if (sideMatters) {
             Vec3i offs = _interactSide.getVector();
             if (offs.getY() == -1) {
                 // If we're below, place ourselves two blocks below.
@@ -144,10 +146,24 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (_walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
-            return new GoalNear(pos, reachDistance);
-            //return new GoalGetToBlock(pos);
-            // Is the following better? Commented out was the old way copied from baritone.
-            //return new _blockOnTopMustBeRemoved && MovementHelper.isBlockNormalCube(this.baritone.bsi.get0(pos.up())) ? new GoalBlock(pos.up()) : new GoalGetToBlock(pos);
+            if (sideMatters) {
+                // Make sure we're on the right side of the block.
+                /*
+                Vec3i offs = _interactSide.getVector();
+                Goal sideGoal;
+                if (offs.getY() == 1) {
+                    sideGoal = new GoalYLevel(_target.getY() + 1);
+                } else if (offs.getY() == -1) {
+                    sideGoal = new GoalYLevel(_target.getY() - 1);
+                } else {
+                    sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
+                }*/
+                Goal sideGoal = new GoalBlockSide(_target, _interactSide, 1);
+                return new GoalAnd(sideGoal, new GoalNear(pos, reachDistance));
+            } else {
+                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
+                return new GoalNear(pos, reachDistance);
+            }
         }
     }
 
@@ -158,7 +174,11 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
             if (this.baritone.getPlayerContext().isLookingAt(_target)) {
-                if (_equipTarget != null) _mod.getInventoryTracker().equipItem(_equipTarget);
+                if (_equipTarget != null) {
+                    if (!_mod.getInventoryTracker().equipItem(_equipTarget)) {
+                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(_equipTarget.getMatches()));
+                    }
+                }
                 this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
                 //System.out.println(this.ctx.player().playerScreenHandler);
 
@@ -205,7 +225,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
                 if (dot < 0) {
                     // We're perpendicular and cannot face.
-                    Debug.logMessage("DOT PRODUCT FAIL: " + dot);
                     return Optional.empty();
                 }
             }

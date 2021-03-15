@@ -2,10 +2,15 @@ package adris.altoclef.util;
 
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ItemTarget {
     private Item[] _itemMatches;
@@ -159,6 +164,14 @@ public class ItemTarget {
             result[i] = Block.getBlockFromItem(items[i]);
         }
         return result;
+    }
+
+    public static Item[] getMatches(ItemTarget ...targets) {
+        Set<Item> result = new HashSet<>();
+        for (ItemTarget target : targets) {
+            result.addAll(Arrays.asList(target.getMatches()));
+        }
+        return Util.toArray(Item.class, result);
     }
 
     public boolean isEmpty() {

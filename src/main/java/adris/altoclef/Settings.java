@@ -1,5 +1,7 @@
 package adris.altoclef;
 
+import adris.altoclef.util.csharpisbetter.Util;
+import com.google.gson.ExclusionStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.item.Item;
@@ -9,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Settings {
 
@@ -80,9 +84,20 @@ public class Settings {
      * If we need to throw away something, throw away these items first.
      */
     private int[] throwawayItems = new int[] {
+            // Overworld junk
+            Item.getRawId(Items.DIORITE),
+            Item.getRawId(Items.ANDESITE),
+            Item.getRawId(Items.GRANITE),
             Item.getRawId(Items.COBBLESTONE),
+            Item.getRawId(Items.DIRT),
+            Item.getRawId(Items.GRAVEL),
+            // Nether junk, to be fair it's mostly tuned for the "beat game" task
             Item.getRawId(Items.NETHERRACK),
-            Item.getRawId(Items.DIRT)
+            Item.getRawId(Items.MAGMA_BLOCK),
+            Item.getRawId(Items.SOUL_SOIL),
+            Item.getRawId(Items.SOUL_SAND),
+            Item.getRawId(Items.NETHER_BRICKS),
+            Item.getRawId(Items.NETHER_BRICK)
     };
 
     /**
@@ -143,12 +158,13 @@ public class Settings {
         Gson gson = new Gson();
 
         Settings result = gson.fromJson(data, Settings.class);
+        result.markDirty();
         result.save();
         return result;
     }
 
     private static void save(Settings settings) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
         String userJson = gson.toJson(settings);
 
         try {
@@ -244,7 +260,17 @@ public class Settings {
     public boolean shouldThrowawayUnusedItems() {
         return this.throwAwayUnusedItems;
     }
-    public Item[] getThrowawayItems() {
+    public Item[] getThrowawayItems(AltoClef mod) {
+        List<Item> result = new ArrayList<>();
+        for (int throwawayItem : throwawayItems) {
+            Item item = Item.byRawId(throwawayItem);
+            if (mod.getConfigState().isProtected(item)) {
+                result.add(item);
+            }
+        }
+        return Util.toArray(Item.class, result);
+    }
+    public Item[] getThrowawayItemsRaw() {
         Item[] result = new Item[throwawayItems.length];
         for (int i = 0; i < throwawayItems.length; ++i) {
             result[i] = Item.byRawId(throwawayItems[i]);

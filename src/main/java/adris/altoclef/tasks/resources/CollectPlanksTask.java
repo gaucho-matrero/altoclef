@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.Item;
 
 import java.util.ArrayList;
@@ -36,6 +37,6 @@ public class CollectPlanksTask extends CraftInInventoryTask {
         if (!mod.getConfigState().exclusivelyMineLogs()) {
             blocksTomine.add(new ItemTarget(ItemTarget.PLANKS));
         }
-        return new MineAndCollectTask(blocksTomine, MiningRequirement.HAND);
+        return new MineAndCollectTask(Util.toArray(ItemTarget.class, blocksTomine), MiningRequirement.HAND);
     }
 }

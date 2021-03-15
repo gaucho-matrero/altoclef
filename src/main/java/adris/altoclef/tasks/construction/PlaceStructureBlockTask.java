@@ -2,8 +2,14 @@ package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
@@ -11,6 +17,8 @@ import baritone.api.utils.BlockOptionalMeta;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -20,8 +28,12 @@ public class PlaceStructureBlockTask extends Task {
     private final BlockPos _target;
 
     private LinearProgressChecker _distanceChecker = new LinearProgressChecker(5, 0.1);
-
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
+
+    private Task _materialTask;
+
+    private int MIN_MATERIALS = 16;
+    private int PREFERRED_MATERIALS = 32;
 
     public PlaceStructureBlockTask(BlockPos target) {
         _target = target;
@@ -39,8 +51,25 @@ public class PlaceStructureBlockTask extends Task {
 
         // Perform timeout wander
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            setDebugState("Wandering.");
             _distanceChecker.reset();
             return _wanderTask;
+        }
+
+        if (_materialTask != null && _materialTask.isActive() && !_materialTask.isFinished(mod)) {
+            setDebugState("No structure items, collecting cobblestone + dirt as default.");
+            if (getMaterialCount(mod) < PREFERRED_MATERIALS) {
+                return _materialTask;
+            } else {
+                _materialTask = null;
+            }
+        }
+
+        //Item[] items = Util.toArray(Item.class, mod.getClientBaritoneSettings().acceptableThrowawayItems.value);
+        if (getMaterialCount(mod) < MIN_MATERIALS) {
+            // TODO: Mine items, extract their resource key somehow.
+            _materialTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", PREFERRED_MATERIALS), new ItemTarget("cobblestone", PREFERRED_MATERIALS));
+            return _materialTask;
         }
 
         // Perform baritone placement
@@ -58,6 +87,7 @@ public class PlaceStructureBlockTask extends Task {
             return _wanderTask;
         }
 
+        setDebugState("Letting baritone place a block.");
         return null;
     }
 
@@ -78,7 +108,7 @@ public class PlaceStructureBlockTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
-        return MinecraftClient.getInstance().world.getBlockState(_target).isSolidBlock(MinecraftClient.getInstance().world, _target);
+        return WorldUtil.isSolid(mod, _target);
     }
 
     @Override
@@ -86,11 +116,13 @@ public class PlaceStructureBlockTask extends Task {
         return "Place structure at " + _target.toShortString();
     }
 
+    private static int getMaterialCount(AltoClef mod) {
+        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE);
+    }
 
     private static class PlaceStructureSchematic extends AbstractSchematic {
 
         private final AltoClef _mod;
-
 
         public PlaceStructureSchematic(AltoClef mod) {
             super(1, 1, 1);

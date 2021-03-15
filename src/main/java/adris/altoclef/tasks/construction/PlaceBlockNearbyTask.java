@@ -6,6 +6,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 
@@ -36,7 +37,6 @@ public class PlaceBlockNearbyTask extends Task {
     protected void onStart(AltoClef mod) {
         _mod = mod;
 
-        Debug.logInternal("PlaceBlock START!");
         mod.getCustomBaritone().getPlaceBlockNearbyProcess().place(_toPlace);
         //Debug.logInternal("DONE? %b %b", isFinished(mod), mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive() );
         _placeTimer.reset();
@@ -59,7 +59,6 @@ public class PlaceBlockNearbyTask extends Task {
             mod.getCustomBaritone().getPlaceBlockNearbyProcess().place(_toPlace);
         }
 
-
         if (_placeTimer.elapsed()) {
             Debug.logMessage("Failed to place timeout. Wandering...");
             return _wanderTask;
@@ -78,11 +77,7 @@ public class PlaceBlockNearbyTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockNearbyTask) {
             PlaceBlockNearbyTask other = (PlaceBlockNearbyTask) obj;
-            if (other._toPlace.length != _toPlace.length) return false;
-            for (int i = 0; i < _toPlace.length; ++i) {
-                if (!other._toPlace[i].is(_toPlace[i])) return false;
-            }
-            return true;
+            return Util.arraysEqual(other._toPlace, _toPlace);
         }
         return false;
     }
@@ -95,7 +90,7 @@ public class PlaceBlockNearbyTask extends Task {
     // Also used to determine when we placed the block
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _placing && !mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive() && mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock() != null;
+        return _placing && !mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive();// && mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock() != null;
     }
 
     // Used to determine where we placed the block

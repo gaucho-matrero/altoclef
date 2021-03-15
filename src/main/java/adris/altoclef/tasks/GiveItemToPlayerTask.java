@@ -6,6 +6,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
@@ -98,11 +99,7 @@ public class GiveItemToPlayerTask extends Task {
         if (obj instanceof GiveItemToPlayerTask) {
             GiveItemToPlayerTask task = (GiveItemToPlayerTask) obj;
             if (!task._playerName.equals(_playerName)) return false;
-            if (task._targets.length != _targets.length) return false;
-            for (int i = 0; i < _targets.length; ++i) {
-                if (!task._targets[i].equals(_targets[i])) return false;
-            }
-            return true;
+            return Util.arraysEqual(task._targets, _targets);
         }
         return false;
     }

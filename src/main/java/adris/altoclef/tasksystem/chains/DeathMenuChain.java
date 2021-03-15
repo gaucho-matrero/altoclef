@@ -14,9 +14,7 @@ import java.lang.reflect.Type;
 
 public class DeathMenuChain extends TaskChain {
 
-    private boolean shouldAutoRespawn(AltoClef mod) {
-        return mod.getModSettings().isAutoRespawn();
-    }
+    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
     private boolean shouldAutoReconnect(AltoClef mod) {
         return mod.getModSettings().isAutoReconnect();
     }
@@ -34,6 +32,9 @@ public class DeathMenuChain extends TaskChain {
     private int _deathCount = 0;
 
     private Class _prevScreen = null;
+
+    // Sometimes we fuck up, so we might want to retry considering the death screen.
+    private final Timer _deathRetryTimer = new Timer(8);
 
     @Override
     protected void onStop(AltoClef mod) {
@@ -55,6 +56,17 @@ public class DeathMenuChain extends TaskChain {
         //MinecraftClient.getInstance().getCurrentServerEntry().address;
 //        MinecraftClient.getInstance().
         Screen screen = MinecraftClient.getInstance().currentScreen;
+
+        // This might fix Weird fail to respawn that happened only once
+        if (_prevScreen == DeathScreen.class) {
+            if (_deathRetryTimer.elapsed()) {
+                Debug.logMessage("(RESPAWN RETRY WEIRD FIX...)");
+                _deathRetryTimer.reset();
+                _prevScreen = null;
+            }
+        } else {
+            _deathRetryTimer.reset();
+        }
 
         if (screen != null && screen.getClass() != _prevScreen) {
 
@@ -97,7 +109,7 @@ public class DeathMenuChain extends TaskChain {
             }
             _prevScreen = screen.getClass();
         }
-        return 0;
+        return Float.NEGATIVE_INFINITY;
     }
 
     @Override

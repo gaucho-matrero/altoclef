@@ -18,12 +18,13 @@ public class TrackerManager {
 
     public void tick() {
         boolean inGame = _mod.inGame();
-        if (inGame && !_wasInGame) {
-            // New world
-            for(Tracker tracker : _trackers) {
+        if (!inGame && _wasInGame) {
+            // Reset when we leave our world
+            for (Tracker tracker : _trackers) {
                 tracker.reset();
             }
-            _wasInGame = true;
+            // This is a bit of a spaghetti dependency but it's ok for now.
+            _mod.getChunkTracker().reset(_mod);
         }
         _wasInGame = inGame;
 

@@ -3,10 +3,10 @@ package adris.altoclef;
 import adris.altoclef.butler.WhisperPriority;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
-import adris.altoclef.tasks.resources.CollectFlintTaskOLD;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
@@ -15,6 +15,8 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -29,14 +31,13 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
 
-    @SuppressWarnings("deprecation")
     private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
         Debug.logMessage("Running test...");
@@ -69,17 +70,17 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
                 break;
             case "pickup":
-                mod.runUserTask(new PickupDroppedItemTask(Collections.singletonList(new ItemTarget(Items.IRON_ORE, 3))));
+                mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3)));
                 break;
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
                 break;
             case "place": {
-                BlockPos targetPos = new BlockPos(0, 6, 0);
+                //BlockPos targetPos = new BlockPos(0, 6, 0);
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
-                Direction direction = Direction.UP;
-                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
-                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
+                //Direction direction = Direction.WEST;
+                //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
+                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.CRAFTING_TABLE}));
                 break;
             }
             case "deadmeme":
@@ -97,7 +98,7 @@ public class AltoClefCommands extends CommandList {
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
-                mod.runUserTask(new SmeltInFurnaceTask(Collections.singletonList(new SmeltTarget(target, material))));
+                mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
                 break;
             case "avoid":
                 // Test block break predicate
@@ -107,7 +108,7 @@ public class AltoClefCommands extends CommandList {
                 Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
                 break;
             case "portal":
-                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalSpeedrunTask(), Dimension.NETHER));
+                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER));
                 break;
             case "kill":
                 List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
@@ -128,7 +129,7 @@ public class AltoClefCommands extends CommandList {
                             sleepSec(1);
                         }
 
-                        Item toEquip = Items.AIR;
+                        Item toEquip = Items.FLINT_AND_STEEL;//Items.AIR;
                         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
                         // Already equipped
@@ -181,11 +182,8 @@ public class AltoClefCommands extends CommandList {
             case "blaze":
                 mod.runUserTask(new CollectBlazeRodsTask(7));
                 break;
-            case "flint_good":
+            case "flint":
                 mod.runUserTask(new CollectFlintTask(5));
-                break;
-            case "flint_bad":
-                mod.runUserTask(new CollectFlintTaskOLD(5));
                 break;
             case "unobtainable":
                 String fname = "unobtainables.txt";
@@ -243,12 +241,13 @@ public class AltoClefCommands extends CommandList {
             new GotoCommand(),
             new CoordsCommand(),
             new StatusCommand(),
-            new HasCommand(),
+            new InventoryCommand(),
             new StopCommand(),
             new TestCommand(),
             new FoodCommand(),
             new ReloadSettingsCommand(),
-            new GamerCommand()
+            new GamerCommand(),
+            new PunkCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );
@@ -429,7 +428,7 @@ public class AltoClefCommands extends CommandList {
                             mod.getPlayer().closeHandledScreen();
                             // Deequip armor
                             //Debug.logInternal("DE-EQUIPPING ARMOR");
-                            List<Integer> emptyInv = mod.getInventoryTracker().getInventorySlotsWithItem(Items.AIR);
+                            List<Integer> emptyInv = mod.getInventoryTracker().getEmptyInventorySlots();
                             if (emptyInv.size() == 0) {
                                 mod.logWarning("Can't de-equip armor because inventory is full.");
                                 finish();
@@ -497,24 +496,45 @@ public class AltoClefCommands extends CommandList {
             finish();
         }
     }
-    static class HasCommand extends Command {
-        public HasCommand() throws CommandException {
-            super("has", "Returns how many of an item the bot has", new Arg(String.class, "item"));
+    static class InventoryCommand extends Command {
+        public InventoryCommand() throws CommandException {
+            super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg(String.class, "item", null, 1));
         }
         @Override
         protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
             String item = parser.Get(String.class);
-            Item[] matches = TaskCatalogue.getItemMatches(item);
-            if (matches.length == 0) {
-                mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
-                finish();
-                return;
-            }
-            int count = mod.getInventoryTracker().getItemCount(matches);
-            if (count == 0) {
-                mod.log(item + " COUNT: (none)");
+            if (item == null) {
+                // Print inventory
+                // Get item counts
+                HashMap<String, Integer> counts = new HashMap<>();
+                for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
+                    ItemStack stack = mod.getPlayer().inventory.getStack(i);
+                    if (!stack.isEmpty()) {
+                        String name = stack.getItem().getTranslationKey();
+                        if (!counts.containsKey(name)) counts.put(name, 0);
+                        counts.put(name, counts.get(name) + stack.getCount());
+                    }
+                }
+                // Print
+                mod.log("INVENTORY: ", WhisperPriority.OPTIONAL);
+                for (String name : counts.keySet()) {
+                    mod.log(name + " : " + counts.get(name), WhisperPriority.OPTIONAL);
+                }
+                mod.log("(inventory list sent) ", WhisperPriority.OPTIONAL);
             } else {
-                mod.log(item + " COUNT: " + count);
+                // Print item quantity
+                Item[] matches = TaskCatalogue.getItemMatches(item);
+                if (matches == null || matches.length == 0) {
+                    mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
+                    finish();
+                    return;
+                }
+                int count = mod.getInventoryTracker().getItemCount(matches);
+                if (count == 0) {
+                    mod.log(item + " COUNT: (none)");
+                } else {
+                    mod.log(item + " COUNT: " + count);
+                }
             }
             finish();
         }
@@ -538,6 +558,7 @@ public class AltoClefCommands extends CommandList {
             }
         }
     }
+
 
     static class TestCommand extends Command {
 
@@ -590,6 +611,18 @@ public class AltoClefCommands extends CommandList {
             mod.getInventoryTracker().swapItems(new PlayerSlot(slot1), new PlayerSlot(slot2));
             Debug.logMessage("Successfully swapped.");
             finish();
+        }
+    }
+
+    static class PunkCommand extends Command {
+        public PunkCommand() throws CommandException {
+            super("punk", "Punk 'em", new Arg(String.class, "playerName"));
+        }
+
+        @Override
+        protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+            String playerName = parser.Get(String.class);
+            mod.runUserTask(new KillPlayerTask(playerName), nothing -> finish());
         }
     }
 

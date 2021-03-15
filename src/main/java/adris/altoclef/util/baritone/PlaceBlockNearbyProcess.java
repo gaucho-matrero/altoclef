@@ -16,6 +16,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -68,6 +69,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         _placed = null;
         _placeTimer = 0;
         _onlyPlaceOnGround = onlyPlaceOnGround;
+        Debug.logMessage("Tempppppp Reset");
     }
     public void place(Block[] toPlace) {
         this.place(toPlace, true);
@@ -81,17 +83,49 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         // Wait while placing.
         if (_placeTimer-- > 0) {
             //Debug.logMessage("(wait)");
+            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
             return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
         }
 
         // Wait for place
         if (_placed != null) {
+            baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
             BlockState check = ctx.world().getBlockState(_placed);
             if (isTargetPlace(check.getBlock())) {
+
+                synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                    _mod.getBlockTracker().addBlock(check.getBlock(), _placed);
+                }
+
                 onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
+            } else {
+                //Debug.logMessage("Invalid place: " + _placed);
+                _placed = null;
             }
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+            //return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+        }
+
+        // If we're facing a placable block, just go for it.
+        HitResult hit = MinecraftClient.getInstance().crosshairTarget;
+        if (hit instanceof BlockHitResult) {
+            BlockHitResult bhit = (BlockHitResult) hit;
+            BlockPos bpos = bhit.getBlockPos();//.subtract(bhit.getSide().getVector());
+            //Debug.logMessage("TEMP: A: " + bpos);
+            if (MovementHelper.canPlaceAgainst(ctx, bpos)) {
+                BlockPos placePos = bhit.getBlockPos().add(bhit.getSide().getVector());
+                //Debug.logMessage("TEMP: B (actual): " + placePos);
+                if (!Baritone.getAltoClefSettings().shouldAvoidPlacingAt(placePos.getX(), placePos.getY(), placePos.getZ())) {
+                    if (equipBlock()) {
+                        baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                        //Debug.logMessage("TEMP: Placed at " + placePos);
+                        _placed = placePos;
+                        return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                    } else {
+                        //Debug.logMessage("TEMP: Failed to click");
+                    }
+                }
+            }
         }
 
         // Try to place
@@ -101,6 +135,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
             BlockPos tryPos = playerPos.add(offs);
             if (tryPlaceAt(tryPos)) {
                 _placed = tryPos;
+                //Debug.logMessage("TEMP222: Try at " + tryPos);
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }
@@ -228,15 +263,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                         //Debug.logInternal("(within player) " + offs);
                         return false;
                     }
-                    boolean hasItem = false;
-                    for (Block block : _toPlace) {
-                        if (!_mod.getExtraBaritoneSettings().isInteractionPaused() && _mod.getInventoryTracker().hasItem(block.asItem())) {
-                            _mod.getInventoryTracker().equipItem(block.asItem());
-                            hasItem = true;
-                            break;
-                        }
-                    }
-                    if (!hasItem) {
+                    if (!equipBlock()) {
                         Debug.logWarning("Did not have any blocks to place, cancelling.");
                         onLostControl();
                         return false;
@@ -251,6 +278,15 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                     _placeTimer = 5;
                 }
             //}
+        }
+        return false;
+    }
+
+    private boolean equipBlock() {
+        for (Block block : _toPlace) {
+            if (!_mod.getExtraBaritoneSettings().isInteractionPaused() && _mod.getInventoryTracker().hasItem(block.asItem())) {
+                if (_mod.getInventoryTracker().equipItem(block.asItem())) return true;
+            }
         }
         return false;
     }

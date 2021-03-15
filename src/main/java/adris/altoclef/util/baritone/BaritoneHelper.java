@@ -16,6 +16,7 @@ public class BaritoneHelper {
         int yDiff = (int) yTarget - (int)yStart;
         double zDiff = zTarget - zStart;
         return GoalBlock.calculate(xDiff, yDiff < 0 ? yDiff + 1 : yDiff, zDiff);
-        
     }
+
+    public static final Object MINECRAFT_LOCK = new Object();
 }

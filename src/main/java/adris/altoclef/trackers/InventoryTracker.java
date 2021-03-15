@@ -5,6 +5,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -31,6 +32,8 @@ public class InventoryTracker extends Tracker {
     // inventory.size goes to 40, including armor + shield slot which we will ignore.
     private static final int INVENTORY_SIZE = 36;
 
+    private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[] {Items.COAL, Items.CHARCOAL};
+
     private HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private List<Integer> _foodSlots = new ArrayList<>();
@@ -47,14 +50,21 @@ public class InventoryTracker extends Tracker {
 
     public int getEmptySlotCount() {
         ensureUpdated();
-        return _emptySlots;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _emptySlots;
+        }
     }
     public boolean isInventoryFull() {
         return getEmptySlotCount() <= 0;
     }
     public boolean hasItem(Item item) {
         ensureUpdated();
-        return _itemCounts.containsKey(item);
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            if (item instanceof ArmorItem) {
+                if (isArmorEquipped(item)) return true;
+            }
+            return _itemCounts.containsKey(item);
+        }
     }
     public boolean hasItem(Item ...items) {
         ensureUpdated();
@@ -70,7 +80,21 @@ public class InventoryTracker extends Tracker {
     public int getItemCount(Item item) {
         ensureUpdated();
         if (!hasItem(item)) return 0;
-        return _itemCounts.get(item);
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            int count = 0;
+            if (_itemCounts.containsKey(item)) {
+                count += _itemCounts.get(item);
+            }
+            if (item instanceof ArmorItem) {
+                if (isArmorEquipped(item)) {
+                    // TODO: Impractical but theoretically speaking,
+                    // can we have the same armor equipped in more than one armor slot?
+                    // If so, this will need to update the NUMBER of times this armor is equipped.
+                    count += 1;
+                }
+            }
+            return count;
+        }
     }
     public int getItemCount(Item ...items) {
         ensureUpdated();
@@ -98,13 +122,18 @@ public class InventoryTracker extends Tracker {
 
     public List<Integer> getInventorySlotsWithItem(Item ...items) {
         ensureUpdated();
-        List<Integer> result = new ArrayList<>();
-        for (Item item : items) {
-            if (_itemSlots.containsKey(item)) {
-                result.addAll(_itemSlots.get(item));
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            List<Integer> result = new ArrayList<>();
+            for (Item item : items) {
+                if (_itemSlots.containsKey(item)) {
+                    result.addAll(_itemSlots.get(item));
+                }
             }
+            return result;
         }
-        return result;
+    }
+    public List<Integer> getEmptyInventorySlots() {
+        return getInventorySlotsWithItem(Items.AIR);
     }
 
     public boolean targetMet(ItemTarget ...targets) {
@@ -136,28 +165,38 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public double getTotalFuel(boolean includeThrowawayProtected) {
-        double total = 0;
-        for (Item item : _itemCounts.keySet()) {
-            if (includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
-                total += getFuelAmount(item) * _itemCounts.get(item);
-            }
-        }
-        return total;
-    }
-    public double getTotalFuel() {
-        return getTotalFuel(false);
-    }
-    public List<Item> getFuelItems() {
-        List<Item> fuel = new ArrayList<>();
-        for (Item item : _itemCounts.keySet()) {
-            if (!_mod.getConfigState().isProtected(item)) {
-                if (isFuel(item)) {
-                    fuel.add(item);
+    public double getTotalFuel(boolean includeThrowawayProtected, boolean includeNormalFuel) {
+        ensureUpdated();
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            double total = 0;
+            for (Item item : _itemCounts.keySet()) {
+                boolean normalGood = (includeNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
+                if (normalGood || includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
+                    total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
+            return total;
         }
-        return fuel;
+    }
+    public double getTotalFuelNormal() {
+        return getTotalFuel(false, true);
+    }
+    /*public double getTotalFuel() {
+        return getTotalFuel(false, false);
+    }*/
+    public List<Item> getFuelItems() {
+        ensureUpdated();
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            List<Item> fuel = new ArrayList<>();
+            for (Item item : _itemCounts.keySet()) {
+                if (!_mod.getConfigState().isProtected(item)) {
+                    if (isFuel(item)) {
+                        fuel.add(item);
+                    }
+                }
+            }
+            return fuel;
+        }
     }
 
     /*
@@ -175,14 +214,16 @@ public class InventoryTracker extends Tracker {
 
     public List<ItemStack> getAvailableFoods() {
         ensureUpdated();
-        List<ItemStack> result = new ArrayList<>(_foodSlots.size());
-        for(int slot : _foodSlots) {
-            result.add(getItemStackInSlot(Slot.getFromInventory(slot)));
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            List<ItemStack> result = new ArrayList<>(_foodSlots.size());
+            for (int slot : _foodSlots) {
+                result.add(getItemStackInSlot(Slot.getFromInventory(slot)));
+            }
+            return result;
         }
-        return result;
     }
 
-    public boolean hasRecipeMaterials(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
+    public boolean hasRecipeMaterialsOrTarget(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
             ItemTarget itemTarget = target.getItem();
@@ -203,15 +244,15 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
-    public boolean hasRecipeMaterials(RecipeTarget...targets) {
-        return hasRecipeMaterials(new HashMap<>(), targets);
+    public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
+        return hasRecipeMaterialsOrTarget(new HashMap<>(), targets);
     }
 
-    public boolean hasRecipeMaterials(CraftingRecipe recipe) {
-        return hasRecipeMaterials(recipe, 1);
+    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe) {
+        return hasRecipeMaterialsOrTarget(recipe, 1);
     }
 
-    public boolean hasRecipeMaterials(CraftingRecipe recipe, int count) {
+    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
         ensureUpdated();
         return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }
@@ -236,41 +277,48 @@ public class InventoryTracker extends Tracker {
 
     public Slot getGarbageSlot() {
         ensureUpdated();
-        // Downgrade pickaxe maybe?
-        MiningRequirement[] order = new MiningRequirement[] {
-                MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
-        };
-        MiningRequirement currentReq = MiningRequirement.HAND;
-        for (MiningRequirement check : order) {
-            if (miningRequirementMet(check)) {
-                currentReq = check;
-                break;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            // Get stuff that's throwaway by default
+            List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
+            if (throwawaySlots.size() != 0) {
+                Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
+                return Slot.getFromInventory(throwawaySlots.get(0));
             }
-        }
-        for (MiningRequirement check : order) {
-            if (check != currentReq && miningRequirementMet(check)) {
-                // Throw away if we have this item since we already have a BETTER one.
-                Item item = check.getMinimumPickaxe();
-                if (hasItem(item)) {
-                    Debug.logInternal("Throwing away: " + item.getTranslationKey());
-                    return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+
+            // Downgrade pickaxe maybe?
+            MiningRequirement[] order = new MiningRequirement[]{
+                    MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
+            };
+            MiningRequirement currentReq = MiningRequirement.HAND;
+            for (MiningRequirement check : order) {
+                if (miningRequirementMet(check)) {
+                    currentReq = check;
+                    break;
                 }
             }
-        }
+            for (MiningRequirement check : order) {
+                if (check != currentReq && miningRequirementMet(check)) {
+                    // Throw away if we have this item since we already have a BETTER one.
+                    Item item = check.getMinimumPickaxe();
+                    if (!_mod.getConfigState().isProtected(item)) {
+                        if (hasItem(item)) {
+                            //Debug.logInternal("Throwing away: " + item.getTranslationKey());
+                            return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+                        }
+                    }
+                }
+            }
 
-        // Get stuff that's throwaway by default
-        List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems());
-        if (throwawaySlots.size() != 0) {
-            Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
-            return Slot.getFromInventory(throwawaySlots.get(0));
-        }
-
-        if (_mod.getModSettings().shouldThrowawayUnusedItems()) {
-            // Get the first non-important item. For now there is no measure of value.
-            for(Item item : this._itemSlots.keySet()) {
-                if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
-                    Debug.logInternal("oof");
-                    return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
+            // Now we're getting desparate
+            if (_mod.getModSettings().shouldThrowawayUnusedItems()) {
+                // Get the first non-important item. For now there is no measure of value.
+                for (Item item : this._itemSlots.keySet()) {
+                    if (!_mod.getConfigState().isProtected(item)) {
+                        if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
+                            Debug.logInternal("oof");
+                            return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
+                        }
+                    }
                 }
             }
         }
@@ -335,7 +383,9 @@ public class InventoryTracker extends Tracker {
 
     public int totalFoodScore() {
         ensureUpdated();
-        return _foodPoints;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _foodPoints;
+        }
     }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
@@ -461,6 +511,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public ItemStack throwSlot(Slot slot) {
+        ensureUpdated();
         ItemStack pickup = clickSlot(slot);
         clickWindowSlot(-999, 0, SlotActionType.PICKUP);
         setDirty();
@@ -605,6 +656,7 @@ public class InventoryTracker extends Tracker {
 
     public boolean equipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
+        ensureUpdated();
 
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
         // Already equipped
@@ -637,6 +689,14 @@ public class InventoryTracker extends Tracker {
 
         int found = getInventorySlotsWithItem(item).get(0);
         swapItems(Slot.getFromInventory(found), Slot.getFromInventory(otherSlot));
+    }
+
+    public void refreshInventory() {
+        for (int i = 0; i < INVENTORY_SIZE; ++i) {
+            Slot slot = Slot.getFromInventory(i);
+            clickSlot(slot);
+            clickSlot(slot);
+        }
     }
 
     private static Map<Item, Integer> getFuelTimeMap() {
@@ -708,53 +768,54 @@ public class InventoryTracker extends Tracker {
 
     @Override
     protected void updateState() {
-        _itemCounts.clear();
-        _itemSlots.clear();
-        _foodSlots.clear();
-        _emptySlots = 0;
-        _foodPoints = 0;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            _itemCounts.clear();
+            _itemSlots.clear();
+            _foodSlots.clear();
+            _emptySlots = 0;
+            _foodPoints = 0;
 
-        if (MinecraftClient.getInstance().player == null) {
-            // No updating needed, we have nothing.
-            return;
-        }
-        PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
-
-        // - 1. idk
-        for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
-            boolean isCursorStack = (slot == -1);
-            ItemStack stack;
-            if (isCursorStack) {
-                // Add our cursor stack as well to the list.
-                stack = inventory.getCursorStack();
-            } else {
-                stack = inventory.getStack(slot);
+            if (MinecraftClient.getInstance().player == null) {
+                // No updating needed, we have nothing.
+                return;
             }
-            Item item = stack.getItem();
-            int count = stack.getCount();
-            if (stack.isEmpty()) {
-                // If our cursor slot is empty, IGNORE IT as we don't want to treat it as a valid slot.
+            PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
+
+            // - 1. idk
+            for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
+                boolean isCursorStack = (slot == -1);
+                ItemStack stack;
                 if (isCursorStack) {
-                    continue;
+                    // Add our cursor stack as well to the list.
+                    stack = inventory.getCursorStack();
+                } else {
+                    stack = inventory.getStack(slot);
                 }
-                _emptySlots++;
-                item = Items.AIR;
+                Item item = stack.getItem();
+                int count = stack.getCount();
+                if (stack.isEmpty()) {
+                    // If our cursor slot is empty, IGNORE IT as we don't want to treat it as a valid slot.
+                    if (isCursorStack) {
+                        continue;
+                    }
+                    _emptySlots++;
+                    item = Items.AIR;
+                }
+                if (!_itemCounts.containsKey(item)) {
+                    _itemCounts.put(item, 0);
+                }
+                if (!_itemSlots.containsKey(item)) {
+                    _itemSlots.put(item, new ArrayList<>());
+                }
+                if (item.isFood()) {
+                    _foodSlots.add(slot);
+                    assert item.getFoodComponent() != null;
+                    _foodPoints += item.getFoodComponent().getHunger() * count;
+                }
+                _itemCounts.put(item, _itemCounts.get(item) + count);
+                _itemSlots.get(item).add(slot);
             }
-            if (!_itemCounts.containsKey(item)) {
-                _itemCounts.put(item, 0);
-            }
-            if (!_itemSlots.containsKey(item)) {
-                _itemSlots.put(item, new ArrayList<>());
-            }
-            if (item.isFood()) {
-                _foodSlots.add(slot);
-                assert item.getFoodComponent() != null;
-                _foodPoints += item.getFoodComponent().getHunger() * count;
-            }
-            _itemCounts.put(item, _itemCounts.get(item) + count);
-            _itemSlots.get(item).add(slot);
         }
-
     }
 
     @Override

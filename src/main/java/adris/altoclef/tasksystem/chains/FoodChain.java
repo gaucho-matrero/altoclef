@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Input;
+import adris.altoclef.util.LookUtil;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
@@ -26,6 +27,7 @@ import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Hand;
@@ -49,19 +51,27 @@ public class FoodChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
 
         if (!mod.getModSettings().isAutoEat()) {
+            stopEat(mod);
+            return Float.NEGATIVE_INFINITY;
+        }
+
+        if (mod.getInventoryTracker().totalFoodScore() <= 0) {
+            // Do nothing if we have no food.
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
         /*
         - Eats if:
-        - We're hungry and have food that easily fits
+        - We're hungry and have food that fits
             - We're low on health and maybe a little bit hungry
             - We're very low on health and are even slightly hungry
+        - We're kind of hungry and have food that fits perfectly
          */
-
 
         // We're in danger, don't eat now!!
         if (mod.getMobDefenseChain().isDoingAcrobatics()) {
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -70,7 +80,7 @@ public class FoodChain extends SingleTaskChain {
             _requestFillup = false;
         }
 
-        if (needsToEat() || _requestFillup) {
+        if (needsToEat(mod) || _requestFillup) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
                 //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
@@ -78,25 +88,19 @@ public class FoodChain extends SingleTaskChain {
                 _requestFillup = true;
 
                 // Make sure we're not facing a container
-                if (isCollidingContainer(mod)) {
-                    randomOrientation(mod);
+                if (!LookUtil.tryAvoidingInteractable(mod)) {
                     return Float.NEGATIVE_INFINITY;
                 }
 
                 mod.getInventoryTracker().equipItem(toUse);
-                MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                startEat(mod);
             } else {
-                _isTryingToEat = false;
-                _requestFillup = false;
+                stopEat(mod);
             }
         } else if (_isTryingToEat) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
-            _isTryingToEat = false;
-            _requestFillup = false;
+            stopEat(mod);
         }
 
-        // Pause interactions when eating.
-        mod.getExtraBaritoneSettings().setInteractionPaused(_isTryingToEat);
 
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
@@ -107,7 +111,20 @@ public class FoodChain extends SingleTaskChain {
         // Nothing.
     }
 
-    public boolean needsToEat() {
+    private void startEat(AltoClef mod) {
+        MinecraftClient.getInstance().options.keyUse.setPressed(true);
+        mod.getExtraBaritoneSettings().setInteractionPaused(true);
+    }
+    private void stopEat(AltoClef mod) {
+        if (_isTryingToEat) {
+            MinecraftClient.getInstance().options.keyUse.setPressed(false);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+            _isTryingToEat = false;
+            _requestFillup = false;
+        }
+    }
+
+    public boolean needsToEat(AltoClef mod) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         assert player != null;
         int foodLevel = player.getHungerManager().getFoodLevel();
@@ -132,6 +149,15 @@ public class FoodChain extends SingleTaskChain {
                 return true;
             }
         }
+
+        // Eat if we're more than 2.5 units hungry and we have a perfect fit.
+        if (foodLevel < 20 - 5) {
+            int need = 20 - foodLevel;
+            Item best = getBestItemToEat(mod);
+            int fills = (best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            if (fills == need) return true;
+        }
+
         return false;
     }
 
@@ -142,6 +168,10 @@ public class FoodChain extends SingleTaskChain {
         for (ItemStack stack : mod.getInventoryTracker().getAvailableFoods()) {
             FoodComponent f = stack.getItem().getFoodComponent();
             if (f != null) {
+                // Ignore spider eyes
+                if (stack.getItem() == Items.SPIDER_EYE) {
+                    continue;
+                }
                 int fill = f.getHunger();
                 int diff = Math.abs(fill - foodToFill);
                 if (diff < bestDifference) {
@@ -179,46 +209,12 @@ public class FoodChain extends SingleTaskChain {
         super.onStop(mod);
     }
 
-    private boolean isCollidingContainer(AltoClef mod) {
 
-        if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            mod.getPlayer().closeHandledScreen();
-            return true;
-        }
-
-        IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
-        HitResult result = MinecraftClient.getInstance().crosshairTarget;
-        if (result == null) return false;
-        if (result.getType() == HitResult.Type.BLOCK) {
-            Block block = mod.getWorld().getBlockState(new BlockPos(result.getPos())).getBlock();
-            if (block instanceof ChestBlock
-                    || block instanceof EnderChestBlock
-                    || block instanceof CraftingTableBlock
-                    || block instanceof AbstractFurnaceBlock
-                    || block instanceof LoomBlock
-                    || block instanceof CartographyTableBlock
-                    || block instanceof EnchantingTableBlock
-            ) {
-                return true;
-            }
-        } else if (result.getType() == HitResult.Type.ENTITY) {
-            if (result instanceof EntityHitResult) {
-                Entity entity = ((EntityHitResult) result).getEntity();
-                if (entity instanceof MerchantEntity) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void randomOrientation(AltoClef mod) {
-        Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
-        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
-    }
 
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {
+        // Don't do this if we have no food
+        if (mod.getInventoryTracker().totalFoodScore() <= 0) return false;
         int foodLevel = mod.getPlayer().getHungerManager().getFoodLevel();
         float health = mod.getPlayer().getHealth();
         int armor = mod.getPlayer().getArmor();

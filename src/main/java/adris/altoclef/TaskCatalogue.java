@@ -88,6 +88,8 @@ public class TaskCatalogue {
             simple("water_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectWaterBucketTask.class);
             simple("lava_bucket", Items.LAVA_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask.class);
 
+            simple("obsidian", Items.OBSIDIAN, CollectObsidianTask.class);
+
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
             alias("iron_pick", "iron_pickaxe");

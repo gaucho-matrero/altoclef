@@ -5,10 +5,7 @@ import adris.altoclef.butler.WhisperPriority;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.tasksystem.chains.DeathMenuChain;
-import adris.altoclef.tasksystem.chains.FoodChain;
-import adris.altoclef.tasksystem.chains.MobDefenseChain;
-import adris.altoclef.tasksystem.chains.UserTaskChain;
+import adris.altoclef.tasksystem.chains.*;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.util.Dimension;
@@ -97,12 +94,13 @@ public class AltoClef implements ModInitializer {
         _userTaskChain = new UserTaskChain(_taskRunner);
         _mobDefenseChain = new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
+        new HandStackFixChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
         _inventoryTracker = new InventoryTracker(_trackerManager);
         _entityTracker = new EntityTracker(_trackerManager);
-        _blockTracker = new BlockTracker(_trackerManager);
+        _blockTracker = new BlockTracker(this, _trackerManager);
         _containerTracker = new ContainerTracker(this, _trackerManager);
         _chunkTracker = new SimpleChunkTracker(this);
 
