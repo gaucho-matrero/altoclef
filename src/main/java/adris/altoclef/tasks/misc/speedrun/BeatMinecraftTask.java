@@ -12,6 +12,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
@@ -196,6 +197,20 @@ public class BeatMinecraftTask extends Task {
 
         // Piglin Barter
         if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
+
+            if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+                // Eh just in case if we have a few extra diamonds laying around
+                if (mod.getInventoryTracker().getItemCount(Items.DIAMOND) >= 3) {
+                    setDebugState("Collecting a diamond pickaxe instead of a wooden one, since we can.");
+                    return TaskCatalogue.getItemTask("diamond_pickaxe", 1);
+                }
+                // In case if we have extra stone
+                if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) >= 3) {
+                    setDebugState("Collecting a stone pickaxe instead of a wooden one, since we can.");
+                    return TaskCatalogue.getItemTask("stone_pickaxe", 1);
+                }
+            }
+
             setDebugState("Collecting Ender Pearls");
             return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
