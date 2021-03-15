@@ -223,10 +223,14 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
+                    continue;
+                    // Ignore ghast balls
+                    /*
                     // ignore if it's too far away.
                     if (!projectile.position.isInRange(mod.getPlayer().getPos(), 40)) {
                         continue;
                     }
+                     */
                 }
 
                 Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
