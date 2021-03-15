@@ -170,7 +170,26 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Check for fuel.
             // If fuel is already in the furnace, we need less of it.
 
+            // SPECIAL CASE: If we are OR WERE searching for a crafting table, we need to hide planks as a source of fuel!
+            // Otherwise, planks will be protected/unprotected and fuel will be needed/not needed in an infinite back+forth.
+
+            boolean needsNewFurnace = getTargetContainerPosition() == null;
+
             double fuelNeeded = _target.getMaterial().targetCount - mod.getInventoryTracker().getItemCount(_target.getItem());
+
+            double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
+
+            if (needsNewFurnace) {
+                // Special case: Allocate 4 wood for the crafting of the table,
+                // and 2 sticks if we want to make a wooden pickaxe.
+                boolean planksProtected = mod.getConfigState().isProtected(Items.OAK_PLANKS);
+                boolean sticksProtected = mod.getConfigState().isProtected(Items.STICK);
+                int plankCount = planksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS), 4);
+                int stickCount = sticksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCount(Items.STICK), 2);
+                hasFuel -= InventoryTracker.getFuelAmount(Items.OAK_PLANKS) * plankCount;
+                hasFuel -= InventoryTracker.getFuelAmount(Items.STICK) * stickCount;
+            }
+
             if (_ignoreMaterials) {
                 // Start our fuel off at just one until we find our furnace.
                 fuelNeeded = 1;
@@ -178,8 +197,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
             if (_currentFurnace != null) {
                 fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
             }
-            if (fuelNeeded > mod.getInventoryTracker().getTotalFuelNormal()) {
-                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + mod.getInventoryTracker().getTotalFuelNormal());
+
+            if (fuelNeeded > hasFuel) {
+                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + hasFuel);
                 _smeltProgressChecker.reset();
                 return new CollectFuelTask(fuelNeeded);
             }

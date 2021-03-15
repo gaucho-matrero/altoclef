@@ -227,10 +227,12 @@ public class InventoryTracker extends Tracker {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
             ItemTarget itemTarget = target.getItem();
-            // If we already have the item, we're good.
-            if (targetMet(itemTarget)) continue;
+            // We may already have one or more targets, if so we only need to collect resources
+            // for the REST of the target.
+            // For example, we have 1 bucket but need 2 buckets, we only need a recipie for ONE bucket.
+            int countNeeded = itemTarget.targetCount - getItemCount(itemTarget.getMatches());
             // Check for mapping
-            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, itemTarget.targetCount);
+            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, countNeeded);
             if (mapping == null) return false;
             // Indicate we've used this item.
             for (int invSlot : mapping.values()) {
@@ -641,8 +643,15 @@ public class InventoryTracker extends Tracker {
         List<Integer> itemSlots = getInventorySlotsWithItem(toEquip);
         if (itemSlots.size() != 0) {
             int slot = itemSlots.get(0);
-            swapItems(Slot.getFromInventory(slot), target);
-            return true;
+            int hotbar = target.getInventorySlot();
+            if (0 <= hotbar && hotbar < 9) {
+                clickSlot(Slot.getFromInventory(slot), hotbar, SlotActionType.SWAP);
+                //swapItems(Slot.getFromInventory(slot), target);
+                return true;
+            } else {
+                Debug.logWarning("Tried to swap to hotbar that's not a hotbar position! " + hotbar + " (target=" + target + ")");
+                return false;
+            }
         }
 
         Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());

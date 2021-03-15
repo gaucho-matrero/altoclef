@@ -10,6 +10,7 @@ import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -129,16 +130,23 @@ public class AltoClefCommands extends CommandList {
                             sleepSec(1);
                         }
 
-                        Item toEquip = Items.FLINT_AND_STEEL;//Items.AIR;
+                        Item toEquip = Items.BUCKET;//Items.AIR;
                         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
-                        // Already equipped
-                        if (mod.getInventoryTracker().getItemStackInSlot(target).getItem() == toEquip) return;
+                        InventoryTracker t = mod.getInventoryTracker();
 
-                        List<Integer> itemSlots = mod.getInventoryTracker().getInventorySlotsWithItem(toEquip);
-                        if (itemSlots.size() != 0) {
-                            int slot = itemSlots.get(0);
-                            swap(Slot.getFromInventory(slot), target);
+                        // Already equipped
+                        if (t.getItemStackInSlot(target).getItem() == toEquip) {
+                            Debug.logMessage("Already equipped.");
+                        } else {
+                            List<Integer> itemSlots = t.getInventorySlotsWithItem(toEquip);
+                            if (itemSlots.size() != 0) {
+                                int slot = itemSlots.get(0);
+                                t.swapItems(Slot.getFromInventory(slot), target);
+                                Debug.logMessage("Equipped via swap");
+                            } else {
+                                Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
+                            }
                         }
                     }
 
