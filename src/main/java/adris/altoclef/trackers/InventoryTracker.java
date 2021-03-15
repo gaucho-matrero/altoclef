@@ -32,6 +32,8 @@ public class InventoryTracker extends Tracker {
     // inventory.size goes to 40, including armor + shield slot which we will ignore.
     private static final int INVENTORY_SIZE = 36;
 
+    private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[] {Items.COAL, Items.CHARCOAL};
+
     private HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private List<Integer> _foodSlots = new ArrayList<>();
@@ -163,21 +165,25 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public double getTotalFuel(boolean includeThrowawayProtected) {
+    public double getTotalFuel(boolean includeThrowawayProtected, boolean includeNormalFuel) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             double total = 0;
             for (Item item : _itemCounts.keySet()) {
-                if (includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
+                boolean normalGood = (includeNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
+                if (normalGood || includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
                     total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
             return total;
         }
     }
-    public double getTotalFuel() {
-        return getTotalFuel(false);
+    public double getTotalFuelNormal() {
+        return getTotalFuel(false, true);
     }
+    /*public double getTotalFuel() {
+        return getTotalFuel(false, false);
+    }*/
     public List<Item> getFuelItems() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -272,6 +278,13 @@ public class InventoryTracker extends Tracker {
     public Slot getGarbageSlot() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            // Get stuff that's throwaway by default
+            List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
+            if (throwawaySlots.size() != 0) {
+                Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
+                return Slot.getFromInventory(throwawaySlots.get(0));
+            }
+
             // Downgrade pickaxe maybe?
             MiningRequirement[] order = new MiningRequirement[]{
                     MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
@@ -287,26 +300,24 @@ public class InventoryTracker extends Tracker {
                 if (check != currentReq && miningRequirementMet(check)) {
                     // Throw away if we have this item since we already have a BETTER one.
                     Item item = check.getMinimumPickaxe();
-                    if (hasItem(item)) {
-                        //Debug.logInternal("Throwing away: " + item.getTranslationKey());
-                        return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+                    if (!_mod.getConfigState().isProtected(item)) {
+                        if (hasItem(item)) {
+                            //Debug.logInternal("Throwing away: " + item.getTranslationKey());
+                            return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+                        }
                     }
                 }
             }
 
-            // Get stuff that's throwaway by default
-            List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems());
-            if (throwawaySlots.size() != 0) {
-                Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
-                return Slot.getFromInventory(throwawaySlots.get(0));
-            }
-
+            // Now we're getting desparate
             if (_mod.getModSettings().shouldThrowawayUnusedItems()) {
                 // Get the first non-important item. For now there is no measure of value.
                 for (Item item : this._itemSlots.keySet()) {
-                    if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
-                        Debug.logInternal("oof");
-                        return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
+                    if (!_mod.getConfigState().isProtected(item)) {
+                        if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
+                            Debug.logInternal("oof");
+                            return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
+                        }
                     }
                 }
             }
@@ -645,6 +656,7 @@ public class InventoryTracker extends Tracker {
 
     public boolean equipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
+        ensureUpdated();
 
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
         // Already equipped

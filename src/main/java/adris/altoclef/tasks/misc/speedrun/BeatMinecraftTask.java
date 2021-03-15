@@ -53,6 +53,10 @@ public class BeatMinecraftTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
+        mod.getConfigState().push();
+        // Add some protections so we don't throw these away at any point.
+        mod.getConfigState().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
+        mod.getConfigState().addProtectedItems(ItemTarget.BED);
     }
 
     @Override
@@ -136,25 +140,33 @@ public class BeatMinecraftTask extends Task {
 
         // Get blaze rods by going to nether
         if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
-            setDebugState("Going to nether!");
             //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
             // Go to nether
             if (_netherPortalPos != null) {
                 if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
                     if (!mod.getBlockTracker().blockIsValid(_netherPortalPos, Blocks.NETHER_PORTAL)) {
-                        _netherPortalPos = null;
+                        double MAX_PORTAL_DISTANCE = 2000;
+                        // Reset portal if it's far away or we confirmed it being incorrect in this chunk.
+                        if (mod.getChunkTracker().isChunkLoaded(_netherPortalPos) || _netherPortalPos.getSquaredDistance(mod.getPlayer().getPos(), false) > MAX_PORTAL_DISTANCE*MAX_PORTAL_DISTANCE) {
+                            Debug.logMessage("Invalid portal position detected at " + _netherPortalPos + ", finding new nether portal.");
+                            _netherPortalPos = null;
+                        }
                     }
                 }
                 if (_netherPortalPos != null) {
+                    setDebugState("Going to previously created nether portal...");
                     return new EnterNetherPortalTask(new GetToBlockTask(_netherPortalPos, false), Dimension.NETHER);
                 }
-            }
-            if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
-                if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
-                    _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+            } else {
+                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                    if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
+                        _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+                        Debug.logMessage("Tracked portal at " + _netherPortalPos);
+                    }
                 }
             }
 
+            setDebugState("Build nether portal + go to nether");
             return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
         } else {
             setDebugState("Crafting our blaze powder + eyes");
@@ -215,7 +227,7 @@ public class BeatMinecraftTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
-
+        mod.getConfigState().pop();
     }
 
     @Override

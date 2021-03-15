@@ -74,8 +74,6 @@ public class MineAndCollectTask extends ResourceTask {
         _cachedBlacklist.clear();
 
         _subtask.resetSearch();
-
-        Debug.logMessage("START");
     }
 
     @Override
@@ -100,7 +98,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        Debug.logMessage("STOP");
         mod.getBlockTracker().stopTracking(_blocksToMine);
         mod.getConfigState().pop();
     }

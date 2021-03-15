@@ -12,6 +12,8 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.Hoglin;
+import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -21,6 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 
 public class TradeWithPiglinsTask extends ResourceTask {
+
+    // TODO: Settings? Custom parameter?
+    private static final boolean AVOID_HOGLINS = true;
+    private static final double HOGLIN_AVOID_TRADE_RADIUS = 64;
 
     private final int _goldBuffer;
 
@@ -149,6 +155,16 @@ public class TradeWithPiglinsTask extends ResourceTask {
                 return null;
             }
 
+            if (AVOID_HOGLINS && _currentlyBartering != null && !EntityTracker.isTradingPiglin(_currentlyBartering)) {
+                Entity closestHoglin = mod.getEntityTracker().getClosestEntity(_currentlyBartering.getPos(), HoglinEntity.class);
+                if (closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS)) {
+                    Debug.logMessage("Aborting further trading because a hoglin showed up");
+                    _blacklisted.add(_currentlyBartering);
+                    _barterTimeout.reset();
+                    _currentlyBartering = null;
+                }
+            }
+
             setDebugState("Trading with piglin");
 
             mod.getInventoryTracker().equipItem(Items.GOLD_INGOT);
@@ -161,17 +177,31 @@ public class TradeWithPiglinsTask extends ResourceTask {
         protected Entity getEntityTarget(AltoClef mod) {
             // Ignore trading piglins
             Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                    (entity) ->
-                            _blacklisted.contains(entity)
-                                    || EntityTracker.isTradingPiglin(entity)
-                                    || (entity instanceof LivingEntity && ((LivingEntity)entity).isBaby())
-                                    || (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS)),
+                    (entity) -> {
+                        if (_blacklisted.contains(entity)
+                                || EntityTracker.isTradingPiglin(entity)
+                                || (entity instanceof LivingEntity && ((LivingEntity) entity).isBaby())
+                                || (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
+                            return true;
+                        }
+
+                        if (AVOID_HOGLINS) {
+                            // Avoid trading if hoglin is anywhere remotely nearby.
+                            Entity closestHoglin = mod.getEntityTracker().getClosestEntity(entity.getPos(), HoglinEntity.class);
+                            if (closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS)) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+            ,
                     PiglinEntity.class);
             if (found == null) {
-                if (_blacklisted.contains(_currentlyBartering)) {
+                if (_blacklisted.contains(_currentlyBartering) || !_currentlyBartering.isAlive()) {
                     _currentlyBartering = null;
                 }
-                return _currentlyBartering;
+                found = _currentlyBartering;
             }
             return found;
         }

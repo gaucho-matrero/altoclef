@@ -5,12 +5,13 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiPredicate;
 
 public interface Util {
 
-    static <T> T[] toArray(Class<T> type, List<T> collection) {
+    static <T> T[] toArray(Class<T> type, Collection<T> collection) {
         @SuppressWarnings("unchecked")
         T[] result = (T[]) Array.newInstance(type, collection.size());
         collection.toArray(result);

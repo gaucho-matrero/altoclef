@@ -27,6 +27,7 @@ import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Hand;
@@ -167,6 +168,10 @@ public class FoodChain extends SingleTaskChain {
         for (ItemStack stack : mod.getInventoryTracker().getAvailableFoods()) {
             FoodComponent f = stack.getItem().getFoodComponent();
             if (f != null) {
+                // Ignore spider eyes
+                if (stack.getItem() == Items.SPIDER_EYE) {
+                    continue;
+                }
                 int fill = f.getHunger();
                 int diff = Math.abs(fill - foodToFill);
                 if (diff < bestDifference) {

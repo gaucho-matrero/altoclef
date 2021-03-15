@@ -178,8 +178,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
             if (_currentFurnace != null) {
                 fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
             }
-            if (fuelNeeded > mod.getInventoryTracker().getTotalFuel()) {
-                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + mod.getInventoryTracker().getTotalFuel());
+            if (fuelNeeded > mod.getInventoryTracker().getTotalFuelNormal()) {
+                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + mod.getInventoryTracker().getTotalFuelNormal());
                 _smeltProgressChecker.reset();
                 return new CollectFuelTask(fuelNeeded);
             }
@@ -237,8 +237,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial());
                 toMoveTarget.targetCount = toMove;
                 int moved = mod.getInventoryTracker().moveItemToSlot(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
-
-                Debug.logInternal("MOVE " + toMove + " : " + moved);
 
                 if (moved != toMove && !_ignoreMaterials) {
                     Debug.logWarning("Failed to move " + toMove + " materials to the furnace materials slot. Only moved " + moved + ". Will proceed anyway.");

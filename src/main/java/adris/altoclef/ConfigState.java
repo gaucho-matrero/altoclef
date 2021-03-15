@@ -49,6 +49,7 @@ public class ConfigState {
         current().applyState();
     }
 
+    /*
     public void removeThrowawayItems(Item ...items) {
         // No removeAll huh. Nice one Java.
         for (Item item : items) {
@@ -63,6 +64,7 @@ public class ConfigState {
         }
         current().applyState();
     }
+    */
 
     public boolean exclusivelyMineLogs() {
         return current().exclusivelyMineLogs;

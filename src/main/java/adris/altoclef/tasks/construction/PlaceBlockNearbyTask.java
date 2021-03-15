@@ -59,7 +59,6 @@ public class PlaceBlockNearbyTask extends Task {
             mod.getCustomBaritone().getPlaceBlockNearbyProcess().place(_toPlace);
         }
 
-
         if (_placeTimer.elapsed()) {
             Debug.logMessage("Failed to place timeout. Wandering...");
             return _wanderTask;
@@ -91,7 +90,7 @@ public class PlaceBlockNearbyTask extends Task {
     // Also used to determine when we placed the block
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _placing && !mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive() && mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock() != null;
+        return _placing && !mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive();// && mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock() != null;
     }
 
     // Used to determine where we placed the block

@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.util.csharpisbetter.Util;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Settings {
 
@@ -257,7 +260,17 @@ public class Settings {
     public boolean shouldThrowawayUnusedItems() {
         return this.throwAwayUnusedItems;
     }
-    public Item[] getThrowawayItems() {
+    public Item[] getThrowawayItems(AltoClef mod) {
+        List<Item> result = new ArrayList<>();
+        for (int throwawayItem : throwawayItems) {
+            Item item = Item.byRawId(throwawayItem);
+            if (mod.getConfigState().isProtected(item)) {
+                result.add(item);
+            }
+        }
+        return Util.toArray(Item.class, result);
+    }
+    public Item[] getThrowawayItemsRaw() {
         Item[] result = new Item[throwawayItems.length];
         for (int i = 0; i < throwawayItems.length; ++i) {
             result[i] = Item.byRawId(throwawayItems[i]);

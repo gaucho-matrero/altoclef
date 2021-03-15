@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.butler.WhisperPriority;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
@@ -14,6 +15,8 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -28,6 +31,7 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
@@ -72,11 +76,11 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
                 break;
             case "place": {
-                BlockPos targetPos = new BlockPos(0, 6, 0);
+                //BlockPos targetPos = new BlockPos(0, 6, 0);
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
-                Direction direction = Direction.WEST;
-                mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
-                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.GRAVEL}));
+                //Direction direction = Direction.WEST;
+                //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
+                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.CRAFTING_TABLE}));
                 break;
             }
             case "deadmeme":
@@ -237,7 +241,7 @@ public class AltoClefCommands extends CommandList {
             new GotoCommand(),
             new CoordsCommand(),
             new StatusCommand(),
-            new HasCommand(),
+            new InventoryCommand(),
             new StopCommand(),
             new TestCommand(),
             new FoodCommand(),
@@ -492,24 +496,45 @@ public class AltoClefCommands extends CommandList {
             finish();
         }
     }
-    static class HasCommand extends Command {
-        public HasCommand() throws CommandException {
-            super("has", "Returns how many of an item the bot has", new Arg(String.class, "item"));
+    static class InventoryCommand extends Command {
+        public InventoryCommand() throws CommandException {
+            super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg(String.class, "item", null, 1));
         }
         @Override
         protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
             String item = parser.Get(String.class);
-            Item[] matches = TaskCatalogue.getItemMatches(item);
-            if (matches.length == 0) {
-                mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
-                finish();
-                return;
-            }
-            int count = mod.getInventoryTracker().getItemCount(matches);
-            if (count == 0) {
-                mod.log(item + " COUNT: (none)");
+            if (item == null) {
+                // Print inventory
+                // Get item counts
+                HashMap<String, Integer> counts = new HashMap<>();
+                for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
+                    ItemStack stack = mod.getPlayer().inventory.getStack(i);
+                    if (!stack.isEmpty()) {
+                        String name = stack.getItem().getTranslationKey();
+                        if (!counts.containsKey(name)) counts.put(name, 0);
+                        counts.put(name, counts.get(name) + stack.getCount());
+                    }
+                }
+                // Print
+                mod.log("INVENTORY: ", WhisperPriority.OPTIONAL);
+                for (String name : counts.keySet()) {
+                    mod.log(name + " : " + counts.get(name), WhisperPriority.OPTIONAL);
+                }
+                mod.log("(inventory list sent) ", WhisperPriority.OPTIONAL);
             } else {
-                mod.log(item + " COUNT: " + count);
+                // Print item quantity
+                Item[] matches = TaskCatalogue.getItemMatches(item);
+                if (matches == null || matches.length == 0) {
+                    mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
+                    finish();
+                    return;
+                }
+                int count = mod.getInventoryTracker().getItemCount(matches);
+                if (count == 0) {
+                    mod.log(item + " COUNT: (none)");
+                } else {
+                    mod.log(item + " COUNT: " + count);
+                }
             }
             finish();
         }

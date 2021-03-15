@@ -88,6 +88,8 @@ public class BlockTracker extends Tracker {
     public void addBlock(Block block, BlockPos pos) {
         if (blockIsValid(pos, block)) {
             _cache.addBlock(block, pos);
+        } else {
+            Debug.logInternal("INVALID SET: " + block + " " + pos);
         }
     }
     public boolean anyFound(Block ...blocks) {
@@ -164,7 +166,7 @@ public class BlockTracker extends Tracker {
     }
 
     private void rescanWorld() {
-        Debug.logMessage("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
+        Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
         CalculationContext ctx = new CalculationContext(_mod.getClientBaritone());
         Block[] blocksToScan = new Block[_trackingBlocks.size()];
         _trackingBlocks.keySet().toArray(blocksToScan);
@@ -390,19 +392,27 @@ public class BlockTracker extends Tracker {
             for (Block block : _cachedBlocks.keySet()) {
                 List<BlockPos> tracking = _cachedBlocks.get(block);
                 if (tracking.size() > _cutoffSize) {
-                    tracking.sort((BlockPos left, BlockPos right) -> {
-                        double leftDist = left.getSquaredDistance(playerPos, false);
-                        double rightDist = right.getSquaredDistance(playerPos, false);
-                        // 1 if left is further
-                        // -1 if left is closer
-                        if (leftDist > rightDist) {
-                            return 1;
+                    try {
+                        tracking.sort((BlockPos left, BlockPos right) -> {
+                            double leftDist = left.getSquaredDistance(playerPos, false);
+                            double rightDist = right.getSquaredDistance(playerPos, false);
+                            // 1 if left is further
+                            // -1 if left is closer
+                            if (leftDist > rightDist) {
+                                return 1;
+                            } else if (leftDist < rightDist) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                        // Now, the further elements will be further away.
+                        while (tracking.size() > _cutoffSize) {
+                            tracking.remove(tracking.size() - 1);
                         }
-                        return -1;
-                    });
-                    // Now, the further elements will be further away.
-                    while (tracking.size() > _cutoffSize) {
-                        tracking.remove(tracking.size() - 1);
+                    } catch (IllegalArgumentException e) {
+                        // Comparison method violates its general contract: Sometimes transitivity breaks.
+                        // In which case, ignore it.
+                        Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
                     }
                 }
             }

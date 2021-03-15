@@ -36,7 +36,7 @@ public abstract class ResourceTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
-        mod.getConfigState().removeThrowawayItems(_itemTargets);
+        mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
         onResourceStart(mod);
         _fullCheckFailed = false;
     }

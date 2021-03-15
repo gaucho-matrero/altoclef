@@ -41,7 +41,7 @@ public class CollectFuelTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().getTotalFuel() >= _targetFuel;
+        return mod.getInventoryTracker().getTotalFuelNormal() >= _targetFuel;
     }
 
     @Override

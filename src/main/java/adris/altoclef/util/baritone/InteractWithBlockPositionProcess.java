@@ -67,6 +67,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         this.arrivalTickCount = 0;
 
+        this._equipTarget = null;
+
         reachCounter = 0;
     }
     public void getToBlock(BlockPos target, Input interactInput) {

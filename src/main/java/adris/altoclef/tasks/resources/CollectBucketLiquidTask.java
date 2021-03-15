@@ -19,6 +19,7 @@ import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
@@ -64,6 +65,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
     private final Timer _tryImmediatePickupTimer = new Timer(3);
     private final Timer _pickedUpTimer = new Timer(0.5);
 
+    private MovementProgressChecker _progressChecker = new MovementProgressChecker();
+
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
         _liquidName = liquidName;
@@ -93,6 +96,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
         //_blacklist.clear();
 
         _wanderTask.resetWander();
+
+        _progressChecker.reset();
     }
 
 
@@ -114,6 +119,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     MinecraftClient.getInstance().options.keyUse.setPressed(true);
                     mod.getExtraBaritoneSettings().setInteractionPaused(true);
                     _pickedUpTimer.reset();
+                    _progressChecker.reset();
                     return null;
                 }
             }
@@ -122,6 +128,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (!_pickedUpTimer.elapsed()) {
             MinecraftClient.getInstance().options.keyUse.setPressed(false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
+            _progressChecker.reset();
             // Wait for force pickup
             return null;
         }
@@ -129,6 +136,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
             _reachTimer.reset();
+            _progressChecker.reset();
             return _wanderTask;
         }
 
@@ -181,6 +189,11 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 // Clear above if lava because we can't enter.
                 if (_toCollect == Blocks.LAVA) {
                     if (WorldUtil.isSolid(mod, blockpos.up())) {
+                        if (!_progressChecker.check(mod)) {
+                            Debug.logMessage("Failed to break, blacklisting & wandering");
+                            _blacklist.add(blockpos);
+                            return _wanderTask;
+                        }
                         return new DestroyBlockTask(blockpos.up());
                     }
                 }
