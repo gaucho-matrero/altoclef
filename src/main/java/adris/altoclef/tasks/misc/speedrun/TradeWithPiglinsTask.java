@@ -194,11 +194,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
                         }
 
                         return false;
-                    }
-            ,
-                    PiglinEntity.class);
+                    }, PiglinEntity.class
+            );
             if (found == null) {
-                if (_blacklisted.contains(_currentlyBartering) || !_currentlyBartering.isAlive()) {
+                if (_currentlyBartering != null && (_blacklisted.contains(_currentlyBartering) || !_currentlyBartering.isAlive())) {
                     _currentlyBartering = null;
                 }
                 found = _currentlyBartering;
