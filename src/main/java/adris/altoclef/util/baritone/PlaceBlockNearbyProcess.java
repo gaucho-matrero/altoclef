@@ -69,7 +69,6 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         _placed = null;
         _placeTimer = 0;
         _onlyPlaceOnGround = onlyPlaceOnGround;
-        Debug.logMessage("Tempppppp Reset");
     }
     public void place(Block[] toPlace) {
         this.place(toPlace, true);
