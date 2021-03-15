@@ -3,6 +3,7 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -28,7 +29,9 @@ import java.util.function.Predicate;
  */
 public class BlockTracker extends Tracker {
 
-    private final PosCache _cache = new PosCache(100, 64*1.5);
+    private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
+
+    //private final PosCache _cache = new PosCache(100, 64*1.5);
 
     private final Timer _timer = new Timer(7.0);
 
@@ -51,7 +54,9 @@ public class BlockTracker extends Tracker {
     @Override
     protected void reset() {
         _trackingBlocks.clear();
-        _cache.clear();
+        for (PosCache cache : _caches.values()) {
+            cache.clear();
+        }
     }
 
     public boolean isTracking(Block block) {
@@ -87,14 +92,14 @@ public class BlockTracker extends Tracker {
 
     public void addBlock(Block block, BlockPos pos) {
         if (blockIsValid(pos, block)) {
-            _cache.addBlock(block, pos);
+            currentCache().addBlock(block, pos);
         } else {
             Debug.logInternal("INVALID SET: " + block + " " + pos);
         }
     }
     public boolean anyFound(Block ...blocks) {
         updateState();
-        return _cache.anyFound(blocks);
+        return currentCache().anyFound(blocks);
     }
 
     public BlockPos getNearestTracking(Vec3d pos, Block ...blocks) {
@@ -109,12 +114,12 @@ public class BlockTracker extends Tracker {
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return _cache.getNearest(_mod, pos, isInvalidTest, blocks);
+        return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
     }
 
     public List<BlockPos> getKnownLocations(Block ...blocks) {
         updateState();
-        return _cache.getKnownLocations(blocks);
+        return currentCache().getKnownLocations(blocks);
     }
 
     public BlockPos getNearestWithinRange(BlockPos pos, double range, Block ...blocks) {
@@ -170,13 +175,13 @@ public class BlockTracker extends Tracker {
         CalculationContext ctx = new CalculationContext(_mod.getClientBaritone());
         Block[] blocksToScan = new Block[_trackingBlocks.size()];
         _trackingBlocks.keySet().toArray(blocksToScan);
-        List<BlockPos> knownBlocks = _cache.getKnownLocations(blocksToScan);
+        List<BlockPos> knownBlocks = currentCache().getKnownLocations(blocksToScan);
 
         // Clear invalid block pos before rescan
         for (BlockPos check : knownBlocks) {
             if (!blockIsValid(check, blocksToScan)) {
                 //Debug.logInternal("Removed at " + check);
-                _cache.removeBlock(check, blocksToScan);
+                currentCache().removeBlock(check, blocksToScan);
             }
         }
 
@@ -189,14 +194,14 @@ public class BlockTracker extends Tracker {
 
                 if (_trackingBlocks.containsKey(block)) {
                     //Debug.logInternal("Good: " + block + " at " + pos);
-                    _cache.addBlock(block, pos);
+                    currentCache().addBlock(block, pos);
                 } else {
                     //Debug.logInternal("INVALID??? FOUND: " + block + " at " + pos);
                 }
             }
 
             // Purge if we have too many blocks tracked at once.
-            _cache.smartPurge(_mod.getPlayer().getPos());
+            currentCache().smartPurge(_mod.getPlayer().getPos());
         }
     }
 
@@ -229,6 +234,14 @@ public class BlockTracker extends Tracker {
             // Probably out of chunk. This means we can't judge its state.
             return true;
         }
+    }
+
+    private PosCache currentCache() {
+        Dimension dimension = _mod.getCurrentDimension();
+        if (!_caches.containsKey(dimension)) {
+            _caches.put(dimension, new PosCache(100, 64*1.5));
+        }
+        return _caches.get(dimension);
     }
 
 
