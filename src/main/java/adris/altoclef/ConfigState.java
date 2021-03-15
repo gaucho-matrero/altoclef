@@ -184,8 +184,6 @@ public class ConfigState {
             if (toCopy != null) {
                 // Copy over stuff from old one
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
-                protectedItems.clear();
-                protectedItems.addAll(toCopy.protectedItems);
             }
         }
 
@@ -212,6 +210,7 @@ public class ConfigState {
                     blocksToAvoidBreaking = new HashSet<>(settings.getBlocksToAvoidBreaking());
                     toAvoidBreaking = new ArrayList<>(settings.getBreakAvoiders());
                     toAvoidPlacing = new ArrayList<>(settings.getPlaceAvoiders());
+                    protectedItems = new ArrayList<>(settings.getProtectedItems());
                 }
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
@@ -242,6 +241,8 @@ public class ConfigState {
                     sa.getBlocksToAvoidBreaking().addAll(blocksToAvoidBreaking);
                     sa.getPlaceAvoiders().clear();
                     sa.getPlaceAvoiders().addAll(toAvoidPlacing);
+                    sa.getProtectedItems().clear();
+                    sa.getProtectedItems().addAll(protectedItems);
                 }
             }
 
