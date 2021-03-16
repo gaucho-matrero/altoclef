@@ -6,7 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.List;
+import java.util.Comparator;
 import java.util.function.BiPredicate;
 
 public interface Util {
@@ -37,6 +37,22 @@ public interface Util {
             }
             return left.equals(right);
         });
+    }
+
+    static <T> T maxItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
+        if (items.size() == 0) return null;
+        T best = items.stream().findFirst().get();
+        for (T item : items) {
+            // Is item bigger?
+            int comparison = comparatorRightMinusLeft.compare(best, item);
+            if (comparison > 0) {
+                best = item;
+            }
+        }
+        return best;
+    }
+    static <T> T minItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
+        return maxItem(items, (left, right) -> -comparatorRightMinusLeft.compare(left, right));
     }
 
     static <T> String arrayToString(T[] arr) {

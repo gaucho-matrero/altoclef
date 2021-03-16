@@ -6,6 +6,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -13,10 +14,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -284,8 +282,13 @@ public class InventoryTracker extends Tracker {
             // Get stuff that's throwaway by default
             List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
             if (throwawaySlots.size() != 0) {
-                Debug.logInternal("Throwing away throwaway-able at slot: " + throwawaySlots.get(0) + " : " + getItemStackInSlot(Slot.getFromInventory(throwawaySlots.get(0))).getItem().getTranslationKey());
-                return Slot.getFromInventory(throwawaySlots.get(0));
+                int best = Util.minItem(throwawaySlots, (leftSlot, rightSlot) -> {
+                    ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
+                            right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
+                    return right.getCount() - left.getCount();
+                });
+                Debug.logInternal("THROWING AWAY throwawayable ITEM AT SLOT " + best);
+                return Slot.getFromInventory(best);
             }
 
             // Downgrade pickaxe maybe?
@@ -315,14 +318,39 @@ public class InventoryTracker extends Tracker {
             // Now we're getting desparate
             if (_mod.getModSettings().shouldThrowawayUnusedItems()) {
                 // Get the first non-important item. For now there is no measure of value.
+                List<Integer> possibleSlots = new ArrayList<>();
                 for (Item item : this._itemSlots.keySet()) {
-                    if (!_mod.getConfigState().isProtected(item)) {
-                        if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
-                            Debug.logInternal("oof");
-                            return Slot.getFromInventory(this.getInventorySlotsWithItem(item).get(0));
-                        }
+                    if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
+                        possibleSlots.addAll(this._itemSlots.get(item));
                     }
                 }
+
+                int best = Util.minItem(possibleSlots, (leftSlot, rightSlot) -> {
+                    ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
+                            right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
+                    boolean leftIsTool = left.getItem() instanceof ToolItem;
+                    boolean rightIsTool = right.getItem() instanceof ToolItem;
+                    // Prioritize tools over materials.
+                    if (rightIsTool && !leftIsTool) {
+                        return 1;
+                    } else if (leftIsTool && !rightIsTool) {
+                        return -1;
+                    }
+                    if (rightIsTool && leftIsTool) {
+                        // Prioritize material type, then durability.
+                        ToolItem leftTool = (ToolItem) left.getItem();
+                        ToolItem rightTool = (ToolItem) right.getItem();
+                        if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
+                            return rightTool.getMaterial().getMiningLevel() - leftTool.getMaterial().getMiningLevel();
+                        }
+                        // We want less damage.
+                        return -1 * (right.getDamage() - left.getDamage());
+                    }
+                    // Just keep the one with the most quantity, but this doesn't really matter.
+                    return right.getCount() - left.getCount();
+                });
+                Debug.logInternal("THROWING AWAY unused ITEM AT SLOT " + best);
+                return Slot.getFromInventory(best);
             }
         }
 

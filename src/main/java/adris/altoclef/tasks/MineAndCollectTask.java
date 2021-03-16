@@ -12,19 +12,13 @@ import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorInventorySlot;
 import adris.altoclef.util.slots.PlayerInventorySlot;
-import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
-import baritone.pathing.movement.MovementHelper;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.MiningToolItem;
-import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -73,6 +67,9 @@ public class MineAndCollectTask extends ResourceTask {
     protected void onResourceStart(AltoClef mod) {
         mod.getConfigState().push();
         mod.getBlockTracker().trackBlock(_blocksToMine);
+
+        // We're mining, so don't throw away pickaxes.
+        mod.getConfigState().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
 
         _cachedBlacklist.clear();
 
