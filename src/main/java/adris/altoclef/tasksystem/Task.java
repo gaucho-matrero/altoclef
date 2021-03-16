@@ -2,6 +2,7 @@ package adris.altoclef.tasksystem;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 
 import java.util.function.Predicate;
 
@@ -138,6 +139,10 @@ public abstract class Task {
             t = t._sub;
         }
         return false;
+    }
+
+    public boolean thisOrChildAreTimedOut() {
+        return thisOrChildSatisfies(task -> task instanceof TimeoutWanderTask);
     }
 
     /**

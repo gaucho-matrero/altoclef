@@ -94,6 +94,8 @@ public class EntityTracker extends Tracker {
         for (Class toFind : entityTypes) {
             if (_entityMap.containsKey(toFind)) {
                 for (Entity entity : _entityMap.get(toFind)) {
+                    // Don't accept entities that no longer exist
+                    if (!entity.isAlive()) continue;
                     if (ignore.test(entity)) continue;
                     double cost = entity.squaredDistanceTo(position);
                     if (cost < minCost) {

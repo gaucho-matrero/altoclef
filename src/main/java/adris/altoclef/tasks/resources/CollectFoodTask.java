@@ -10,6 +10,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -61,6 +62,9 @@ public class CollectFoodTask extends Task {
 
     private SmeltInFurnaceTask _smeltTask = null;
 
+    private Task _currentResourceTask = null;
+    private final Timer _checkNewOptionsTimer = new Timer(3);
+
     public CollectFoodTask(double unitsNeeded) {
         _unitsNeeded = unitsNeeded;
     }
@@ -88,6 +92,16 @@ public class CollectFoodTask extends Task {
             return _smeltTask;
         }
 
+        if (_checkNewOptionsTimer.elapsed()) {
+            // Try a new resource task
+            _checkNewOptionsTimer.reset();
+            _currentResourceTask = null;
+        }
+
+        if (_currentResourceTask != null && _currentResourceTask.isActive() && !_currentResourceTask.isFinished(mod) && !_currentResourceTask.thisOrChildAreTimedOut()) {
+            return _currentResourceTask;
+        }
+
         // Calculate potential
         double potentialFood = calculateFoodPotential(mod);
         if (potentialFood >= _unitsNeeded) {
@@ -101,12 +115,14 @@ public class CollectFoodTask extends Task {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                return new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1));
+                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1));
+                return _currentResourceTask;
             }
             if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                return new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9));
+                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9));
+                return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods
 
@@ -126,14 +142,26 @@ public class CollectFoodTask extends Task {
                 Task t = this.pickupTaskOrNull(mod, item);
                 if (t != null) {
                     setDebugState("Picking up Food: " + item.getTranslationKey());
-                    return t;
+                    _currentResourceTask = t;
+                    return _currentResourceTask;
+                }
+            }
+            // Pick up raw/cooked foods on ground
+            for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+                Task t = this.pickupTaskOrNull(mod, cookable.getRaw(), 20);
+                if (t == null) t = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
+                if (t != null) {
+                    setDebugState("Picking up Cookable food");
+                    _currentResourceTask = t;
+                    return _currentResourceTask;
                 }
             }
             // Hay
             Task hayTask = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK);
             if (hayTask != null) {
                 setDebugState("Collecting Hay");
-                return hayTask;
+                _currentResourceTask = hayTask;
+                return _currentResourceTask;
             }
             // Crops
             for (CropTarget target : CROPS) {
@@ -159,7 +187,8 @@ public class CollectFoodTask extends Task {
                 }));
                 if (t != null) {
                     setDebugState("Harvesting " + target.cropItem.getTranslationKey());
-                    return t;
+                    _currentResourceTask = t;
+                    return _currentResourceTask;
                 }
             }
             // Cooked foods
@@ -169,6 +198,7 @@ public class CollectFoodTask extends Task {
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Entity nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
+                if (nearest == null) continue; // ?? This crashed once?
                 if (nearest instanceof LivingEntity) {
                     // Peta
                     if (((LivingEntity) nearest).isBaby()) continue;
@@ -187,14 +217,16 @@ public class CollectFoodTask extends Task {
             }
             if (bestEntity != null) {
                 setDebugState("Killing " + bestEntity.getEntityName());
-                return killTaskOrNull(mod, bestEntity, bestRawFood);
+                _currentResourceTask = killTaskOrNull(mod, bestEntity, bestRawFood);
+                return _currentResourceTask;
             }
 
             // Sweet berries (separate from crops because they should have a lower priority than everything else cause they suck)
             Task berryPickup = pickupBlockTaskOrNull(mod, Blocks.SWEET_BERRY_BUSH, Items.SWEET_BERRIES);
             if (berryPickup != null) {
                 setDebugState("Getting sweet berries (no better foods are present)");
-                return berryPickup;
+                _currentResourceTask = berryPickup;
+                return _currentResourceTask;
             }
         }
 
@@ -287,26 +319,32 @@ public class CollectFoodTask extends Task {
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
-        Task itemPickup = pickupTaskOrNull(mod, itemToGrab);
-        if (itemPickup != null) return itemPickup;
-        return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntityTask::new, entity.getClass());
+        //Task itemPickup = pickupTaskOrNull(mod, itemToGrab);
+        //if (itemPickup != null) return itemPickup;
+        //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntityTask::new, entity.getClass());
         //return new KillEntityTask(entity);
+        return new KillAndLootTask(entity.getClass(), new ItemTarget(itemToGrab, 1));
     }
 
     /**
      * Returns a task that picks up a dropped item.
      * Returns null if task cannot reasonably run.
      */
-    private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab) {
+    private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {
         ItemEntity nearestDrop = null;
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
         if (nearestDrop != null) {
-            return new PickupDroppedItemTask(new ItemTarget(itemToGrab), true);
+            if (nearestDrop.isInRange(mod.getPlayer(), maxRange)) {
+                return new PickupDroppedItemTask(new ItemTarget(itemToGrab), true);
+            }
             //return new GetToBlockTask(nearestDrop.getBlockPos(), false);
         }
         return null;
+    }
+    private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab) {
+        return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
     }
 
     private static class CookableFoodTarget {
