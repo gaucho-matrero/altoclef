@@ -287,8 +287,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Grab from the output slot
             ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             if (!outputSlot.isEmpty()) {
-                mod.getInventoryTracker().grabItem(FurnaceSlot.OUTPUT_SLOT);
-                _smeltProgressChecker.reset();
+                if (!ResourceTask.ensureInventoryFree(mod)) {
+                    Debug.logWarning("FAILED TO FREE INVENTORY for furnace smelting. This is bad.");
+                } else {
+                    mod.getInventoryTracker().grabItem(FurnaceSlot.OUTPUT_SLOT);
+                    _smeltProgressChecker.reset();
+                }
                 //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
             }
 
