@@ -15,6 +15,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EyeOfEnderEntity;
 import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -102,18 +103,20 @@ public class LocateStrongholdTask extends Task {
                 return new GetToYTask(EYE_THROW_MINIMUM_Y_POSITION + 1);
             }
             // Throw it
-            mod.getInventoryTracker().equipItem(Items.ENDER_EYE);
-            if (_throwTimer.elapsed()) {
-                if (LookUtil.tryAvoidingInteractable(mod)) {
-                    MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                    _throwTimer.reset();
+            if (mod.getInventoryTracker().equipItem(Items.ENDER_EYE)) {
+                if (_throwTimer.elapsed()) {
+                    if (LookUtil.tryAvoidingInteractable(mod)) {
+                        MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
+                        //MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                        _throwTimer.reset();
+                    }
+                } else {
+                    MinecraftClient.getInstance().interactionManager.stopUsingItem(mod.getPlayer());
+                    //MinecraftClient.getInstance().options.keyUse.setPressed(false);
                 }
             } else {
-                MinecraftClient.getInstance().options.keyUse.setPressed(false);
+                Debug.logWarning("Failed to equip eye of ender to throw.");
             }
-            // For some reason sneaking is set to true after throwing???
-            MinecraftClient.getInstance().options.sneakToggled = false;
-            MinecraftClient.getInstance().options.keySneak.setPressed(false);
             return null;
         }
 

@@ -40,6 +40,8 @@ public class HandStackFixChain extends TaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        if (mod.getPlayer() == null) return Float.NEGATIVE_INFINITY;
+
         if (_generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getController().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");
