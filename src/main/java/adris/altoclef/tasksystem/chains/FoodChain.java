@@ -10,7 +10,6 @@ import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
-import javafx.scene.input.KeyCode;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyCodeAccessor;
 import net.java.games.input.Component;

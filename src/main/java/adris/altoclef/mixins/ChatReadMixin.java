@@ -4,7 +4,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
 import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.event.events.ChatEvent;
-import jdk.internal.dynalink.beans.StaticClass;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
