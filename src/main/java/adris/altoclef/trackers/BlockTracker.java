@@ -186,7 +186,7 @@ public class BlockTracker extends Tracker {
         }
 
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
-        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, knownBlocks, Collections.emptyList(), Collections.emptyList());
+        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
         if (MinecraftClient.getInstance().world != null) {
             for (BlockPos pos : found) {
