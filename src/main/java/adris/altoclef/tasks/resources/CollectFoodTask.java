@@ -157,7 +157,7 @@ public class CollectFoodTask extends Task {
                 }
             }
             // Hay
-            Task hayTask = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK);
+            Task hayTask = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK, 300);
             if (hayTask != null) {
                 setDebugState("Collecting Hay");
                 _currentResourceTask = hayTask;
@@ -184,7 +184,7 @@ public class CollectFoodTask extends Task {
                     }
                     // We're not wheat so do NOT reject.
                     return false;
-                }));
+                }), 100);
                 if (t != null) {
                     setDebugState("Harvesting " + target.cropItem.getTranslationKey());
                     _currentResourceTask = t;
@@ -222,7 +222,7 @@ public class CollectFoodTask extends Task {
             }
 
             // Sweet berries (separate from crops because they should have a lower priority than everything else cause they suck)
-            Task berryPickup = pickupBlockTaskOrNull(mod, Blocks.SWEET_BERRY_BUSH, Items.SWEET_BERRIES);
+            Task berryPickup = pickupBlockTaskOrNull(mod, Blocks.SWEET_BERRY_BUSH, Items.SWEET_BERRIES, 100);
             if (berryPickup != null) {
                 setDebugState("Getting sweet berries (no better foods are present)");
                 _currentResourceTask = berryPickup;
@@ -292,8 +292,12 @@ public class CollectFoodTask extends Task {
      * Returns a task that mines a block and picks up its output.
      * Returns null if task cannot reasonably run.
      */
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject) {
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
         BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), reject, blockToCheck);
+
+        if (!nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
+            nearestBlock = null;
+        }
 
         ItemEntity nearestDrop = null;
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
@@ -314,8 +318,8 @@ public class CollectFoodTask extends Task {
         }
         return null;
     }
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab) {
-        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (toReject) -> false);
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, double maxRange) {
+        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (toReject) -> false, maxRange);
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
