@@ -90,6 +90,9 @@ public class TaskCatalogue {
 
             simple("obsidian", Items.OBSIDIAN, CollectObsidianTask.class);
 
+            simple("bed", ItemTarget.BED, CollectBedTask.class);
+            simple("wool", ItemTarget.WOOL, CollectWoolTask.class);
+
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
             alias("iron_pick", "iron_pickaxe");
