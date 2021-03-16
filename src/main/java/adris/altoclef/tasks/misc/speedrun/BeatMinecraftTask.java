@@ -107,12 +107,13 @@ public class BeatMinecraftTask extends Task {
             return _prepareEquipmentTask;
         }
 
+        // Equip diamond armor asap
+        if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
+            return new EquipArmorTask(DIAMOND_ARMORS);
+        }
         // Get diamond armor + gear first
         if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
             return _prepareEquipmentTask;
-        }
-        if (!diamondArmorEquipped(mod)) {
-            return new EquipArmorTask(DIAMOND_ARMORS);
         }
 
         // Stronghold portal located.
