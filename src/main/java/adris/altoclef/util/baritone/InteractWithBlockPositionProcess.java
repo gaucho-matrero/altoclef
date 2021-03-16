@@ -122,6 +122,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     public synchronized void onLostControl() {
         _target = null;
         this.baritone.getInputOverrideHandler().clearAllKeys();
+        // ?? Might help? Kinda redundant though.
+        this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, false);
     }
 
     public synchronized void setInteractEquipItem(ItemTarget item) {

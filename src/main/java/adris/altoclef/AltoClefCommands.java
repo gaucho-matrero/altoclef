@@ -15,9 +15,12 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -25,10 +28,12 @@ import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.Arrays;
@@ -73,6 +78,12 @@ public class AltoClefCommands extends CommandList {
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3), true));
                 break;
+            case "chunk": {
+                // We may have missed a chunk that's far away...
+                BlockPos p = new BlockPos(100000, 3, 100000);
+                Debug.logMessage("LOADED? " + (!(mod.getWorld().getChunk(p) instanceof EmptyChunk)));
+                break;
+            }
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));
                 break;
