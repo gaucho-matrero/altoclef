@@ -274,7 +274,7 @@ public class Settings {
         List<Item> result = new ArrayList<>();
         for (int throwawayItem : throwawayItems) {
             Item item = Item.byRawId(throwawayItem);
-            if (mod.getConfigState().isProtected(item)) {
+            if (!mod.getConfigState().isProtected(item)) {
                 result.add(item);
             }
         }
