@@ -35,8 +35,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final Timer _cursorStackTimer = new Timer(3);
 
-    private final List<BlockPos> _cachedBlacklist = new ArrayList<>();
-
     private final MineOrCollectTask _subtask;
 
     public MineAndCollectTask(ItemTarget[] itemTargets, Block[] blocksToMine, MiningRequirement requirement) {
@@ -70,8 +68,6 @@ public class MineAndCollectTask extends ResourceTask {
 
         // We're mining, so don't throw away pickaxes.
         mod.getConfigState().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
-
-        _cachedBlacklist.clear();
 
         _subtask.resetSearch();
     }
@@ -158,9 +154,12 @@ public class MineAndCollectTask extends ResourceTask {
 
         private final MovementProgressChecker _progressChecker = new MovementProgressChecker(4);
 
+        private final Task _pickupTask;
+
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
             _targets = targets;
+            _pickupTask = new PickupDroppedItemTask(_targets, true);
         }
 
         @Override
@@ -243,7 +242,7 @@ public class MineAndCollectTask extends ResourceTask {
                     Debug.logInternal("FAILED TO DROP ITEMS");
                 }
 
-                return new PickupDroppedItemTask(_targets);
+                return _pickupTask;
             }
             throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
         }

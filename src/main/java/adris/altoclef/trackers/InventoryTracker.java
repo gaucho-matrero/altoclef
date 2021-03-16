@@ -346,6 +346,25 @@ public class InventoryTracker extends Tracker {
                         // We want less damage.
                         return -1 * (right.getDamage() - left.getDamage());
                     }
+
+                    // Prioritize food over other things if we lack food.
+                    boolean lacksFood = totalFoodScore() < 8;
+                    boolean leftIsFood = left.getItem().isFood() && left.getItem() != Items.SPIDER_EYE;
+                    boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
+                    if (lacksFood) {
+                        if (rightIsFood && !leftIsFood) {
+                            return 1;
+                        } else if (leftIsFood && !rightIsFood) {
+                            return -1;
+                        }
+                    }
+                    // If both are food, pick the better cost.
+                    if (leftIsFood && rightIsFood) {
+                        int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
+                            rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
+                        return rightCost - leftCost;
+                    }
+
                     // Just keep the one with the most quantity, but this doesn't really matter.
                     return right.getCount() - left.getCount();
                 });

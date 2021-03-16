@@ -67,6 +67,13 @@ public class CollectFoodTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getConfigState().push();
+        // Protect ALL food
+        mod.getConfigState().addProtectedItems(ITEMS_TO_PICK_UP);
+        for (CookableFoodTarget food : COOKABLE_FOODS) mod.getConfigState().addProtectedItems(food.getRaw(), food.getCooked());
+        for (CropTarget crop : CROPS) mod.getConfigState().addProtectedItems(crop.cropItem);
+        mod.getConfigState().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
+
         mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
         mod.getBlockTracker().trackBlock(Blocks.SWEET_BERRY_BUSH);
     }
@@ -265,7 +272,7 @@ public class CollectFoodTask extends Task {
         // Collect hay until we have enough.
         if (spotted) {
             if (nearestDrop != null) {
-                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE);
+                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
                 //new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), GetToEntityTask::new,)
                 //return new GetToEntityTask(nearestDrop);
             } else {
@@ -296,7 +303,7 @@ public class CollectFoodTask extends Task {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
         if (nearestDrop != null) {
-            return new PickupDroppedItemTask(new ItemTarget(itemToGrab));
+            return new PickupDroppedItemTask(new ItemTarget(itemToGrab), true);
             //return new GetToBlockTask(nearestDrop.getBlockPos(), false);
         }
         return null;

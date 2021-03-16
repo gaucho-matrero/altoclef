@@ -62,6 +62,12 @@ public class BeatMinecraftTask extends Task {
                     new ItemTarget("crafting_table", 1)
                     );
 
+    private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
+    private final Task _netherPrepareTaskWood = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("wooden_pickaxe", 1),
+            new ItemTarget("log", 10)
+    );
+
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
@@ -196,6 +202,25 @@ public class BeatMinecraftTask extends Task {
         // Keep track of our portal so we may return to it.
         if (_cachedPortalInNether == null) {
             _cachedPortalInNether = mod.getPlayer().getBlockPos();
+        }
+
+        // Collect tools while we're here
+
+        if (_netherPrepareTaskWood.isActive() && !_netherPrepareTaskWood.isFinished(mod)) {
+            return _netherPrepareTaskWood;
+        }
+        if (_netherPrepareTaskJustPick.isActive() && !_netherPrepareTaskJustPick.isFinished(mod)) {
+            return _netherPrepareTaskJustPick;
+        }
+        // Make sure we have at least a wooden pickaxe at all times.
+        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
+            // If we ran out of wood, go get more.
+            int planksCount = 4*mod.getInventoryTracker().getItemCount(ItemTarget.LOG) + mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS);
+            if (planksCount >= 3 + 2) {
+                return _netherPrepareTaskJustPick;
+            } else {
+                return _netherPrepareTaskWood;
+            }
         }
 
         // Blaze rods

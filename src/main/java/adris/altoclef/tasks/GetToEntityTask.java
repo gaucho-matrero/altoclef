@@ -13,7 +13,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     private final Entity _entity;
 
     private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask();
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(20);
 
     public GetToEntityTask(Entity entity) {
         _entity = entity;

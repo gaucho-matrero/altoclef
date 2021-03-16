@@ -71,7 +71,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
                 break;
             case "pickup":
-                mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3)));
+                mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3), true));
                 break;
             case "structure":
                 mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(10, 6, 10)));

@@ -15,8 +15,11 @@ public abstract class ResourceTask extends Task {
 
     protected final ItemTarget[] _itemTargets;
 
+    private final Task _pickupTask;
+
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
+        _pickupTask = new PickupDroppedItemTask(_itemTargets, true);
     }
     public ResourceTask(ItemTarget target) {
         this(new ItemTarget[] {target});
@@ -24,8 +27,6 @@ public abstract class ResourceTask extends Task {
     public ResourceTask(Item item, int targetCount) {
         this(new ItemTarget(item, targetCount));
     }
-
-    private boolean _fullCheckFailed = false;
 
     @Override
     public boolean isFinished(AltoClef mod) {
@@ -38,7 +39,6 @@ public abstract class ResourceTask extends Task {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
         onResourceStart(mod);
-        _fullCheckFailed = false;
     }
 
     @Override
@@ -47,20 +47,8 @@ public abstract class ResourceTask extends Task {
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
             if (mod.getEntityTracker().itemDropped(_itemTargets)) {
-                boolean weGood = ensureInventoryFree(mod);
 
-                if (weGood) {
-                    _fullCheckFailed = false;
-                    setDebugState("Going to dropped items...");
-                } else {
-                    if (!_fullCheckFailed) {
-                        Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                    }
-                    _fullCheckFailed = true;
-                    setDebugState("Inventory full and we can't find any item to throw away. Waiting for user.");
-                }
-
-                return new PickupDroppedItemTask(_itemTargets);
+                return _pickupTask;
             }
         }
 

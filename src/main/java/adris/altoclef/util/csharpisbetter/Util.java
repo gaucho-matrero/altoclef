@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 public interface Util {
 
@@ -56,7 +57,19 @@ public interface Util {
     }
 
     static <T> String arrayToString(T[] arr) {
-        return ArrayUtils.toString(arr);
+        return arrayToString(arr, elem -> elem == null? "(null)" : elem.toString());
+    }
+    static <T> String arrayToString(T[] arr, Function<T, String> toString) {
+        StringBuilder result = new StringBuilder();
+        result.append("[");
+        for(int i = 0; i < arr.length; ++i) {
+            result.append(toString.apply(arr[i]));
+            if (i != arr.length - 1) {
+                result.append(",");
+            }
+        }
+        result.append("]");
+        return result.toString();
     }
 
 }

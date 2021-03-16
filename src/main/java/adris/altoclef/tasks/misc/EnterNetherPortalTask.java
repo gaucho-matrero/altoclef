@@ -6,7 +6,9 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
+import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
@@ -57,7 +59,14 @@ public class EnterNetherPortalTask extends Task {
             _portalTimeout.reset();
         }
 
-        BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+        BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
+                block -> {
+                    // REQUIRE that there be solid ground beneath us.
+                    BlockPos below = block.down();
+                    boolean canStand = WorldUtil.isSolid(mod, below);
+                    return !canStand;
+                },
+                Blocks.NETHER_PORTAL);
         if (portal != null) {
             setDebugState("Going to found portal");
             return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(),  (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
