@@ -17,6 +17,8 @@ public class HandStackFixChain extends TaskChain {
     private ItemStack _lastHandStack = null;
     private final Timer _stackHeldTimeout = new Timer(8);
 
+    private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
+
     public HandStackFixChain(TaskRunner runner) {
         super(runner);
     }
@@ -37,6 +39,13 @@ public class HandStackFixChain extends TaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+
+        if (_generalDuctTapeSwapTimeout.elapsed()) {
+            Debug.logMessage("Refreshed inventory...");
+            mod.getInventoryTracker().refreshInventory();
+            _generalDuctTapeSwapTimeout.reset();
+            return Float.NEGATIVE_INFINITY;
+        }
 
         ItemStack currentStack = mod.getPlayer().inventory.getCursorStack();
 

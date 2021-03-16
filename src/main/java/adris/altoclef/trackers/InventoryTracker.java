@@ -635,6 +635,10 @@ public class InventoryTracker extends Tracker {
 
     public boolean equipItem(Item toEquip) {
         ensureUpdated();
+
+        // Always equip to the second slot. First + last is occupied by baritone.
+        _mod.getPlayer().inventory.selectedSlot = 1;
+
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
         // Already equipped
