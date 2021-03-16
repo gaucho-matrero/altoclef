@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
@@ -530,6 +531,14 @@ public class InventoryTracker extends Tracker {
         Debug.logInternal("CRAFTING... " + recipe);
 
         boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+
+        if (!bigCrafting) {
+            if (!(_mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
+                // Make sure we're not in another screen before we craft,
+                // otherwise crafting will be むだな、ぞ
+                _mod.getPlayer().closeHandledScreen();
+            }
+        }
 
         if (recipe.isBig() && !bigCrafting) {
             Debug.logWarning("Tried crafting a 3x3 recipe without a crafting table. Sadly this won't work.");
