@@ -70,7 +70,8 @@ public class UserTaskChain extends SingleTaskChain {
     @Override
     protected void onTaskFinish(AltoClef mod) {
         mod.getTaskRunner().disable();
-        Debug.logMessage("User task FINISHED. Took %.2f seconds.", _taskStopwatch.time());
+        double seconds = _taskStopwatch.time();
+        Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
         if (_currentOnFinish != null) {
             //noinspection unchecked
             _currentOnFinish.accept(null);
@@ -78,5 +79,27 @@ public class UserTaskChain extends SingleTaskChain {
         _currentOnFinish = null;
         onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
         _mainTask = null;
+    }
+
+    private static String prettyPrintTimeDuration(double seconds) {
+        int minutes = (int) (seconds / 60);
+        int hours = minutes / 60;
+        int days = hours / 24;
+
+        String result = "";
+        if (days != 0) {
+            result += days + " days ";
+        }
+        if (hours != 0) {
+            result += (hours % 24) + " hours ";
+        }
+        if (minutes != 0) {
+            result += (minutes % 60) + " minutes ";
+        }
+        if (!result.equals("")) {
+            result += "and ";
+        }
+        result += String.format("%.2f", (seconds % 60));
+        return result;
     }
 }
