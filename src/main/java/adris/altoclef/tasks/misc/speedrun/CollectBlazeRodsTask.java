@@ -32,6 +32,8 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     private final int _count;
 
+    private Entity _toKill;
+
     private final SearchNetherFortressTask _searcher = new SearchNetherFortressTask();
 
     public CollectBlazeRodsTask(int count) {
@@ -76,12 +78,17 @@ public class CollectBlazeRodsTask extends ResourceTask {
                 }
             }
             if (toKill != null) {
-                setDebugState("Killing blaze");
-                return new KillEntitiesTask(BlazeEntity.class);
-                //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
-                //return new KillEntityTask(toKill);
+                _toKill = toKill;
             }
         }
+
+        if (_toKill != null && _toKill.isAlive()) {
+            setDebugState("Killing blaze");
+            return new KillEntitiesTask(BlazeEntity.class);
+            //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
+            //return new KillEntityTask(toKill);
+        }
+
 
         // If the blaze spawner somehow doesn't exist.
         if (_foundBlazeSpawner != null && !isValidBlazeSpawner(mod, _foundBlazeSpawner)) {
