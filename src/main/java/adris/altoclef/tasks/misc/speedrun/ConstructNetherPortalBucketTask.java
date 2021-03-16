@@ -140,7 +140,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         if (_refreshTimer.elapsed()) {
-            Debug.logMessage("Duct tape: Refreshing inventory just in case");
+            Debug.logMessage("Duct tape: Refreshing inventory again just in case");
             _refreshTimer.reset();
             mod.getInventoryTracker().refreshInventory();
         }
@@ -453,7 +453,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                             BlockPos toCheck = lava.add(offset).add(sizeOffset).add(dx, dy, dz);
                             assert MinecraftClient.getInstance().world != null;
                             BlockState state = MinecraftClient.getInstance().world.getBlockState(toCheck);
-                            if (state.getBlock() == Blocks.LAVA || state.getBlock() == Blocks.BEDROCK) {
+                            if (state.getBlock() == Blocks.LAVA || state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.BEDROCK) {
                                 found = false;
                                 break moveAlongLine;
                             }
