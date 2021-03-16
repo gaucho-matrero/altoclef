@@ -344,7 +344,7 @@ public class TaskCatalogue {
         private Item[] _target;
         private Class _mob;
         public MobTaskFactory(Class mob, Item[] target) {
-            super(KillAndLooktTask.class);
+            super(KillAndLootTask.class);
             _mob = mob;
             _target = target;
         }
@@ -353,7 +353,7 @@ public class TaskCatalogue {
             //Constructor constructor = _class.getConstructor(ItemTarget.class, Block[].class, MiningRequirement.class);
             ItemTarget[] targets = new ItemTarget[_target.length];
             for (int i = 0; i < targets.length; ++i) targets[i] = new ItemTarget(_target[i], count);
-            return new KillAndLooktTask(_mob, targets);//(ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
+            return new KillAndLootTask(_mob, targets);//(ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
         }
     }
 
