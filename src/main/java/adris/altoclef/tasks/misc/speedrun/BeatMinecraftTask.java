@@ -51,13 +51,13 @@ public class BeatMinecraftTask extends Task {
 
     private BlockPos _netherPortalPos;
 
-    // Get 2 diamond picks, because we'll probably break the first one.
+    // Get 3 diamond picks, because the nether SUCKS
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("diamond_chestplate", 1),
                     new ItemTarget("diamond_leggings", 1),
                     new ItemTarget("diamond_helmet", 1),
                     new ItemTarget("diamond_boots", 1),
-                    new ItemTarget("diamond_pickaxe", 2),
+                    new ItemTarget("diamond_pickaxe", 3),
                     new ItemTarget("diamond_sword", 1),
                     new ItemTarget("crafting_table", 1)
                     );
@@ -212,11 +212,14 @@ public class BeatMinecraftTask extends Task {
         if (_netherPrepareTaskJustPick.isActive() && !_netherPrepareTaskJustPick.isFinished(mod)) {
             return _netherPrepareTaskJustPick;
         }
-        // Make sure we have at least a wooden pickaxe at all times.
-        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
+
+        // Make sure we have at least a wooden pickaxe at all times
+        // AND materials to craft a new one, so we aren't stuck in a cavern somewhere.
+        int planksCount = 4*mod.getInventoryTracker().getItemCount(ItemTarget.LOG) + mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS);
+        int planksNeeded = 3 + (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)? 0 : 4) + (mod.getInventoryTracker().getItemCount(Items.STICK) >= 2? 0 : 2);
+        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD) || planksCount < planksNeeded) {
             // If we ran out of wood, go get more.
-            int planksCount = 4*mod.getInventoryTracker().getItemCount(ItemTarget.LOG) + mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS);
-            if (planksCount >= 3 + 2) {
+            if (planksCount >= planksNeeded) {
                 return _netherPrepareTaskJustPick;
             } else {
                 return _netherPrepareTaskWood;
