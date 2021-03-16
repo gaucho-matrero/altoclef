@@ -51,6 +51,17 @@ public class BeatMinecraftTask extends Task {
 
     private BlockPos _netherPortalPos;
 
+    // Get 2 diamond picks, because we'll probably break the first one.
+    private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("diamond_chestplate", 1),
+                    new ItemTarget("diamond_leggings", 1),
+                    new ItemTarget("diamond_helmet", 1),
+                    new ItemTarget("diamond_boots", 1),
+                    new ItemTarget("diamond_pickaxe", 2),
+                    new ItemTarget("diamond_sword", 1),
+                    new ItemTarget("crafting_table", 1)
+                    );
+
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
@@ -85,16 +96,14 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
+        if (_prepareEquipmentTask.isActive() && !_prepareEquipmentTask.isFinished(mod)) {
+            setDebugState("Getting equipment");
+            return _prepareEquipmentTask;
+        }
+
         // Get diamond armor + gear first
         if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-            return TaskCatalogue.getSquashedItemTask(
-                    new ItemTarget("diamond_chestplate", 1),
-                    new ItemTarget("diamond_leggings", 1),
-                    new ItemTarget("diamond_helmet", 1),
-                    new ItemTarget("diamond_boots", 1),
-                    new ItemTarget("diamond_pickaxe", 1),
-                    new ItemTarget("diamond_sword", 1)
-                    );
+            return _prepareEquipmentTask;
         }
         if (!diamondArmorEquipped(mod)) {
             return new EquipArmorTask(DIAMOND_ARMORS);
