@@ -7,6 +7,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -64,6 +65,14 @@ public class DestroyBlockTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getBuilderProcess().onLostControl();
+        // Do not keep breaking.
+        // Can lead to trouble, for example, if lava is right above the NEXT block.
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getBlockTracker().blockIsValid(_pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
     }
 
     @Override

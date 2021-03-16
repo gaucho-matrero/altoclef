@@ -137,6 +137,11 @@ public class CollectFoodTask extends Task {
                     if (b instanceof CropBlock) {
                         boolean isWheat = !(b instanceof PotatoesBlock || b instanceof CarrotsBlock || b instanceof  BeetrootsBlock);
                         if (isWheat) {
+
+                            // Chunk needs to be loaded for wheat maturity to be checked.
+                            if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
+                                return true;
+                            }
                             // Prune if we're not mature/fully grown wheat.
                             CropBlock crop = (CropBlock) b;
                             return !crop.isMature(s);
