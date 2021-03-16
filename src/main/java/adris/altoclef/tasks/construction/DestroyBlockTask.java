@@ -27,7 +27,7 @@ public class DestroyBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
+        startBreakBuild(mod);
         _wanderTask.resetWander();
     }
 
@@ -40,14 +40,15 @@ public class DestroyBlockTask extends Task {
             return _wanderTask;
         }
         if (!_moveChecker.check(mod)) {
-            Debug.logMessage("Failed, wandering for a bit...");
             _failedFirstTry = !_failedFirstTry;
-            return _wanderTask;
-        }
-
-        if (!_failedFirstTry && !mod.getClientBaritone().getBuilderProcess().isActive() || mod.getClientBaritone().getBuilderProcess().isPaused()) {
-            Debug.logMessage("Failed initial destruction, trying another way.");
-            _failedFirstTry = true;
+            _moveChecker.reset();
+            // Only when we've tried both outcomes and have looped back to the beginning do we wander.
+            if (!_failedFirstTry) {
+                Debug.logMessage("Failed both ways, wandering for a bit...");
+                return _wanderTask;
+            } else {
+                Debug.logMessage("Switching methods of breaking, may work better.");
+            }
         }
 
         if (_failedFirstTry) {
@@ -57,7 +58,12 @@ public class DestroyBlockTask extends Task {
             setDebugState("Going to destroy block to destroy the block");
             // This will destroy the target block.
             return new GetToBlockTask(_pos, false);
+        } else if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+            Debug.logMessage("Break Block: Restarting builder process");
+            startBreakBuild(mod);
         }
+
+        setDebugState("Breaking block via baritone...");
 
         return null;
     }
@@ -87,5 +93,9 @@ public class DestroyBlockTask extends Task {
     @Override
     protected String toDebugString() {
         return "Destroy block at " + _pos.toShortString();
+    }
+
+    private void startBreakBuild(AltoClef mod) {
+        mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
     }
 }

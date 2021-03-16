@@ -41,10 +41,12 @@ public class HandStackFixChain extends TaskChain {
     public float getPriority(AltoClef mod) {
 
         if (_generalDuctTapeSwapTimeout.elapsed()) {
-            Debug.logMessage("Refreshed inventory...");
-            mod.getInventoryTracker().refreshInventory();
-            _generalDuctTapeSwapTimeout.reset();
-            return Float.NEGATIVE_INFINITY;
+            if (!mod.getController().isBreakingBlock()) {
+                Debug.logMessage("Refreshed inventory...");
+                mod.getInventoryTracker().refreshInventory();
+                _generalDuctTapeSwapTimeout.reset();
+                return Float.NEGATIVE_INFINITY;
+            }
         }
 
         ItemStack currentStack = mod.getPlayer().inventory.getCursorStack();

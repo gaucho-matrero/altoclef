@@ -159,7 +159,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         private final Set<BlockPos> _blacklist = new HashSet<>();
 
-        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(4);
 
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
