@@ -117,6 +117,15 @@ public class TradeWithPiglinsTask extends ResourceTask {
         @Override
         protected void onStart(AltoClef mod) {
             super.onStart(mod);
+
+            mod.getConfigState().push();
+            // Don't attack piglins unless we've blacklisted them.
+            mod.getConfigState().addForceFieldExclusion(entity -> {
+                if (entity instanceof PiglinEntity) {
+                    return !_blacklisted.contains(entity);
+                }
+                return false;
+            });
             //_blacklisted.clear();
         }
 

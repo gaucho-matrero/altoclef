@@ -8,6 +8,7 @@ import baritone.api.Settings;
 import baritone.process.MineProcess;
 import baritone.api.utils.RayTraceUtils;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
@@ -72,6 +73,18 @@ public class ConfigState {
     public void setExclusivelyMineLogs(boolean value) {
         current().exclusivelyMineLogs = value;
         current().applyState();
+    }
+
+    public boolean shouldExcludeFromForcefield(Entity entity) {
+        for (Predicate<Entity> pred : current().excludeFromForceField) {
+            if (pred.test(entity)) return true;
+        }
+        return false;
+    }
+    public void addForceFieldExclusion(Predicate<Entity> pred) {
+        current().excludeFromForceField.add(pred);
+        // Not needed, as excludeFromForceField isn't applied anywhere else.
+        // current.applyState();
     }
 
     public void avoidBlockBreaking(BlockPos pos) {
@@ -156,6 +169,8 @@ public class ConfigState {
         // Alto Clef params
         public boolean exclusivelyMineLogs;
 
+        public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();
+
         // Extra Baritone Settings
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
@@ -184,6 +199,7 @@ public class ConfigState {
             if (toCopy != null) {
                 // Copy over stuff from old one
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
+                excludeFromForceField.addAll(toCopy.excludeFromForceField);
             }
         }
 

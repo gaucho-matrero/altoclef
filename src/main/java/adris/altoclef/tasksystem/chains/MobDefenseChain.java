@@ -263,6 +263,7 @@ public class MobDefenseChain extends SingleTaskChain {
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
             for (Entity entity : entities) {
+                if (mod.getConfigState().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer(entity)) {
                         if (LookUtil.seesPlayer(entity, mod.getPlayer(), 10)) {
