@@ -119,6 +119,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
             super.onStart(mod);
 
             mod.getConfigState().push();
+
+            // Don't throw away our gold lol
+            mod.getConfigState().addProtectedItems(Items.GOLD_INGOT);
+
             // Don't attack piglins unless we've blacklisted them.
             mod.getConfigState().addForceFieldExclusion(entity -> {
                 if (entity instanceof PiglinEntity) {
