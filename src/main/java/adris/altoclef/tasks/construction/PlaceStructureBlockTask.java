@@ -73,7 +73,7 @@ public class PlaceStructureBlockTask extends Task implements ITaskRequiresGround
         if (getMaterialCount(mod) < MIN_MATERIALS) {
             Debug.logMessage("Collecting materials");
             // TODO: Mine items, extract their resource key somehow.
-            _materialTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", PREFERRED_MATERIALS), new ItemTarget("cobblestone", PREFERRED_MATERIALS));
+            _materialTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", PREFERRED_MATERIALS), new ItemTarget("cobblestone", PREFERRED_MATERIALS), new ItemTarget("netherrack", PREFERRED_MATERIALS));
             _distanceChecker.reset();
             return _materialTask;
         }
@@ -142,7 +142,7 @@ public class PlaceStructureBlockTask extends Task implements ITaskRequiresGround
     }
 
     private static int getMaterialCount(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE);
+        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
     }
 
     private static class PlaceStructureSchematic extends AbstractSchematic {

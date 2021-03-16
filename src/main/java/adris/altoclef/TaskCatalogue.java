@@ -46,14 +46,14 @@ public class TaskCatalogue {
 
             //shapedRecipe3x3("sign", ItemTarget.WOOD_SIGN, p, p, p, p, p, p, o, s, o);
 
-            tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
             {
                 String c = "cobblestone";
                 shapedRecipe3x3("stone_pickaxe", Items.STONE_PICKAXE, 1, c, c, c, o, s, o, o, s, o);
                 shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
             }
-            tools("stone", "cobblestone", Items.STONE_PICKAXE, Items.STONE_SHOVEL, Items.STONE_SWORD, Items.STONE_AXE, Items.STONE_HOE);
+
+            mine("netherrack",  MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK);
 
             mine("coal",  MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
@@ -64,6 +64,8 @@ public class TaskCatalogue {
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
             simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask.class); // accounts for nether too
 
+            tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
+            tools("stone", "cobblestone", Items.STONE_PICKAXE, Items.STONE_SHOVEL, Items.STONE_SWORD, Items.STONE_AXE, Items.STONE_HOE);
             tools("iron", "iron_ingot", Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_HOE);
             tools("golden", "gold_ingot", Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD, Items.GOLDEN_AXE, Items.GOLDEN_HOE);
             armor("iron", "iron_ingot", Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS);
