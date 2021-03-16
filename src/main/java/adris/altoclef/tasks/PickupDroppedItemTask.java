@@ -1,6 +1,7 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -11,7 +12,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.Collections;
 import java.util.List;
 
-public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> {
+public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
 
     private final ItemTarget[] _itemTargets;
 

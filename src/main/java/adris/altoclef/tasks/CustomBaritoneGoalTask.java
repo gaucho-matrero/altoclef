@@ -3,13 +3,14 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalRunAwayFromCreepers;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.mob.MobEntity;
 
-public abstract class CustomBaritoneGoalTask extends Task {
+public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
 
     protected Goal _cachedGoal = null;
 

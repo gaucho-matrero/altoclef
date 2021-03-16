@@ -3,6 +3,8 @@ package adris.altoclef.tasksystem;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
+import java.util.function.Predicate;
+
 public abstract class Task {
 
     private String _debugState = "";
@@ -30,20 +32,22 @@ public abstract class Task {
         // We have a sub task
         if (newSub != null) {
             if (!newSub.isEqual(_sub)) {
-                // Our sub task is new
-                if (_sub != null) {
-                    // Our previous sub must be interrupted.
-                    _sub.stop(mod, newSub);
-                }
+                if (canBeInterrupted(mod, _sub)) {
+                    // Our sub task is new
+                    if (_sub != null) {
+                        // Our previous sub must be interrupted.
+                        _sub.stop(mod, newSub);
+                    }
 
-                _sub = newSub;
+                    _sub = newSub;
+                }
             }
 
             // Run our child
             _sub.tick(mod, parentChain);
         } else {
             // We are null
-            if (_sub != null) {
+            if (_sub != null && canBeInterrupted(mod, _sub)) {
                 // Our previous sub must be interrupted.
                 _sub.stop(mod);
                 _sub = null;
@@ -126,4 +130,28 @@ public abstract class Task {
         }
         return false;
     }
+
+    public boolean thisOrChildSatisfies(Predicate<Task> pred) {
+        Task t = this;
+        while (t != null) {
+            if (pred.test(t)) return true;
+            t = t._sub;
+        }
+        return false;
+    }
+
+    /**
+     * Sometimes a task just can NOT be bothered to be interrupted right now.
+     * For instance, if we're in mid air and MUST complete the parkour movement.
+     */
+    private boolean canBeInterrupted(AltoClef mod, Task subTask) {
+        if (subTask == null) return true;
+        if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
+            // This task (or any of its children) REQUIRES we be grounded.
+            return mod.getPlayer().isOnGround();
+        }
+        return true;
+    }
+
+
 }

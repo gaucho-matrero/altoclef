@@ -2,12 +2,13 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalFollowEntity;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 
-public class GetToEntityTask extends Task {
+public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     private final Entity _entity;
 

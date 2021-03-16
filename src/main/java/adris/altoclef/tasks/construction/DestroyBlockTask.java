@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -11,7 +12,7 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-public class DestroyBlockTask extends Task {
+public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _pos;
 

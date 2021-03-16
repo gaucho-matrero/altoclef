@@ -1,12 +1,13 @@
 package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
 @Deprecated
-public class ClearRegionTask extends Task {
+public class ClearRegionTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _from;
     private final BlockPos _to;

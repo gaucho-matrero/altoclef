@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -23,7 +24,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public class PlaceStructureBlockTask extends Task {
+public class PlaceStructureBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _target;
 

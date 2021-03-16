@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -11,7 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
-public abstract class AbstractDoToEntityTask extends Task {
+public abstract class AbstractDoToEntityTask extends Task implements ITaskRequiresGrounded {
     private final double _maintainDistance;
     private final double _combatGuardLowerRange;
     private final double _combatGuardLowerFieldRadius;

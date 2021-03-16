@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import baritone.api.pathing.goals.Goal;
@@ -22,7 +23,7 @@ import java.util.List;
  * Call this when the place you're currently at is bad for some reason and you just wanna get away.
  */
 
-public class TimeoutWanderTask extends Task {
+public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     private final float _distanceToWander;
 
