@@ -81,7 +81,8 @@ public class AltoClefCommands extends CommandList {
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
                 //Direction direction = Direction.WEST;
                 //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
-                mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.CRAFTING_TABLE}));
+                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.CRAFTING_TABLE}));
+                mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(472, 24, -324)));
                 break;
             }
             case "deadmeme":

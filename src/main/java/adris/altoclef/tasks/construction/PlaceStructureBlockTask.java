@@ -3,6 +3,7 @@ package adris.altoclef.tasks.construction;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
@@ -28,13 +29,15 @@ public class PlaceStructureBlockTask extends Task implements ITaskRequiresGround
 
     private final BlockPos _target;
 
-    private LinearProgressChecker _distanceChecker = new LinearProgressChecker(5, 0.1);
+    private final LinearProgressChecker _distanceChecker = new LinearProgressChecker(5, 0.1);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
 
     private Task _materialTask;
 
-    private int MIN_MATERIALS = 16;
-    private int PREFERRED_MATERIALS = 32;
+    private int _failCount = 0;
+
+    private static final int MIN_MATERIALS = 16;
+    private static final int PREFERRED_MATERIALS = 32;
 
     public PlaceStructureBlockTask(BlockPos target) {
         _target = target;
@@ -68,27 +71,44 @@ public class PlaceStructureBlockTask extends Task implements ITaskRequiresGround
 
         //Item[] items = Util.toArray(Item.class, mod.getClientBaritoneSettings().acceptableThrowawayItems.value);
         if (getMaterialCount(mod) < MIN_MATERIALS) {
+            Debug.logMessage("Collecting materials");
             // TODO: Mine items, extract their resource key somehow.
             _materialTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", PREFERRED_MATERIALS), new ItemTarget("cobblestone", PREFERRED_MATERIALS));
+            _distanceChecker.reset();
             return _materialTask;
         }
 
-        // Perform baritone placement
-        if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
-            Debug.logInternal("Run Structure Build");
-            ISchematic schematic = new PlaceStructureSchematic(mod);
-            mod.getClientBaritone().getBuilderProcess().build("structure", schematic, _target);
-        }
 
         // Check if we're approaching our point. If we fail, wander for a bit.
         double sqDist = mod.getPlayer().squaredDistanceTo(_target.getX(), _target.getY(), _target.getZ());
         _distanceChecker.setProgress(-1 * sqDist);
         if (_distanceChecker.failed()) {
-            Debug.logMessage("Failed to place, wandering timeout.");
-            return _wanderTask;
+            _distanceChecker.reset();
+            _failCount++;
+            if (!tryingAlternativeWay()) {
+                Debug.logMessage("Failed to place, wandering timeout.");
+                return _wanderTask;
+            } else {
+                Debug.logMessage("Trying alternative way of placing block...");
+            }
         }
 
-        setDebugState("Letting baritone place a block.");
+
+        // Place block
+        if (tryingAlternativeWay()) {
+            setDebugState("Alternative way: Trying to go above block to place block.");
+            return new GetToBlockTask(_target.up(), false);
+        } else {
+            setDebugState("Letting baritone place a block.");
+
+            // Perform baritone placement
+            if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+                Debug.logInternal("Run Structure Build");
+                ISchematic schematic = new PlaceStructureSchematic(mod);
+                mod.getClientBaritone().getBuilderProcess().build("structure", schematic, _target);
+            }
+        }
+
         return null;
     }
 
@@ -115,6 +135,10 @@ public class PlaceStructureBlockTask extends Task implements ITaskRequiresGround
     @Override
     protected String toDebugString() {
         return "Place structure at " + _target.toShortString();
+    }
+
+    private boolean tryingAlternativeWay() {
+        return _failCount % 4 == 3;
     }
 
     private static int getMaterialCount(AltoClef mod) {
