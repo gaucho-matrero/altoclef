@@ -16,6 +16,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class TerminatorTask extends Task {
 
-    private static final int RUN_AWAY_DISTANCE = 100;
+    private static final int RUN_AWAY_DISTANCE = 250;
 
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
@@ -86,7 +87,7 @@ public class TerminatorTask extends Task {
                     return false;
                 } else {
                     // We may be far and obstructed, check.
-                    boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), 200);
+                    boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), RUN_AWAY_DISTANCE);
                     return !seesPlayer;
                 }
             }, PlayerEntity.class) != null) {
@@ -104,8 +105,22 @@ public class TerminatorTask extends Task {
             }
         } else {
             // We can totally punk
+            if (_runAwayTask != null) {
+                Debug.logMessage("Stopped running away because we can now punk.");
+            }
+            // Get building materials if we don't have them.
+            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
+                setDebugState("Collecting building materials");
+                return PlaceStructureBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
+            }
+            // Get some food so we can last a little longer.
+            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3*2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
+                return _foodTask;
+            }
+
             _runAwayTask = null;
             if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe), PlayerEntity.class) != null) {
+                setDebugState("Punking.");
                 return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
                         entity -> {
                             if (entity instanceof PlayerEntity) {
@@ -135,12 +150,6 @@ public class TerminatorTask extends Task {
         if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
             setDebugState("Getting gear");
             return _prepareEquipmentTask;
-        }
-
-        // Get building materials if we don't have them.
-        if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
-            setDebugState("Collecting building materials");
-            return PlaceStructureBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
         }
 
         // Get some food while we're at it.
@@ -180,6 +189,7 @@ public class TerminatorTask extends Task {
     }
 
     private boolean isReadyToPunk(AltoClef mod) {
+        if (mod.getPlayer().getHealth() < 3) return false; // We need to heal.
         return BeatMinecraftTask.diamondArmorEquipped(mod) && mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD);
     }
 
@@ -226,6 +236,8 @@ public class TerminatorTask extends Task {
 
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
             super(toRunAwayFrom, distanceToRun);
+            // More lenient progress checker
+            _checker = new MovementProgressChecker(2);
         }
 
         @Override

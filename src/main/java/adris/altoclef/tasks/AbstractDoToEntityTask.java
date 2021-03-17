@@ -17,7 +17,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     private final double _combatGuardLowerRange;
     private final double _combatGuardLowerFieldRadius;
 
-    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
+    protected final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
     public AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
