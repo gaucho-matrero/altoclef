@@ -53,6 +53,11 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
     }
 
     @Override
+    public boolean isFinished(AltoClef mod) {
+        return _cachedGoal != null && _cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
+    }
+
+    @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
