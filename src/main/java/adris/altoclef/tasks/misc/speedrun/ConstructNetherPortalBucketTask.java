@@ -102,13 +102,6 @@ public class ConstructNetherPortalBucketTask extends Task {
         // Also avoid breaking the cast frame
         mod.getConfigState().avoidBlockBreaking(block -> {
             if (_portalOrigin != null) {
-                // Don't break frame
-                for (Vec3i framePosRelative : PORTAL_FRAME) {
-                    BlockPos framePos = _portalOrigin.add(framePosRelative);
-                    if (block.equals(framePos)) {
-                        return mod.getWorld().getBlockState(framePos).getBlock() == Blocks.OBSIDIAN;
-                    }
-                }
                 // Don't break CURRENT cast
                 if (_currentLavaTarget != null) {
                     for (Vec3i castPosRelativeToLava : CAST_FRAME) {
@@ -116,6 +109,13 @@ public class ConstructNetherPortalBucketTask extends Task {
                         if (block.equals(castPos)) {
                             return true;
                         }
+                    }
+                }
+                // Don't break frame
+                for (Vec3i framePosRelative : PORTAL_FRAME) {
+                    BlockPos framePos = _portalOrigin.add(framePosRelative);
+                    if (block.equals(framePos)) {
+                        return mod.getWorld().getBlockState(framePos).getBlock() == Blocks.OBSIDIAN;
                     }
                 }
             }
@@ -128,7 +128,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         mod.getConfigState().avoidBlockPlacing(block -> {
             if (_currentLavaTarget != null) {
                 BlockPos waterTarget = _currentLavaTarget.up();
-                if (block.equals(_currentLavaTarget) || block.equals(waterTarget)) return true;
+                return block.equals(_currentLavaTarget) || block.equals(waterTarget);
             }
             return false;
         });
