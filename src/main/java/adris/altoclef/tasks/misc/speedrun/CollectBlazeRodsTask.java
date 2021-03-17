@@ -7,6 +7,7 @@ import adris.altoclef.tasks.misc.PutOutFireTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.WorldUtil;
 import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -133,17 +134,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             // If unloaded, go to it. Unless it's super far away.
             return pos.isWithinDistance(mod.getPlayer().getPos(),3000);
         }
-        BlockState state = mod.getWorld().getBlockState(pos);
-        if (state.getBlock() instanceof SpawnerBlock) {
-            BlockEntity be = mod.getWorld().getBlockEntity(pos);
-            if (be instanceof MobSpawnerBlockEntity) {
-                MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
-                if (blockEntity.getLogic().getRenderedEntity() instanceof BlazeEntity) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return WorldUtil.getSpawnerEntity(mod, pos) instanceof BlazeEntity;
     }
 
     @Override

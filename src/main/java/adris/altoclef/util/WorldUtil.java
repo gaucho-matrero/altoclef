@@ -5,8 +5,12 @@ import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.RotationUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
+import net.minecraft.block.SpawnerBlock;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -37,5 +41,17 @@ public interface WorldUtil {
 
     static boolean isSolid(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
+    }
+
+    static Entity getSpawnerEntity(AltoClef mod, BlockPos pos) {
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() instanceof SpawnerBlock) {
+            BlockEntity be = mod.getWorld().getBlockEntity(pos);
+            if (be instanceof MobSpawnerBlockEntity) {
+                MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
+                return blockEntity.getLogic().getRenderedEntity();
+            }
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
@@ -75,6 +76,10 @@ public class BeatMinecraftTask extends Task {
         // Add some protections so we don't throw these away at any point.
         mod.getConfigState().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
         mod.getConfigState().addProtectedItems(ItemTarget.BED);
+
+        mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
+        // Allow walking on end portal
+        mod.getConfigState().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
     }
 
     @Override
@@ -117,11 +122,32 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Stronghold portal located.
-        if (portalFound()) {
-            setDebugState("Filling in portal...");
-            int eyes = portalEyesInFrame(mod);
-            Debug.logInternal("EYES: " + eyes);
-            return null;
+        if (strongholdPortalFound() || isEndPortalOpened(mod)) {
+            if (mod.getChunkTracker().isChunkLoaded(_endPortalFrame.get(0))) {
+
+                BlockPos nearestPortal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
+                if (nearestPortal != null && mod.getChunkTracker().isChunkLoaded(nearestPortal)) {
+                    setDebugState("ENTER PORTAL");
+                    return new DoToClosestBlockTask(
+                            () -> mod.getPlayer().getPos(),
+                            blockPos -> new GetToBlockTask(blockPos.up(), false),
+                            pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL),
+                            Blocks.END_PORTAL
+                    );
+                }
+
+                int eyesNeeded = 12 - portalEyesInFrame(mod);
+                if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < eyesNeeded) {
+                    setDebugState("Really bad news, we don't have enough eyes to fill the portal.");
+                }
+
+                setDebugState("Filling in portal...");
+                return new FillStrongholdPortalTask(true);
+            } else {
+                // Go to portal
+                setDebugState("Going back to portal...");
+                return new GetToBlockTask(_endPortalFrame.get(0), false);
+            }
         }
 
         // Locate stronghold portal
@@ -151,51 +177,56 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE);
+        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) + portalEyesInFrame(mod);
         int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) / 2) - eyes;
         int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
 
-        // Get blaze rods by going to nether
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
-            //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
-            // Go to nether
-            if (_netherPortalPos != null) {
-                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
-                    if (!mod.getBlockTracker().blockIsValid(_netherPortalPos, Blocks.NETHER_PORTAL)) {
-                        double MAX_PORTAL_DISTANCE = 2000;
-                        // Reset portal if it's far away or we confirmed it being incorrect in this chunk.
-                        if (mod.getChunkTracker().isChunkLoaded(_netherPortalPos) || _netherPortalPos.getSquaredDistance(mod.getPlayer().getPos(), false) > MAX_PORTAL_DISTANCE*MAX_PORTAL_DISTANCE) {
-                            Debug.logMessage("Invalid portal position detected at " + _netherPortalPos + ", finding new nether portal.");
-                            _netherPortalPos = null;
+        if (!isEndPortalOpened(mod)) {
+            // Get blaze rods by going to nether
+            if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
+                //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
+                // Go to nether
+                if (_netherPortalPos != null) {
+                    if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                        if (!mod.getBlockTracker().blockIsValid(_netherPortalPos, Blocks.NETHER_PORTAL)) {
+                            double MAX_PORTAL_DISTANCE = 2000;
+                            // Reset portal if it's far away or we confirmed it being incorrect in this chunk.
+                            if (mod.getChunkTracker().isChunkLoaded(_netherPortalPos) || _netherPortalPos.getSquaredDistance(mod.getPlayer().getPos(), false) > MAX_PORTAL_DISTANCE * MAX_PORTAL_DISTANCE) {
+                                Debug.logMessage("Invalid portal position detected at " + _netherPortalPos + ", finding new nether portal.");
+                                _netherPortalPos = null;
+                            }
+                        }
+                    }
+                    if (_netherPortalPos != null) {
+                        setDebugState("Going to previously created nether portal...");
+                        return new EnterNetherPortalTask(new GetToBlockTask(_netherPortalPos, false), Dimension.NETHER);
+                    }
+                } else {
+                    if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
+                        if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
+                            _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+                            Debug.logMessage("Tracked portal at " + _netherPortalPos);
                         }
                     }
                 }
-                if (_netherPortalPos != null) {
-                    setDebugState("Going to previously created nether portal...");
-                    return new EnterNetherPortalTask(new GetToBlockTask(_netherPortalPos, false), Dimension.NETHER);
-                }
-            } else {
-                if (mod.getBlockTracker().isTracking(Blocks.NETHER_PORTAL)) {
-                    if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
-                        _netherPortalPos = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
-                        Debug.logMessage("Tracked portal at " + _netherPortalPos);
-                    }
-                }
-            }
 
-            setDebugState("Build nether portal + go to nether");
-            return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
-        } else {
-            setDebugState("Crafting our blaze powder + eyes");
-            int powderNeeded = (TARGET_ENDER_EYES - eyes);
-            if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
-                return new CraftInInventoryTask(new ItemTarget(Items.BLAZE_POWDER, powderNeeded), CraftingRecipe.newShapedRecipe("blaze_powder",
-                        new ItemTarget[] {new ItemTarget(Items.BLAZE_ROD, 1), null, null, null}, 2));
+                setDebugState("Build nether portal + go to nether");
+                return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
+            } else {
+                setDebugState("Crafting our blaze powder + eyes");
+                int powderNeeded = (TARGET_ENDER_EYES - eyes);
+                if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
+                    return new CraftInInventoryTask(new ItemTarget(Items.BLAZE_POWDER, powderNeeded), CraftingRecipe.newShapedRecipe("blaze_powder",
+                            new ItemTarget[]{new ItemTarget(Items.BLAZE_ROD, 1), null, null, null}, 2));
+                }
+                // Craft
+                return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, TARGET_ENDER_EYES), CraftingRecipe.newShapedRecipe("ender_eye",
+                        new ItemTarget[]{new ItemTarget(Items.ENDER_PEARL, 1), new ItemTarget(Items.BLAZE_POWDER, 1), null, null}, 1));
             }
-            // Craft
-            return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, TARGET_ENDER_EYES), CraftingRecipe.newShapedRecipe("ender_eye",
-                    new ItemTarget[] {new ItemTarget(Items.ENDER_PEARL, 1), new ItemTarget(Items.BLAZE_POWDER, 1), null, null}, 1));
         }
+        // The end portal is opened. Ummmmm... We shouldn't be here.
+        Debug.logError("THIS SHOULDN'T HAPPEN OH NO");
+        return null;
     }
 
     private Task netherTick(AltoClef mod) {
@@ -281,6 +312,7 @@ public class BeatMinecraftTask extends Task {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
         mod.getConfigState().pop();
+            mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
 
     @Override
@@ -293,27 +325,38 @@ public class BeatMinecraftTask extends Task {
         return "Beating the game";
     }
 
-    private boolean portalFound() {
+    private boolean strongholdPortalFound() {
         return _endPortalFrame != null;
+    }
+
+    private boolean isEndPortalOpened(AltoClef mod) {
+        return portalEyesInFrame(mod) >= 12;
     }
 
     private int portalEyesInFrame(AltoClef mod) {
         int count = 0;
-        for (BlockPos b : _endPortalFrame) {
-            if (!mod.getChunkTracker().isChunkLoaded(b)) {
-                return _cachedEndPearlsInFrame;
-            }
-            BlockState state = mod.getWorld().getBlockState(b);
-            if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
-                Debug.logWarning("BLOCK POS " + b + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
-            }
-            boolean filled = state.get(EndPortalFrameBlock.EYE);
-            if (filled) {
-                count++;
+        if (strongholdPortalFound()) {
+            for (BlockPos b : _endPortalFrame) {
+                if (!mod.getChunkTracker().isChunkLoaded(b)) {
+                    return _cachedEndPearlsInFrame;
+                }
+                boolean filled = isEndPortalFrameFilled(mod, b);
+                if (filled) {
+                    count++;
+                }
             }
         }
         _cachedEndPearlsInFrame = count;
         return count;
+    }
+
+    public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos)) return false;
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+        }
+        return state.get(EndPortalFrameBlock.EYE);
     }
 
     private enum ForceState {

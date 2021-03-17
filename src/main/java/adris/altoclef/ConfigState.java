@@ -101,6 +101,11 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void allowWalkingOn(Predicate<BlockPos> pred) {
+        current().allowWalking.add(pred);
+        current().applyState();
+    }
+
     public void setRayTracingFluidHandling(RaycastContext.FluidHandling fluidHandling) {
         current().rayFluidHandling = fluidHandling;
         //Debug.logMessage("OOF: " + fluidHandling);
@@ -175,6 +180,7 @@ public class ConfigState {
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
+        public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
 
         // Minecraft config
@@ -227,6 +233,7 @@ public class ConfigState {
                     toAvoidBreaking = new ArrayList<>(settings.getBreakAvoiders());
                     toAvoidPlacing = new ArrayList<>(settings.getPlaceAvoiders());
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
+                    allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
                 }
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
@@ -259,6 +266,8 @@ public class ConfigState {
                     sa.getPlaceAvoiders().addAll(toAvoidPlacing);
                     sa.getProtectedItems().clear();
                     sa.getProtectedItems().addAll(protectedItems);
+                    sa.getForceWalkOnPredicates().clear();
+                    sa.getForceWalkOnPredicates().addAll(allowWalking);
                 }
             }
 
