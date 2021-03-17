@@ -91,8 +91,8 @@ public class CollectBlazeRodsTask extends ResourceTask {
         }
 
 
-        // If the blaze spawner somehow doesn't exist.
-        if (_foundBlazeSpawner != null && !isValidBlazeSpawner(mod, _foundBlazeSpawner)) {
+        // If the blaze spawner somehow isn't valid
+        if (_foundBlazeSpawner != null && mod.getChunkTracker().isChunkLoaded(_foundBlazeSpawner) && !isValidBlazeSpawner(mod, _foundBlazeSpawner)) {
             Debug.logMessage("Blaze spawner at " + _foundBlazeSpawner + " too far away or invalid. Re-searching.");
             _foundBlazeSpawner = null;
         }
@@ -132,7 +132,8 @@ public class CollectBlazeRodsTask extends ResourceTask {
     private boolean isValidBlazeSpawner(AltoClef mod, BlockPos pos) {
         if (!mod.getChunkTracker().isChunkLoaded(pos)) {
             // If unloaded, go to it. Unless it's super far away.
-            return pos.isWithinDistance(mod.getPlayer().getPos(),3000);
+            return false;
+            //return pos.isWithinDistance(mod.getPlayer().getPos(),3000);
         }
         return WorldUtil.getSpawnerEntity(mod, pos) instanceof BlazeEntity;
     }
