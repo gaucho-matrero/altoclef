@@ -13,8 +13,10 @@ import adris.altoclef.tasks.misc.KillPlayerTask;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
@@ -58,6 +60,9 @@ public class TerminatorTask extends Task {
     private final Predicate<PlayerEntity> _ignoreTerminate;
 
     private final ScanChunksInRadius _scanTask;
+
+    private String _currentVisibleTarget;
+    private final Timer _funnyMessageTimer = new Timer(10);
 
     public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> ignorePredicate) {
         _ignoreTerminate = ignorePredicate;
@@ -124,6 +129,7 @@ public class TerminatorTask extends Task {
                 return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
                         entity -> {
                             if (entity instanceof PlayerEntity) {
+                                tryDoFunnyMessageTo((PlayerEntity)entity);
                                 return new KillPlayerTask(entity.getName().getString());
                             }
                             // Should never happen.
@@ -196,6 +202,24 @@ public class TerminatorTask extends Task {
     private boolean shouldPunk(AltoClef mod, PlayerEntity player) {
         if (player == null) return false;
         return !mod.getButler().isUserAuthorized(player.getName().getString()) && !_ignoreTerminate.test(player);
+    }
+
+    private void tryDoFunnyMessageTo(AltoClef mod, PlayerEntity player) {
+        if (_funnyMessageTimer.elapsed()) {
+            if (LookUtil.seesPlayer(player, mod.getPlayer(), 200)) {
+                String name = player.getName().getString();
+                if (_currentVisibleTarget == null || !_currentVisibleTarget.equals(name)) {
+                    _currentVisibleTarget = name;
+                    _funnyMessageTimer.reset();
+                    String funnyMessage = getRandomFunnyMessage();
+                    mod.getMessageSender().enqueueWhisper(name, funnyMessage, MessagePriority.ASAP);
+                }
+            }
+        }
+    }
+
+    private String getRandomFunnyMessage() {
+        return "Prepare to get punked, kid";
     }
 
     private static class ScanChunksInRadius extends SearchChunksExploreTask {

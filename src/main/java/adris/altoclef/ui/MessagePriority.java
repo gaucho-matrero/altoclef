@@ -1,13 +1,13 @@
-package adris.altoclef.butler;
+package adris.altoclef.ui;
 
-public enum WhisperPriority {
+public enum MessagePriority {
     ASAP(3),
     TIMELY(2),
     OPTIONAL(1),
     UNAUTHORIZED(0);
 
     private final int _importance;
-    WhisperPriority(int importance) {
+    MessagePriority(int importance) {
         _importance = importance;
     }
 

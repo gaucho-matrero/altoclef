@@ -133,6 +133,9 @@ public class ConstructNetherPortalBucketTask extends Task {
             return false;
         });
 
+        // Protect some used items
+        mod.getConfigState().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL);
+
         _progressChecker.reset();
     }
 

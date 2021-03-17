@@ -59,6 +59,10 @@ public abstract class DoStuffInContainerTask extends Task {
         }
 
         mod.getBlockTracker().trackBlock(_containerBlock);
+
+        // Protect container since we might place it.
+        mod.getConfigState().push();
+        mod.getConfigState().addProtectedItems(_containerBlock.asItem());
     }
 
     @Override

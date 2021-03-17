@@ -1,9 +1,8 @@
 package adris.altoclef;
 
-import adris.altoclef.butler.WhisperPriority;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
@@ -16,12 +15,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -29,10 +23,8 @@ import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -298,7 +290,7 @@ public class AltoClefCommands extends CommandList {
 
         @Override
         protected void Call(AltoClef mod, ArgParser parser) {
-            mod.log("########## HELP: ##########", WhisperPriority.OPTIONAL);
+            mod.log("########## HELP: ##########", MessagePriority.OPTIONAL);
             int padSize = 10;
             for(Command c : mod.getCommandExecutor().AllCommands()) {
                 StringBuilder line = new StringBuilder();
@@ -309,9 +301,9 @@ public class AltoClefCommands extends CommandList {
                     line.append(" ");
                 }
                 line.append(c.getDescription());
-                mod.log(line.toString(), WhisperPriority.OPTIONAL);
+                mod.log(line.toString(), MessagePriority.OPTIONAL);
             }
-            mod.log("###########################", WhisperPriority.OPTIONAL);
+            mod.log("###########################", MessagePriority.OPTIONAL);
             finish();
         }
     }
@@ -346,9 +338,9 @@ public class AltoClefCommands extends CommandList {
                 Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
                 mod.runUserTask(targetTask, nothing -> finish());
             } else {
-                mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", WhisperPriority.OPTIONAL);
-                mod.log("Here's a list of everything we can get for you though:", WhisperPriority.OPTIONAL);
-                mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()), WhisperPriority.OPTIONAL);
+                mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);
+                mod.log("Here's a list of everything we can get for you though:", MessagePriority.OPTIONAL);
+                mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()), MessagePriority.OPTIONAL);
                 finish();
             }
         }
@@ -553,11 +545,11 @@ public class AltoClefCommands extends CommandList {
                     }
                 }
                 // Print
-                mod.log("INVENTORY: ", WhisperPriority.OPTIONAL);
+                mod.log("INVENTORY: ", MessagePriority.OPTIONAL);
                 for (String name : counts.keySet()) {
-                    mod.log(name + " : " + counts.get(name), WhisperPriority.OPTIONAL);
+                    mod.log(name + " : " + counts.get(name), MessagePriority.OPTIONAL);
                 }
-                mod.log("(inventory list sent) ", WhisperPriority.OPTIONAL);
+                mod.log("(inventory list sent) ", MessagePriority.OPTIONAL);
             } else {
                 // Print item quantity
                 Item[] matches = TaskCatalogue.getItemMatches(item);

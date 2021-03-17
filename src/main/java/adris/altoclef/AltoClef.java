@@ -1,13 +1,14 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
-import adris.altoclef.butler.WhisperPriority;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.chains.*;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
+import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
@@ -29,7 +30,6 @@ import net.minecraft.world.chunk.WorldChunk;
 import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class AltoClef implements ModInitializer {
 
@@ -58,6 +58,9 @@ public class AltoClef implements ModInitializer {
 
     // Settings
     private adris.altoclef.Settings _settings;
+
+    // Misc managers
+    private MessageSender _messageSender;
 
     // Butler
     private Butler _butler;
@@ -107,6 +110,9 @@ public class AltoClef implements ModInitializer {
         // Renderers
         _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
 
+        // Misc managers
+        _messageSender = new MessageSender();
+
         _butler = new Butler(this);
 
         initializeCommands();
@@ -122,6 +128,7 @@ public class AltoClef implements ModInitializer {
         _taskRunner.tick();
 
         _butler.tick();
+        _messageSender.tick();
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
@@ -209,6 +216,8 @@ public class AltoClef implements ModInitializer {
         return _butler;
     }
 
+    public MessageSender getMessageSender() {return _messageSender;}
+
     public int getTicks() {
         try {
             ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
@@ -256,16 +265,16 @@ public class AltoClef implements ModInitializer {
     }
 
     public void log(String message) {
-        log(message, WhisperPriority.TIMELY);
+        log(message, MessagePriority.TIMELY);
     }
-    public void log(String message, WhisperPriority priority) {
+    public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
         _butler.onLog(message, priority);
     }
     public void logWarning(String message) {
-        logWarning(message, WhisperPriority.TIMELY);
+        logWarning(message, MessagePriority.TIMELY);
     }
-    public void logWarning(String message, WhisperPriority priority) {
+    public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
         _butler.onLogWarning(message, priority);
     }

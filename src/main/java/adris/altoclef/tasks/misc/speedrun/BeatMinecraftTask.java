@@ -60,7 +60,7 @@ public class BeatMinecraftTask extends Task {
                     new ItemTarget("diamond_boots", 1),
                     new ItemTarget("diamond_pickaxe", 3),
                     new ItemTarget("diamond_sword", 1),
-                    new ItemTarget("crafting_table", 1)
+                    new ItemTarget("log", 20)
                     );
 
     private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
@@ -117,7 +117,7 @@ public class BeatMinecraftTask extends Task {
             return new EquipArmorTask(DIAMOND_ARMORS);
         }
         // Get diamond armor + gear first
-        if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
+        if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
             return _prepareEquipmentTask;
         }
 
