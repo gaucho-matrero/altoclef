@@ -129,7 +129,7 @@ public class TerminatorTask extends Task {
                 return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
                         entity -> {
                             if (entity instanceof PlayerEntity) {
-                                tryDoFunnyMessageTo((PlayerEntity)entity);
+                                tryDoFunnyMessageTo(mod, (PlayerEntity)entity);
                                 return new KillPlayerTask(entity.getName().getString());
                             }
                             // Should never happen.
@@ -170,7 +170,7 @@ public class TerminatorTask extends Task {
         }
 
         setDebugState("Scanning for players...");
-
+        _currentVisibleTarget = null;
         if (_scanTask.failedSearch()) {
             Debug.logMessage("Re-searching missed places.");
             _scanTask.resetSearch(mod);
