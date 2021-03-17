@@ -65,7 +65,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
 
             Entity toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
-            if (_foundBlazeSpawner != null) {
+            if (_foundBlazeSpawner != null && toKill != null) {
                 Vec3d nearest = toKill.getPos();
 
                 double sqDistanceToPlayer = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
