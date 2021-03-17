@@ -7,6 +7,7 @@ import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.RunAwayFromEntitiesTask;
 import adris.altoclef.tasks.RunAwayFromPositionTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
+import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.KillPlayerTask;
 import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
@@ -34,6 +35,9 @@ public class TerminatorTask extends Task {
 
     private static final int RUN_AWAY_DISTANCE = 100;
 
+    private static final int MIN_BUILDING_BLOCKS = 10;
+    private static final int PREFERRED_BUILDING_BLOCKS = 60;
+
     private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
 
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
@@ -42,6 +46,7 @@ public class TerminatorTask extends Task {
             new ItemTarget("diamond_helmet", 1),
             new ItemTarget("diamond_boots", 1),
             new ItemTarget("diamond_pickaxe", 1),
+            new ItemTarget("diamond_shovel", 1),
             new ItemTarget("diamond_sword", 1)
     );
 
@@ -130,6 +135,12 @@ public class TerminatorTask extends Task {
         if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
             setDebugState("Getting gear");
             return _prepareEquipmentTask;
+        }
+
+        // Get building materials if we don't have them.
+        if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
+            setDebugState("Collecting building materials");
+            return PlaceStructureBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
         }
 
         // Get some food while we're at it.
