@@ -37,10 +37,7 @@ public abstract class SearchChunksExploreTask extends Task {
         _mod = mod;
         mod.getOnChunkLoad().addListener(chunkLoadEvent);
 
-        // We want to search the currently loaded chunks too!!!
-        for (ChunkPos start : mod.getChunkTracker().getLoadedChunks()) {
-            onChunkLoad(mod.getWorld().getChunk(start.x, start.z));
-        }
+        resetSearch(mod);
     }
 
     @Override
@@ -85,6 +82,18 @@ public abstract class SearchChunksExploreTask extends Task {
     }
 
     protected abstract boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos);
+
+    public boolean failedSearch() {
+        return _searcher == null;
+    }
+
+    public void resetSearch(AltoClef mod) {
+        _searcher = null;
+        // We want to search the currently loaded chunks too!!!
+        for (ChunkPos start : mod.getChunkTracker().getLoadedChunks()) {
+            onChunkLoad(mod.getWorld().getChunk(start.x, start.z));
+        }
+    }
 
     class SearchSubTask extends ChunkSearchTask {
 

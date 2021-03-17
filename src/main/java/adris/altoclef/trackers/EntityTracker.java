@@ -216,7 +216,11 @@ public class EntityTracker extends Tracker {
             for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
 
                 Class type = entity.getClass();
+                type = squashType(type);
+                // Don't catalogue our own player.
+                if (type == PlayerEntity.class && entity.equals(_mod.getPlayer())) continue;
                 if (!_entityMap.containsKey(type)) {
+                    //Debug.logInternal("NEW TYPE: " + type);
                     _entityMap.put(type, new ArrayList<>());
                 }
                 _entityMap.get(type).add(entity);
@@ -289,6 +293,20 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
+    }
+
+    /**
+     * Squash a class that may have sub classes into one distinguishable class type.
+     * For ease of use.
+     * @param type
+     * @return
+     */
+    private static Class squashType(Class type) {
+        // Squash types for ease of use
+        if (PlayerEntity.class.isAssignableFrom(type)) {
+            return PlayerEntity.class;
+        }
+        return type;
     }
 
     @Override

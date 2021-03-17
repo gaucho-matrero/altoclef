@@ -138,6 +138,15 @@ public class ConfigState {
         return current().protectedItems.contains(item);
     }
 
+    public boolean shouldForceFieldPlayers() {
+        return current().forceFieldPlayers;
+    }
+    public void setForceFieldPlayers(boolean forceFieldPlayers) {
+        current().forceFieldPlayers = forceFieldPlayers;
+        // Not needed, nothing changes.
+        // current.applyState()
+    }
+
     /// Stack management
     public void push() {
         if (_states.empty()) {
@@ -173,6 +182,7 @@ public class ConfigState {
 
         // Alto Clef params
         public boolean exclusivelyMineLogs;
+        public boolean forceFieldPlayers;
 
         public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();
 
@@ -206,6 +216,7 @@ public class ConfigState {
                 // Copy over stuff from old one
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
                 excludeFromForceField.addAll(toCopy.excludeFromForceField);
+                forceFieldPlayers = toCopy.forceFieldPlayers;
             }
         }
 

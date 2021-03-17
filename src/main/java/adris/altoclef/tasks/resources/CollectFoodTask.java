@@ -295,7 +295,7 @@ public class CollectFoodTask extends Task {
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
         BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), reject, blockToCheck);
 
-        if (!nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
+        if (nearestBlock != null && !nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
             nearestBlock = null;
         }
 

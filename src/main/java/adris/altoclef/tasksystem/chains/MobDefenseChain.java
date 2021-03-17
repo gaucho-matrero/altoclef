@@ -27,6 +27,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.*;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
@@ -263,15 +264,27 @@ public class MobDefenseChain extends SingleTaskChain {
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
             for (Entity entity : entities) {
+                boolean shouldForce = false;
                 if (mod.getConfigState().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer(entity)) {
                         if (LookUtil.seesPlayer(entity, mod.getPlayer(), 10)) {
-                            applyForceField(mod, entity);
+                            shouldForce = true;
                         }
                     }
                 } else if (entity instanceof FireballEntity) {
                     // Ghast ball
+                    shouldForce = true;
+                } else if (entity instanceof PlayerEntity && mod.getConfigState().shouldForceFieldPlayers()) {
+                    PlayerEntity player = (PlayerEntity) entity;
+                    if (!player.equals(mod.getPlayer())) {
+                        String name = player.getName().getString();
+                        if (!mod.getButler().isUserAuthorized(name)) {
+                            shouldForce = true;
+                        }
+                    }
+                }
+                if (shouldForce) {
                     applyForceField(mod, entity);
                 }
             }

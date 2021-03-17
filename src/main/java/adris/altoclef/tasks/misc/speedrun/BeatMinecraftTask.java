@@ -292,13 +292,13 @@ public class BeatMinecraftTask extends Task {
         return null;
     }
 
-    private boolean diamondArmorEquipped(AltoClef mod) {
+    public static boolean diamondArmorEquipped(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
         }
         return true;
     }
-    private boolean hasDiamondArmor(AltoClef mod) {
+    public static boolean hasDiamondArmor(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             Item item = TaskCatalogue.getItemMatches(armor)[0];
             if (mod.getInventoryTracker().isArmorEquipped(item)) continue;

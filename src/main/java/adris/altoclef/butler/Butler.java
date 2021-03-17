@@ -48,6 +48,10 @@ public class Butler {
         }
     }
 
+    public boolean isUserAuthorized(String username) {
+        return _userAuth.isUserAuthorized(username);
+    }
+
     public void onLog(String message, WhisperPriority priority) {
         if (_currentUser != null) {
             sendWhisper(message, priority);

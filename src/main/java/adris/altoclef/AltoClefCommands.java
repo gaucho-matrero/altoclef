@@ -9,6 +9,7 @@ import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
@@ -246,6 +247,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "stronghold":
                 mod.runUserTask(new LocateStrongholdTask(12));
+                break;
+            case "terminate":
+                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 400));
                 break;
         }
     }
