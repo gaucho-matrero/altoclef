@@ -295,13 +295,7 @@ public class InventoryTracker extends Tracker {
             MiningRequirement[] order = new MiningRequirement[]{
                     MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
             };
-            MiningRequirement currentReq = MiningRequirement.HAND;
-            for (MiningRequirement check : order) {
-                if (miningRequirementMet(check)) {
-                    currentReq = check;
-                    break;
-                }
-            }
+            MiningRequirement currentReq = getCurrentMiningRequirement();
             for (MiningRequirement check : order) {
                 if (check != currentReq && miningRequirementMet(check)) {
                     // Throw away if we have this item since we already have a BETTER one.
@@ -374,6 +368,18 @@ public class InventoryTracker extends Tracker {
         }
 
         return null;
+    }
+
+    public MiningRequirement getCurrentMiningRequirement() {
+        MiningRequirement[] order = new MiningRequirement[]{
+                MiningRequirement.DIAMOND, MiningRequirement.IRON, MiningRequirement.STONE, MiningRequirement.WOOD
+        };
+        for (MiningRequirement check : order) {
+            if (miningRequirementMet(check)) {
+                return check;
+            }
+        }
+        return MiningRequirement.HAND;
     }
 
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {

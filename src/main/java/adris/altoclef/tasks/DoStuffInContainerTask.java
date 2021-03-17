@@ -29,8 +29,8 @@ import net.minecraft.util.math.Vec3d;
 
 public abstract class DoStuffInContainerTask extends Task {
 
-    private String _containerCatalogueName;
-    private Block _containerBlock;
+    private final String _containerCatalogueName;
+    private final Block _containerBlock;
 
     private final PlaceBlockNearbyTask _placeTask;
 
@@ -43,6 +43,8 @@ public abstract class DoStuffInContainerTask extends Task {
     // If we just placed something, stop placing and try going to the nearest container.
     private final Timer _justPlacedTimer = new Timer(3);
 
+    private Task _openTableTask;
+
     public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
         _containerBlock = containerBlock;
         _containerCatalogueName = containerCatalogueName;
@@ -52,6 +54,10 @@ public abstract class DoStuffInContainerTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        if (_openTableTask == null) {
+            _openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), blockpos -> new GetToBlockTask(blockpos, true), _containerBlock);
+        }
+
         mod.getBlockTracker().trackBlock(_containerBlock);
     }
 
@@ -132,7 +138,7 @@ public abstract class DoStuffInContainerTask extends Task {
         }
 
         if (nearest != null) {
-            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, true), _containerBlock);
+            return _openTableTask;
         }
         return null;
         //return new GetToBlockTask(nearest, true);

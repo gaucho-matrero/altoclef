@@ -176,6 +176,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                         _reachTimer.reset();
                         Debug.logMessage("Failed to collect liquid at " + nearestLiquid + ", probably an invalid source block. blacklisting and trying another one.");
                         _blacklist.add(nearestLiquid);
+                        mod.getBlockTracker().requestBlockUnreachable(nearestLiquid);
                         // Try again.
                         return null;
                     }

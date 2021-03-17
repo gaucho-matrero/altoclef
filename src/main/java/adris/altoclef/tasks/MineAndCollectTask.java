@@ -152,7 +152,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         private final Set<BlockPos> _blacklist = new HashSet<>();
 
-        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(4);
+        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(1);
 
         private final Task _pickupTask;
 
@@ -218,7 +218,8 @@ public class MineAndCollectTask extends ResourceTask {
         protected Task onTick(AltoClef mod) {
             _mod = mod;
             if (_miningPos != null && !_progressChecker.check(mod)) {
-                Debug.logMessage("Failed to mine block at " + _miningPos + ". Blacklisting.");
+                Debug.logMessage("Failed to mine block at " + _miningPos + ". Suggesting it may be unreachable.");
+                mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);
                 _miningPos = null;
             }

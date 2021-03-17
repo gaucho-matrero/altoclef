@@ -21,6 +21,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -28,6 +29,8 @@ import java.util.function.Predicate;
  *
  */
 public class BlockTracker extends Tracker {
+
+    private static final int DEFAULT_REACH_ATTEMPTS_ALLOWED = 4;
 
     private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
 
@@ -138,6 +141,8 @@ public class BlockTracker extends Tracker {
             for (int y = minY; y <= maxY; ++y) {
                 for (int z = minZ; z <= maxZ; ++z) {
                     BlockPos check = new BlockPos(x, y, z);
+                    if (currentCache().blockUnreachable(check)) continue;
+
                     assert MinecraftClient.getInstance().world != null;
                     Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
                     boolean valid = false;
@@ -208,6 +213,10 @@ public class BlockTracker extends Tracker {
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
     public boolean blockIsValid(BlockPos pos, Block ...blocks) {
+        // We can't reach it, don't even try.
+        if (currentCache().blockUnreachable(pos)) {
+            return false;
+        }
         // It might be OK to remove this. Will have to test.
         if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
             Debug.logInternal("(failed chunkcheck: " + new ChunkPos(pos) + ")");
@@ -236,7 +245,16 @@ public class BlockTracker extends Tracker {
         }
     }
 
-    private PosCache currentCache() {
+
+    public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {
+        currentCache().blacklistBlockUnreachable(_mod, pos, allowedFailures);
+    }
+
+    public void requestBlockUnreachable(BlockPos pos) {
+        requestBlockUnreachable(pos, DEFAULT_REACH_ATTEMPTS_ALLOWED);
+    }
+
+        private PosCache currentCache() {
         Dimension dimension = _mod.getCurrentDimension();
         if (!_caches.containsKey(dimension)) {
             _caches.put(dimension, new PosCache(100, 64*1.5));
@@ -249,6 +267,8 @@ public class BlockTracker extends Tracker {
         private final HashMap<Block, List<BlockPos>> _cachedBlocks = new HashMap<>();
 
         private final HashMap<BlockPos, Block> _cachedByPosition = new HashMap<>();
+
+        private final WorldLocateBlacklist _blacklist = new WorldLocateBlacklist();
 
         // Once we have too many blocks, start cutting them off. First only the ones that are far enough.
         private final double _cutoffRadius;
@@ -279,7 +299,7 @@ public class BlockTracker extends Tracker {
 
         public void removeBlock(BlockPos pos, Block ...blocks) {
             for (Block block : blocks) {
-                if (anyFound(block)) {
+                if (_cachedBlocks.containsKey(block)) {
                     _cachedBlocks.get(block).remove(pos);
                     _cachedByPosition.remove(pos);
                     if (_cachedBlocks.get(block).size() == 0) {
@@ -290,6 +310,7 @@ public class BlockTracker extends Tracker {
         }
 
         public void addBlock(Block block, BlockPos pos) {
+            if (blockUnreachable(pos)) return;
             if (_cachedByPosition.containsKey(pos)) {
                 if (_cachedByPosition.get(pos) == block) {
                     // We're already tracked
@@ -306,10 +327,12 @@ public class BlockTracker extends Tracker {
             _cachedByPosition.put(pos, block);
         }
 
+
         public void clear() {
             Debug.logInternal("CLEARED BLOCK CACHE");
             _cachedBlocks.clear();
             _cachedByPosition.clear();
+            _blacklist.clear();
         }
 
         public int getBlockTrackCount() {
@@ -318,6 +341,13 @@ public class BlockTracker extends Tracker {
                 count += list.size();
             }
             return count;
+        }
+
+        public void blacklistBlockUnreachable(AltoClef mod, BlockPos pos, int allowedFailures) {
+            _blacklist.blackListBlock(mod, pos, allowedFailures);
+        }
+        public boolean blockUnreachable(BlockPos pos) {
+            return _blacklist.unreachable(pos);
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
@@ -341,11 +371,7 @@ public class BlockTracker extends Tracker {
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
-                    for (Block block : blocks) {
-                        if (_cachedBlocks.containsKey(block)) {
-                            removeBlock(pos, blocks);
-                        }
-                    }
+                    removeBlock(pos, blocks);
                     continue;
                 }
 
@@ -404,29 +430,30 @@ public class BlockTracker extends Tracker {
         public void smartPurge(Vec3d playerPos) {
             for (Block block : _cachedBlocks.keySet()) {
                 List<BlockPos> tracking = _cachedBlocks.get(block);
-                if (tracking.size() > _cutoffSize) {
-                    try {
-                        tracking.sort((BlockPos left, BlockPos right) -> {
-                            double leftDist = left.getSquaredDistance(playerPos, false);
-                            double rightDist = right.getSquaredDistance(playerPos, false);
-                            // 1 if left is further
-                            // -1 if left is closer
-                            if (leftDist > rightDist) {
-                                return 1;
-                            } else if (leftDist < rightDist) {
-                                return -1;
-                            }
-                            return 0;
-                        });
-                        // Now, the further elements will be further away.
-                        while (tracking.size() > _cutoffSize) {
-                            tracking.remove(tracking.size() - 1);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // Comparison method violates its general contract: Sometimes transitivity breaks.
-                        // In which case, ignore it.
-                        Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
-                    }
+
+                // Clear blacklisted blocks
+                try {
+                    tracking = tracking.stream()
+                            .filter(pos -> !_blacklist.unreachable(pos))
+                            .distinct()
+                            .sorted((BlockPos left, BlockPos right) -> {
+                                double leftDist = left.getSquaredDistance(playerPos, false);
+                                double rightDist = right.getSquaredDistance(playerPos, false);
+                                // 1 if left is further
+                                // -1 if left is closer
+                                if (leftDist > rightDist) {
+                                    return 1;
+                                } else if (leftDist < rightDist) {
+                                    return -1;
+                                }
+                                return 0;
+                            })
+                            .limit(_cutoffSize)
+                            .collect(Collectors.toList());
+                } catch (IllegalArgumentException e) {
+                    // Comparison method violates its general contract: Sometimes transitivity breaks.
+                    // In which case, ignore it.
+                    Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
                 }
             }
         }
