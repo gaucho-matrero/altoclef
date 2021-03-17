@@ -3,9 +3,7 @@ package adris.altoclef.util;
 import adris.altoclef.AltoClef;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.RotationUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.SpawnerBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -41,6 +39,14 @@ public interface WorldUtil {
 
     static boolean isSolid(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
+    }
+
+    static boolean isAir(AltoClef mod, BlockPos pos) {
+        return mod.getBlockTracker().blockIsValid(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
+        //return state.isAir() || isAir(state.getBlock());
+    }
+    static boolean isAir(Block block) {
+        return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
     }
 
     static Entity getSpawnerEntity(AltoClef mod, BlockPos pos) {

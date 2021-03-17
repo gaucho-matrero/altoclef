@@ -44,6 +44,9 @@ public class StaticMixinHookups {
 
     public static void onClientRenderOverlay(MatrixStack stack) {_mod.onClientRenderOverlay(stack);}
 
+    // for SOME REASON baritone triggers a block cancel breaking every other frame, so we have a 2 frame requirement for that?
+    private static int _breakCancelFrames;
+
     // Every chat message can be interrupted by us
     public static void onChat(ChatEvent e) {
         String line = e.getMessage();
@@ -60,6 +63,13 @@ public class StaticMixinHookups {
 
     public static void onBlockBreaking(BlockPos pos, double progress) {
         _mod.getControllerExtras().onBlockBreak(pos, progress);
+        _breakCancelFrames = 2;
+    }
+
+    public static void onBlockCancelBreaking() {
+        if (_breakCancelFrames-- == 0) {
+            _mod.getControllerExtras().onBlockStopBreaking();
+        }
     }
 
     public static void onScreenOpenBegin(Screen screen) {

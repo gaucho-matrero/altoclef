@@ -42,8 +42,9 @@ public class HandStackFixChain extends TaskChain {
 
         if (mod.getPlayer() == null) return Float.NEGATIVE_INFINITY;
 
+        //Debug.logMessage("TEMP: " + mod.getController().isBreakingBlock() + " " +  mod.getControllerExtras().getBreakingBlockProgress());
         if (_generalDuctTapeSwapTimeout.elapsed()) {
-            if (!mod.getController().isBreakingBlock()) {
+            if (!mod.getControllerExtras().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");
                 mod.getInventoryTracker().refreshInventory();
                 _generalDuctTapeSwapTimeout.reset();

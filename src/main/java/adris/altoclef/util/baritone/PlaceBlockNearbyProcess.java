@@ -2,6 +2,7 @@ package adris.altoclef.util.baritone;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.WorldUtil;
 import baritone.Baritone;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -294,7 +295,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
         return block == Blocks.CRAFTING_TABLE || block == Blocks.FURNACE || block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST;
     }
     private static boolean canPlaceIn(Block block) {
-        return block == Blocks.AIR || block == Blocks.WATER || block == Blocks.CAVE_AIR; // wtf is cave_air
+        return block == Blocks.WATER || WorldUtil.isAir(block);
     }
 
     private static boolean withinPlayer(BlockPos pos, Vec3d offs) {

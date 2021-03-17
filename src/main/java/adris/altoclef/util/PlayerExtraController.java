@@ -43,9 +43,17 @@ public class PlayerExtraController {
         _blockBreakPos = pos;
         _blockBreakProgress = progress;
     }
+    public void onBlockStopBreaking() {
+        _blockBreakPos = null;
+        _blockBreakProgress = 0;
+    }
 
     public BlockPos getBreakingBlockPos() {
         return _blockBreakPos;
+    }
+
+    public boolean isBreakingBlock() {
+        return _blockBreakPos != null;
     }
     public double getBreakingBlockProgress() {
         return _blockBreakProgress;

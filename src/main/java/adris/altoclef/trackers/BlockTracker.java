@@ -4,6 +4,7 @@ package adris.altoclef.trackers;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -230,7 +231,7 @@ public class BlockTracker extends Tracker {
         }
         try {
             for (Block block : blocks) {
-                if (zaWarudo.isAir(pos) && (block.is(Blocks.AIR) || block.is(Blocks.CAVE_AIR))) {
+                if (zaWarudo.isAir(pos) && WorldUtil.isAir(block)) {
                     return true;
                 }
                 BlockState state = zaWarudo.getBlockState(pos);

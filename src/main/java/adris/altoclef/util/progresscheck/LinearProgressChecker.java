@@ -50,6 +50,6 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
         //_first = true;
         _failed = false;
         _timer.reset();
-        _lastProgress = _currentProgress;
+        _first = true;
     }
 }
