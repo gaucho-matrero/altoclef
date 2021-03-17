@@ -107,7 +107,20 @@ public class AltoClefCommands extends CommandList {
                 }
                 break;
             case "stacked":
-                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
+                // It should only need:
+                // 24 (armor) + 3*3 (pick) + 2 = 35 diamonds
+                // 2*3 (pick) + 1 = 7 sticks
+                // 4 planks
+                mod.runUserTask(TaskCatalogue.getSquashedItemTask(
+                        new ItemTarget("diamond_chestplate", 1),
+                        new ItemTarget("diamond_leggings", 1),
+                        new ItemTarget("diamond_helmet", 1),
+                        new ItemTarget("diamond_boots", 1),
+                        new ItemTarget("diamond_pickaxe", 3),
+                        new ItemTarget("diamond_sword", 1),
+                        new ItemTarget("crafting_table", 1)
+                ));
+                //mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);

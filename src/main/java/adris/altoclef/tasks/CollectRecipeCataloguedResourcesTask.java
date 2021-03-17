@@ -37,40 +37,48 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
         for (RecipeTarget target : _targets) {
             // Ignore this recipe if we have its item.
-            if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
+            //if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
 
-            CraftingRecipe recipe = target.getRecipe();
-            // Default, just go through the recipe slots and collect the first one.
-            for (int i = 0; i < recipe.getSlotCount(); ++i) {
-                ItemTarget slot = recipe.getSlot(i);
-                if (slot == null || slot.isEmpty()) continue;
-                if (!slot.isCatalogueItem()) {
-                    Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
-                            + " is not catalogued. Please define an explicit"
-                            + " collectRecipeSubTask() function for this task."
-                    );
-                } else {
-                    String targetName = slot.getCatalogueName();
-                    if (!catalogueCount.containsKey(targetName)) {
-                        catalogueCount.put(targetName, 0);
+            int weNeed = target.getItem().targetCount - mod.getInventoryTracker().getItemCount(target.getItem());
+
+            if (weNeed > 0) {
+                CraftingRecipe recipe = target.getRecipe();
+                // Default, just go through the recipe slots and collect the first one.
+                for (int i = 0; i < recipe.getSlotCount(); ++i) {
+                    ItemTarget slot = recipe.getSlot(i);
+                    if (slot == null || slot.isEmpty()) continue;
+                    if (!slot.isCatalogueItem()) {
+                        Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
+                                + " is not catalogued. Please define an explicit"
+                                + " collectRecipeSubTask() function for this task."
+                        );
+                    } else {
+                        String targetName = slot.getCatalogueName();
+                        if (!catalogueCount.containsKey(targetName)) {
+                            catalogueCount.put(targetName, 0);
+                        }
+                        // How many "repeats" of a recipe we will need.
+                        int numberOfRepeats = (int) Math.floor(-0.1 + (double) weNeed / target.getRecipe().outputCount()) + 1;
+                        catalogueCount.put(targetName, catalogueCount.get(targetName) + numberOfRepeats);
                     }
-                    // How many "repeats" of a recipe we will need.
-                    int numberOfRepeats = (int)Math.floor(-0.1 + (double)target.getItem().targetCount / target.getRecipe().outputCount()) + 1;
-                    catalogueCount.put(targetName, catalogueCount.get(targetName) + numberOfRepeats);
                 }
             }
 
-            // (Cache this with the above stuff!!)
-            for (String catalogueName : catalogueCount.keySet()) {
-                int count = catalogueCount.get(catalogueName);
-                ItemTarget itemTarget = new ItemTarget(catalogueName, count);
+        }
+
+
+        // (Cache this with the above stuff!!)
+        // Grab materials
+        for (String catalogueMaterialName : catalogueCount.keySet()) {
+            int count = catalogueCount.get(catalogueMaterialName);
+            if (count > 0) {
+                ItemTarget itemTarget = new ItemTarget(catalogueMaterialName, count);
                 if (!mod.getInventoryTracker().targetMet(itemTarget)) {
                     setDebugState("Getting " + itemTarget);
-                    return TaskCatalogue.getItemTask(catalogueName, count);
+                    return TaskCatalogue.getItemTask(catalogueMaterialName, count);
                 }
             }
         }
-
         _finished = true;
 
         return null;
