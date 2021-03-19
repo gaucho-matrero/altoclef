@@ -2,6 +2,7 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
@@ -24,19 +25,8 @@ public class PlayerExtraController {
 
     private static final double INTERACT_RANGE = 6;
 
-    private Method _sendActionMethod = null;
-
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
-
-        try {
-            _sendActionMethod = ClientPlayerInteractionManager.class.getDeclaredMethod("sendPlayerAction", PlayerActionC2SPacket.Action.class, BlockPos.class, Direction.class);
-            _sendActionMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            Debug.logError("SOMETHING BASIC EFFED UP");
-        }
-
     }
 
     public void onBlockBreak(BlockPos pos, double progress) {
@@ -70,15 +60,11 @@ public class PlayerExtraController {
     }
 
     public void dropCurrentStack(boolean single) {
-        try {
-            _sendActionMethod.invoke(MinecraftClient.getInstance().interactionManager,
-                    single? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS,
-                    new BlockPos(0, 0, 0), Direction.fromRotation(0)
-            );
-            _mod.getInventoryTracker().setDirty();
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        ((ClientPlayerInteractionAccessor)MinecraftClient.getInstance().interactionManager).doSendPlayerAction(
+                single? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS,
+                new BlockPos(0, 0, 0), Direction.fromRotation(0)
+        );
+        _mod.getInventoryTracker().setDirty();
     }
 
 }

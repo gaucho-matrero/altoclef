@@ -4,8 +4,12 @@
   "package": "adris.altoclef.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AbstractFurnaceScreenHandlerAccessor",
+    "ClientConnectionAccessor",
     "ClientInteractWithBlockMixin",
-    "ClientUIMixin"
+    "ClientPlayerInteractionAccessor",
+    "ClientUIMixin",
+    "PersistentProjectileEntityAccessor"
   ],
   "client": [
     "ChatInputMixin",

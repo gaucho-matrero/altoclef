@@ -3,6 +3,8 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
+import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
@@ -13,11 +15,9 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
@@ -220,7 +220,8 @@ public class BlockTracker extends Tracker {
         }
         // It might be OK to remove this. Will have to test.
         if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
-            Debug.logInternal("(failed chunkcheck: " + new ChunkPos(pos) + ")");
+            //Debug.logInternal("(failed chunkcheck: " + new ChunkPos(pos) + ")");
+            //Debug.logStack();
             return true;
         }
         // I'm bored
@@ -345,7 +346,7 @@ public class BlockTracker extends Tracker {
         }
 
         public void blacklistBlockUnreachable(AltoClef mod, BlockPos pos, int allowedFailures) {
-            _blacklist.blackListBlock(mod, pos, allowedFailures);
+            _blacklist.blackListItem(mod, pos, allowedFailures);
         }
         public boolean blockUnreachable(BlockPos pos) {
             return _blacklist.unreachable(pos);
@@ -451,6 +452,8 @@ public class BlockTracker extends Tracker {
                             })
                             .limit(_cutoffSize)
                             .collect(Collectors.toList());
+                    // This won't update otherwise.
+                    _cachedBlocks.put(block, tracking);
                 } catch (IllegalArgumentException e) {
                     // Comparison method violates its general contract: Sometimes transitivity breaks.
                     // In which case, ignore it.

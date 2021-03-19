@@ -13,6 +13,7 @@ public class Timer {
     public double getDuration() {
         return currentTime() - _prevTime;
     }
+    public void setInterval(double interval) {_interval = interval;}
 
     public boolean elapsed() {
         return getDuration() > _interval;

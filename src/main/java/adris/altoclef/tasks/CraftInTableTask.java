@@ -71,7 +71,9 @@ public class CraftInTableTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
-        mod.getPlayer().closeHandledScreen();
+        if (mod.getPlayer() != null) {
+            mod.getPlayer().closeHandledScreen();
+        }
         //mod.getControllerExtras().closeCurrentContainer();
     }
 
@@ -215,7 +217,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 }
 
                 //Debug.logMessage("Crafting: " + target.getRecipe());
-                craftInstant(mod, target.getRecipe());
+                return new CraftGenericTask(target.getRecipe());
+                //craftInstant(mod, target.getRecipe());
             }
         }
         /*
@@ -256,14 +259,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
         return 300;
-    }
-
-    private boolean craftInstant(AltoClef mod, CraftingRecipe recipe) {
-        if (!mod.getInventoryTracker().craftInstant(recipe)) {
-            Debug.logWarning("Failed to craft recipe: " + recipe);
-            return false;
-        }
-        return true;
     }
 
     private Item[] getMaterialsArray() {

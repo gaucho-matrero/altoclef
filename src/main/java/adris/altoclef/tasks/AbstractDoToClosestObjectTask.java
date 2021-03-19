@@ -54,6 +54,8 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         // Reset our pursuit if our pursuing object no longer is pursuable.
         if (_currentlyPursuing != null && !isValid(mod, _currentlyPursuing)) {
             _currentlyPursuing = null;
+            // This is probably a good idea, no?
+            _heuristicMap.remove(_currentlyPursuing);
         }
 
         // Get closest object

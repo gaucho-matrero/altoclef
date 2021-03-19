@@ -138,7 +138,7 @@ public class AltoClefCommands extends CommandList {
                     mod.runUserTask(new KillEntityTask(entity));
                 }
                 break;
-            case "equip":
+            case "craft":
                 // Test de-equip
                 new Thread() {
                     @Override
@@ -148,6 +148,12 @@ public class AltoClefCommands extends CommandList {
                             sleepSec(1);
                         }
 
+                        Item[] c = new Item[]{Items.COBBLESTONE};
+                        Item[] s = new Item[]{Items.STICK};
+                        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
+
+                        mod.runUserTask(new CraftGenericTask(recipe));
+                        /*
                         Item toEquip = Items.BUCKET;//Items.AIR;
                         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
@@ -166,6 +172,7 @@ public class AltoClefCommands extends CommandList {
                                 Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
                             }
                         }
+                         */
                     }
 
                     private void swap(Slot slot1, Slot slot2) {

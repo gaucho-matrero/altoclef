@@ -33,5 +33,6 @@ public final class ClientInteractWithBlockMixin {
         if (hitResult != null) {
             StaticMixinHookups.onBlockInteract(hitResult, world.getBlockState(hitResult.getBlockPos()));
         }
+
     }
 }

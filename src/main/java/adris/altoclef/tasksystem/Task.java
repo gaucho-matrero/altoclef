@@ -152,11 +152,9 @@ public abstract class Task {
     private boolean canBeInterrupted(AltoClef mod, Task subTask) {
         if (subTask == null) return true;
         if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
-            // This task (or any of its children) REQUIRES we be grounded.
-            return mod.getPlayer().isOnGround();
+            // This task (or any of its children) REQUIRES we be grounded or in water or something.
+            return mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isClimbing() ;
         }
         return true;
     }
-
-
 }

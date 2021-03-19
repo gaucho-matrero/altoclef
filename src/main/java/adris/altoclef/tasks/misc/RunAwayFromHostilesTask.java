@@ -42,7 +42,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
-            super(mod, distance);
+            super(mod, distance, false);
         }
 
         @Override

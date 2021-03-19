@@ -35,7 +35,7 @@ public class CollectPlanksTask extends CraftInInventoryTask {
         blocksTomine.add(new ItemTarget(ItemTarget.LOG));
         // Ignore planks if we're told to.
         if (!mod.getConfigState().exclusivelyMineLogs()) {
-            blocksTomine.add(new ItemTarget(ItemTarget.PLANKS));
+            //blocksTomine.add(new ItemTarget(ItemTarget.PLANKS));
         }
         return new MineAndCollectTask(Util.toArray(ItemTarget.class, blocksTomine), MiningRequirement.HAND);
     }

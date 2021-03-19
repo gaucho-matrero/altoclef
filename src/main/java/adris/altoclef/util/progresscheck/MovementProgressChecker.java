@@ -43,7 +43,6 @@ public class MovementProgressChecker {
             _mineChecker.setProgress(mod.getControllerExtras().getBreakingBlockProgress());
             if (_mineChecker.failed()) return false;
         } else {
-            Debug.logInternal("not breaking");
             _mineChecker.reset();
             _distanceChecker.setProgress(mod.getPlayer().getPos());
             if (_distanceChecker.failed()) return false;

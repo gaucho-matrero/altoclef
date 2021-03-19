@@ -1,6 +1,7 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.TaskCatalogue;
@@ -578,90 +579,6 @@ public class InventoryTracker extends Tracker {
         clickSlot(slot, 1, SlotActionType.QUICK_MOVE);
     }
 
-    // Crafts a recipe. Returns whether it succeeded.
-    public boolean craftInstant(CraftingRecipe recipe) {
-
-        Debug.logInternal("CRAFTING... " + recipe);
-
-        boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
-
-        if (!bigCrafting) {
-            if (!(_mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                // Make sure we're not in another screen before we craft,
-                // otherwise crafting will be むだな、ぞ
-                _mod.getPlayer().closeHandledScreen();
-            }
-        }
-
-        if (recipe.isBig() && !bigCrafting) {
-            Debug.logWarning("Tried crafting a 3x3 recipe without a crafting table. Sadly this won't work.");
-            return false;
-        }
-
-        // Get the position of each item we will use for crafting. Map player inventory/window Slot => crafting slot
-        HashMap<Integer, Integer> craftPositionToInvSlot = getRecipeMapping(recipe);
-
-        if (craftPositionToInvSlot == null) {
-            Debug.logWarning("Unable to craft");
-            return false;
-        }
-
-        List<Pair<Slot, Slot>> moveSlotToCraftSlot = new ArrayList<>();
-
-        for (int craftPos : craftPositionToInvSlot.keySet()) {
-            Slot itemSlot;
-            Slot craftSlot;
-            int invSlot = craftPositionToInvSlot.get(craftPos);
-            itemSlot = Slot.getFromInventory(invSlot);
-            //Debug.logMessage("WHAT? " + invSlot + " -> " + craftPos);
-            if (bigCrafting) {
-                // Craft in table
-                craftSlot = CraftingTableSlot.getInputSlot(craftPos, recipe.isBig());
-            } else {
-                // Craft in window
-                craftSlot = PlayerSlot.getCraftInputSlot(craftPos);
-            }
-            moveSlotToCraftSlot.add(new Pair<>(itemSlot, craftSlot));
-        }
-
-        // Move everything
-        for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
-            // moveItems( item slot, craft slot)
-            int moved = moveItems(movement.getLeft(), movement.getRight(), 1);
-            if (moved != 1) {
-                Debug.logWarning("Failed to move item from slot " + movement.getLeft() + " to slot " + movement.getRight() + ". Moved " + moved);
-                Debug.logStack();
-                return false;
-            }
-        }
-
-
-        // Receive output
-        Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-
-        // This returns false positives all the time if left here.
-        /*
-        if (getItemStackInSlot(outputSlot).isEmpty()) {
-            Debug.logWarning("Craft Output slot is empty");
-            return false;
-        }
-         */
-
-        // TODO: This should be only one call, but it's two. The latter is a temporary fix too.
-        clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
-        clickSlot(outputSlot, 0, SlotActionType.SWAP);
-
-        // Grab back. This shouldn't be necessary
-        for (Pair<Slot, Slot> movement : moveSlotToCraftSlot) {
-            Slot craftSlot = movement.getRight();
-            clickSlot(craftSlot, 0, SlotActionType.PICKUP);
-            clickSlot(craftSlot, 0, SlotActionType.QUICK_MOVE);
-        }
-
-        setDirty();
-        return true;
-    }
-
     public int moveItemToSlot(ItemTarget toMove, Slot moveTo) {
         for (Item item : toMove.getMatches()) {
             if (getItemCount(item) >= toMove.targetCount) {
@@ -808,16 +725,8 @@ public class InventoryTracker extends Tracker {
     }
 
     public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
-        try {
-            Field propertyField = AbstractFurnaceScreenHandler.class.getDeclaredField("propertyDelegate");
-            propertyField.setAccessible(true);
-
-            PropertyDelegate propertyDelegate = (PropertyDelegate) propertyField.get(handler);
-            return (double)propertyDelegate.get(0) / 200.0;
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-            return 0;
-        }
+        PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor)handler).getPropertyDelegate();
+        return (double)d.get(0) / 200.0;
     }
     public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
         return (double) handler.getCookProgress() / 24.0;

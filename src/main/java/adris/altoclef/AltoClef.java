@@ -1,6 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
+import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
@@ -154,6 +155,9 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().mineScanDroppedItems.value = false;
         // Don't let baritone wait for drops, we handle that ourselves.
         getClientBaritoneSettings().mineDropLoiterDurationMSThanksLouca.value = 0L;
+
+        // Don't break blocks we explicitely protect.
+        getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
     }
 
     // List all command sources here.
@@ -219,14 +223,8 @@ public class AltoClef implements ModInitializer {
     public MessageSender getMessageSender() {return _messageSender;}
 
     public int getTicks() {
-        try {
-            ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
-            Field tickField = ClientConnection.class.getDeclaredField("ticks");
-            tickField.setAccessible(true);
-            return tickField.getInt(con);
-        } catch (NoSuchFieldException | NullPointerException | IllegalAccessException e) {
-            return 0;
-        }
+        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
+        return ((ClientConnectionAccessor)con).getTicks();
     }
 
     // Minecraft access
@@ -252,6 +250,7 @@ public class AltoClef implements ModInitializer {
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
+
 
     // Are we in game (playing in a server/world)
     public boolean inGame() {

@@ -45,7 +45,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
     private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromCreepers(AltoClef mod, double distance) {
-            super(mod, distance);
+            super(mod, distance, false);
         }
 
         @Override

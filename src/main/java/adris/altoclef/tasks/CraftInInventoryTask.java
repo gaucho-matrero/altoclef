@@ -57,14 +57,11 @@ public class CraftInInventoryTask extends ResourceTask {
                 }
             }
 
-            craftInstant(mod, _recipe);
+            return new CraftGenericTask(_recipe);
+            //craftInstant(mod, _recipe);
         }
 
         return null;
-    }
-
-    private void craftInstant(AltoClef mod, CraftingRecipe recipe) {
-        mod.getInventoryTracker().craftInstant(recipe);
     }
 
     @Override

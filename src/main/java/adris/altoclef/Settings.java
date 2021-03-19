@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,10 @@ public class Settings {
      */
     private float speedHack = 1.0f;
 
+    /**
+     * The delay between moving items for crafting/furnace/any kind of inventory movement.
+     */
+    private float containerItemMoveDelay = 0.2f;
 
     /**
      * Some larger special tasks will perform extra preparation work to ensure your player
@@ -143,6 +148,17 @@ public class Settings {
             Item.getRawId(Items.YELLOW_SHULKER_BOX)
     };
 
+    /**
+     * These areas will not be mined.
+     * Used to prevent griefing
+     * or to define a "spawn protection" zone so
+     * the bot doesn't keep trying to break spawn protected
+     * blocks.
+     */
+    private ProtectionRange[] areasToProtect = new ProtectionRange[] {
+
+    };
+
     // Internal tracking of whether we're dirty or not.
     private transient boolean _dirty;
 
@@ -208,6 +224,10 @@ public class Settings {
     }
     public void setSharpenAxe(boolean sharpenAxe) {
         this.sharpenAxe = sharpenAxe; markDirty();
+    }
+
+    public float getContainerItemMoveDelay() {
+        return containerItemMoveDelay;
     }
 
     public boolean isMobDefense() {
@@ -288,11 +308,29 @@ public class Settings {
         return result;
     }
 
+    public boolean isPositionExplicitelyProtected(BlockPos pos) {
+        for (ProtectionRange protection : areasToProtect) {
+            if (protection.includes(pos)) return true;
+        }
+        return false;
+    }
+
     private static boolean idArrayContainsItem(Item item, int[] ids) {
         int id = Item.getRawId(item);
         for (int check : ids) {
             if (check == id) return true;
         }
         return false;
+    }
+
+    private static class ProtectionRange {
+        public BlockPos start;
+        public BlockPos end;
+
+        public boolean includes(BlockPos pos) {
+            return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
+                    start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
+                    start.getY() <= pos.getY() && pos.getY() <= end.getY());
+        }
     }
 }

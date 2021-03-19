@@ -1,9 +1,10 @@
-package adris.altoclef.trackers;
+package adris.altoclef.trackers.blacklisting;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 
@@ -12,36 +13,38 @@ import java.util.HashMap;
  *
  * This lets us know that a block is unreachable, and will ignore it from the search intelligently.
  */
-public class WorldLocateBlacklist {
+public abstract class AbstractObjectBlacklist<T> {
 
-    private final HashMap<BlockPos, BlacklistEntry> _entries = new HashMap<>();
+    private final HashMap<T, BlacklistEntry> _entries = new HashMap<>();
 
-    public void blackListBlock(AltoClef mod, BlockPos pos, int numberOfFailuresAllowed) {
-        if (!_entries.containsKey(pos)) {
+    public void blackListItem(AltoClef mod, T item, int numberOfFailuresAllowed) {
+        if (!_entries.containsKey(item)) {
             BlacklistEntry entry = new BlacklistEntry();
             entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
             entry.numberOfFailures = 0;
             entry.bestDistanceSq = Double.POSITIVE_INFINITY;
             entry.bestTool = MiningRequirement.HAND;
-            _entries.put(pos, entry);
+            _entries.put(item, entry);
         }
-        BlacklistEntry entry = _entries.get(pos);
-        double newDistance = pos.getSquaredDistance(mod.getPlayer().getPos(), false);
+        BlacklistEntry entry = _entries.get(item);
+        double newDistance = getPos(item).squaredDistanceTo(mod.getPlayer().getPos());
         MiningRequirement newTool = mod.getInventoryTracker().getCurrentMiningRequirement();
         if (newTool.ordinal() > entry.bestTool.ordinal() || newDistance < entry.bestDistanceSq) {
             if (newTool.ordinal() > entry.bestTool.ordinal()) entry.bestTool = newTool;
             if (newDistance < entry.bestDistanceSq) entry.bestDistanceSq = newDistance;
             entry.numberOfFailures = 0;
-            Debug.logMessage("    TEMP: (failure RESET): " + pos.toShortString());
+            //Debug.logMessage("    TEMP: (failure RESET): " + pos.toShortString());
         }
         entry.numberOfFailures ++;
         entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
-        Debug.logMessage("TEMP: " + pos.toShortString() +" FAIL: " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
+        //Debug.logMessage("TEMP: " + item.toString() +" FAIL: " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
     }
 
-    public boolean unreachable(BlockPos pos) {
-        if (_entries.containsKey(pos)) {
-            BlacklistEntry entry = _entries.get(pos);
+    protected abstract Vec3d getPos(T item);
+
+    public boolean unreachable(T item) {
+        if (_entries.containsKey(item)) {
+            BlacklistEntry entry = _entries.get(item);
             return entry.numberOfFailures > entry.numberOfFailuresAllowed;
         }
         return false;

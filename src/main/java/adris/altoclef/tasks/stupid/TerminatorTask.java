@@ -26,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -36,7 +37,8 @@ import java.util.stream.Collectors;
  */
 public class TerminatorTask extends Task {
 
-    private static final int RUN_AWAY_DISTANCE = 250;
+    private static final int FEAR_SEE_DISTANCE = 50;
+    private static final int RUN_AWAY_DISTANCE = 100;
 
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
@@ -56,6 +58,7 @@ public class TerminatorTask extends Task {
     private final Task _foodTask = new CollectFoodTask(40);
 
     private Task _runAwayTask;
+    private final Timer _runAwayExtraTime = new Timer(10);
 
     private final Predicate<PlayerEntity> _ignoreTerminate;
 
@@ -82,6 +85,20 @@ public class TerminatorTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         if (!isReadyToPunk(mod)) {
+
+            if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
+                // If our last "scare" was too long ago or there are no more nearby players...
+                PlayerEntity closest = (PlayerEntity)mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toIgnore -> !shouldPunk(mod, (PlayerEntity)toIgnore), PlayerEntity.class);
+                boolean noneRemote = (closest == null || !closest.isInRange(mod.getPlayer(), RUN_AWAY_DISTANCE));
+                if (_runAwayExtraTime.elapsed() && noneRemote) {
+                    Debug.logMessage("Stop running away, we're good.");
+                    // Stop running away.
+                    _runAwayTask = null;
+                } else {
+                    return _runAwayTask;
+                }
+            }
+
             // See if there's anyone nearby.
             if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> {
                 if (!shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe)) {
@@ -91,8 +108,12 @@ public class TerminatorTask extends Task {
                     // We're close, count us.
                     return false;
                 } else {
+                    // Too far away.
+                    if (!entityIgnoreMaybe.isInRange(mod.getPlayer(), RUN_AWAY_DISTANCE)) return true;
                     // We may be far and obstructed, check.
-                    boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), RUN_AWAY_DISTANCE);
+                    boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
+
+                    Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
                     return !seesPlayer;
                 }
             }, PlayerEntity.class) != null) {
@@ -104,13 +125,21 @@ public class TerminatorTask extends Task {
                         positions.add(player.getBlockPos());
                     }
                 }*/
-                _runAwayTask = new RunAwayFromPlayersTask(() -> mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream().filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList()), RUN_AWAY_DISTANCE);
+                _runAwayExtraTime.reset();
+                try {
+                    _runAwayTask = new RunAwayFromPlayersTask(() -> mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream().filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList()), RUN_AWAY_DISTANCE);
+                } catch (ConcurrentModificationException e) {
+                    // oof
+                    Debug.logWarning("Duct tape over ConcurrentModificationException (see log)");
+                    e.printStackTrace();
+                }
                 setDebugState("Running away from players.");
                 return _runAwayTask;
             }
         } else {
             // We can totally punk
             if (_runAwayTask != null) {
+                _runAwayTask = null;
                 Debug.logMessage("Stopped running away because we can now punk.");
             }
             // Get building materials if we don't have them.
@@ -123,7 +152,6 @@ public class TerminatorTask extends Task {
                 return _foodTask;
             }
 
-            _runAwayTask = null;
             if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe), PlayerEntity.class) != null) {
                 setDebugState("Punking.");
                 return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
@@ -140,11 +168,6 @@ public class TerminatorTask extends Task {
                         PlayerEntity.class
                 );
             }
-        }
-
-        // Run away if we're too close to someone.
-        if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
-            return _runAwayTask;
         }
 
         // Get stacked first
@@ -259,7 +282,7 @@ public class TerminatorTask extends Task {
     private class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
 
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
-            super(toRunAwayFrom, distanceToRun);
+            super(toRunAwayFrom, distanceToRun, true);
             // More lenient progress checker
             _checker = new MovementProgressChecker(2);
         }

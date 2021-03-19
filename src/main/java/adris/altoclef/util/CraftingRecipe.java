@@ -27,6 +27,10 @@ public class CraftingRecipe {
     private CraftingRecipe() {}
 
     public ItemTarget getSlot(int index) {
+        /* Already hanled.
+        if (_slots[index] == null) {
+            return ItemTarget.EMPTY;
+        }*/
         return _slots[index];
     }
 
@@ -151,7 +155,11 @@ public class CraftingRecipe {
     private static ItemTarget[] createSlots(Item[][] slots) {
         ItemTarget[] result = new ItemTarget[slots.length];
         for (int i = 0; i < slots.length; ++i) {
-            result[i] = new ItemTarget(slots[i]);
+            if (slots[i] == null) {
+                result[i] = ItemTarget.EMPTY;
+            } else {
+                result[i] = new ItemTarget(slots[i]);
+            }
         }
         return result;
     }

@@ -1,6 +1,8 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
+import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
@@ -27,8 +29,6 @@ public class EntityTracker extends Tracker {
 
     private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
 
-    private final List<Vec3d> _blacklist = new ArrayList<>();
-
     private final HashMap<Class, List<Entity>> _entityMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
@@ -38,6 +38,8 @@ public class EntityTracker extends Tracker {
 
     private final HashMap<String, PlayerEntity> _playerMap = new HashMap<>();
     private final HashMap<String, Vec3d> _playerLastCoordinates = new HashMap<>();
+
+    private final EntityLocateBlacklist _entityBlacklist = new EntityLocateBlacklist();
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
@@ -70,7 +72,7 @@ public class EntityTracker extends Tracker {
             for (Item item : target.getMatches()) {
                 if (!itemDropped(item)) continue;
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
-                    if (isBlackListed(entity)) continue;
+                    if (_entityBlacklist.unreachable(entity)) continue;
                     if (!entity.getStack().getItem().equals(item)) continue;
 
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
@@ -108,35 +110,13 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    private boolean isBlackListed(Entity entity) {
-        if (entity == null) return false;
-        return isBlackListed(entity.getPos());
-    }
-    private boolean isBlackListed(Vec3d pos) {
-        for (Vec3d item : _blacklist) {
-            double distSq = pos.squaredDistanceTo(item);
-            if (distSq < 1) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void blacklist(Vec3d position) {
-        _blacklist.add(position);
-    }
-
-    public void clearBlacklist() {
-        _blacklist.clear();
-    }
-
     public boolean itemDropped(Item ...items) {
         ensureUpdated();
         for(Item item : items) {
             if (_itemDropLocations.containsKey(item)) {
                 // Find a non-blacklisted item
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
-                    if (!isBlackListed(entity)) return true;
+                    if (!_entityBlacklist.unreachable(entity)) return true;
                 }
             }
         }
@@ -199,6 +179,10 @@ public class EntityTracker extends Tracker {
             return _playerMap.get(name);
         }
         return null;
+    }
+
+    public void requestEntityUnreachable(ItemEntity entity) {
+        _entityBlacklist.blackListItem(_mod, entity, 2);
     }
 
     @Override
@@ -269,13 +253,7 @@ public class EntityTracker extends Tracker {
                     boolean inGround = false;
                     // Get projectile "inGround" variable
                     if (entity instanceof PersistentProjectileEntity) {
-                        try {
-                            Field inGroundField = PersistentProjectileEntity.class.getDeclaredField("inGround");
-                            inGroundField.setAccessible(true);
-                            inGround = inGroundField.getBoolean(projEntity);
-                        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
+                        inGround = ((PersistentProjectileEntityAccessor) entity).isInGround();
                     }
 
                     if (!inGround) {
@@ -311,7 +289,8 @@ public class EntityTracker extends Tracker {
 
     @Override
     protected void reset() {
-        // Dirty clears everything.
+        // Dirty clears everything else.
+        _entityBlacklist.clear();
     }
 
     public static boolean isAngryAtPlayer(Entity hostile) {
