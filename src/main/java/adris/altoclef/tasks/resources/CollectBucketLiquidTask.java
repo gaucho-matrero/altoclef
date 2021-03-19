@@ -110,7 +110,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
             if (standingInside == _toCollect) {
                 mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
-                Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
+                //Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
                 _tryImmediatePickupTimer.reset();
                 if (!mod.getInventoryTracker().equipItem(Items.BUCKET)) {
                     Debug.logWarning("Failed to equip bucket.");
@@ -200,7 +200,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
 
                 InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA);
-                //noinspection unchecked
+                // noinspection rawtypes,unchecked,unchecked
                 task.TimedOut.addListener(
                         new ActionListener() {
                             @Override

@@ -147,6 +147,11 @@ public class TerminatorTask extends Task {
                 setDebugState("Collecting building materials");
                 return PlaceStructureBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
             }
+
+            // Get water to MLG if we are pushed off
+            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask("water_bucket", 1);
+            }
             // Get some food so we can last a little longer.
             if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3*2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
                 return _foodTask;

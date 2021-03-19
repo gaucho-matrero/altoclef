@@ -99,6 +99,7 @@ public class AltoClef implements ModInitializer {
         _mobDefenseChain = new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
         new HandStackFixChain(_taskRunner);
+        new MLGBucketFallChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
@@ -240,6 +241,7 @@ public class AltoClef implements ModInitializer {
     public void runUserTask(Task task) {
         runUserTask(task, (nothing) -> {});
     }
+    @SuppressWarnings("rawtypes")
     public void runUserTask(Task task, Consumer onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }

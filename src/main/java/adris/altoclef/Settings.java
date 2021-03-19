@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class Settings {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";
@@ -69,6 +70,11 @@ public class Settings {
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
+
+    /**
+     * If true, MLG/No Fall Bucket if we're knocked off course and falling.
+     */
+    private boolean autoMLGBucket = true;
 
     /**
      * If true, will automatically reconnect to the last open server if you get disconnected.
@@ -280,6 +286,10 @@ public class Settings {
     }
 
     public boolean shouldDealWithSkeletons() {return killOrAvoidSkeletons;}
+
+    public boolean shouldAutoMLGBucket() {
+        return autoMLGBucket;
+    }
 
     public boolean isThrowaway(Item item) {
         return idArrayContainsItem(item, throwawayItems);
