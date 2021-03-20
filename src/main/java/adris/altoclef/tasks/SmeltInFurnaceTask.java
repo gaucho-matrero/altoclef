@@ -268,10 +268,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             Item fuelToUse = getBestFuelSource(mod, fuelStack, _currentFurnace.getRemainingFuelNeededToBurnMaterials());
 
+            Debug.logInternal(((fuelToUse != null) ? fuelToUse.getTranslationKey() : "(null)") + " : " + _currentFurnace.getRemainingFuelNeededToBurnMaterials());
             if (fuelToUse != null) {
                 double fuelPowerPerItem = InventoryTracker.getFuelAmount(fuelToUse);
                 double fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
                 int targetFuelItemCount = (int) Math.ceil(fuelNeeded / fuelPowerPerItem);
+                Debug.logInternal("( " + fuelNeeded + " / " + fuelPowerPerItem + " = " + targetFuelItemCount + ", fuelstack: " + fuelStack.getCount() + ")");
 
                 // If we already have fuel in the slot, add to it.
                 if (fuelStack.getItem().equals(fuelToUse)) {
@@ -279,6 +281,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 }
                 int moved = mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
                 int canMove = mod.getInventoryTracker().getItemCount(fuelToUse);
+                Debug.logInternal("moved: " + moved);
                 /*if (canMove > 0 && moved != canMove) {
                     Debug.logWarning("Failed to move " + canMove + " units of the fuel " + fuelToUse.getTranslationKey() + ". Only moved " + moved + ". Proceeding anyway.");
                 }*/
@@ -377,7 +380,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             for (Item item : candidates) {
                 double errorFuel;
                 double itemCanProvide = mod.getInventoryTracker().getItemCount(item) * InventoryTracker.getFuelAmount(item);
-                if (item.equals(currentFuel.getItem())) {
+                if (item.equals(currentFuel.getItem()) || currentFuel.isEmpty()) {
                     errorFuel = fuelStillNeeded - itemCanProvide;
                 } else {
                     errorFuel = fuelNeededWithoutCurrentFuel - itemCanProvide;

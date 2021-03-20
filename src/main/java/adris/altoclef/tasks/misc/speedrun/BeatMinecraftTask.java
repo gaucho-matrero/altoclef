@@ -312,7 +312,7 @@ public class BeatMinecraftTask extends Task {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
         mod.getConfigState().pop();
-            mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
+        mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
 
     @Override

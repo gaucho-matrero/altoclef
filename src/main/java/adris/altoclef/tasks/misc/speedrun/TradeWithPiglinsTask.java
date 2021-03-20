@@ -134,6 +134,12 @@ public class TradeWithPiglinsTask extends ResourceTask {
         }
 
         @Override
+        protected void onStop(AltoClef mod, Task interruptTask) {
+            mod.getConfigState().pop();
+            super.onStop(mod, interruptTask);
+        }
+
+        @Override
         protected boolean isSubEqual(AbstractDoToEntityTask other) {
             return other instanceof PerformTradeWithPiglin;
         }

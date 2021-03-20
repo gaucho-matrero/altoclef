@@ -158,6 +158,7 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(_containerBlock);
+        mod.getConfigState().pop();
     }
 
     @Override

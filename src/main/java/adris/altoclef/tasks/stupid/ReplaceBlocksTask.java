@@ -111,6 +111,7 @@ public class ReplaceBlocksTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getControllerExtras().onBlockBroken.removeListener(blockBrokenListener);
+        mod.getConfigState().pop();
     }
 
     @Override

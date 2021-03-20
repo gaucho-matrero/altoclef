@@ -239,6 +239,7 @@ public class CollectFoodTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
         mod.getBlockTracker().stopTracking(Blocks.SWEET_BERRY_BUSH);
+        mod.getConfigState().pop();
     }
 
     @Override
