@@ -16,10 +16,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
-import net.minecraft.screen.AbstractFurnaceScreenHandler;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.screen.*;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
 
@@ -272,40 +269,46 @@ public class InventoryTracker extends Tracker {
                     // Satisfied by default.
                     if (needs.isEmpty()) continue;
 
-                    List<Integer> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
+                    List<Integer> invSlotsWithItem = getInventorySlotsWithItem(needs.getMatches());
+                    List<Slot> slotsWithItem = new ArrayList<>();
+                    for (int invSlot : invSlotsWithItem) {
+                        slotsWithItem.add(Slot.getFromInventory(invSlot));
+                    }
 
-                    // Also add crafting slots, since we may have items there.
-                    // Check crafting slots
-                    boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
-                    boolean bigRecipe = recipe.isBig();
-                    for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
-                        Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
-                        ItemStack stack = getItemStackInSlot(craftSlot);
-                        if (needs.matches(stack.getItem())) {
-                            slotsWithItem.add((-1 * craftSlotIndex) - 1);
+                    // Other slots may have our crafting supplies.
+                    ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
+                    if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
+                        // Check crafting slots
+                        boolean bigCrafting = (screen instanceof CraftingScreenHandler);
+                        boolean bigRecipe = recipe.isBig();
+                        for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                            Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                            ItemStack stack = getItemStackInSlot(craftSlot);
+                            if (needs.matches(stack.getItem())) {
+                                slotsWithItem.add(craftSlot);
+                            }
+                        }
+                    } else if (screen instanceof FurnaceScreenHandler) {
+                        // Check furnace slots: Is this necessary? I think so...
+                        Slot outputCheck = FurnaceSlot.OUTPUT_SLOT;
+                        if (needs.matches(getItemStackInSlot(outputCheck).getItem())) {
+                            slotsWithItem.add(outputCheck);
                         }
                     }
 
 
                     // Try to satisfy THIS slot.
                     boolean satisfied = false;
-                    for (int checkInvSlot : slotsWithItem) {
-                        if (!slotUsedCounts.containsKey(checkInvSlot)) {
-                            slotUsedCounts.put(checkInvSlot, 0);
+                    for (Slot checkSlot : slotsWithItem) {
+                        int windowSlot = checkSlot.getWindowSlot();
+                        if (!slotUsedCounts.containsKey(windowSlot)) {
+                            slotUsedCounts.put(windowSlot, 0);
                         }
-                        int usedFromSlot = slotUsedCounts.get(checkInvSlot);
-                        ItemStack stack;
-                        if (checkInvSlot < 0) {
-                            // Crafting slot!
-                            int realCraftSlotIndex = (-1 * checkInvSlot) - 1;
-                            Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(realCraftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(realCraftSlotIndex);
-                            stack = getItemStackInSlot(craftSlot);
-                        } else {
-                            // Regular inventory slot
-                            stack = getItemStackInSlot(Slot.getFromInventory(checkInvSlot));
-                        }
+                        int usedFromSlot = slotUsedCounts.get(windowSlot);
+                        ItemStack stack = getItemStackInSlot(checkSlot);
+
                         if (usedFromSlot < stack.getCount()) {
-                            slotUsedCounts.put(checkInvSlot, slotUsedCounts.get(checkInvSlot) + 1);
+                            slotUsedCounts.put(windowSlot, slotUsedCounts.get(windowSlot) + 1);
                             //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
                             satisfied = true;
                             break;
