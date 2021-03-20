@@ -289,11 +289,13 @@ public class InventoryTracker extends Tracker {
                             }
                         }
                     } else if (screen instanceof FurnaceScreenHandler) {
+                        // Actually don't, that would be bad.
+                        // We do NOT have the materials until they are IN OUR INVENTORY!
                         // Check furnace slots: Is this necessary? I think so...
-                        Slot outputCheck = FurnaceSlot.OUTPUT_SLOT;
-                        if (needs.matches(getItemStackInSlot(outputCheck).getItem())) {
-                            slotsWithItem.add(outputCheck);
-                        }
+                        //Slot outputCheck = FurnaceSlot.OUTPUT_SLOT;
+                        //if (needs.matches(getItemStackInSlot(outputCheck).getItem())) {
+                        //    slotsWithItem.add(outputCheck);
+                        //}
                     }
 
 
