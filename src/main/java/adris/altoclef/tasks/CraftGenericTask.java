@@ -6,6 +6,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
@@ -94,6 +95,8 @@ public class CraftGenericTask extends Task {
                     int itemSlot = validSlots.get(0);
                     Slot itemToMove = Slot.getFromInventory(itemSlot);
                     // Satisfy this current slot.
+                    //Debug.logMessage("NEEDS: " + toFill + " : FOUND: " + mod.getInventoryTracker().getItemStackInSlot(itemToMove).getItem().getTranslationKey());
+                    //Debug.logMessage("Moving: " + itemToMove.getWindowSlot() + " -> " + currentCraftSlot.getWindowSlot());
                     mod.getInventoryTracker().moveItems(itemToMove, currentCraftSlot, 1);
                     if (delayedCraft) return null;
                 }
@@ -105,8 +108,31 @@ public class CraftGenericTask extends Task {
         //Debug.logMessage("RECEIVING CRAFTING OUTPUT: " + bigCrafting);
         // Swap to inventory hotbar
         // This should only be one call to clickSlot, but it's two calls for some reason?
+
+        /*
+        boolean movedClean = false;
+        if (ResourceTask.ensureInventoryFree(mod)) {
+            List<Integer> emptySlots = mod.getInventoryTracker().getEmptyInventorySlots();
+            if (emptySlots.size() != 0) {
+                Slot freeSlot = Slot.getFromInventory(emptySlots.get(0));
+                assert freeSlot != null;
+                Debug.logMessage("MOVED: " + outputSlot.getWindowSlot() + " -> " + freeSlot.getWindowSlot());
+                movedClean = mod.getInventoryTracker().moveItems(outputSlot, freeSlot, 1) == 1;
+                if (!movedClean) {
+                    Debug.logWarning("Failed to receive output from inventory craft! Throwing craft output item.");
+                }
+            } else {
+                Debug.logWarning("Failed to find free spot in inventory! Throwing craft output item.");
+            }
+        } else {
+            Debug.logWarning("Failed to free up inventory for craft! Throwing craft output item.");
+        }
+        if (!movedClean) {
+            mod.getInventoryTracker().throwSlot(outputSlot);
+        }*/
+
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
-        mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
+        //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
 
         return null;
     }

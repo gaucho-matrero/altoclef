@@ -148,7 +148,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     boolean isClose = skeleton.isInRange(mod.getPlayer(), 18);
 
                     if (isClose) {
-                        isClose = LookUtil.seesPlayer(skeleton, mod.getPlayer(), 20);
+                        isClose = LookUtil.seesPlayer(skeleton, mod.getPlayer(), 18);
                     }
 
                     // Give each skeleton a timer, if they're close for too long deal with them.
@@ -209,7 +209,7 @@ public class MobDefenseChain extends SingleTaskChain {
                         return 65;
                     } else {
                         // We can't deal with it
-                        setTask(new RunAwayFromHostilesTask(22));
+                        setTask(new RunAwayFromHostilesTask(30));
                         return 80;
                     }
                 }

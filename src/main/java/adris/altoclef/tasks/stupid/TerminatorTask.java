@@ -7,6 +7,7 @@ import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.RunAwayFromEntitiesTask;
 import adris.altoclef.tasks.RunAwayFromPositionTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
+import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.KillPlayerTask;
@@ -145,7 +146,7 @@ public class TerminatorTask extends Task {
             // Get building materials if we don't have them.
             if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
                 setDebugState("Collecting building materials");
-                return PlaceStructureBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
+                return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
             }
 
             // Get water to MLG if we are pushed off

@@ -9,12 +9,14 @@ import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.FurnaceScreenHandler;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
 /**
@@ -70,6 +72,11 @@ public class StaticMixinHookups {
         if (_breakCancelFrames-- == 0) {
             _mod.getControllerExtras().onBlockStopBreaking();
         }
+    }
+
+    public static void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        Debug.logMessage("BLOCK BROKEN: " + (world == _mod.getWorld()) + " : " + pos + " " + state.getBlock().getTranslationKey() + " " + player.getName().getString());
+        _mod.getControllerExtras().onBlockBroken(world, pos, state, player);
     }
 
     public static void onScreenOpenBegin(Screen screen) {

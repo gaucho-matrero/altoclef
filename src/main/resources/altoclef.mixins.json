@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "AbstractFurnaceScreenHandlerAccessor",
+    "BlockBrokenByPlayerMixin",
     "ClientConnectionAccessor",
     "ClientInteractWithBlockMixin",
     "ClientPlayerInteractionAccessor",

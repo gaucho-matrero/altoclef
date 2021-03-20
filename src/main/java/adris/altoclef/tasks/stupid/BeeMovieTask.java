@@ -2,7 +2,8 @@ package adris.altoclef.tasks.stupid;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.CataloguedResourceTask;
+import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;

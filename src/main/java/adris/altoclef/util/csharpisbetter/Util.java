@@ -1,5 +1,7 @@
 package adris.altoclef.util.csharpisbetter;
 
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.ArrayUtils;
@@ -40,6 +42,48 @@ public interface Util {
         });
     }
 
+    static <T> boolean arrayContains(T[] array, T item, BiPredicate<T, T> equals) {
+        for (T check : array) {
+            if (equals.test(check, item)) return true;
+        }
+        return false;
+    }
+    static <T> boolean arrayContains(T[] array, T item) {
+        return arrayContains(array, item, (left, right) -> {
+            if (left == null) {
+                return (right == null);
+            }
+            return left.equals(right);
+        });
+    }
+
+    static <T> boolean arrayContainsAny(T[] array, T[] items, BiPredicate<T, T> equals) {
+        for (T item : items) {
+            if (arrayContains(array, item, equals)) return true;
+        }
+        return false;
+    }
+    static <T> boolean arrayContainsAny(T[] array, T[] items) {
+        for (T item : items) {
+            if (arrayContains(array, item)) return true;
+        }
+        return false;
+    }
+
+    static Block[] itemsToBlocks(Item[] items) {
+        Block[] result = new Block[items.length];
+        for(int i = 0; i < items.length; ++i) {
+            result[i] = Block.getBlockFromItem(items[i]);
+        }
+        return result;
+    }
+    static Item[] blocksToItems(Block[] blocks) {
+        Item[] result = new Item[blocks.length];
+        for(int i = 0; i < blocks.length; ++i) {
+            result[i] = blocks[i].asItem();
+        }
+        return result;
+    }
     static <T> T maxItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
         if (items.size() == 0) return null;
         T best = items.stream().findFirst().get();

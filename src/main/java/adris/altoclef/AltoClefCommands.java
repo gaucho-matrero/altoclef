@@ -1,6 +1,5 @@
 package adris.altoclef;
 
-import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -8,15 +7,18 @@ import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.InventoryTracker;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.slots.*;
-import net.minecraft.entity.EquipmentSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.ArmorItem;
@@ -25,6 +27,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
 
@@ -262,6 +265,14 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "terminate":
                 mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 400));
+                break;
+            case "replace":
+                // Creates a mini valley of crafting tables.
+                BlockPos from = mod.getPlayer().getBlockPos().add(new Vec3i(-100, -20, -100));
+                BlockPos to = mod.getPlayer().getBlockPos().add(new Vec3i(100, 255 , 100));
+                Block[] toFind = new Block[]{Blocks.GRASS_BLOCK};// Blocks.COBBLESTONE};
+                ItemTarget toReplace = new ItemTarget("crafting_table");//"stone");
+                mod.runUserTask(new ReplaceBlocksTask(toReplace, from, to, toFind));
                 break;
         }
     }

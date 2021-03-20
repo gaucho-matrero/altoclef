@@ -256,7 +256,63 @@ public class InventoryTracker extends Tracker {
 
     public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
         ensureUpdated();
-        return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
+        HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
+        for (int i = 0; i < count; ++i) {
+            for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
+                ItemTarget needs = recipe.getSlot(slot);
+
+                // Satisfied by default.
+                if (needs.isEmpty()) continue;
+
+                List<Integer> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
+
+                // Also add crafting slots, since we may have items there.
+                // Check crafting slots
+                boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+                boolean bigRecipe = recipe.isBig();
+                for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                    Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(craftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                    ItemStack stack = getItemStackInSlot(craftSlot);
+                    if (needs.matches(stack.getItem())) {
+                        slotsWithItem.add((-1 * craftSlotIndex) - 1);
+                    }
+                }
+
+
+                // Try to satisfy THIS slot.
+                boolean satisfied = false;
+                for (int checkInvSlot : slotsWithItem) {
+                    if (!slotUsedCounts.containsKey(checkInvSlot)) {
+                        slotUsedCounts.put(checkInvSlot, 0);
+                    }
+                    int usedFromSlot = slotUsedCounts.get(checkInvSlot);
+                    ItemStack stack;
+                    if (checkInvSlot < 0) {
+                        // Crafting slot!
+                        int realCraftSlotIndex = (-1 * checkInvSlot) - 1;
+                        Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(realCraftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(realCraftSlotIndex);
+                        stack = getItemStackInSlot(craftSlot);
+                    } else {
+                        // Regular inventory slot
+                        stack = getItemStackInSlot(Slot.getFromInventory(checkInvSlot));
+                    }
+                    if (usedFromSlot < stack.getCount()) {
+                        slotUsedCounts.put(checkInvSlot, slotUsedCounts.get(checkInvSlot) + 1);
+                        //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
+                        satisfied = true;
+                        break;
+                    }
+                }
+
+                if (!satisfied) {
+                    //Debug.logMessage("FAILED TO SATISFY " + slot);
+                    // We couldn't satisfy this slot in either the inventory or crafting output.
+                    return false;
+                }
+            }
+        }
+        return true;
+        //return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }
 
     public boolean isArmorEquipped(Item item) {
@@ -320,51 +376,57 @@ public class InventoryTracker extends Tracker {
                     }
                 }
 
-                int best = Util.minItem(possibleSlots, (leftSlot, rightSlot) -> {
-                    ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
-                            right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
-                    boolean leftIsTool = left.getItem() instanceof ToolItem;
-                    boolean rightIsTool = right.getItem() instanceof ToolItem;
-                    // Prioritize tools over materials.
-                    if (rightIsTool && !leftIsTool) {
-                        return 1;
-                    } else if (leftIsTool && !rightIsTool) {
-                        return -1;
-                    }
-                    if (rightIsTool && leftIsTool) {
-                        // Prioritize material type, then durability.
-                        ToolItem leftTool = (ToolItem) left.getItem();
-                        ToolItem rightTool = (ToolItem) right.getItem();
-                        if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
-                            return rightTool.getMaterial().getMiningLevel() - leftTool.getMaterial().getMiningLevel();
-                        }
-                        // We want less damage.
-                        return -1 * (right.getDamage() - left.getDamage());
-                    }
-
-                    // Prioritize food over other things if we lack food.
-                    boolean lacksFood = totalFoodScore() < 8;
-                    boolean leftIsFood = left.getItem().isFood() && left.getItem() != Items.SPIDER_EYE;
-                    boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
-                    if (lacksFood) {
-                        if (rightIsFood && !leftIsFood) {
+                if (possibleSlots.size() != 0) {
+                    int best = Util.minItem(possibleSlots, (leftSlot, rightSlot) -> {
+                        ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
+                                right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
+                        boolean leftIsTool = left.getItem() instanceof ToolItem;
+                        boolean rightIsTool = right.getItem() instanceof ToolItem;
+                        // Prioritize tools over materials.
+                        if (rightIsTool && !leftIsTool) {
                             return 1;
-                        } else if (leftIsFood && !rightIsFood) {
+                        } else if (leftIsTool && !rightIsTool) {
                             return -1;
                         }
-                    }
-                    // If both are food, pick the better cost.
-                    if (leftIsFood && rightIsFood) {
-                        int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
-                            rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
-                        return rightCost - leftCost;
-                    }
+                        if (rightIsTool && leftIsTool) {
+                            // Prioritize material type, then durability.
+                            ToolItem leftTool = (ToolItem) left.getItem();
+                            ToolItem rightTool = (ToolItem) right.getItem();
+                            if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
+                                return rightTool.getMaterial().getMiningLevel() - leftTool.getMaterial().getMiningLevel();
+                            }
+                            // We want less damage.
+                            return -1 * (right.getDamage() - left.getDamage());
+                        }
 
-                    // Just keep the one with the most quantity, but this doesn't really matter.
-                    return right.getCount() - left.getCount();
-                });
-                Debug.logInternal("THROWING AWAY unused ITEM AT SLOT " + best);
-                return Slot.getFromInventory(best);
+                        // Prioritize food over other things if we lack food.
+                        boolean lacksFood = totalFoodScore() < 8;
+                        boolean leftIsFood = left.getItem().isFood() && left.getItem() != Items.SPIDER_EYE;
+                        boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
+                        if (lacksFood) {
+                            if (rightIsFood && !leftIsFood) {
+                                return 1;
+                            } else if (leftIsFood && !rightIsFood) {
+                                return -1;
+                            }
+                        }
+                        // If both are food, pick the better cost.
+                        if (leftIsFood && rightIsFood) {
+                            assert left.getItem().getFoodComponent() != null;
+                            assert right.getItem().getFoodComponent() != null;
+                            int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
+                                    rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
+                            return rightCost - leftCost;
+                        }
+
+                        // Just keep the one with the most quantity, but this doesn't really matter.
+                        return right.getCount() - left.getCount();
+                    });
+                    Debug.logInternal("THROWING AWAY unused ITEM AT SLOT " + best);
+                    return Slot.getFromInventory(best);
+                } else {
+                    Debug.logWarning("No unused items to throw away found. Every item is protected.");
+                }
             }
         }
 
@@ -626,9 +688,10 @@ public class InventoryTracker extends Tracker {
         List<Integer> itemSlots = getInventorySlotsWithItem(toEquip);
         if (itemSlots.size() != 0) {
             int slot = itemSlots.get(0);
+            assert target != null;
             int hotbar = target.getInventorySlot();
             if (0 <= hotbar && hotbar < 9) {
-                clickSlot(Slot.getFromInventory(slot), hotbar, SlotActionType.SWAP);
+                clickSlot(Objects.requireNonNull(Slot.getFromInventory(slot)), hotbar, SlotActionType.SWAP);
                 //swapItems(Slot.getFromInventory(slot), target);
                 return true;
             } else {

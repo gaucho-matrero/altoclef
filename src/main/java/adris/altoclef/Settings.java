@@ -31,7 +31,7 @@ public class Settings {
     /**
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
-    private float containerItemMoveDelay = 0.2f;
+    private float containerItemMoveDelay = 0.08f;
 
     /**
      * Some larger special tasks will perform extra preparation work to ensure your player
