@@ -7,6 +7,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.DistanceProgressChecker;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.block.AirBlock;
@@ -29,13 +30,16 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     private Vec3d _origin;
 
-    private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
 
     private boolean _executingPlanB = false;
 
     private boolean _forceExplore;
 
     private Task _unstuckTask = null;
+
+    private int _failCounter;
 
     public TimeoutWanderTask(float distanceToWander) {
         _distanceToWander = distanceToWander;
@@ -56,7 +60,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStart(AltoClef mod) {
         _origin = mod.getPlayer().getPos();
-        _distanceProgressChecker.reset();
+        _progressChecker.reset();
+        _failCounter = 0;
     }
 
     @Override
@@ -79,19 +84,23 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             }
         }
 
-        _distanceProgressChecker.setProgress(mod.getPlayer().getPos());
-        if (_distanceProgressChecker.failed()) {
+        //_distanceProgressChecker.setProgress(mod.getPlayer().getPos());
+        //if (_distanceProgressChecker.failed()) {
+        if (!_progressChecker.check(mod)) {
             // We failed at exploring.
-            _distanceProgressChecker.reset();
+            //_distanceProgressChecker.reset();
+            _progressChecker.reset();
 
             BlockPos fenceStuck = stuckInFence(mod);
             if (fenceStuck != null) {
+                _failCounter++;
                 Debug.logMessage("Failed exploring, found fence nearby.");
                 _unstuckTask = getFenceUnstuckTask(mod, fenceStuck);
                 return _unstuckTask;
             }
 
             if (!_forceExplore) {
+                _failCounter++;
                 Debug.logMessage("Failed exploring.");
                 if (_executingPlanB) {
                     // Cancel current plan B
@@ -120,6 +129,11 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         if (_origin == null) return true;
 
         if (Float.isInfinite(_distanceToWander)) return false;
+
+        // If we fail 10 times or more, we may as well try the previous task again.
+        if (_failCounter > 10) {
+            return true;
+        }
 
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
