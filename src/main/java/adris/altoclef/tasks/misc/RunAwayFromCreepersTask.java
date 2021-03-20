@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.Entity;
@@ -50,7 +51,10 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
-            List<Entity> result = new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
+            List<Entity> result;
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                result = new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
+            }
             return result;
         }
 

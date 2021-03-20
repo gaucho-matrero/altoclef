@@ -17,6 +17,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -128,7 +129,14 @@ public class TerminatorTask extends Task {
                 }*/
                 _runAwayExtraTime.reset();
                 try {
-                    _runAwayTask = new RunAwayFromPlayersTask(() -> mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream().filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList()), RUN_AWAY_DISTANCE);
+                    _runAwayTask = new RunAwayFromPlayersTask(() -> {
+                            List<Entity> entities;
+                            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                                entities = mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream().filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
+                            }
+                            return entities;
+                        }
+                            , RUN_AWAY_DISTANCE);
                 } catch (ConcurrentModificationException e) {
                     // oof
                     Debug.logWarning("Duct tape over ConcurrentModificationException (see log)");
