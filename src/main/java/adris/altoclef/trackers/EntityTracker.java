@@ -144,39 +144,53 @@ public class EntityTracker extends Tracker {
         if (!entityFound(type)) {
             return Collections.emptyList();
         }
-        //noinspection unchecked
-        return (List<T>) _entityMap.get(type);
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            //noinspection unchecked
+            return (List<T>) _entityMap.get(type);
+        }
     }
 
     public List<Entity> getCloseEntities() {
         ensureUpdated();
-        return _closeEntities;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _closeEntities;
+        }
     }
 
     public List<CachedProjectile> getProjectiles() {
         ensureUpdated();
-        return _projectiles;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _projectiles;
+        }
     }
 
     public List<HostileEntity> getHostiles() {
         ensureUpdated();
-        return _hostiles;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _hostiles;
+        }
     }
 
     public boolean isPlayerLoaded(String name) {
         ensureUpdated();
-        return _playerMap.containsKey(name);
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _playerMap.containsKey(name);
+        }
     }
     public Vec3d getPlayerMostRecentPosition(String name) {
         ensureUpdated();
-        if (_playerLastCoordinates.containsKey(name)) {
-            return _playerLastCoordinates.get(name);
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            if (_playerLastCoordinates.containsKey(name)) {
+                return _playerLastCoordinates.get(name);
+            }
         }
         return null;
     }
     public PlayerEntity getPlayerEntity(String name) {
         if (isPlayerLoaded(name)) {
-            return _playerMap.get(name);
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                return _playerMap.get(name);
+            }
         }
         return null;
     }

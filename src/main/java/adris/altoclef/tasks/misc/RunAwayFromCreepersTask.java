@@ -51,11 +51,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
-            List<Entity> result;
-            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                result = new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
-            }
-            return result;
+            return new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
         }
 
         @Override

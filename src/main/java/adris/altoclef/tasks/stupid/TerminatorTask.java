@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Roams around the world to terminate Sarah Khaannah
@@ -130,11 +131,10 @@ public class TerminatorTask extends Task {
                 _runAwayExtraTime.reset();
                 try {
                     _runAwayTask = new RunAwayFromPlayersTask(() -> {
-                            List<Entity> entities;
+                            Stream<PlayerEntity> stream = mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream();
                             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                                entities = mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream().filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
+                                return stream.filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
                             }
-                            return entities;
                         }
                             , RUN_AWAY_DISTANCE);
                 } catch (ConcurrentModificationException e) {
