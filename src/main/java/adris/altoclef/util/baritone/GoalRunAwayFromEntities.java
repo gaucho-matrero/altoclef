@@ -15,10 +15,17 @@ public abstract class GoalRunAwayFromEntities implements Goal {
     private final double _distance;
     private final boolean _xzOnly;
 
-    public GoalRunAwayFromEntities(AltoClef mod, double distance, boolean xzOnly) {
+    // Higher: We will move more directly away from each entity
+    // Too high: We will refuse to take alternative, faster paths and will dig straight away.
+    // Lower: We will in general move far away from an entity, allowing the ocassional closer traversal.
+    // Too low: We will just run straight into the entity to go past it.
+    private final double _penaltyFactor;
+
+    public GoalRunAwayFromEntities(AltoClef mod, double distance, boolean xzOnly, double penaltyFactor) {
         _mod = mod;
         _distance = distance;
         _xzOnly = xzOnly;
+        _penaltyFactor = penaltyFactor;
     }
 
     @Override
@@ -45,17 +52,20 @@ public abstract class GoalRunAwayFromEntities implements Goal {
         double costSum = 0;
         List<Entity> entities = getEntities(_mod);
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            int max = 5; // If we have 100 players, this will never calculate.
+            int max = 10; // If we have 100 players, this will never calculate.
             int counter = 0;
             for (Entity entity : entities) {
                 counter++;
                 if (entity == null || !entity.isAlive()) continue;
                 double cost = getCostOfEntity(entity, x, y, z);
-                costSum += cost;
+                if (cost != 0) {
+                    // We want the CLOSER entities to have a bigger weight than the further ones.
+                    costSum += 1 / cost;
+                }
                 if (counter >= max) break;
             }
             costSum /= counter;
-            return -1 * costSum * 0.1;
+            return costSum * _penaltyFactor;
         }
         //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
@@ -65,7 +75,9 @@ public abstract class GoalRunAwayFromEntities implements Goal {
     // Virtual
     protected double getCostOfEntity(Entity entity, int x, int y, int z) {
         double heuristic = 0;
-        heuristic += GoalYLevel.calculate(entity.getBlockPos().getY(), y);
+        if (!_xzOnly) {
+            heuristic += GoalYLevel.calculate(entity.getBlockPos().getY(), y);
+        }
         heuristic += GoalXZ.calculate(entity.getBlockPos().getX() - x, entity.getBlockPos().getZ() - z);
         return heuristic; //entity.squaredDistanceTo(x, y, z);
     }

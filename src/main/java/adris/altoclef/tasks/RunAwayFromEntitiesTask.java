@@ -14,14 +14,17 @@ public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
 
     private final double _distanceToRun;
     private final boolean _xz;
+    // See GoalrunAwayFromEntities penalty value
+    private final double _penalty;
 
-    public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, boolean xz) {
+    public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, boolean xz, double penalty) {
         _runAwaySupplier = toRunAwayFrom;
         _distanceToRun = distanceToRun;
         _xz = xz;
+        _penalty = penalty;
     }
-    public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
-        this(toRunAwayFrom, distanceToRun, false);
+    public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, double penalty) {
+        this(toRunAwayFrom, distanceToRun, false, penalty);
     }
 
 
@@ -34,7 +37,7 @@ public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
     private class GoalRunAwayStuff extends GoalRunAwayFromEntities {
 
         public GoalRunAwayStuff(AltoClef mod, double distance, boolean xz) {
-            super(mod, distance, xz);
+            super(mod, distance, xz, _penalty);
         }
 
         @Override

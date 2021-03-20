@@ -25,6 +25,8 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     @Override
     protected Goal newGoal(AltoClef mod) {
+        // We want to run away NOW
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, _distanceToRun);
     }
 
@@ -45,7 +47,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
-            super(mod, distance, false);
+            super(mod, distance, false, 0.8);
         }
 
         @Override

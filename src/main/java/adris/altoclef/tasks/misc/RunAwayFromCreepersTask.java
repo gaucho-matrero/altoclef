@@ -7,8 +7,10 @@ import adris.altoclef.tasksystem.chains.MobDefenseChain;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +42,15 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
     @Override
     protected Goal newGoal(AltoClef mod) {
+        // We want to run away NOW
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromCreepers(mod, _distanceToRun);
     }
 
     private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromCreepers(AltoClef mod, double distance) {
-            super(mod, distance, false);
+            super(mod, distance, false, 10);
         }
 
         @Override
@@ -57,7 +61,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         @Override
         protected double getCostOfEntity(Entity entity, int x, int y, int z) {
             if (entity instanceof CreeperEntity) {
-                return MobDefenseChain.getCreeperSafety((CreeperEntity) entity);
+                return MobDefenseChain.getCreeperSafety(new Vec3d(x, y, z), (CreeperEntity) entity);
             }
             return super.getCostOfEntity(entity, x, y, z);
         }

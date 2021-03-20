@@ -296,7 +296,7 @@ public class TerminatorTask extends Task {
     private class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
 
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
-            super(toRunAwayFrom, distanceToRun, true);
+            super(toRunAwayFrom, distanceToRun, true, 0.1);
             // More lenient progress checker
             _checker = new MovementProgressChecker(2);
         }

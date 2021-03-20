@@ -314,7 +314,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 // We want to pick the closest creeper, but FIRST pick creepers about to blow
                 // At max fuse, the cost goes to basically zero.
-                double safety = getCreeperSafety(creeper);
+                double safety = getCreeperSafety(mod.getPlayer().getPos(), creeper);
                 if (safety < worstSafety) {
                     target = creeper;
                 }
@@ -416,8 +416,8 @@ public class MobDefenseChain extends SingleTaskChain {
         return false;
     }
 
-    public static double getCreeperSafety(CreeperEntity creeper) {
-        double distance = creeper.squaredDistanceTo(MinecraftClient.getInstance().player);
+    public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
+        double distance = creeper.squaredDistanceTo(pos);
         float fuse = creeper.getClientFuseTime(1);
 
         // Not fusing. We only get fusing crepers.
