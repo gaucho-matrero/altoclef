@@ -6,6 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.misc.MLGBucketTask;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.item.Items;
 
@@ -26,6 +27,9 @@ public class MLGBucketFallChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+        // Won't work in the nether, duh
+        if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
+
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
@@ -37,7 +41,7 @@ public class MLGBucketFallChain extends SingleTaskChain {
                 return 60;
             }
         }
-        return 0;
+        return Float.NEGATIVE_INFINITY;
     }
 
     @Override

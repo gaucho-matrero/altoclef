@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectBucketLiquidTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -99,6 +100,7 @@ public class MLGBucketTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
+        if (mod.getCurrentDimension() == Dimension.NETHER) return true;
         return !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() || mod.getPlayer().isSubmergedInWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
     }
 
