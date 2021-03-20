@@ -223,6 +223,7 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    /*
     public boolean hasRecipeMaterialsOrTarget(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
@@ -244,70 +245,78 @@ public class InventoryTracker extends Tracker {
             }
         }
         return true;
-    }
+    }*/
 
-    public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
-        return hasRecipeMaterialsOrTarget(new HashMap<>(), targets);
+    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
+        Item[] items = null;
+        return hasRecipeMaterialsOrTarget(new RecipeTarget(new ItemTarget(items, count), recipe));
     }
 
     public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe) {
         return hasRecipeMaterialsOrTarget(recipe, 1);
     }
 
-    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
+    public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
         ensureUpdated();
         HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
-        for (int i = 0; i < count; ++i) {
-            for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
-                ItemTarget needs = recipe.getSlot(slot);
+        for (RecipeTarget target : targets) {
+            CraftingRecipe recipe = target.getRecipe();
+            int need = target.getItem().targetCount;
+            if (target.getItem().getMatches() != null) {
+                need -= getItemCount(target.getItem());
+            }
+            for (int i = 0; i < need; ++i) {
+                for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
+                    ItemTarget needs = recipe.getSlot(slot);
 
-                // Satisfied by default.
-                if (needs.isEmpty()) continue;
+                    // Satisfied by default.
+                    if (needs.isEmpty()) continue;
 
-                List<Integer> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
+                    List<Integer> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
 
-                // Also add crafting slots, since we may have items there.
-                // Check crafting slots
-                boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
-                boolean bigRecipe = recipe.isBig();
-                for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
-                    Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(craftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
-                    ItemStack stack = getItemStackInSlot(craftSlot);
-                    if (needs.matches(stack.getItem())) {
-                        slotsWithItem.add((-1 * craftSlotIndex) - 1);
+                    // Also add crafting slots, since we may have items there.
+                    // Check crafting slots
+                    boolean bigCrafting = (_mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+                    boolean bigRecipe = recipe.isBig();
+                    for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                        Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                        ItemStack stack = getItemStackInSlot(craftSlot);
+                        if (needs.matches(stack.getItem())) {
+                            slotsWithItem.add((-1 * craftSlotIndex) - 1);
+                        }
                     }
-                }
 
 
-                // Try to satisfy THIS slot.
-                boolean satisfied = false;
-                for (int checkInvSlot : slotsWithItem) {
-                    if (!slotUsedCounts.containsKey(checkInvSlot)) {
-                        slotUsedCounts.put(checkInvSlot, 0);
+                    // Try to satisfy THIS slot.
+                    boolean satisfied = false;
+                    for (int checkInvSlot : slotsWithItem) {
+                        if (!slotUsedCounts.containsKey(checkInvSlot)) {
+                            slotUsedCounts.put(checkInvSlot, 0);
+                        }
+                        int usedFromSlot = slotUsedCounts.get(checkInvSlot);
+                        ItemStack stack;
+                        if (checkInvSlot < 0) {
+                            // Crafting slot!
+                            int realCraftSlotIndex = (-1 * checkInvSlot) - 1;
+                            Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(realCraftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(realCraftSlotIndex);
+                            stack = getItemStackInSlot(craftSlot);
+                        } else {
+                            // Regular inventory slot
+                            stack = getItemStackInSlot(Slot.getFromInventory(checkInvSlot));
+                        }
+                        if (usedFromSlot < stack.getCount()) {
+                            slotUsedCounts.put(checkInvSlot, slotUsedCounts.get(checkInvSlot) + 1);
+                            //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
+                            satisfied = true;
+                            break;
+                        }
                     }
-                    int usedFromSlot = slotUsedCounts.get(checkInvSlot);
-                    ItemStack stack;
-                    if (checkInvSlot < 0) {
-                        // Crafting slot!
-                        int realCraftSlotIndex = (-1 * checkInvSlot) - 1;
-                        Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(realCraftSlotIndex, bigRecipe) : PlayerSlot.getCraftInputSlot(realCraftSlotIndex);
-                        stack = getItemStackInSlot(craftSlot);
-                    } else {
-                        // Regular inventory slot
-                        stack = getItemStackInSlot(Slot.getFromInventory(checkInvSlot));
-                    }
-                    if (usedFromSlot < stack.getCount()) {
-                        slotUsedCounts.put(checkInvSlot, slotUsedCounts.get(checkInvSlot) + 1);
-                        //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
-                        satisfied = true;
-                        break;
-                    }
-                }
 
-                if (!satisfied) {
-                    //Debug.logMessage("FAILED TO SATISFY " + slot);
-                    // We couldn't satisfy this slot in either the inventory or crafting output.
-                    return false;
+                    if (!satisfied) {
+                        //Debug.logMessage("FAILED TO SATISFY " + slot);
+                        // We couldn't satisfy this slot in either the inventory or crafting output.
+                        return false;
+                    }
                 }
             }
         }

@@ -16,7 +16,7 @@ import java.util.HashMap;
 // Collects everything that's catalogued for a recipe.
 public class CollectRecipeCataloguedResourcesTask extends Task {
 
-    private RecipeTarget[] _targets;
+    private final RecipeTarget[] _targets;
 
     private boolean _finished = false;
 
@@ -64,7 +64,6 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                     }
                 }
             }
-
         }
 
 
