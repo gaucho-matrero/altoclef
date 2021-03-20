@@ -157,6 +157,10 @@ public class AltoClef implements ModInitializer {
         // Don't let baritone wait for drops, we handle that ourselves.
         getClientBaritoneSettings().mineDropLoiterDurationMSThanksLouca.value = 0L;
 
+        // Really avoid mobs if we're in danger.
+        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 2.0;
+        getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
+
         // Don't break blocks we explicitely protect.
         getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
     }

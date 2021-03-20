@@ -17,9 +17,14 @@ import java.util.stream.Stream;
 public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     private final double _distanceToRun;
+    private final boolean _includeSkeletons;
 
-    public RunAwayFromHostilesTask(double distance) {
+    public RunAwayFromHostilesTask(double distance, boolean includeSkeletons) {
         _distanceToRun = distance;
+        _includeSkeletons = includeSkeletons;
+    }
+    public RunAwayFromHostilesTask(double distance) {
+        this(distance, false);
     }
 
 
@@ -55,8 +60,10 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
             List<Entity> result;
             Stream<HostileEntity> stream = mod.getEntityTracker().getHostiles().stream();
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                        return stream.filter(hostile -> !(hostile instanceof SkeletonEntity))
-                        .collect(Collectors.toList());
+                if (!_includeSkeletons) {
+                    stream = stream.filter(hostile -> !(hostile instanceof SkeletonEntity));
+                }
+                return stream.collect(Collectors.toList());
             }
         }
     }

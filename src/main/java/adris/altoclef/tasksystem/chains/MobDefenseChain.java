@@ -16,6 +16,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -65,6 +66,9 @@ public class MobDefenseChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
+        // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
+        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
 
@@ -86,7 +90,8 @@ public class MobDefenseChain extends SingleTaskChain {
         doForceField(mod);
 
         // Tell baritone to avoid mobs if we're vulnurable.
-        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // Costly.
+        //mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
 
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
@@ -209,7 +214,7 @@ public class MobDefenseChain extends SingleTaskChain {
                         return 65;
                     } else {
                         // We can't deal with it
-                        setTask(new RunAwayFromHostilesTask(30));
+                        setTask(new RunAwayFromHostilesTask(30, true));
                         return 80;
                     }
                 }
@@ -367,7 +372,8 @@ public class MobDefenseChain extends SingleTaskChain {
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
         if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
-            if (entity.squaredDistanceTo(mod.getPlayer()) < 6*6) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (entity.squaredDistanceTo(mod.getPlayer()) < range*range) {
                 return entity;
             }
         }
@@ -376,7 +382,7 @@ public class MobDefenseChain extends SingleTaskChain {
         if (mod.getEntityTracker().entityFound(HoglinEntity.class, ZoglinEntity.class)) {
             if (mod.getPlayer().getHealth() < 5) {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
-                int range = 7;
+                double range = SAFE_KEEP_DISTANCE - 1;
                 if (entity.squaredDistanceTo(mod.getPlayer()) < range*range) {
                     return entity;
                 }
@@ -395,7 +401,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 for(HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, DANGER_KEEP_DISTANCE)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE)) {
                         return true;
                     }
                 }
