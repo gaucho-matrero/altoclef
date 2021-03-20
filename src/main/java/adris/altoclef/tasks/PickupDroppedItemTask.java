@@ -3,21 +3,28 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
+
+    // Not clean practice, but it helps keep things self contained I think.
+    private static boolean isGettingPickaxeFirstFlag = false;
+    public static boolean isIsGettingPickaxeFirst(AltoClef mod) {return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();}
+
+    private boolean _collectingPickaxeForThisResource = false;
+    public boolean isCollectingPickaxeForThis() {return _collectingPickaxeForThisResource; }
 
     private final ItemTarget[] _itemTargets;
 
@@ -32,6 +39,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     private boolean _fullCheckFailed = false;
 
+    private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
 
     public PickupDroppedItemTask(ItemTarget[] itemTargets, boolean freeInventoryIfFull) {
         _itemTargets = itemTargets;
@@ -62,9 +70,29 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             _progressChecker.reset();
             return _wanderTask;
         }
+
+        // If we're getting a pickaxe for THIS resource...
+        if (isIsGettingPickaxeFirst(mod) && _collectingPickaxeForThisResource && !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+            _progressChecker.reset();
+            setDebugState("Collecting pickaxe first");
+            return getPickaxeFirstTask;
+        } else {
+            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+                isGettingPickaxeFirstFlag = false;
+            }
+            _collectingPickaxeForThisResource = false;
+        }
+
         if (!_progressChecker.check(mod)) {
             _progressChecker.reset();
             if (_currentDrop != null) {
+                // We might want to get a pickaxe first.
+                if (!isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst() && !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+                    Debug.logMessage("Failed to pick up drop, will try to collect a stone pickaxe first and try again!");
+                    _collectingPickaxeForThisResource = true;
+                    isGettingPickaxeFirstFlag = true;
+                    return getPickaxeFirstTask;
+                }
                 Debug.logMessage(Util.arrayToString(Util.toArray(ItemEntity.class, _blacklist), element -> element == null? "(null)" : element.getStack().getItem().getTranslationKey()));
                 Debug.logMessage("Failed to pick up drop, suggesting it's unreachable.");
                 _blacklist.add(_currentDrop);
@@ -132,6 +160,11 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected Task getGoalTask(ItemEntity obj) {
+        if (!obj.equals(_currentDrop) && isGettingPickaxeFirstFlag && _collectingPickaxeForThisResource) {
+            Debug.logMessage("New goal, no longer collecting a pickaxe.");
+            _collectingPickaxeForThisResource = false;
+            isGettingPickaxeFirstFlag = false;
+        }
         _currentDrop = obj;
         return new GetToEntityTask(obj);
     }

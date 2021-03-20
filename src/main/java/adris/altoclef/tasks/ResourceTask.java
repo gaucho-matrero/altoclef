@@ -1,21 +1,18 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
-
-import java.util.Collections;
-import java.util.List;
 
 public abstract class ResourceTask extends Task {
 
     protected final ItemTarget[] _itemTargets;
 
-    private final Task _pickupTask;
+    private final PickupDroppedItemTask _pickupTask;
 
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
@@ -47,6 +44,19 @@ public abstract class ResourceTask extends Task {
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
             if (mod.getEntityTracker().itemDropped(_itemTargets)) {
+
+                // If we're picking up a pickaxe (we can't go far underground or mine much)
+                if (PickupDroppedItemTask.isIsGettingPickaxeFirst(mod)) {
+                    if (_pickupTask.isCollectingPickaxeForThis()) {
+                        // Our pickup task is the one collecting the pickaxe, keep it going.
+                        return _pickupTask;
+                    }
+                    // Only get items that are CLOSE to us.
+                    ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+                    if (!closest.isInRange(mod.getPlayer(), 10)) {
+                        return onResourceTick(mod);
+                    }
+                }
 
                 return _pickupTask;
             }

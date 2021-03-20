@@ -40,7 +40,15 @@ public class Settings {
      * For instance, the Place Signs task might first acquire a diamond axe to ease the collection of wood.
      * if "sharpenAxe" is disabled, it won't grab the axe and will collect wood with the best tool it currently has.
      */
-    private boolean sharpenAxe = true;
+    //private boolean sharpenAxe = true;
+
+    /**
+     * Before grabbing ANYTHING, get a pickaxe.
+     *
+     * Will help with navigation as sometimes dropped items will be underground,
+     * but this behaviour only makes sense in regular minecraft worlds.
+     */
+    private boolean collectPickaxeFirst = true;
 
     /**
      * Uses killaura to move mobs away and performs survival moves including:
@@ -225,13 +233,6 @@ public class Settings {
         return speedHack;
     }
 
-    public boolean isSharpenAxe() {
-        return sharpenAxe;
-    }
-    public void setSharpenAxe(boolean sharpenAxe) {
-        this.sharpenAxe = sharpenAxe; markDirty();
-    }
-
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
     }
@@ -290,6 +291,8 @@ public class Settings {
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
     }
+
+    public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
 
     public boolean isThrowaway(Item item) {
         return idArrayContainsItem(item, throwawayItems);
