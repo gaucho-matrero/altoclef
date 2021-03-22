@@ -1,8 +1,12 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
+import baritone.Baritone;
+import baritone.api.BaritoneAPI;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.RotationUtils;
+import baritone.pathing.movement.MovementHelper;
+import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
@@ -13,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
 
 public interface WorldUtil {
 
@@ -47,6 +52,23 @@ public interface WorldUtil {
     }
     static boolean isAir(Block block) {
         return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
+    }
+
+    static boolean fallingBlockSafeToBreak(BlockPos pos) {
+        BlockStateInterface bsi = new BlockStateInterface(BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext());
+        World w = MinecraftClient.getInstance().world;
+        assert w != null;
+        while (isFallingBlock(pos)) {
+            if (MovementHelper.avoidBreaking(bsi, pos.getX(), pos.getY(), pos.getZ(), w.getBlockState(pos))) return false;
+            pos = pos.up();
+        }
+        return true;
+    }
+
+    static boolean isFallingBlock(BlockPos pos) {
+        World w = MinecraftClient.getInstance().world;
+        assert w != null;
+        return w.getBlockState(pos).getBlock() instanceof FallingBlock;
     }
 
     static Entity getSpawnerEntity(AltoClef mod, BlockPos pos) {
