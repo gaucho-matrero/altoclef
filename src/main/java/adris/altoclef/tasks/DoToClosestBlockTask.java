@@ -56,11 +56,15 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     protected boolean isValid(AltoClef mod, BlockPos obj) {
         // Assume we're valid since we're in the same chunk.
         if (!mod.getChunkTracker().isChunkLoaded(obj)) return true;
+
+        return mod.getBlockTracker().blockIsValid(obj, _targetBlocks);
+        /*
         BlockState state = mod.getWorld().getBlockState(obj);
         for (Block block : _targetBlocks) {
             if (state.getBlock().equals(block)) return true;
         }
         return false;
+         */
     }
 
     @Override

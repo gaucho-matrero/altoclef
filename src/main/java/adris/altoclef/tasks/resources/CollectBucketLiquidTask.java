@@ -192,6 +192,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     if (WorldUtil.isSolid(mod, blockpos.up())) {
                         if (!_progressChecker.check(mod)) {
                             Debug.logMessage("Failed to break, blacklisting & wandering");
+                            mod.getBlockTracker().requestBlockUnreachable(blockpos);
                             _blacklist.add(blockpos);
                             return _wanderTask;
                         }

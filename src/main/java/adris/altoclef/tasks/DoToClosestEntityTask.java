@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+@SuppressWarnings("ALL")
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
 
     private final Class[] _targetEntities;
@@ -53,7 +54,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected boolean isValid(AltoClef mod, Entity obj) {
-        return obj.isAlive();
+        return obj.isAlive() && mod.getEntityTracker().isEntityReachable(obj);
     }
 
     @Override

@@ -195,8 +195,12 @@ public class EntityTracker extends Tracker {
         return null;
     }
 
-    public void requestEntityUnreachable(ItemEntity entity) {
+    public void requestEntityUnreachable(Entity entity) {
         _entityBlacklist.blackListItem(_mod, entity, 2);
+    }
+
+    public boolean isEntityReachable(Entity entity) {
+        return !_entityBlacklist.unreachable(entity);
     }
 
     @Override
@@ -290,8 +294,8 @@ public class EntityTracker extends Tracker {
     /**
      * Squash a class that may have sub classes into one distinguishable class type.
      * For ease of use.
-     * @param type
-     * @return
+     * @param type: An entity class that may have a 'simpler' class to squash to
+     * @return what the given entity class should be read as/catalogued as.
      */
     private static Class squashType(Class type) {
         // Squash types for ease of use
