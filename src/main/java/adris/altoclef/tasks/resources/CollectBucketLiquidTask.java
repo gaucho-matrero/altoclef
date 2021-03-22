@@ -207,6 +207,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                             public void invoke(Object value) {
                                 Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(_blacklist.toArray()));
                                 Debug.logMessage("Blacklisted " + blockpos);
+                                mod.getBlockTracker().requestBlockUnreachable(blockpos);
                                 _blacklist.add(blockpos);
 
                             }
