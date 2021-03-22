@@ -35,6 +35,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     private boolean _cancelRightClick;
 
     private Direction _interactSide;
+    private Vec3i _interactOffset;
 
     private int arrivalTickCount = 0;
 
@@ -53,13 +54,14 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         super(baritone); _mod = mod;
     }
 
-    public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto) {
+    public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto, Vec3i interactOffset) {
         this.onLostControl();
         _target = target;
         _interactSide = interactSide;
         _interactInput = interactInput;
         _blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
         _walkInto = walkInto;
+        _interactOffset = interactOffset;
 
         _cancelRightClick = false;
 
@@ -75,7 +77,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.getToBlock(target, interactInput, false);
     }
     public void getToBlock(BlockPos target, Input interactInput, boolean blockOnTopMustBeRemoved) {
-        this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false);
+        this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false, Vec3i.ZERO);
     }
 
     public boolean isActive() {
@@ -161,10 +163,10 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                     sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
                 }*/
                 Goal sideGoal = new GoalBlockSide(_target, _interactSide, 1);
-                return new GoalAnd(sideGoal, new GoalNear(pos, reachDistance));
+                return new GoalAnd(sideGoal, new GoalNear(pos.add(_interactOffset), reachDistance));
             } else {
                 // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
-                return new GoalNear(pos, reachDistance);
+                return new GoalNear(pos.add(_interactOffset), reachDistance);
             }
         }
     }

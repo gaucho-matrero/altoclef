@@ -200,7 +200,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     }
                 }
 
-                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA);
+                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 // noinspection rawtypes,unchecked,unchecked
                 task.TimedOut.addListener(
                         new ActionListener() {

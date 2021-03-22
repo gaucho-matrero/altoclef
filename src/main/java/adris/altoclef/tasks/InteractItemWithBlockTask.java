@@ -12,6 +12,7 @@ import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.input.Input;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 
 public class InteractItemWithBlockTask extends Task {
 
@@ -22,7 +23,11 @@ public class InteractItemWithBlockTask extends Task {
     private final Direction _direction;
     private final BlockPos _target;
 
-    private Input _interactInput;
+    private final boolean _walkInto;
+
+    private final Vec3i _interactOffset;
+
+    private final Input _interactInput;
 
     private boolean _trying;
 
@@ -33,21 +38,27 @@ public class InteractItemWithBlockTask extends Task {
 
     public final Action TimedOut = new Action();
 
-    private boolean _walkInto;
 
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto) {
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset) {
         _toUse = toUse;
         _direction = direction;
         _target = target;
         _interactInput = interactInput;
         _walkInto = walkInto;
+        _interactOffset = interactOffset;
+    }
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto) {
+        this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO);
     }
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
         this(toUse, direction, target, Input.CLICK_RIGHT, walkInto);
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
+    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         // null means any side is OK
-        this(toUse, null, target, walkInto);
+        this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset);
+    }
+    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
+        this(toUse, target, walkInto, Vec3i.ZERO);
     }
 
     @Override
@@ -78,7 +89,7 @@ public class InteractItemWithBlockTask extends Task {
 
         if (!proc(mod).isActive()) {
             _trying = true;
-            proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto);
+            proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto, _interactOffset);
             if (_toUse != null) {
                 proc(mod).setInteractEquipItem(_toUse);
             }
