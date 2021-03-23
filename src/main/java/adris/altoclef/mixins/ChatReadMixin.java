@@ -30,30 +30,34 @@ public final class ChatReadMixin {
             at = @At("HEAD")
     )
     private void onGameMessage(GameMessageS2CPacket msgPacket, CallbackInfo ci) {
-        if (msgPacket.isNonChat() && msgPacket.getLocation() == MessageType.SYSTEM) {
+        if (msgPacket.getLocation() == MessageType.SYSTEM) {
+            StaticMixinHookups.onGameMessage(msgPacket.getMessage().getString());
 
-            // Format: <USER> whispers to you: <MESSAGE>
-            String msg = msgPacket.getMessage().getString();
-            int index = msg.indexOf(MIDDLE_PART);
-            if (index != -1) {
-                String user = msg.substring(0, index);
-                String message = msg.substring(index + MIDDLE_PART.length());
+            if (msgPacket.isNonChat()) {
+                // Format: <USER> whispers to you: <MESSAGE>
+                String msg = msgPacket.getMessage().getString();
+                int index = msg.indexOf(MIDDLE_PART);
+                if (index != -1) {
 
-                //noinspection ConstantConditions
-                if (user == null || message == null) return;
-                boolean duplicate = (user.equals(_lastUser) && message.equals(_lastMessage));
+                    String user = msg.substring(0, index);
+                    String message = msg.substring(index + MIDDLE_PART.length());
 
-                if (duplicate && !_repeatTimer.elapsed()) {
-                    // It's probably an actual duplicate. IDK why we get those but yeah.
-                    return;
+                    //noinspection ConstantConditions
+                    if (user == null || message == null) return;
+                    boolean duplicate = (user.equals(_lastUser) && message.equals(_lastMessage));
+
+                    if (duplicate && !_repeatTimer.elapsed()) {
+                        // It's probably an actual duplicate. IDK why we get those but yeah.
+                        return;
+                    }
+
+                    _lastUser = user;
+                    _lastMessage = message;
+                    _repeatTimer.reset();
+
+                    //Debug.logInternal("USER: \"" + user + "\" MESSAGE: \"" + message + "\" " + msgPacket.isWritingErrorSkippable() + " : " + msgPacket.getSenderUuid());
+                    StaticMixinHookups.onWhisperReceive(user, message);
                 }
-
-                _lastUser = user;
-                _lastMessage = message;
-                _repeatTimer.reset();
-
-                Debug.logInternal("USER: \"" + user + "\" MESSAGE: \"" + message + "\" " + msgPacket.isWritingErrorSkippable() + " : " + msgPacket.getSenderUuid());
-                StaticMixinHookups.onWhisperReceive(user, message);
             }
         }
     }

@@ -69,6 +69,9 @@ public class AltoClef implements ModInitializer {
     // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
 
+    public final Action<String> onGameMessage = new Action<>();
+    public final Action<String> onGameOverlayMessage = new Action<>();
+
     @Override
     public void onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.

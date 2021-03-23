@@ -1,6 +1,7 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.RayTraceUtils;
@@ -10,10 +11,12 @@ import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.block.enums.BedPart;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
@@ -44,6 +47,22 @@ public interface WorldUtil {
 
     static boolean isSolid(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
+    }
+
+    static BlockPos getBedHead(AltoClef mod, BlockPos posWithBed) {
+        BlockState state = mod.getWorld().getBlockState(posWithBed);
+        if (state.getBlock() instanceof BedBlock) {
+            Direction facing = state.get(BedBlock.FACING);
+            if (mod.getWorld().getBlockState(posWithBed).get(BedBlock.PART).equals(BedPart.HEAD)) {
+                return posWithBed;
+            }
+            return posWithBed.offset(facing);
+        }
+        return null;
+    }
+
+    static boolean canBreak(AltoClef mod, BlockPos pos) {
+        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0;
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {

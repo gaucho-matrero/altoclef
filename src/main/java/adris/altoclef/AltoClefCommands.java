@@ -274,6 +274,9 @@ public class AltoClefCommands extends CommandList {
                 ItemTarget toReplace = new ItemTarget("crafting_table");//"stone");
                 mod.runUserTask(new ReplaceBlocksTask(toReplace, from, to, toFind));
                 break;
+            case "bed":
+                mod.runUserTask(new PlaceBedAndSetSpawnTask());
+                break;
         }
     }
 

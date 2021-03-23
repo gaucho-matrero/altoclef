@@ -104,4 +104,8 @@ public class StaticMixinHookups {
     public static void onWhisperReceive(String user, String message) {
         _mod.getButler().receiveWhisper(user, message);
     }
+
+    public static void onGameMessage(String message) {_mod.onGameMessage.invoke(message);}
+
+    public static void onGameOverlayMessage(String message) {_mod.onGameOverlayMessage.invoke(message);}
 }

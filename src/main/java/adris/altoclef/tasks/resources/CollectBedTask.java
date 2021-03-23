@@ -19,7 +19,7 @@ public class CollectBedTask extends ResourceTask {
 
     private final int _count;
 
-    private static final Block[] BEDS = Util.itemsToBlocks(ItemTarget.BED);
+    public static final Block[] BEDS = Util.itemsToBlocks(ItemTarget.BED);
 
     public CollectBedTask(int count) {
         super(new ItemTarget(ItemTarget.BED, count));
@@ -36,6 +36,7 @@ public class CollectBedTask extends ResourceTask {
         mod.getBlockTracker().trackBlock(BEDS);
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
