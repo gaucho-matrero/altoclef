@@ -107,18 +107,20 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
-        if (_prepareEquipmentTask.isActive() && !_prepareEquipmentTask.isFinished(mod)) {
-            setDebugState("Getting equipment");
-            return _prepareEquipmentTask;
-        }
+        if (!isEndPortalOpened(mod)) {
+            if (_prepareEquipmentTask.isActive() && !_prepareEquipmentTask.isFinished(mod)) {
+                setDebugState("Getting equipment");
+                return _prepareEquipmentTask;
+            }
 
-        // Equip diamond armor asap
-        if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
-            return new EquipArmorTask(DIAMOND_ARMORS);
-        }
-        // Get diamond armor + gear first
-        if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
-            return _prepareEquipmentTask;
+            // Equip diamond armor asap
+            if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
+                return new EquipArmorTask(DIAMOND_ARMORS);
+            }
+            // Get diamond armor + gear first
+            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
+                return _prepareEquipmentTask;
+            }
         }
 
         // Stronghold portal located.
@@ -241,6 +243,7 @@ public class BeatMinecraftTask extends Task {
         if (_netherPrepareTaskWood.isActive() && !_netherPrepareTaskWood.isFinished(mod)) {
             return _netherPrepareTaskWood;
         }
+        assert _netherPrepareTaskJustPick != null;
         if (_netherPrepareTaskJustPick.isActive() && !_netherPrepareTaskJustPick.isFinished(mod)) {
             return _netherPrepareTaskJustPick;
         }
