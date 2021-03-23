@@ -264,7 +264,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new LocateStrongholdTask(12));
                 break;
             case "terminate":
-                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 400));
+                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 900));
                 break;
             case "replace":
                 // Creates a mini valley of crafting tables.

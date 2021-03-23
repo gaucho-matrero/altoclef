@@ -26,6 +26,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -47,6 +49,9 @@ public class TerminatorTask extends Task {
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
 
     private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
+
+    private Vec3d _closestPlayerLastPos;
+    private Vec3d _closestPlayerLastObservePos;
 
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("diamond_chestplate", 1),
@@ -87,11 +92,17 @@ public class TerminatorTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        PlayerEntity closest = (PlayerEntity)mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toIgnore -> !shouldPunk(mod, (PlayerEntity)toIgnore), PlayerEntity.class);
+
+        if (closest != null) {
+            _closestPlayerLastPos = closest.getPos();
+            _closestPlayerLastObservePos = mod.getPlayer().getPos();
+        }
+
         if (!isReadyToPunk(mod)) {
 
             if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
                 // If our last "scare" was too long ago or there are no more nearby players...
-                PlayerEntity closest = (PlayerEntity)mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toIgnore -> !shouldPunk(mod, (PlayerEntity)toIgnore), PlayerEntity.class);
                 boolean noneRemote = (closest == null || !closest.isInRange(mod.getPlayer(), RUN_AWAY_DISTANCE));
                 if (_runAwayExtraTime.elapsed() && noneRemote) {
                     Debug.logMessage("Stop running away, we're good.");
@@ -237,7 +248,8 @@ public class TerminatorTask extends Task {
     }
 
     private boolean shouldPunk(AltoClef mod, PlayerEntity player) {
-        if (player == null) return false;
+        if (player == null || player.isDead()) return false;
+        if (player.isCreative() || player.isSpectator()) return false;
         return !mod.getButler().isUserAuthorized(player.getName().getString()) && !_ignoreTerminate.test(player);
     }
 
@@ -259,7 +271,7 @@ public class TerminatorTask extends Task {
         return "Prepare to get punked, kid";
     }
 
-    private static class ScanChunksInRadius extends SearchChunksExploreTask {
+    private class ScanChunksInRadius extends SearchChunksExploreTask {
 
         private final BlockPos _center;
         private final double _radius;
@@ -276,6 +288,35 @@ public class TerminatorTask extends Task {
             double dx = _center.getX() - cx,
                    dz = _center.getZ() - cz;
             return dx*dx + dz*dz < _radius*_radius;
+        }
+
+        @Override
+        protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {
+            // Prioritise the chunk we last saw a player in.
+            if (_closestPlayerLastPos != null) {
+                double lowestScore = Double.POSITIVE_INFINITY;
+                ChunkPos bestChunk = null;
+                for (ChunkPos toSearch : chunks) {
+                    double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
+                    double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
+                    double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
+                    double pdx = _closestPlayerLastPos.getX() - cx, pdz = _closestPlayerLastPos.getZ() - cz;
+                    double distanceToLastPlayerPos = pdx*pdx + pdz * pdz;
+                    Vec3d direction = _closestPlayerLastPos.subtract(_closestPlayerLastObservePos).multiply(1, 0, 1).normalize();
+                    double dirx = direction.x, dirz = direction.z;
+                    double correctDistance = pdx * dirx + pdz * dirz;
+                    double tempX = dirx * correctDistance,
+                           tempZ = dirz * correctDistance;
+                    double perpendicularDistance = ((pdx - tempX) * (pdx - tempX)) + ((pdz - tempZ) * (pdz - tempZ));
+                    double score = distanceSq + distanceToLastPlayerPos*0.6 - correctDistance*2 + perpendicularDistance*0.5;
+                    if (score < lowestScore) {
+                        lowestScore = score;
+                        bestChunk = toSearch;
+                    }
+                }
+                return bestChunk;
+            }
+            return super.getBestChunkOverride(mod, chunks);
         }
 
         @Override

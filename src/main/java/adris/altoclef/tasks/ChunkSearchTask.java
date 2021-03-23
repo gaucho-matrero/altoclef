@@ -6,6 +6,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.*;
@@ -52,6 +53,10 @@ public abstract class ChunkSearchTask extends Task {
 
     private boolean _first = true;
 
+    private boolean _finished = false;
+
+    public boolean finished() {return _finished;}
+
     @Override
     protected void onStart(AltoClef mod) {
         /*
@@ -60,6 +65,7 @@ public abstract class ChunkSearchTask extends Task {
         _searchedAlready.clear();
          */
         if (_first) {
+            _finished = false;
             _first = false;
             ChunkPos startPos = mod.getWorld().getChunk(_startPoint).getPos();
             synchronized (_searchMutex) {
@@ -90,24 +96,33 @@ public abstract class ChunkSearchTask extends Task {
         }
 
         // Now that we have an updated map, go to the nearest
-        ChunkPos closest = null;
-        double closestDistance = Double.POSITIVE_INFINITY;
-        for (ChunkPos toSearch : _searchLater) {
-            double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
-            double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
-            double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
-            if (distanceSq < closestDistance) {
-                closestDistance = distanceSq;
-                closest = toSearch;
-            }
-        }
+        ChunkPos closest = getBestChunk(mod, _searchLater);
 
         if (closest == null) {
+            _finished = true;
             Debug.logWarning("Failed to find any chunks to go to. If we finish, that means we scanned all possible chunks.");
             return null;
         }
 
         return new GetToChunkTask(closest);
+    }
+
+    // Virtual
+    protected ChunkPos getBestChunk(AltoClef mod, List<ChunkPos> chunks) {
+        double lowestScore = Double.POSITIVE_INFINITY;
+        ChunkPos bestChunk = null;
+        for (ChunkPos toSearch : chunks) {
+            double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
+            double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
+            double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
+            double distanceToCenterSq = new Vec3d(_startPoint.getX() - cx, 0, _startPoint.getZ() - cz).lengthSquared();
+            double score = distanceSq + distanceToCenterSq*0.8;
+            if (score < lowestScore) {
+                lowestScore = score;
+                bestChunk = toSearch;
+            }
+        }
+        return bestChunk;
     }
 
     @Override

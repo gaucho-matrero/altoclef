@@ -5,14 +5,11 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class SearchChunksExploreTask extends Task {
@@ -31,6 +28,11 @@ public abstract class SearchChunksExploreTask extends Task {
             onChunkLoad(value);
         }
     };
+
+    // Virtual
+    protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {
+        return null;
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -55,6 +57,10 @@ public abstract class SearchChunksExploreTask extends Task {
                 _searcher = null;
             }
             setDebugState("Searching for target object...");
+            if (_searcher.finished()) {
+                Debug.logMessage("Search finished.");
+                _searcher = null;
+            }
             return _searcher;
         }
     }
@@ -89,6 +95,7 @@ public abstract class SearchChunksExploreTask extends Task {
 
     public void resetSearch(AltoClef mod) {
         _searcher = null;
+        _alreadyExplored.clear();
         // We want to search the currently loaded chunks too!!!
         for (ChunkPos start : mod.getChunkTracker().getLoadedChunks()) {
             onChunkLoad(mod.getWorld().getChunk(start.x, start.z));
@@ -103,8 +110,14 @@ public abstract class SearchChunksExploreTask extends Task {
 
         @Override
         protected boolean isChunkPartOfSearchSpace(AltoClef mod, ChunkPos pos) {
-
             return isChunkWithinSearchSpace(mod, pos);
+        }
+
+        @Override
+        public ChunkPos getBestChunk(AltoClef mod, List<ChunkPos> chunks) {
+            ChunkPos override = getBestChunkOverride(mod, chunks);
+            if (override != null) return override;
+            return super.getBestChunk(mod, chunks);
         }
 
         @Override
