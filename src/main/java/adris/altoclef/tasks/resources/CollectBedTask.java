@@ -4,16 +4,22 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInTableTask;
+import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.csharpisbetter.Util;
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+
 
 public class CollectBedTask extends ResourceTask {
 
     private final int _count;
+
+    private static final Block[] BEDS = Util.itemsToBlocks(ItemTarget.BED);
 
     public CollectBedTask(int count) {
         super(new ItemTarget(ItemTarget.BED, count));
@@ -27,11 +33,18 @@ public class CollectBedTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        mod.getBlockTracker().trackBlock(BEDS);
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
+
+        // Break beds from the world if possible, that would be pretty fast.
+        if (mod.getBlockTracker().anyFound(BEDS)) {
+            // Failure + blacklisting is encapsulated within THIS task
+            return new MineAndCollectTask(new ItemTarget(ItemTarget.BED, 1), BEDS, MiningRequirement.HAND);
+        }
+
         int bedsCurrent = mod.getInventoryTracker().getItemCount(new ItemTarget("bed"));
         int neededPlanks = (_count - bedsCurrent) * 3;
         int neededWool = neededPlanks;
@@ -80,7 +93,7 @@ public class CollectBedTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+        mod.getBlockTracker().stopTracking(BEDS);
     }
 
     @Override
