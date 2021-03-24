@@ -27,10 +27,7 @@ public class CraftingRecipe {
     private CraftingRecipe() {}
 
     public ItemTarget getSlot(int index) {
-        /* Already hanled.
-        if (_slots[index] == null) {
-            return ItemTarget.EMPTY;
-        }*/
+
         return _slots[index];
     }
 

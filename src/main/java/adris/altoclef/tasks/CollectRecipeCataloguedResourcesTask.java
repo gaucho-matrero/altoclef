@@ -39,6 +39,8 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             // Ignore this recipe if we have its item.
             //if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
 
+            // null = empty which is always met.
+            if (target == null) continue;
 
             int weNeed = target.getItem().targetCount - mod.getInventoryTracker().getItemCount(target.getItem());
 

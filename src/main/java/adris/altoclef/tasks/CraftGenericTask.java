@@ -77,7 +77,7 @@ public class CraftGenericTask extends Task {
                 currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
             }
             ItemStack present = mod.getInventoryTracker().getItemStackInSlot(currentCraftSlot);
-            if (toFill.isEmpty()) {
+            if (toFill == null || toFill.isEmpty()) {
                 if (present.getItem() != Items.AIR) {
                     // Move this item OUT if it should be empty
                     mod.getInventoryTracker().throwSlot(currentCraftSlot);

@@ -2,6 +2,7 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
@@ -9,6 +10,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
@@ -148,6 +150,12 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }, pos -> mod.getBlockTracker().getNearestTracking(pos, BEDS), BEDS);
         }
 
+        // Get a bed if we don't have one.
+        if (!mod.getInventoryTracker().hasItem(ItemTarget.BED)) {
+            setDebugState("Getting a bed first");
+            return TaskCatalogue.getItemTask("bed", 1);
+        }
+
         if (_currentBedRegion == null) {
             if (_regionScanTimer.elapsed()) {
                 Debug.logMessage("Rescanning for nearby bed place position...");
@@ -235,6 +243,10 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
+        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+            Debug.logWarning("Can't place spawnpoint/sleep in a bed unless we're in the overworld!");
+            return true;
+        }
         return _spawnSet && !mod.getPlayer().isSleeping() && _inBedTimer.elapsed();
     }
 

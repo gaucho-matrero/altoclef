@@ -66,6 +66,7 @@ public class ItemTarget {
 
     public boolean matches(Item item) {
         for (Item match : _itemMatches) {
+            if (match == null) continue;
             if (match.equals(item)) return true;
         }
         return false;
@@ -116,7 +117,11 @@ public class ItemTarget {
             result.append("[");
             int counter = 0;
             for (Item item : _itemMatches) {
-                result.append(trimItemName(item.getTranslationKey()));
+                if (item == null) {
+                    result.append("(null??)");
+                } else {
+                    result.append(trimItemName(item.getTranslationKey()));
+                }
                 if (++counter != _itemMatches.length) {
                     result.append(",");
                 }

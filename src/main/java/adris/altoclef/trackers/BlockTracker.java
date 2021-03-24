@@ -39,6 +39,8 @@ public class BlockTracker extends Tracker {
 
     private final Timer _timer = new Timer(7.0);
 
+    private final Timer _forceElapseTimer = new Timer(2.0);
+
     private Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
     //private Block _currentlyTracking = null;
@@ -73,6 +75,11 @@ public class BlockTracker extends Tracker {
                 // We're tracking a new block, so we're not updated.
                 setDirty();
                 _trackingBlocks.put(block, 0);
+                // Force a rescan if these are new blocks and we aren't doing this like every frame.
+                if (_forceElapseTimer.elapsed()) {
+                    _timer.forceElapse();
+                    _forceElapseTimer.reset();
+                }
             }
             _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
         }

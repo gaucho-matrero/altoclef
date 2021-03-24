@@ -246,7 +246,7 @@ public class InventoryTracker extends Tracker {
 
     public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
         Item[] items = null;
-        return hasRecipeMaterialsOrTarget(new RecipeTarget(new ItemTarget(items, count), recipe));
+        return hasRecipeMaterialsOrTarget(new RecipeTarget(null/*new ItemTarget(items, count)*/, recipe));
     }
 
     public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe) {
@@ -258,16 +258,19 @@ public class InventoryTracker extends Tracker {
         HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
-            int need = target.getItem().targetCount;
-            if (target.getItem().getMatches() != null) {
-                need -= getItemCount(target.getItem());
+            int need = 0;
+            if (target.getItem() != null) {
+                need = target.getItem().targetCount;
+                if (target.getItem().getMatches() != null) {
+                    need -= getItemCount(target.getItem());
+                }
             }
             for (int i = 0; i < need; ++i) {
                 for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
                     ItemTarget needs = recipe.getSlot(slot);
 
                     // Satisfied by default.
-                    if (needs.isEmpty()) continue;
+                    if (needs == null || needs.isEmpty()) continue;
 
                     List<Integer> invSlotsWithItem = getInventorySlotsWithItem(needs.getMatches());
                     List<Slot> slotsWithItem = new ArrayList<>();
@@ -318,7 +321,7 @@ public class InventoryTracker extends Tracker {
                     }
 
                     if (!satisfied) {
-                        //Debug.logMessage("FAILED TO SATISFY " + slot);
+                        //Debug.logMessage("FAILED TO SATISFY " + slot + " : needs " + needs);
                         // We couldn't satisfy this slot in either the inventory or crafting output.
                         return false;
                     }

@@ -10,9 +10,17 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 
 
 public class CollectBedTask extends ResourceTask {
@@ -55,7 +63,7 @@ public class CollectBedTask extends ResourceTask {
 
         // Collect planks.
         if (mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS) < neededPlanks) {
-            Debug.logMessage("NEED " + neededPlanks + " PLANKS");
+            //Debug.logMessage("NEED " + neededPlanks + " PLANKS");
             plankGet = TaskCatalogue.getItemTarget("planks", neededPlanks);
             //return TaskCatalogue.getItemTask("stick", neededSticks);
         }
@@ -69,23 +77,60 @@ public class CollectBedTask extends ResourceTask {
             }
         }
         if (hasEnough == null) {
-            Debug.logMessage("NEED " + neededWool + " WOOL");
+            // Check crafting table, we may have the wool in there already.
+            ScreenHandler screen = mod.getPlayer().currentScreenHandler;
+            int craftCount = 0;
+            if (screen instanceof CraftingScreenHandler) {
+                // Check crafting slots
+                for (int craftSlotIndex = 0; craftSlotIndex < 9; ++craftSlotIndex) {
+                    Slot craftSlot = CraftingTableSlot.getInputSlot(craftSlotIndex, true);
+                    ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(craftSlot);
+                    if (Util.arrayContains(ItemTarget.WOOL, stack.getItem())) {
+                        if (hasEnough == null) {
+                            hasEnough = stack.getItem();
+                        } else {
+                            if (hasEnough != stack.getItem()) {
+                                // We tried mixing wool, this is bad.
+                                //Debug.logMessage("FAIL: Mixed " + hasEnough.getTranslationKey() + " : " + stack.getItem().getTranslationKey());
+                                hasEnough = null;
+                                break;
+                            }
+                        }
+                        craftCount++;
+                    }
+                }
+                if (hasEnough != null) {
+                    // make sure our inventory has the right remaining number of wool!
+                    int invCount = mod.getInventoryTracker().getItemCount(hasEnough);
+                    if (invCount + craftCount < 3) {
+                        //Debug.logMessage("FAIL: craft:" + craftCount + " + inv:" + invCount + " < 3");
+                        hasEnough = null;
+                    }
+                }
+            }
+            //Debug.logMessage("NEED " + neededWool + " WOOL");
             // We need planks!
             woolGet = new ItemTarget("wool"); // get infinity cause we will catch our target above.
         }
 
-        // If we need resources, get em.
-        if (plankGet != null || woolGet != null) {
-            return TaskCatalogue.getSquashedItemTask(plankGet, woolGet);
-        }
-
         Item w = hasEnough;
         ItemTarget p = t("planks");
-        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(hasEnough.getTranslationKey() + " bed", new ItemTarget[] {t(w), t(w), t(w), p, p, p, null, null, null}, 1);
+        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("bed", new ItemTarget[] {t(w), t(w), t(w), p, p, p, null, null, null}, 1);
+
+
+        // If we need resources, get em.
+        if (plankGet != null || woolGet != null) {
+            RecipeTarget target = new RecipeTarget(new ItemTarget("bed", 1), recipe);
+            if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target)) {
+                // ^ Above check must be made because we may craft a crafting table in the midst of this.
+                return TaskCatalogue.getSquashedItemTask(plankGet, woolGet);
+            }
+        }
 
         return new CraftInTableTask(new ItemTarget("bed", _count), recipe, false);
     }
     private static ItemTarget t(Item item) {
+        assert item != null;
         return new ItemTarget(item, 1);
     }
     private static ItemTarget t(String item) {
