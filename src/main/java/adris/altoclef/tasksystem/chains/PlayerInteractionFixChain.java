@@ -5,15 +5,21 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
+import adris.altoclef.util.slots.Slot;
+import baritone.utils.ToolSet;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.ToolItem;
 
 import java.util.List;
 
-public class HandStackFixChain extends TaskChain {
+public class PlayerInteractionFixChain extends TaskChain {
 
     private ItemStack _lastHandStack = null;
     private final Timer _stackHeldTimeout = new Timer(8);
@@ -22,7 +28,9 @@ public class HandStackFixChain extends TaskChain {
 
     private final Timer _shiftDepressTimeout = new Timer(10);
 
-    public HandStackFixChain(TaskRunner runner) {
+    private final Timer _betterToolTimer = new Timer(0.5);
+
+    public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
     }
 
@@ -44,6 +52,34 @@ public class HandStackFixChain extends TaskChain {
     public float getPriority(AltoClef mod) {
 
         if (mod.getPlayer() == null) return Float.NEGATIVE_INFINITY;
+
+        if (_betterToolTimer.elapsed()) {
+            // Equip the right tool for the job if we're not using one.
+            _betterToolTimer.reset();
+            if (mod.getControllerExtras().isBreakingBlock()) {
+                BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
+                Slot bestToolSlot = null;
+                double highestSpeed = Double.NEGATIVE_INFINITY;
+                for (int i = 0; i < InventoryTracker.INVENTORY_SIZE; ++i) {
+                    Slot slot = PlayerInventorySlot.getFromInventory(i);
+                    ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(slot);
+                    if (stack.getItem() instanceof ToolItem) {
+                        double speed = ToolSet.calculateSpeedVsBlock(stack, state);
+                        if (speed > highestSpeed) {
+                            highestSpeed = speed;
+                            bestToolSlot = slot;
+                        }
+                    }
+                }
+
+                // Only accept tools OUTSIDE OF HOTBAR!
+                // Baritone will take care of tools inside the hotbar.
+                if (bestToolSlot != null && bestToolSlot.getInventorySlot() >= 9) {
+                    Debug.logMessage("Found better tool in inventory, equipping.");
+                    mod.getInventoryTracker().equipSlot(bestToolSlot);
+                }
+            }
+        }
 
         // Unpress shift (it gets stuck for some reason???)
         if (MinecraftClient.getInstance().options.keySneak.isPressed()) {

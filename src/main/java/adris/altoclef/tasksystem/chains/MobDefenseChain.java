@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class MobDefenseChain extends SingleTaskChain {
 
@@ -132,11 +133,11 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         if (mod.getModSettings().shouldDealWithSkeletons()) {
-            // Deal with skeletons because they are annoying.
-            List<SkeletonEntity> skeletons;
+            // Deal with hostiles because they are annoying.
+            List<HostileEntity> hostiles;
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                skeletons = mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class);
+                hostiles = mod.getEntityTracker().getHostiles();//mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class;
             }
 
             ToolItem bestSword = null;
@@ -149,32 +150,33 @@ public class MobDefenseChain extends SingleTaskChain {
             }
 
 
-            List<SkeletonEntity> toDealWith = new ArrayList<>();
+            List<Entity> toDealWith = new ArrayList<>();
 
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                for (SkeletonEntity skeleton : skeletons) {
-                    boolean isClose = skeleton.isInRange(mod.getPlayer(), 18);
+                for (Entity hostile : hostiles) {
+                    int annoyingRange = (hostile instanceof SkeletonEntity)? 18 : 2;
+                    boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
-                        isClose = LookUtil.seesPlayer(skeleton, mod.getPlayer(), 18);
+                        isClose = LookUtil.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
                     }
 
-                    // Give each skeleton a timer, if they're close for too long deal with them.
+                    // Give each hostile a timer, if they're close for too long deal with them.
                     if (isClose) {
-                        if (!_closeAnnoyingEntities.containsKey(skeleton)) {
-                            _closeAnnoyingEntities.put(skeleton, new Timer(12));
-                            _closeAnnoyingEntities.get(skeleton).reset();
+                        if (!_closeAnnoyingEntities.containsKey(hostile)) {
+                            _closeAnnoyingEntities.put(hostile, new Timer(12));
+                            _closeAnnoyingEntities.get(hostile).reset();
                         }
-                        if (_closeAnnoyingEntities.get(skeleton).elapsed()) {
-                            toDealWith.add(skeleton);
+                        if (_closeAnnoyingEntities.get(hostile).elapsed()) {
+                            toDealWith.add(hostile);
                         }
                     } else {
-                        _closeAnnoyingEntities.remove(skeleton);
+                        _closeAnnoyingEntities.remove(hostile);
                     }
                 }
 
-                // Clear dead/non existing skeletons
+                // Clear dead/non existing hostiles
                 List<Entity> toRemove = new ArrayList<>();
                 for (Entity check : _closeAnnoyingEntities.keySet()) {
                     if (!check.isAlive()) {
@@ -183,22 +185,22 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
                 for (Entity remove : toRemove) _closeAnnoyingEntities.remove(remove);
 
-                int numberOfProblematicSkeletons = toDealWith.size();
+                int numberOfProblematicEntities = toDealWith.size();
 
-                if (numberOfProblematicSkeletons > 0) {
+                if (numberOfProblematicEntities > 0) {
 
-                    // Depending on our weapons/armor, we may chose to straight up kill skeletons if we're not dodging their arrows.
+                    // Depending on our weapons/armor, we may chose to straight up kill hostiles if we're not dodging their arrows.
 
                     // wood 0 : 1 skeleton
                     // stone 1 : 1 skeleton
-                    // iron 2 : 2 skeletons
-                    // diamond 3 : 3 skeletons
-                    // netherite 4 : 4 skeletons
+                    // iron 2 : 2 hostiles
+                    // diamond 3 : 3 hostiles
+                    // netherite 4 : 4 hostiles
 
                     // Armor:
                     // leather: 1 skeleton
-                    // iron: 2 skeletons
-                    // diamond: 3 skeletons
+                    // iron: 2 hostiles
+                    // diamond: 3 hostiles
 
                     // 7 is full set of leather
                     // 15 is full set of iron.
@@ -210,7 +212,9 @@ public class MobDefenseChain extends SingleTaskChain {
                     float damage = bestSword == null? 0 : (1 + bestSword.getMaterial().getAttackDamage());
 
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
-                    if (canDealWith > numberOfProblematicSkeletons) {
+
+                    canDealWith += 1;
+                    if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
                         setTask(new KillEntitiesTask(
                                 entity -> !(entity instanceof SkeletonEntity) || !toDealWith.contains(entity),

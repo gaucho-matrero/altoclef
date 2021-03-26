@@ -28,7 +28,7 @@ public class InventoryTracker extends Tracker {
 
     // https://minecraft.gamepedia.com/Inventory.
     // inventory.size goes to 40, including armor + shield slot which we will ignore.
-    private static final int INVENTORY_SIZE = 36;
+    public static final int INVENTORY_SIZE = 36;
 
     private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[] {Items.COAL, Items.CHARCOAL};
 

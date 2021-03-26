@@ -62,6 +62,10 @@ public class BeatMinecraftTask extends Task {
                     new ItemTarget("diamond_sword", 1),
                     new ItemTarget("log", 20)
                     );
+    private final Task _prepareForDiamondCollectionTask = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("iron_pickaxe", 2),
+            new ItemTarget("iron_sword", 1)
+    );
 
     private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
     private final Task _netherPrepareTaskWood = TaskCatalogue.getSquashedItemTask(
@@ -113,12 +117,21 @@ public class BeatMinecraftTask extends Task {
                 return _prepareEquipmentTask;
             }
 
+            if (_prepareForDiamondCollectionTask.isActive() && !_prepareForDiamondCollectionTask.isFinished(mod)) {
+                setDebugState("Collecting extra iron gear before getting diamonds.");
+                return _prepareForDiamondCollectionTask;
+            }
+
             // Equip diamond armor asap
             if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
                 return new EquipArmorTask(DIAMOND_ARMORS);
             }
             // Get diamond armor + gear first
             if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
+                // Get two iron pickaxes first.
+                if (!mod.getInventoryTracker().hasItem(Items.IRON_PICKAXE)) {
+                    return _prepareForDiamondCollectionTask;
+                }
                 return _prepareEquipmentTask;
             }
         }

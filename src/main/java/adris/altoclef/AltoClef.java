@@ -28,7 +28,6 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -101,7 +100,7 @@ public class AltoClef implements ModInitializer {
         _userTaskChain = new UserTaskChain(_taskRunner);
         _mobDefenseChain = new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
-        new HandStackFixChain(_taskRunner);
+        new PlayerInteractionFixChain(_taskRunner);
         new MLGBucketFallChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
