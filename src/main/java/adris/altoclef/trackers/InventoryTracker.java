@@ -1,5 +1,6 @@
 package adris.altoclef.trackers;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.CraftingRecipe;
@@ -105,6 +106,22 @@ public class InventoryTracker extends Tracker {
 
     public int getItemCount(ItemTarget target) {
         return getItemCount(target.getMatches());
+    }
+
+    public int getItemCountIncludingTable(Item item) {
+        int result = getItemCount(item);
+        ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
+        if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
+            boolean bigCrafting = (screen instanceof CraftingScreenHandler);
+            for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                ItemStack stack = getItemStackInSlot(craftSlot);
+                if (stack.getItem() == item) {
+                    result += stack.getCount();
+                }
+            }
+        }
+        return result;
     }
 
     public int getMaxItemCount(ItemTarget target) {

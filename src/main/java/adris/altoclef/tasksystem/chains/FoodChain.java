@@ -49,6 +49,10 @@ public class FoodChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        if (!mod.inGame()) {
+            return Float.NEGATIVE_INFINITY;
+        }
+
         if (!mod.getModSettings().isAutoEat()) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;

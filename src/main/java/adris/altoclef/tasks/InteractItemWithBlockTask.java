@@ -29,6 +29,8 @@ public class InteractItemWithBlockTask extends Task {
 
     private final Input _interactInput;
 
+    private final boolean _shiftClick;
+
     private boolean _trying;
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
@@ -39,23 +41,24 @@ public class InteractItemWithBlockTask extends Task {
     public final Action TimedOut = new Action();
 
 
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset) {
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
         _direction = direction;
         _target = target;
         _interactInput = interactInput;
         _walkInto = walkInto;
         _interactOffset = interactOffset;
+        _shiftClick = shiftClick;
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto) {
-        this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO);
+    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
+        this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shiftClick);
     }
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
-        this(toUse, direction, target, Input.CLICK_RIGHT, walkInto);
+        this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
     }
     public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         // null means any side is OK
-        this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset);
+        this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
     }
     public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
         this(toUse, target, walkInto, Vec3i.ZERO);
@@ -89,7 +92,7 @@ public class InteractItemWithBlockTask extends Task {
 
         if (!proc(mod).isActive()) {
             _trying = true;
-            proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto, _interactOffset);
+            proc(mod).getToBlock(_target, _direction, _interactInput, true, _walkInto, _interactOffset, _shiftClick);
             if (_toUse != null) {
                 proc(mod).setInteractEquipItem(_toUse);
             }

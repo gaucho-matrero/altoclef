@@ -12,6 +12,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
@@ -25,9 +26,13 @@ import java.util.Optional;
 
 public class MLGBucketTask extends Task {
 
+    private boolean _clicked;
+
     @Override
     protected void onStart(AltoClef mod) {
-
+        _clicked = false;
+        // hold shift while falling.
+        //MinecraftClient.getInstance().options.keySneak.setPressed(true);
     }
 
     @Override
@@ -75,7 +80,14 @@ public class MLGBucketTask extends Task {
                 mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
                     Debug.logMessage("HIT");
-                    mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                    if (!_clicked) {
+                        MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                        _clicked = true;
+                    } else {
+                        MinecraftClient.getInstance().options.keyUse.setPressed(false);
+                    }
+                    _clicked = false;
+                    //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             } else {
                 setDebugState("Waiting to reach target block...");
@@ -96,6 +108,8 @@ public class MLGBucketTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        MinecraftClient.getInstance().options.keyUse.setPressed(false);
+        //MinecraftClient.getInstance().options.keySneak.setPressed(false);
     }
 
     @Override

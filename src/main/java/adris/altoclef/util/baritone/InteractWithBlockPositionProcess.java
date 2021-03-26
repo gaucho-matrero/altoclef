@@ -18,6 +18,7 @@ import baritone.utils.BaritoneProcessHelper;
 
 import java.util.Optional;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -49,12 +50,13 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     public int reachCounter = 0;
 
     private Input _interactInput = Input.CLICK_RIGHT;
+    private boolean _shiftClick;
 
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone); _mod = mod;
     }
 
-    public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto, Vec3i interactOffset) {
+    public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         this.onLostControl();
         _target = target;
         _interactSide = interactSide;
@@ -62,6 +64,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         _blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
         _walkInto = walkInto;
         _interactOffset = interactOffset;
+        _shiftClick = shiftClick;
 
         _cancelRightClick = false;
 
@@ -77,7 +80,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.getToBlock(target, interactInput, false);
     }
     public void getToBlock(BlockPos target, Input interactInput, boolean blockOnTopMustBeRemoved) {
-        this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false, Vec3i.ZERO);
+        this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false, Vec3i.ZERO, false);
     }
 
     public boolean isActive() {
@@ -99,6 +102,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
 
         //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart()) && isSafeToCancel)) {
         if (_interactInput == null) {
+            if (_shiftClick) {
+                MinecraftClient.getInstance().options.keySneak.setPressed(false);
+            }
             if (goal.isInGoal(this.ctx.player().getBlockPos())) {
                 this.onLostControl();
                 return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
@@ -126,6 +132,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.baritone.getInputOverrideHandler().clearAllKeys();
         // ?? Might help? Kinda redundant though.
         this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, false);
+        if (_shiftClick) {
+            MinecraftClient.getInstance().options.keySneak.setPressed(false);
+        }
     }
 
     public synchronized void setInteractEquipItem(ItemTarget item) {
@@ -184,6 +193,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                     }
                 }
                 this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
+                if (_shiftClick) {
+                    MinecraftClient.getInstance().options.keySneak.setPressed(true);
+                }
                 //System.out.println(this.ctx.player().playerScreenHandler);
 
                 if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
@@ -193,6 +205,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 }
             }
             return ClickResponse.WAIT_FOR_CLICK;
+        }
+        if (_shiftClick) {
+            MinecraftClient.getInstance().options.keySneak.setPressed(false);
         }
         return ClickResponse.CANT_REACH;
     }

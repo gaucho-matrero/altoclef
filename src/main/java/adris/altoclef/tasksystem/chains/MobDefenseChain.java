@@ -62,6 +62,10 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
+        if (!mod.inGame()) {
+            return Float.NEGATIVE_INFINITY;
+        }
+
         if (!mod.getModSettings().isMobDefense()) {
             return Float.NEGATIVE_INFINITY;
         }

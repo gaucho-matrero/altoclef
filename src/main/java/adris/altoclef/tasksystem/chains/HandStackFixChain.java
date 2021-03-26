@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
@@ -18,6 +19,8 @@ public class HandStackFixChain extends TaskChain {
     private final Timer _stackHeldTimeout = new Timer(8);
 
     private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
+
+    private final Timer _shiftDepressTimeout = new Timer(10);
 
     public HandStackFixChain(TaskRunner runner) {
         super(runner);
@@ -42,6 +45,17 @@ public class HandStackFixChain extends TaskChain {
 
         if (mod.getPlayer() == null) return Float.NEGATIVE_INFINITY;
 
+        // Unpress shift (it gets stuck for some reason???)
+        if (MinecraftClient.getInstance().options.keySneak.isPressed()) {
+            if (_shiftDepressTimeout.elapsed()) {
+                Debug.logMessage("Unpressing shift/sneak");
+                MinecraftClient.getInstance().options.keySneak.setPressed(false);
+            }
+        } else {
+            _shiftDepressTimeout.reset();
+        }
+
+        // Refresh inventory
         if (_generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getControllerExtras().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");

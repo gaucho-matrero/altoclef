@@ -27,7 +27,7 @@ public class PutOutFireTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        return new InteractItemWithBlockTask(null, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false);
+        return new InteractItemWithBlockTask(null, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false, false);
     }
 
     @Override

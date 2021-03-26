@@ -53,7 +53,7 @@ public class CollectSignTask extends ResourceTask {
         ItemTarget stickGet = null;
 
         // Collect sticks.
-        if (getItemCountIncludingTable(mod, Items.STICK) < neededSticks) {
+        if (mod.getInventoryTracker().getItemCountIncludingTable(Items.STICK) < neededSticks) {
             //Debug.logMessage("NEED " + neededSticks + " STICKS (has " + mod.getInventoryTracker().getItemCount(Items.STICK) + ")");
             stickGet = TaskCatalogue.getItemTarget("stick", neededSticks);
             //return TaskCatalogue.getItemTask("stick", neededSticks);
@@ -64,9 +64,9 @@ public class CollectSignTask extends ResourceTask {
         Item fittingLogCandidate = null;
         int bestPotential = 0;
         for (Item plankType : ItemTarget.PLANKS) {
-            int potentialCount = getItemCountIncludingTable(mod, plankType);
+            int potentialCount = mod.getInventoryTracker().getItemCountIncludingTable(plankType);
             Item logCandidate = ItemTarget.planksToItem(plankType);
-            potentialCount += getItemCountIncludingTable(mod, logCandidate) * 4;
+            potentialCount += mod.getInventoryTracker().getItemCountIncludingTable(logCandidate) * 4;
             if (potentialCount >= neededPlanks) {
                 if (potentialCount > bestPotential) {
                     fittingPlankCandidate = plankType;
@@ -82,8 +82,8 @@ public class CollectSignTask extends ResourceTask {
         } else {
             // We have a candidate to go with that has enough planks to craft our target.
             // If we don't have enough planks, keep crafting them.
-            if (getItemCountIncludingTable(mod, fittingPlankCandidate) < neededPlanks) {
-                if (getItemCountIncludingTable(mod, fittingLogCandidate) > 0) {
+            if (mod.getInventoryTracker().getItemCountIncludingTable(fittingPlankCandidate) < neededPlanks) {
+                if (mod.getInventoryTracker().getItemCountIncludingTable(fittingLogCandidate) > 0) {
                     // Craft logs to planks
                     ItemTarget empty = null;
                     setDebugState("Converting planks into logs");
@@ -117,22 +117,6 @@ public class CollectSignTask extends ResourceTask {
         return new ItemTarget(item, 1);
     }
 
-    // TODO: Collect bed will also use this. Make this a method in inventoryTracker or something?
-    private int getItemCountIncludingTable(AltoClef mod, Item item) {
-        int result = mod.getInventoryTracker().getItemCount(item);
-        ScreenHandler screen = mod.getPlayer().currentScreenHandler;
-        if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
-            boolean bigCrafting = (screen instanceof CraftingScreenHandler);
-            for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
-                Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
-                ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(craftSlot);
-                if (stack.getItem() == item) {
-                    result += stack.getCount();
-                }
-            }
-        }
-        return result;
-    }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
