@@ -105,32 +105,6 @@ public class CraftGenericTask extends Task {
 
         Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
 
-        //Debug.logMessage("RECEIVING CRAFTING OUTPUT: " + bigCrafting);
-        // Swap to inventory hotbar
-        // This should only be one call to clickSlot, but it's two calls for some reason?
-
-        /*
-        boolean movedClean = false;
-        if (ResourceTask.ensureInventoryFree(mod)) {
-            List<Integer> emptySlots = mod.getInventoryTracker().getEmptyInventorySlots();
-            if (emptySlots.size() != 0) {
-                Slot freeSlot = Slot.getFromInventory(emptySlots.get(0));
-                assert freeSlot != null;
-                Debug.logMessage("MOVED: " + outputSlot.getWindowSlot() + " -> " + freeSlot.getWindowSlot());
-                movedClean = mod.getInventoryTracker().moveItems(outputSlot, freeSlot, 1) == 1;
-                if (!movedClean) {
-                    Debug.logWarning("Failed to receive output from inventory craft! Throwing craft output item.");
-                }
-            } else {
-                Debug.logWarning("Failed to find free spot in inventory! Throwing craft output item.");
-            }
-        } else {
-            Debug.logWarning("Failed to free up inventory for craft! Throwing craft output item.");
-        }
-        if (!movedClean) {
-            mod.getInventoryTracker().throwSlot(outputSlot);
-        }*/
-
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
 

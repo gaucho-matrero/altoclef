@@ -1,10 +1,9 @@
 package adris.altoclef.util.baritone;
 
+import adris.altoclef.Debug;
 import baritone.api.schematic.AbstractSchematic;
-import baritone.api.schematic.ISchematic;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
     private final Block[] _blockToPlace;
     private BlockState _targetPlace;
 
-    private boolean _skipIfAlreadyThere;
+    private final boolean _skipIfAlreadyThere;
 
     public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
@@ -67,6 +66,10 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         }
         //System.out.print("oof: [");
         for (BlockState possible : list) {
+            if (possible == null) {
+                Debug.logWarning("Weird issue, given possible state is null. Will ignore.");
+                continue;
+            }
             //System.out.print(possible.getBlock().getTranslationKey() + " ");
             if (blockIsTarget(possible.getBlock())) {
                 //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");

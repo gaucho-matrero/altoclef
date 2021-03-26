@@ -13,6 +13,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
 import baritone.api.utils.BlockOptionalMeta;
@@ -34,14 +35,14 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     private final boolean _useThrowaways;
     private final boolean _autoCollectStructureBlocks;
 
-    private final LinearProgressChecker _distanceChecker = new LinearProgressChecker(5, 0.1);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
 
     private Task _materialTask;
 
     private int _failCount = 0;
 
-    private static final int MIN_MATERIALS = 16;
+    private static final int MIN_MATERIALS = 1;
     private static final int PREFERRED_MATERIALS = 32;
 
     public PlaceBlockTask(BlockPos target, Block[] toPlace, boolean useThrowaways, boolean autoCollectStructureBlocks) {
@@ -56,8 +57,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStart(AltoClef mod) {
-        _distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
-        _distanceChecker.reset();
+        _progressChecker.reset();
         _wanderTask.resetWander();
     }
 
@@ -67,7 +67,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         // Perform timeout wander
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Wandering.");
-            _distanceChecker.reset();
+            _progressChecker.reset();
             return _wanderTask;
         }
 
@@ -85,17 +85,14 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
             if (getMaterialCount(mod) < MIN_MATERIALS) {
                 // TODO: Mine items, extract their resource key somehow.
                 _materialTask = getMaterialTask(PREFERRED_MATERIALS);
-                _distanceChecker.reset();
+                _progressChecker.reset();
                 return _materialTask;
             }
         }
 
 
         // Check if we're approaching our point. If we fail, wander for a bit.
-        double sqDist = mod.getPlayer().squaredDistanceTo(_target.getX(), _target.getY(), _target.getZ());
-        _distanceChecker.setProgress(-1 * sqDist);
-        if (_distanceChecker.failed()) {
-            _distanceChecker.reset();
+        if (!_progressChecker.check(mod)) {
             _failCount++;
             if (!tryingAlternativeWay()) {
                 Debug.logMessage("Failed to place, wandering timeout.");
@@ -147,6 +144,8 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         BlockState state = mod.getWorld().getBlockState(_target);
         return Util.arrayContains(_toPlace, state.getBlock());
     }
+
+    //TODO: Place structure where a leaf block was???? Might need to delete the block first if it's not empty/air/water.
 
     @Override
     protected String toDebugString() {

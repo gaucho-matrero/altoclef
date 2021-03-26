@@ -164,7 +164,7 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 2.0;
         getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
 
-        // Don't break blocks we explicitely protect.
+        // Don't break blocks we explicitly protect.
         getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
     }
 

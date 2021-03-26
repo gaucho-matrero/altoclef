@@ -220,39 +220,6 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    /*
-    public boolean hasRecipeMaterialsOrTarget(HashMap<Item, Integer> usedCount, RecipeTarget ...targets) {
-        for (RecipeTarget target : targets) {
-            CraftingRecipe recipe = target.getRecipe();
-            ItemTarget itemTarget = target.getItem();
-            // We may already have one or more targets, if so we only need to collect resources
-            // for the REST of the target.
-            // For example, we have 1 bucket but need 2 buckets, we only need a recipie for ONE bucket.
-            int countNeeded = itemTarget.targetCount - getItemCount(itemTarget.getMatches());
-            // Check for mapping
-            Map<Integer, Integer> mapping = getRecipeMapping(usedCount, recipe, countNeeded);
-            if (mapping == null) return false;
-            // Indicate we've used this item.
-            for (int invSlot : mapping.values()) {
-                Item item = getItemStackInSlot(Slot.getFromInventory(invSlot)).getItem();
-                if (!usedCount.containsKey(item)) {
-                    usedCount.put(item, 0);
-                }
-                usedCount.put(item, usedCount.get(item) + 1);
-            }
-        }
-        return true;
-    }*/
-
-    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe, int count) {
-        Item[] items = null;
-        return hasRecipeMaterialsOrTarget(new RecipeTarget(null/*new ItemTarget(items, count)*/, recipe));
-    }
-
-    public boolean hasRecipeMaterialsOrTarget(CraftingRecipe recipe) {
-        return hasRecipeMaterialsOrTarget(recipe, 1);
-    }
-
     public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
         ensureUpdated();
         HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
@@ -265,7 +232,10 @@ public class InventoryTracker extends Tracker {
                     need -= getItemCount(target.getItem());
                 }
             }
-            for (int i = 0; i < need; ++i) {
+            // need holds how many items we need to CRAFT
+            // However, a crafting recipe can output more than 1 of an item.
+            int materialsPerSlotNeeded = (int)Math.ceil((float)need / target.getRecipe().outputCount());
+            for (int i = 0; i < materialsPerSlotNeeded; ++i) {
                 for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
                     ItemTarget needs = recipe.getSlot(slot);
 
@@ -291,16 +261,7 @@ public class InventoryTracker extends Tracker {
                                 slotsWithItem.add(craftSlot);
                             }
                         }
-                    } else if (screen instanceof FurnaceScreenHandler) {
-                        // Actually don't, that would be bad.
-                        // We do NOT have the materials until they are IN OUR INVENTORY!
-                        // Check furnace slots: Is this necessary? I think so...
-                        //Slot outputCheck = FurnaceSlot.OUTPUT_SLOT;
-                        //if (needs.matches(getItemStackInSlot(outputCheck).getItem())) {
-                        //    slotsWithItem.add(outputCheck);
-                        //}
                     }
-
 
                     // Try to satisfy THIS slot.
                     boolean satisfied = false;
@@ -350,6 +311,7 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public Slot getGarbageSlot() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {

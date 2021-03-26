@@ -101,8 +101,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private final RecipeTarget[] _targets;
 
-    private final Timer _craftTimer = new Timer(0.5);
-
     private final boolean _collect;
 
     private final CollectRecipeCataloguedResourcesTask _collectTask;
@@ -191,15 +189,22 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected Task containerSubTask(AltoClef mod) {
         //Debug.logMessage("GOT TO TABLE. Crafting...");
 
-        // Have a delay between the crafting
-        if (!_craftTimer.elapsed()) {
-            Debug.logMessage("(craft delayed)");
-            _craftTimer.reset();
-            return null;
+        // Already handled above...
+        /*
+        if (_collect) {
+            for (RecipeTarget target : _targets) {
+                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target)) {
+                    // Collect recipe materials
+                    setDebugState("Collecting materials");
+                    return new CollectRecipeCataloguedResourcesTask(_targets);
+                }
+            }
         }
+         */
 
 
         for (RecipeTarget target : _targets) {
+
             if (!mod.getInventoryTracker().targetMet(target.getItem())) {
                 // Free up inventory
                 if (mod.getInventoryTracker().isInventoryFull()) {
@@ -221,26 +226,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 //craftInstant(mod, target.getRecipe());
             }
         }
-        /*
-        // Craft everything
-        int i = 0;
-        boolean succeeded = false;
-        for (RecipeTarget target : _targets) {
-            for (int times = 0; times < target.getItem().targetCount; ++times) {
-                if (i == _craftCount) {
-                    //setDebugState("Crafting: " + target.getRecipe() + " # " + i);
-                    Debug.logMessage("Crafting: " + target.getRecipe() + " # " + i);
-                    if (craftInstant(mod, target.getRecipe())) {
-                        succeeded = true;
-                    }
-                }
-                i++;
-            }
-        }
-        if (succeeded) {
-            _craftCount++;
-        }
-         */
 
         return null;
     }

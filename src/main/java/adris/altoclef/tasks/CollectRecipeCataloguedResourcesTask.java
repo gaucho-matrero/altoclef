@@ -8,7 +8,14 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.HashMap;

@@ -10,6 +10,7 @@ import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.WorldUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -51,15 +52,15 @@ public class BeeMovieTask extends Task {
     // Grab extra resources and acquire extra tools for speed
     private boolean _sharpenTheAxe = true;
 
-    private Task _extraSignAcquireTask;
-    private Task _structureMaterialsTask;
+    private final Task _extraSignAcquireTask;
+    private final Task _structureMaterialsTask;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
         _uniqueId = uniqueId;
         _start = start;
         _textParser = new StreamedSignStringParser(input);
 
-        _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 32));//TaskCatalogue.getItemTask("sign", 32);
+        _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
         _structureMaterialsTask =new MineAndCollectTask(new ItemTarget(new Item[] {Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[] {Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
     }
 
@@ -70,13 +71,18 @@ public class BeeMovieTask extends Task {
         mod.getConfigState().setExclusivelyMineLogs(true);
 
         // Avoid breaking the ground below the signs.
-        mod.getConfigState().avoidBlockBreaking((block) -> {
-            BlockPos bottomStart = _start.down();
-            BlockPos delta = block.subtract(bottomStart);
-            return sign(delta.getX()) == sign(_direction.getX())
-                    && sign(delta.getY()) == sign(_direction.getY())
-                    && sign(delta.getZ()) == sign(_direction.getZ());
-        });
+        mod.getConfigState().avoidBlockBreaking(this::isOnPath);
+        // Avoid placing blocks where the signs should be placed.
+        mod.getConfigState().avoidBlockPlacing(block -> isOnPath(block.down()));
+    }
+
+    // Whether a block pos is on the path of its signs.
+    private boolean isOnPath(BlockPos pos) {
+        BlockPos bottomStart = _start.down();
+        BlockPos delta = pos.subtract(bottomStart);
+        return sign(delta.getX()) == sign(_direction.getX())
+                && sign(delta.getY()) == sign(_direction.getY())
+                && sign(delta.getZ()) == sign(_direction.getZ());
     }
 
     private static int sign(int num) {
@@ -92,9 +98,9 @@ public class BeeMovieTask extends Task {
         }
 
         if (_sharpenTheAxe) {
-            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL)) {
+            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                 setDebugState("Sharpening the axe: Tools");
-                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1));
+                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1), new ItemTarget("diamond_pickaxe", 1));
             }
             if (_extraSignAcquireTask.isActive() && !_extraSignAcquireTask.isFinished(mod)) {
                 setDebugState("Sharpening the axe: Signs");
@@ -103,14 +109,6 @@ public class BeeMovieTask extends Task {
             if (!mod.getInventoryTracker().hasItem(ItemTarget.WOOD_SIGN)) {
                 // Get a bunch of signs in bulk
                 return _extraSignAcquireTask;
-            }
-
-            // Make 'em equippable.
-            if (!mod.getInventoryTracker().isInHotBar(Items.DIAMOND_AXE)) {
-                mod.getInventoryTracker().moveToNonEquippedHotbar(Items.DIAMOND_AXE, 0);
-            }
-            if (!mod.getInventoryTracker().isInHotBar(Items.DIAMOND_SHOVEL)) {
-                mod.getInventoryTracker().moveToNonEquippedHotbar(Items.DIAMOND_SHOVEL, 1);
             }
         }
 
@@ -135,17 +133,19 @@ public class BeeMovieTask extends Task {
             }
              */
 
+            boolean loaded = mod.getChunkTracker().isChunkLoaded(currentSignPos);
+
             // Clear above
             BlockState above = MinecraftClient.getInstance().world.getBlockState(currentSignPos.up());
-            if (!above.isAir() && above.getBlock() != Blocks.WATER) {
+            if (loaded && !above.isAir() && above.getBlock() != Blocks.WATER) {
                 setDebugState("Clearing block above to prevent hanging...");
                 return new DestroyBlockTask(currentSignPos.up());
             }
 
             // Fortify below
-            BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
-            boolean canPlace = below.isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
-            if (!canPlace) {
+            //BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
+            boolean canPlace = WorldUtil.isSolid(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
+            if (loaded && !canPlace) {
                 setDebugState("Placing block below for sign placement...");
                 return new PlaceStructureBlockTask(currentSignPos.down());
             }
@@ -167,7 +167,7 @@ public class BeeMovieTask extends Task {
             BlockState blockAt = MinecraftClient.getInstance().world.getBlockState(currentSignPos);
 
 
-            if (!isSign(blockAt.getBlock())) {
+            if (loaded && !isSign(blockAt.getBlock())) {
                 // INVALID! place.
                 _currentPlace = new PlaceSignTask(currentSignPos, _cachedStrings.get(signCounter));
                 return _currentPlace;

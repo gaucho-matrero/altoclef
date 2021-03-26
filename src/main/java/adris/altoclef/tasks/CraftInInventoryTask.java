@@ -6,20 +6,23 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.Slot;
 
 public class CraftInInventoryTask extends ResourceTask {
 
-    private CraftingRecipe _recipe;
-
-    private Timer _craftTimer = new Timer(0.5);
+    private final CraftingRecipe _recipe;
 
     private boolean _fullCheckFailed = false;
 
-    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
+    private final boolean _collect;
+
+    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect) {
         super(target);
         _recipe = recipe;
+        _collect = collect;
+    }
+    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
+        this(target, recipe, true);
     }
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
@@ -33,35 +36,31 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_recipe)) {
+        ItemTarget toGet = _itemTargets[0];
+        if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe))) {
             // Collect recipe materials
+            setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
         }
 
-        // Delay our crafting so the server has time to give us our item back.
-        if (_craftTimer.elapsed()) {
-            _craftTimer.reset();
-
-            // Free up inventory
-            if (mod.getInventoryTracker().isInventoryFull()) {
-                // Throw away!
-                Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-                if (toThrow != null) {
-                    // Equip then throw
-                    mod.getInventoryTracker().throwSlot(toThrow);
-                } else {
-                    if (!_fullCheckFailed) {
-                        Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                    }
-                    _fullCheckFailed = true;
+        // Free up inventory
+        if (mod.getInventoryTracker().isInventoryFull()) {
+            // Throw away!
+            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+            if (toThrow != null) {
+                // Equip then throw
+                mod.getInventoryTracker().throwSlot(toThrow);
+            } else {
+                if (!_fullCheckFailed) {
+                    Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
                 }
+                _fullCheckFailed = true;
             }
-
-            return new CraftGenericTask(_recipe);
-            //craftInstant(mod, _recipe);
         }
 
-        return null;
+        setDebugState("Crafting in inventory... for " + toGet);
+        return new CraftGenericTask(_recipe);
+        //craftInstant(mod, _recipe);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class CraftInInventoryTask extends ResourceTask {
     }
 
     protected String toCraftingDebugStringName() {
-        return "Craft Task";
+        return "Craft 2x2 Task";
     }
     protected boolean isCraftingEqual(CraftInInventoryTask other) {
         return true;

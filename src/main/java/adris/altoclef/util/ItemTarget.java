@@ -8,9 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ItemTarget {
     private Item[] _itemMatches;
@@ -155,6 +153,34 @@ public class ItemTarget {
     public static Item[] CARPET = new Item[]{ Items.WHITE_CARPET, Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET, Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET, Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET};
 
     public static Block[] WOOD_SIGNS_ALL = new Block[]{ Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN};
+
+    private static final Map<Item, Item> _logToPlanks = new HashMap<Item, Item>() {
+        {
+                put(Items.ACACIA_LOG, Items.ACACIA_PLANKS);
+                put(Items.BIRCH_LOG, Items.BIRCH_PLANKS);
+                put(Items.CRIMSON_STEM, Items.CRIMSON_PLANKS);
+                put(Items.DARK_OAK_LOG, Items.DARK_OAK_PLANKS);
+                put(Items.OAK_LOG, Items.OAK_PLANKS);
+                put(Items.JUNGLE_LOG, Items.JUNGLE_PLANKS);
+                put(Items.SPRUCE_LOG, Items.SPRUCE_PLANKS);
+                put(Items.WARPED_STEM, Items.WARPED_PLANKS);
+                List<Item> logsToReverse = new ArrayList<>(keySet());
+                // Other way around
+                for(Item log : logsToReverse) {
+                    put(get(log), log);
+                }
+        }
+    };
+
+    public static Item logToPlanks(Item logItem) {
+        if (_logToPlanks.containsKey(logItem)) {
+            return _logToPlanks.get(logItem);
+        }
+        return null;
+    }
+    public static Item planksToItem(Item plankItem) {
+        return logToPlanks(plankItem);
+    }
 
     public static String trimItemName(String name) {
         if (name.startsWith("block.minecraft.")) {
