@@ -8,6 +8,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
@@ -107,6 +108,18 @@ public class CraftGenericTask extends Task {
 
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
+        // Grab back. This shouldn't be necessary
+        /*
+        for (int i = 0; i < (bigCrafting ? 9 : 4); ++i) {
+            Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(i, bigCrafting) : PlayerInventorySlot.getCraftInputSlot(i);
+            if (!mod.getInventoryTracker().getItemStackInSlot(craftSlot).isEmpty()) {
+                mod.getInventoryTracker().clickSlot(craftSlot, 0, SlotActionType.PICKUP);
+                mod.getInventoryTracker().clickSlot(craftSlot, 0, SlotActionType.QUICK_MOVE);
+            }
+        }
+
+        if (delayedCraft) return null;
+         */
 
         return null;
     }

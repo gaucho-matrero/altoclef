@@ -153,7 +153,9 @@ public abstract class Task {
         if (subTask == null) return true;
         if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
             // This task (or any of its children) REQUIRES we be grounded or in water or something.
-            return mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isClimbing() ;
+            if (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing()) {
+                return true;
+            }
         }
         return true;
     }

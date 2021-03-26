@@ -63,7 +63,7 @@ public class MLGBucketFallChain extends SingleTaskChain {
             // No bucket, no point.
             return false;
         }
-        if (mod.getPlayer().isSwimming() || mod.getPlayer().isSubmergedInWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
+        if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
             // We're grounded.
             //Debug.logMessage(mod.getPlayer().isSwimming() + ", " + mod.getPlayer().isSubmergedInWater() + ", " + mod.getPlayer().isOnGround() + ", " + mod.getPlayer().isClimbing());
             return false;
