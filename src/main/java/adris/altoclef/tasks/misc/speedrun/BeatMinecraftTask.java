@@ -129,7 +129,7 @@ public class BeatMinecraftTask extends Task {
             // Get diamond armor + gear first
             if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
                 // Get two iron pickaxes first.
-                if (!mod.getInventoryTracker().hasItem(Items.IRON_PICKAXE)) {
+                if (!mod.getInventoryTracker().hasItem(Items.IRON_PICKAXE) && !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                     return _prepareForDiamondCollectionTask;
                 }
                 return _prepareEquipmentTask;
