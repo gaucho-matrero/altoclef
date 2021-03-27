@@ -7,6 +7,7 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
@@ -24,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class CollectFoodTask extends Task {
@@ -115,13 +117,13 @@ public class CollectFoodTask extends Task {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1));
+                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false);
                 return _currentResourceTask;
             }
             if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9));
+                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9), false);
                 return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods
@@ -284,8 +286,8 @@ public class CollectFoodTask extends Task {
                 potentialFood += count * food.getItem().getFoodComponent().getHunger();
             }
         }
-        potentialFood += (int)(mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3);
-        potentialFood += mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) * 3;
+        int potentialBread = (int)(mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) * 3;
+        potentialFood += Objects.requireNonNull(Items.BREAD.getFoodComponent()).getHunger() * potentialBread;
         return potentialFood;
     }
 
