@@ -75,6 +75,16 @@ public class Settings {
     private boolean killOrAvoidSkeletons = true;
 
     /**
+     * If enabled, the bot will avoid going underwater if baritone
+     * isn't giving the bot movement instructions.
+     *
+     * Baritone doesn't know how to move underwater so this should cause
+     * no problems, but disable it if you want the bot to be able to sink.
+     *
+     */
+    private boolean avoidDrowning = true;
+
+    /**
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
@@ -293,6 +303,8 @@ public class Settings {
     }
 
     public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
+
+    public boolean shouldAvoidDrowning() {return avoidDrowning;}
 
     public boolean isThrowaway(Item item) {
         return idArrayContainsItem(item, throwawayItems);

@@ -102,6 +102,7 @@ public class AltoClef implements ModInitializer {
         new DeathMenuChain(_taskRunner);
         new PlayerInteractionFixChain(_taskRunner);
         new MLGBucketFallChain(_taskRunner);
+        new WorldSurvivalChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
