@@ -169,7 +169,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Locate stronghold portal
-        if (_strongholdLocater.isActive() && !_strongholdLocater.isFinished(mod)) {
+        if (mod.getInventoryTracker().getItemCountIncludingTable (Items.ENDER_EYE) > 1 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
             setDebugState("Locating end portal.");
             return _strongholdLocater;
         } else {
@@ -183,10 +183,10 @@ public class BeatMinecraftTask extends Task {
         }
 
 
-        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) + portalEyesInFrame(mod);
-        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) / 2) - eyes;
+        int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
         int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-        boolean needsToGoToNether = mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded;
+        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
 
         // Get food, less if we're going to the end.
         int preFood = needsToGoToNether? PRE_NETHER_FOOD : PRE_END_FOOD,
@@ -282,7 +282,8 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Blaze rods
-        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS) {
+        int powderCount = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) * 2;
+        if (powderCount < TARGET_BLAZE_RODS * 2) {
             setDebugState("Collecting Blaze Rods");
             return _blazeCollection;
         }

@@ -120,6 +120,10 @@ public class InventoryTracker extends Tracker {
                     result += stack.getCount();
                 }
             }
+            // Also check output slot
+            Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+            ItemStack stack = getItemStackInSlot(outputSlot);
+            if (stack.getItem() == item) result += stack.getCount();
         }
         return result;
     }

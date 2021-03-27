@@ -55,9 +55,8 @@ public abstract class SearchChunksExploreTask extends Task {
                 Debug.logWarning("Target object search failed.");
                 _alreadyExplored.addAll(_searcher.getSearchedChunks());
                 _searcher = null;
-            }
-            setDebugState("Searching for target object...");
-            if (_searcher.finished()) {
+            } else if (_searcher.finished()) {
+                setDebugState("Searching for target object...");
                 Debug.logMessage("Search finished.");
                 _searcher = null;
             }

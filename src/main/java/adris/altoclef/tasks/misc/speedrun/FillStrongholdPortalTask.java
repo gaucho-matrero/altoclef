@@ -8,6 +8,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Items;
@@ -17,6 +18,8 @@ import net.minecraft.util.math.Direction;
 public class FillStrongholdPortalTask extends Task {
 
     private final boolean _destroySilverfishSpawner;
+
+    private final Timer _fillDelay = new Timer(0.8);
 
     public FillStrongholdPortalTask(boolean destroySilverfishSpawner) {
         _destroySilverfishSpawner = destroySilverfishSpawner;
@@ -39,6 +42,7 @@ public class FillStrongholdPortalTask extends Task {
                 return new DestroyBlockTask(silverfishSpawner);
             }
         }
+        // Delay each portal so that we don't accidentally throw the eye like a dumbass
         return new DoToClosestBlockTask(
             () -> mod.getPlayer().getPos(),
             pos -> new InteractItemWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),

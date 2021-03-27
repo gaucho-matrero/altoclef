@@ -48,8 +48,11 @@ public class LocateStrongholdTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        Debug.logMessage("STARTING??");
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
+    }
+
+    public boolean isSearching() {
+        return _cachedEyeDirection != null;
     }
 
     @Override
@@ -104,6 +107,7 @@ public class LocateStrongholdTask extends Task {
             }
             // Throw it
             if (mod.getInventoryTracker().equipItem(Items.ENDER_EYE)) {
+                assert MinecraftClient.getInstance().interactionManager != null;
                 if (_throwTimer.elapsed()) {
                     if (LookUtil.tryAvoidingInteractable(mod)) {
                         MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
