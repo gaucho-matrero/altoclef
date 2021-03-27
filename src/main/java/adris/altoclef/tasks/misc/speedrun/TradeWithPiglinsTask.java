@@ -32,6 +32,8 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
     private Task _goldTask = null;
 
+    private final Task _tradeTask = new PerformTradeWithPiglin();
+
     // If we're too far away from a trading piglin, we risk deloading them and losing the trade.
     private static final double TRADING_PIGLIN_TOO_FAR_AWAY = 64 + 8;
 
@@ -82,7 +84,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         // Find gold and trade with a piglin
         setDebugState("Trading with Piglin");
-        return new PerformTradeWithPiglin();
+        return _tradeTask;
     }
 
     @Override
@@ -106,7 +108,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         private Entity _currentlyBartering = null;
         private final Timer _barterTimeout = new Timer(2);
-        private final Timer _intervalTimeout = new Timer(3);
+        private final Timer _intervalTimeout = new Timer(10);
 
         private final HashSet<Entity> _blacklisted = new HashSet<>();
 
