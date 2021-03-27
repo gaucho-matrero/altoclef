@@ -30,8 +30,11 @@ public class BeatMinecraftTask extends Task {
 
     /// TUNABLE PROPERTIES
     private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
+
     private static final int PRE_NETHER_FOOD = 5 * 40;
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
+    private static final int PRE_END_FOOD = 5 * 20;
+    private static final int PRE_END_FOOD_MIN = 5 * 3;
 
     private static final int TARGET_BLAZE_RODS = 7;
     private static final int TARGET_ENDER_PEARLS = 14;
@@ -179,26 +182,30 @@ public class BeatMinecraftTask extends Task {
             return _strongholdLocater;
         }
 
-        // Get food
-        if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD_MIN) {
+
+        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) + portalEyesInFrame(mod);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) / 2) - eyes;
+        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+        boolean needsToGoToNether = mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded;
+
+        // Get food, less if we're going to the end.
+        int preFood = needsToGoToNether? PRE_NETHER_FOOD : PRE_END_FOOD,
+                preFoodMin = needsToGoToNether? PRE_NETHER_FOOD_MIN : PRE_END_FOOD_MIN;
+        if (mod.getInventoryTracker().totalFoodScore() < preFoodMin) {
             _forceState = ForceState.GETTING_FOOD;
         }
         if (_forceState == ForceState.GETTING_FOOD) {
-            if (mod.getInventoryTracker().totalFoodScore() < PRE_NETHER_FOOD) {
+            if (mod.getInventoryTracker().totalFoodScore() < preFood) {
                 setDebugState("Getting food");
-                return new CollectFoodTask(PRE_NETHER_FOOD);
+                return new CollectFoodTask(preFood);
             } else {
                 _forceState = ForceState.NONE;
             }
         }
 
-        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) + portalEyesInFrame(mod);
-        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) / 2) - eyes;
-        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-
         if (!isEndPortalOpened(mod)) {
             // Get blaze rods by going to nether
-            if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
+            if (needsToGoToNether) {
                 //Debug.logInternal(mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) + "< " + TARGET_ENDER_PEARLS + " : " + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) + " < " + rodsNeeded);
                 // Go to nether
                 if (_netherPortalPos != null) {
