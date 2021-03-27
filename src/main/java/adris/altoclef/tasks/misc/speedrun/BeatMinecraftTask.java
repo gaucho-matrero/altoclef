@@ -114,6 +114,11 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
+        int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
+        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
+
         if (!isEndPortalOpened(mod)) {
             if (_prepareEquipmentTask.isActive() && !_prepareEquipmentTask.isFinished(mod)) {
                 setDebugState("Getting equipment");
@@ -130,7 +135,7 @@ public class BeatMinecraftTask extends Task {
                 return new EquipArmorTask(DIAMOND_ARMORS);
             }
             // Get diamond armor + gear first
-            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(ItemTarget.LOG)) {
+            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && !mod.getInventoryTracker().hasItem(ItemTarget.LOG))) {
                 // Get two iron pickaxes first.
                 if (!mod.getInventoryTracker().hasItem(Items.IRON_PICKAXE) && !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                     return _prepareForDiamondCollectionTask;
@@ -182,11 +187,6 @@ public class BeatMinecraftTask extends Task {
             return _strongholdLocater;
         }
 
-
-        int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
-        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
-        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
 
         // Get food, less if we're going to the end.
         int preFood = needsToGoToNether? PRE_NETHER_FOOD : PRE_END_FOOD,
