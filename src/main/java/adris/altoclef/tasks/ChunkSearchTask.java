@@ -37,7 +37,7 @@ public abstract class ChunkSearchTask extends Task {
         _startPoint = startPoint;
     }
     public ChunkSearchTask(ChunkPos chunkPos) {
-        _startPoint = chunkPos.getStartPos().add(1, 1, 1);
+        this(chunkPos.getStartPos().add(1, 1, 1));
     }
 
     public Set<ChunkPos> getSearchedChunks() {
@@ -64,6 +64,7 @@ public abstract class ChunkSearchTask extends Task {
         _searchLater.clear();
         _searchedAlready.clear();
          */
+        //Debug.logMessage("(deleteme) start. Finished: " + _finished);
         if (_first) {
             _finished = false;
             _first = false;
@@ -79,8 +80,9 @@ public abstract class ChunkSearchTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        // WTF This is a horrible idea.
         // Backup in case if chunk search fails?
-        onChunkLoad((WorldChunk) mod.getWorld().getChunk(mod.getPlayer().getBlockPos()));
+        //onChunkLoad((WorldChunk) mod.getWorld().getChunk(mod.getPlayer().getBlockPos()));
 
         synchronized (_searchMutex) {
             // Search all items from _justLoaded that we ought to search.
@@ -101,6 +103,7 @@ public abstract class ChunkSearchTask extends Task {
         if (closest == null) {
             _finished = true;
             Debug.logWarning("Failed to find any chunks to go to. If we finish, that means we scanned all possible chunks.");
+            //Debug.logMessage("wtf??????: " + _finished);
             return null;
         }
 

@@ -58,8 +58,11 @@ public abstract class SearchChunksExploreTask extends Task {
             } else if (_searcher.finished()) {
                 setDebugState("Searching for target object...");
                 Debug.logMessage("Search finished.");
+                _alreadyExplored.addAll(_searcher.getSearchedChunks());
                 _searcher = null;
             }
+            //Debug.logMessage("wtf: " + (_searcher == null? "(null)" :_searcher.finished()));
+            setDebugState("Searching within chunks...");
             return _searcher;
         }
     }
@@ -76,6 +79,7 @@ public abstract class SearchChunksExploreTask extends Task {
         if (isChunkWithinSearchSpace(_mod, chunk.getPos())) {
             synchronized (_searcherMutex) {
                 if (!_alreadyExplored.contains(chunk.getPos())) {
+                    Debug.logMessage("New searcher: " + chunk.getPos());
                     _searcher = new SearchSubTask(chunk.getPos());
                 }
             }
@@ -93,6 +97,7 @@ public abstract class SearchChunksExploreTask extends Task {
     }
 
     public void resetSearch(AltoClef mod) {
+        //Debug.logMessage("Search reset");
         _searcher = null;
         _alreadyExplored.clear();
         // We want to search the currently loaded chunks too!!!
@@ -121,7 +126,8 @@ public abstract class SearchChunksExploreTask extends Task {
 
         @Override
         protected boolean isChunkSearchEqual(ChunkSearchTask other) {
-            return other instanceof SearchSubTask;
+            // Since we're keeping track of "_searcher", we expect the subchild routine to ALWAYS be consistent!
+            return other == this;//return other instanceof SearchSubTask;
         }
 
         @Override
