@@ -132,7 +132,6 @@ public class ConfigState {
         current().applyState();
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isProtected(Item item) {
         // For now nothing is protected.
         return current().protectedItems.contains(item);
@@ -145,6 +144,10 @@ public class ConfigState {
         current().forceFieldPlayers = forceFieldPlayers;
         // Not needed, nothing changes.
         // current.applyState()
+    }
+    public void allowWalkThroughLava(boolean allow) {
+        current().walkThroughLava = allow;
+        current().applyState();
     }
 
     /// Stack management
@@ -179,6 +182,7 @@ public class ConfigState {
         public List<Item> throwawayItems = new ArrayList<>();
         public List<Item> protectedItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
+        public boolean walkThroughLava;
 
         // Alto Clef params
         public boolean exclusivelyMineLogs;
@@ -235,6 +239,7 @@ public class ConfigState {
             throwawayItems.addAll(s.acceptableThrowawayItems.value);
             followOffsetDistance = s.followOffsetDistance.value;
             mineScanDroppedItems = s.mineScanDroppedItems.value;
+            walkThroughLava = s.assumeWalkOnLava.value;
         }
 
         private void readExtraState(AltoClefSettings settings) {
@@ -265,6 +270,7 @@ public class ConfigState {
             s.acceptableThrowawayItems.value.addAll(throwawayItems);
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
+            s.assumeWalkOnLava.value = walkThroughLava;
 
             // Kinda jank but it works.
             synchronized (sa.getBreakMutex()) {

@@ -2,9 +2,12 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
@@ -22,6 +25,10 @@ public class WorldSurvivalChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
         handleDrowning(mod);
+        if (isInLavaOhShit(mod)) {
+            setTask(new EscapeFromLavaTask());
+            return 100;
+        }
         return Float.NEGATIVE_INFINITY;
     }
 
@@ -45,6 +52,10 @@ public class WorldSurvivalChain extends SingleTaskChain {
             MinecraftClient.getInstance().options.keyJump.setPressed(false);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
+    }
+
+    private boolean isInLavaOhShit(AltoClef mod) {
+        return mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE);
     }
 
     @Override
