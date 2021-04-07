@@ -178,10 +178,6 @@ public class ConstructNetherPortalBucketTask extends Task {
             return _wanderTask;
         }
 
-        if (!_progressChecker.check(mod)) {
-            Debug.logMessage("Build Nether Portal: Loitered around for too long, wandering and trying again.");
-            return _wanderTask;
-        }
 
         // Get bucket if we don't have one.
         int bucketCount = mod.getInventoryTracker().getItemCount(Items.BUCKET, Items.LAVA_BUCKET, Items.WATER_BUCKET);
