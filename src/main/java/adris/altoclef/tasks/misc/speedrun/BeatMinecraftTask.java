@@ -20,10 +20,12 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
@@ -132,10 +134,11 @@ public class BeatMinecraftTask extends Task {
 
         if (!_endKamakazeeEngaged) {
             if (!isEndPortalOpened(mod)) {
+                /*
                 if (_prepareEquipmentTask.isActive() && !_prepareEquipmentTask.isFinished(mod)) {
                     setDebugState("Getting equipment");
                     return _prepareEquipmentTask;
-                }
+                }*/
 
                 if (_prepareForDiamondCollectionTask.isActive() && !_prepareForDiamondCollectionTask.isFinished(mod)) {
                     setDebugState("Collecting extra iron gear before getting diamonds.");
@@ -149,9 +152,21 @@ public class BeatMinecraftTask extends Task {
                 // Get diamond armor + gear first
                 if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && !mod.getInventoryTracker().hasItem(ItemTarget.LOG))) {
                     // Get two iron pickaxes first.
-                    if (!mod.getInventoryTracker().hasItem(Items.IRON_PICKAXE) && !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
+                    double ironDurability = 0;
+                    if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
+                        ironDurability = 1;
+                    } else {
+                        for (int invslot : mod.getInventoryTracker().getInventorySlotsWithItem(Items.IRON_PICKAXE)) {
+                            ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(Slot.getFromInventory(invslot));
+                            ironDurability += 1 - ((double) stack.getDamage() / (double) stack.getMaxDamage());
+                        }
+                    }
+                    // ALWAYS reserve 0.5 iron pickaxes for leaving.
+                    if (ironDurability < 0.5 && !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                         return _prepareForDiamondCollectionTask;
                     }
+
+                    setDebugState("Getting equipment");
                     return _prepareEquipmentTask;
                 }
             }
