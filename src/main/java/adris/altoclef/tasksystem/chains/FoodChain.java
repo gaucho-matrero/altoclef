@@ -157,7 +157,7 @@ public class FoodChain extends SingleTaskChain {
         if (foodLevel < 20 - 5) {
             int need = 20 - foodLevel;
             Item best = getBestItemToEat(mod);
-            int fills = (best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            int fills = (best != null && best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
             if (fills == need) return true;
         }
 

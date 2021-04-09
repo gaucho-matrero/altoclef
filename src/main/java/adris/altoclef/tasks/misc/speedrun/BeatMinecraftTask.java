@@ -73,8 +73,7 @@ public class BeatMinecraftTask extends Task {
                     new ItemTarget("log", 20)
                     );
     private final Task _prepareForDiamondCollectionTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("iron_pickaxe", 2),
-            new ItemTarget("iron_sword", 1)
+            new ItemTarget("iron_pickaxe", 3)
     );
 
     private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
@@ -317,12 +316,14 @@ public class BeatMinecraftTask extends Task {
 
     private Task endTick(AltoClef mod) {
 
+        /*
         if (!_endKamakazeeEngaged) {
             //Debug.logWarning("Uh oh: Kamakazee mode was not engaged. This shouldn't happen though.");
         }
         if (_endBedSpawnPos == null) {
             //Debug.logWarning("Uh oh: End Bed set to null for some reason. This shouldn't happen, but this will hurt a lot.");
         }
+         */
 
         setDebugState("Defeating the ender dragon.");
         return new KillEnderDragonTask();
