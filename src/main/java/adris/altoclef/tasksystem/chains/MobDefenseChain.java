@@ -409,7 +409,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 for(HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity)) {
                         return true;
                     }
                 }

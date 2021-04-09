@@ -166,6 +166,9 @@ public class AltoClef implements ModInitializer {
 
         // Don't break blocks we explicitly protect.
         getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+
+        // Water bucket placement will be handled by us exclusively
+        getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
     }
 
     // List all command sources here.

@@ -33,7 +33,7 @@ public abstract class Task {
         // We have a sub task
         if (newSub != null) {
             if (!newSub.isEqual(_sub)) {
-                if (canBeInterrupted(mod, _sub)) {
+                if (canBeInterrupted(mod, _sub, newSub)) {
                     // Our sub task is new
                     if (_sub != null) {
                         // Our previous sub must be interrupted.
@@ -48,7 +48,7 @@ public abstract class Task {
             _sub.tick(mod, parentChain);
         } else {
             // We are null
-            if (_sub != null && canBeInterrupted(mod, _sub)) {
+            if (_sub != null && canBeInterrupted(mod, _sub, null)) {
                 // Our previous sub must be interrupted.
                 _sub.stop(mod);
                 _sub = null;
@@ -149,13 +149,12 @@ public abstract class Task {
      * Sometimes a task just can NOT be bothered to be interrupted right now.
      * For instance, if we're in mid air and MUST complete the parkour movement.
      */
-    private boolean canBeInterrupted(AltoClef mod, Task subTask) {
+    private boolean canBeInterrupted(AltoClef mod, Task subTask, Task toInterruptWith) {
         if (subTask == null) return true;
         if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
             // This task (or any of its children) REQUIRES we be grounded or in water or something.
-            if (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing()) {
-                return true;
-            }
+            if (toInterruptWith instanceof ITaskOverridesGrounded) return true;
+            return (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing());
         }
         return true;
     }

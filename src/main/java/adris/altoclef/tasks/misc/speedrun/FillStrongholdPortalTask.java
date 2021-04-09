@@ -1,14 +1,12 @@
 package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Items;
@@ -19,14 +17,14 @@ public class FillStrongholdPortalTask extends Task {
 
     private final boolean _destroySilverfishSpawner;
 
-    private final Timer _fillDelay = new Timer(0.8);
-
     public FillStrongholdPortalTask(boolean destroySilverfishSpawner) {
         _destroySilverfishSpawner = destroySilverfishSpawner;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getConfigState().push();
+        mod.getConfigState().setPreferredStairs(false);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME, Blocks.END_PORTAL);
         if (_destroySilverfishSpawner) {
             mod.getBlockTracker().trackBlock(Blocks.SPAWNER);
@@ -56,6 +54,7 @@ public class FillStrongholdPortalTask extends Task {
         if (_destroySilverfishSpawner) {
             mod.getBlockTracker().stopTracking(Blocks.SPAWNER);
         }
+        mod.getConfigState().pop();
     }
 
     @Override

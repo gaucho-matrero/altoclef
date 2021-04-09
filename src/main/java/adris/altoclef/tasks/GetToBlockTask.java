@@ -12,8 +12,9 @@ import net.minecraft.util.math.BlockPos;
 
 public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
 
-    private BlockPos _position;
-    private boolean _rightClickOnArrival;
+    private final BlockPos _position;
+    private final boolean _rightClickOnArrival;
+    private final boolean _preferStairs;
 
     private boolean _running;
 
@@ -21,14 +22,22 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
 
     private static TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
-    public GetToBlockTask(BlockPos position, boolean rightClickOnArrival) {
-        if (position == null) Debug.logError("Shouldn't be null!");
+    public GetToBlockTask(BlockPos position, boolean rightClickOnArrival, boolean preferStairs) {
         _position = position;
         _rightClickOnArrival = rightClickOnArrival;
+        _preferStairs = preferStairs;
+    }
+    public GetToBlockTask(BlockPos position, boolean rightClickOnArrival) {
+        this(position, rightClickOnArrival, false);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        if (_preferStairs) {
+            mod.getConfigState().push();
+            mod.getConfigState().setPreferredStairs(true);
+        }
+
         startProc(mod);
         _moveChecker.reset();
         _wanderTask.resetWander();
@@ -63,6 +72,9 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
     protected void onStop(AltoClef mod, Task interruptTask) {
         _running = false;
         stopProc(mod);
+        if (_preferStairs) {
+            mod.getConfigState().pop();
+        }
     }
 
     @Override
@@ -98,7 +110,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
     }
     private void startProc(AltoClef mod) {
         if (_rightClickOnArrival) {
-            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, _rightClickOnArrival? Input.CLICK_RIGHT : null);
+            mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(_position, Input.CLICK_RIGHT);
         } else {
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(_position));
         }

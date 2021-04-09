@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.misc.MLGBucketTask;
+import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
@@ -12,9 +13,9 @@ import net.minecraft.item.Items;
 
 import java.sql.Time;
 
-public class MLGBucketFallChain extends SingleTaskChain {
+public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
-    private final Timer _tryCollectWaterTimer = new Timer(1);
+    private final Timer _tryCollectWaterTimer = new Timer(4);
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -34,7 +35,7 @@ public class MLGBucketFallChain extends SingleTaskChain {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
             return 100;
-        } else if (!_tryCollectWaterTimer.elapsed()) {
+        } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 setTask(TaskCatalogue.getItemTask("water_bucket", 1));

@@ -72,6 +72,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        if (!mod.inGame()) return;
         mod.getClientBaritone().getBuilderProcess().onLostControl();
         // Do not keep breaking.
         // Can lead to trouble, for example, if lava is right above the NEXT block.

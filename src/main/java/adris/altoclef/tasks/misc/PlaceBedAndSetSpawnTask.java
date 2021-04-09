@@ -98,6 +98,12 @@ public class PlaceBedAndSetSpawnTask extends Task {
         mod.onGameOverlayMessage.addListener(onOverlayMessage);
     }
 
+    public void resetSleep() {
+        _spawnSet = false;
+        _sleepAttemptMade = false;
+        _wasSleeping = false;
+    }
+
     @Override
     protected Task onTick(AltoClef mod) {
         // Summary:
@@ -173,7 +179,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
             BlockPos toPlace = _currentBedRegion.add(baseOffs);
             if (!WorldUtil.isSolid(mod, toPlace)) {
-                _currentBreak = toPlace;
+                _currentStructure = toPlace;
                 break;
             }
         }
@@ -252,6 +258,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     public BlockPos getBedSleptPos() {
         return _bedForSpawnPoint;
+    }
+    public boolean isSpawnSet() {
+        return _spawnSet;
     }
 
     private final ActionListener<String> onCheckGameMessage = new ActionListener<String>() {

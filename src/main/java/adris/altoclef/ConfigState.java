@@ -1,8 +1,5 @@
 package adris.altoclef;
 
-import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
-import adris.altoclef.util.ItemTarget;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.process.MineProcess;
@@ -131,6 +128,10 @@ public class ConfigState {
         Collections.addAll(current().protectedItems, items);
         current().applyState();
     }
+    public void removeProtectedItems(Item ...items) {
+        current().protectedItems.removeAll(Arrays.asList(items));
+        current().applyState();
+    }
 
     public boolean isProtected(Item item) {
         // For now nothing is protected.
@@ -147,6 +148,10 @@ public class ConfigState {
     }
     public void allowWalkThroughLava(boolean allow) {
         current().walkThroughLava = allow;
+        current().applyState();
+    }
+    public void setPreferredStairs(boolean allow) {
+        current().preferredStairs = allow;
         current().applyState();
     }
 
@@ -183,6 +188,7 @@ public class ConfigState {
         public List<Item> protectedItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
         public boolean walkThroughLava;
+        public boolean preferredStairs;
 
         // Alto Clef params
         public boolean exclusivelyMineLogs;
@@ -240,6 +246,7 @@ public class ConfigState {
             followOffsetDistance = s.followOffsetDistance.value;
             mineScanDroppedItems = s.mineScanDroppedItems.value;
             walkThroughLava = s.assumeWalkOnLava.value;
+            //preferredStairs = s.allowDownward.value;
         }
 
         private void readExtraState(AltoClefSettings settings) {
@@ -249,7 +256,9 @@ public class ConfigState {
                     toAvoidBreaking = new ArrayList<>(settings.getBreakAvoiders());
                     toAvoidPlacing = new ArrayList<>(settings.getPlaceAvoiders());
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
-                    allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
+                    synchronized (settings.getPropertiesMutex()) {
+                        allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
+                    }
                 }
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
@@ -271,6 +280,9 @@ public class ConfigState {
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
             s.assumeWalkOnLava.value = walkThroughLava;
+            // We need an alternrative method to handle this, this method makes navigation much less reliable.
+            //s.allowDownward.value = preferredStairs;
+
 
             // Kinda jank but it works.
             synchronized (sa.getBreakMutex()) {
@@ -283,8 +295,10 @@ public class ConfigState {
                     sa.getPlaceAvoiders().addAll(toAvoidPlacing);
                     sa.getProtectedItems().clear();
                     sa.getProtectedItems().addAll(protectedItems);
-                    sa.getForceWalkOnPredicates().clear();
-                    sa.getForceWalkOnPredicates().addAll(allowWalking);
+                    synchronized (sa.getPropertiesMutex()) {
+                        sa.getForceWalkOnPredicates().clear();
+                        sa.getForceWalkOnPredicates().addAll(allowWalking);
+                    }
                 }
             }
 
