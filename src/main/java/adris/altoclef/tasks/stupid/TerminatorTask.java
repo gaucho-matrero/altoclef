@@ -62,8 +62,11 @@ public class TerminatorTask extends Task {
             new ItemTarget("diamond_shovel", 1),
             new ItemTarget("diamond_sword", 1)
     );
+    private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("iron_pickaxe", 3)
+    );
 
-    private final Task _foodTask = new CollectFoodTask(40);
+    private final Task _foodTask = new CollectFoodTask(100);
 
     private Task _runAwayTask;
     private final Timer _runAwayExtraTime = new Timer(10);
@@ -202,6 +205,10 @@ public class TerminatorTask extends Task {
         }
         // Get diamond armor + gear first
         if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
+            if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) <= 1 || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
+                setDebugState("Getting iron pickaxes to mine diamonds");
+                return _prepareDiamondMiningEquipmentTask;
+            }
             setDebugState("Getting gear");
             return _prepareEquipmentTask;
         }
@@ -255,7 +262,7 @@ public class TerminatorTask extends Task {
 
     private void tryDoFunnyMessageTo(AltoClef mod, PlayerEntity player) {
         if (_funnyMessageTimer.elapsed()) {
-            if (LookUtil.seesPlayer(player, mod.getPlayer(), 200)) {
+            if (LookUtil.seesPlayer(player, mod.getPlayer(), 80)) {
                 String name = player.getName().getString();
                 if (_currentVisibleTarget == null || !_currentVisibleTarget.equals(name)) {
                     _currentVisibleTarget = name;
