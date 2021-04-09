@@ -58,7 +58,11 @@ public abstract class ResourceTask extends Task {
                     }
                 }
 
-                return _pickupTask;
+                double range = mod.getModSettings().getResourcePickupRange();
+                ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod)) ) {
+                    return _pickupTask;
+                }
             }
         }
 

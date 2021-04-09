@@ -1,7 +1,6 @@
 package adris.altoclef;
 
 import adris.altoclef.util.csharpisbetter.Util;
-import com.google.gson.ExclusionStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.item.Item;
@@ -32,6 +31,14 @@ public class Settings {
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
     private float containerItemMoveDelay = 0.08f;
+
+    /**
+     * If a dropped resource item is further than this from the player, don't pick it up.
+     *
+     * -1 (or less than 0) to disable.
+     */
+    private float resourcePickupDropRange = -1;
+
 
     /**
      * Some larger special tasks will perform extra preparation work to ensure your player
@@ -242,6 +249,8 @@ public class Settings {
     public float getSpeedHack() {
         return speedHack;
     }
+
+    public float getResourcePickupRange() {return resourcePickupDropRange;}
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
