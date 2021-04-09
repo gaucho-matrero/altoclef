@@ -16,6 +16,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     private final IProgressChecker<Double> _distancePlayerCheck = new ProgressCheckerRetry<>(new LinearProgressChecker(5, -2), 3);
 
     public KillPlayerTask(String name) {
+        super(5, 7, 1);
         _playerName = name;
     }
 

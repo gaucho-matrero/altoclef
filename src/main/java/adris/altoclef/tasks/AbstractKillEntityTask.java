@@ -29,9 +29,11 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     private static final double MAINTAIN_DISTANCE = 3;
 
     public AbstractKillEntityTask() {
-        super(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
+        this(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
     }
-
+    public AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
+    }
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
         float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
