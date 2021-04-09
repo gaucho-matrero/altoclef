@@ -42,6 +42,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
             return _wanderTask;
         }
 
+        setDebugState("Going to entity");
         return null;
     }
 
