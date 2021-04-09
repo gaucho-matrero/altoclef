@@ -17,16 +17,19 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import com.sun.javafx.geom.Vec3f;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -39,6 +42,18 @@ import java.util.List;
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class AltoClefCommands extends CommandList {
+
+    public static void IDLE_TEST_TICK_FUNCTION(AltoClef mod) {
+        // Test code here
+
+        /* Def overkill
+        if (mod.getEntityTracker().entityFound(PlayerEntity.class)) {
+            PlayerEntity other = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), PlayerEntity.class);
+            Vec3d rot = other.getRotationVecClient();
+            Debug.logInternal("Rot: " + rot.toString());
+        }
+         */
+    }
 
     private static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
