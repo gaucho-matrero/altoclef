@@ -26,9 +26,11 @@ public class WorldSurvivalChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {
+            mod.getConfigState().setAllowWalkThroughFlowingWater(true);
             setTask(new EscapeFromLavaTask());
             return 100;
         }
+        mod.getConfigState().setAllowWalkThroughFlowingWater(false);
         return Float.NEGATIVE_INFINITY;
     }
 
