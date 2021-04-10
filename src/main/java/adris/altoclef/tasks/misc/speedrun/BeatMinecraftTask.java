@@ -8,12 +8,11 @@ import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.GetToYTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
-import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
+import adris.altoclef.tasks.resources.KillAndLootTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
@@ -24,6 +23,7 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
+import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -129,8 +129,8 @@ public class BeatMinecraftTask extends Task {
 
         int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
         int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
-        int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
+        //int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded;// || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
 
         if (!_endKamakazeeEngaged) {
             if (!isEndPortalOpened(mod)) {
@@ -150,7 +150,7 @@ public class BeatMinecraftTask extends Task {
                     return new EquipArmorTask(DIAMOND_ARMORS);
                 }
                 // Get diamond armor + gear first
-                if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && !mod.getInventoryTracker().hasItem(ItemTarget.LOG))) {
+                if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemTarget.LOG) <= 0)) {
                     // Get two iron pickaxes first.
                     double ironDurability = 0;
                     if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
@@ -252,6 +252,11 @@ public class BeatMinecraftTask extends Task {
                 setDebugState("Build nether portal + go to nether");
                 return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
             } else {
+                int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+                if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded) {
+                    setDebugState("Collecting ender pearls");
+                    return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
+                }
                 setDebugState("Crafting our blaze powder + eyes");
                 int powderNeeded = (TARGET_ENDER_EYES - eyes);
                 if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
@@ -278,11 +283,11 @@ public class BeatMinecraftTask extends Task {
         // Collect tools while we're here
 
         if (_netherPrepareTaskWood.isActive() && !_netherPrepareTaskWood.isFinished(mod)) {
-            return _netherPrepareTaskWood;
+            //return _netherPrepareTaskWood;
         }
         assert _netherPrepareTaskJustPick != null;
         if (_netherPrepareTaskJustPick.isActive() && !_netherPrepareTaskJustPick.isFinished(mod)) {
-            return _netherPrepareTaskJustPick;
+            //return _netherPrepareTaskJustPick;
         }
 
         // Make sure we have at least a wooden pickaxe at all times
@@ -292,9 +297,9 @@ public class BeatMinecraftTask extends Task {
         if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD) || planksCount < planksNeeded) {
             // If we ran out of wood, go get more.
             if (planksCount >= planksNeeded) {
-                return _netherPrepareTaskJustPick;
+                //return _netherPrepareTaskJustPick;
             } else {
-                return _netherPrepareTaskWood;
+                //return _netherPrepareTaskWood;
             }
         }
 
@@ -306,6 +311,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Piglin Barter
+        /*
         if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
 
             if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
@@ -324,6 +330,7 @@ public class BeatMinecraftTask extends Task {
             setDebugState("Collecting Ender Pearls");
             return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
+         */
 
         setDebugState("Getting the hell out of here");
         return new EnterNetherPortalTask(new GetToBlockTask(_cachedPortalInNether, false), Dimension.OVERWORLD);
