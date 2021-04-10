@@ -115,6 +115,12 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
+        if (_finished) {
+            if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(this._targets)) {
+                _finished = false;
+                Debug.logMessage("Invalid collect recipe \"finished\" state, resetting.");
+            }
+        }
         return _finished;
     }
 }

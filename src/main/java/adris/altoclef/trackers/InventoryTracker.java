@@ -108,22 +108,26 @@ public class InventoryTracker extends Tracker {
         return getItemCount(target.getMatches());
     }
 
-    public int getItemCountIncludingTable(Item item) {
-        int result = getItemCount(item);
+    public int getItemCountIncludingTable(Item ...items) {
+        int result = getItemCount(items);
         ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
         if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
             boolean bigCrafting = (screen instanceof CraftingScreenHandler);
             for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
                 Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
                 ItemStack stack = getItemStackInSlot(craftSlot);
-                if (stack.getItem() == item) {
-                    result += stack.getCount();
+                for (Item item : items) {
+                    if (stack.getItem() == item) {
+                        result += stack.getCount();
+                    }
                 }
             }
             // Also check output slot
             Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
             ItemStack stack = getItemStackInSlot(outputSlot);
-            if (stack.getItem() == item) result += stack.getCount();
+            for (Item item : items) {
+                if (stack.getItem() == item) result += stack.getCount();
+            }
         }
         return result;
     }
