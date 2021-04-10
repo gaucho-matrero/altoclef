@@ -89,6 +89,8 @@ public class BeatMinecraftTask extends Task {
     private BlockPos _endBedSpawnPos = null;
     private final PlaceBedAndSetSpawnTask _placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
 
+    private Dimension _prevDimension = Dimension.OVERWORLD;
+
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
@@ -114,7 +116,18 @@ public class BeatMinecraftTask extends Task {
          * 6) ??? How to get ender pearls automated and fast...
          */
 
-        switch (mod.getCurrentDimension()) {
+        // do NOT diagonally ascend in the nether.
+        Dimension currentDimension = mod.getCurrentDimension();
+        if (currentDimension != _prevDimension) {
+            if (currentDimension == Dimension.NETHER) {
+                mod.getConfigState().setAllowDiagonalAscend(false);
+            } else {
+                mod.getConfigState().setAllowDiagonalAscend(true);
+            }
+            _prevDimension = currentDimension;
+        }
+
+        switch (currentDimension) {
             case OVERWORLD:
                 return overworldTick(mod);
             case NETHER:

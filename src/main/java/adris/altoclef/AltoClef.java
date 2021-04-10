@@ -151,7 +151,7 @@ public class AltoClef implements ModInitializer {
     private void initializeBaritoneSettings() {
         // Let baritone move items to hotbar to use them
         getClientBaritoneSettings().allowInventory.value = true;
-        // Pretty safe, minor risk.
+        // Pretty safe, minor risk EXCEPT in the nether, where it is a huge risk.
         getClientBaritoneSettings().allowDiagonalAscend.value = true;
         // Reduces a bit of far rendering to save FPS
         getClientBaritoneSettings().fadePath.value = true;

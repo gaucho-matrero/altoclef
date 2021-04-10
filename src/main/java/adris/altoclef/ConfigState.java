@@ -154,6 +154,10 @@ public class ConfigState {
         current().preferredStairs = allow;
         current().applyState();
     }
+    public void setAllowDiagonalAscend(boolean allow) {
+        current().allowDiagonalAscend = allow;
+        current().applyState();
+    }
 
     /// Stack management
     public void push() {
@@ -188,6 +192,7 @@ public class ConfigState {
         public List<Item> protectedItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
         public boolean walkThroughLava;
+        public boolean allowDiagonalAscend;
         public boolean preferredStairs;
 
         // Alto Clef params
@@ -246,6 +251,7 @@ public class ConfigState {
             followOffsetDistance = s.followOffsetDistance.value;
             mineScanDroppedItems = s.mineScanDroppedItems.value;
             walkThroughLava = s.assumeWalkOnLava.value;
+            allowDiagonalAscend = s.allowDiagonalAscend.value;
             //preferredStairs = s.allowDownward.value;
         }
 
@@ -280,6 +286,8 @@ public class ConfigState {
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
             s.assumeWalkOnLava.value = walkThroughLava;
+            s.allowDiagonalAscend.value = allowDiagonalAscend;
+
             // We need an alternrative method to handle this, this method makes navigation much less reliable.
             //s.allowDownward.value = preferredStairs;
 
