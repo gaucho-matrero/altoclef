@@ -159,6 +159,19 @@ public class ConfigState {
         current().applyState();
     }
 
+    public void avoidDodgingProjectile(Predicate<Entity> whenToDodge) {
+        current().avoidDodgingProjectile.add(whenToDodge);
+        // Not needed, nothing changes.
+        // current().applyState();
+    }
+
+    public boolean shouldAvoidDodgingProjectile(Entity entity) {
+        for (Predicate<Entity> test : current().avoidDodgingProjectile) {
+            if (test.test(entity)) return true;
+        }
+        return false;
+    }
+
     /// Stack management
     public void push() {
         if (_states.empty()) {
@@ -198,6 +211,7 @@ public class ConfigState {
         // Alto Clef params
         public boolean exclusivelyMineLogs;
         public boolean forceFieldPlayers;
+        public List<Predicate<Entity>> avoidDodgingProjectile = new ArrayList<>();
 
         public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();
 
@@ -230,6 +244,7 @@ public class ConfigState {
             if (toCopy != null) {
                 // Copy over stuff from old one
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
+                avoidDodgingProjectile.addAll(toCopy.avoidDodgingProjectile);
                 excludeFromForceField.addAll(toCopy.excludeFromForceField);
                 forceFieldPlayers = toCopy.forceFieldPlayers;
             }

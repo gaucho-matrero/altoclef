@@ -265,21 +265,23 @@ public class EntityTracker extends Tracker {
                 }
                  */
                 } else if (entity instanceof ProjectileEntity) {
-                    CachedProjectile proj = new CachedProjectile();
-                    ProjectileEntity projEntity = (ProjectileEntity) entity;
+                    if (!_mod.getConfigState().shouldAvoidDodgingProjectile(entity)) {
+                        CachedProjectile proj = new CachedProjectile();
+                        ProjectileEntity projEntity = (ProjectileEntity) entity;
 
-                    boolean inGround = false;
-                    // Get projectile "inGround" variable
-                    if (entity instanceof PersistentProjectileEntity) {
-                        inGround = ((PersistentProjectileEntityAccessor) entity).isInGround();
-                    }
+                        boolean inGround = false;
+                        // Get projectile "inGround" variable
+                        if (entity instanceof PersistentProjectileEntity) {
+                            inGround = ((PersistentProjectileEntityAccessor) entity).isInGround();
+                        }
 
-                    if (!inGround) {
-                        proj.position = projEntity.getPos();
-                        proj.velocity = projEntity.getVelocity();
-                        proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
-                        proj.projectileType = projEntity.getClass();
-                        _projectiles.add(proj);
+                        if (!inGround) {
+                            proj.position = projEntity.getPos();
+                            proj.velocity = projEntity.getVelocity();
+                            proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
+                            proj.projectileType = projEntity.getClass();
+                            _projectiles.add(proj);
+                        }
                     }
                 } else if (entity instanceof PlayerEntity) {
                     PlayerEntity player = (PlayerEntity) entity;

@@ -102,6 +102,9 @@ public class BeatMinecraftTask extends Task {
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Allow walking on end portal
         mod.getConfigState().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
+
+        // Dodge ALL projectiles in the end.
+        mod.getConfigState().avoidDodgingProjectile(proj -> mod.getCurrentDimension() == Dimension.END);
     }
 
     @Override
