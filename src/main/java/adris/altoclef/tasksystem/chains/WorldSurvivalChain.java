@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffect;
@@ -12,6 +13,7 @@ import net.minecraft.entity.effect.StatusEffects;
 public class WorldSurvivalChain extends SingleTaskChain {
 
     private boolean _wasAvoidingDrowning;
+    private final Timer _wasInLavaTimer = new Timer(1);
 
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);
@@ -57,7 +59,11 @@ public class WorldSurvivalChain extends SingleTaskChain {
     }
 
     private boolean isInLavaOhShit(AltoClef mod) {
-        return mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE);
+        if (mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
+            _wasInLavaTimer.reset();
+            return true;
+        }
+        return mod.getPlayer().isOnFire() && !_wasInLavaTimer.elapsed();
     }
 
     @Override
