@@ -85,7 +85,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
         if (_toKill != null && _toKill.isAlive()) {
             setDebugState("Killing blaze");
-            return new KillEntitiesTask(BlazeEntity.class);
+            return new KillEntitiesTask(entity -> isHoveringAboveLavaOrTooHigh(mod, entity), BlazeEntity.class);
             //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
             //return new KillEntityTask(toKill);
         }
@@ -127,6 +127,15 @@ public class CollectBlazeRodsTask extends ResourceTask {
         // We need to find our fortress.
         setDebugState("Searching for fortress/Traveling around fortress");
         return _searcher;
+    }
+
+    private static boolean isHoveringAboveLavaOrTooHigh(AltoClef mod, Entity entity) {
+        int MAX_HEIGHT = 23;
+        for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
+            if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
+            if (WorldUtil.isSolid(mod, check)) return false;
+        }
+        return true;
     }
 
     private boolean isValidBlazeSpawner(AltoClef mod, BlockPos pos) {
