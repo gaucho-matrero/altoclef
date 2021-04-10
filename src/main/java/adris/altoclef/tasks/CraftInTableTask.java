@@ -126,6 +126,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(getMaterialsArray());
         _fullCheckFailed = false;
+
+        // Reset our "finished" value in the collect recipe thing.
+        _collectTask.reset();
     }
 
     @Override
