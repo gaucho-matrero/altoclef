@@ -16,14 +16,12 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -35,7 +33,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class MobDefenseChain extends SingleTaskChain {
 
@@ -132,7 +129,7 @@ public class MobDefenseChain extends SingleTaskChain {
             }
         }
 
-        if (mod.getModSettings().shouldDealWithSkeletons()) {
+        if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // Deal with hostiles because they are annoying.
             List<HostileEntity> hostiles;
             // TODO: I don't think this lock is necessary at all.
@@ -155,7 +152,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity hostile : hostiles) {
-                    int annoyingRange = (hostile instanceof SkeletonEntity)? 18 : 2;
+                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity)? 18 : 2;
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
@@ -213,12 +210,14 @@ public class MobDefenseChain extends SingleTaskChain {
 
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
 
-                    canDealWith += 1;
+                    canDealWith += 2;
                     if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
+
                         setTask(new KillEntitiesTask(
-                                entity -> !(entity instanceof SkeletonEntity) || !toDealWith.contains(entity),
-                                SkeletonEntity.class));
+                                entity -> !toDealWith.contains(entity),
+                                // Oof
+                                HOSTILE_ANNOYING_CLASSES));
                         return 65;
                     } else {
                         // We can't deal with it
@@ -489,4 +488,7 @@ public class MobDefenseChain extends SingleTaskChain {
     public String getName() {
         return "Mob Defense";
     }
+
+    // Kind of a silly solution
+    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[] {SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class};
 }

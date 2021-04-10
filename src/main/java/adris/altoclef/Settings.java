@@ -74,12 +74,13 @@ public class Settings {
     private boolean dodgeProjectiles = true;
 
     /**
-     * Skeletons are a huge pain, so if you chose
-     * the bot may either kill or run away from
-     * any skeleton it sees if it's at low health.
+     * Skeletons and large groups of mobs are a huge pain.
+     *
+     * With this set to true, the bot may either
+     * kill or run away from mobs that stay too close for too long.
      *
      */
-    private boolean killOrAvoidSkeletons = true;
+    private boolean killOrAvoidAnnoyingHostiles = true;
 
     /**
      * If enabled, the bot will avoid going underwater if baritone
@@ -305,7 +306,7 @@ public class Settings {
         this.useButlerWhitelist = useButlerWhitelist;
     }
 
-    public boolean shouldDealWithSkeletons() {return killOrAvoidSkeletons;}
+    public boolean shouldDealWithAnnoyingHostiles() {return killOrAvoidAnnoyingHostiles;}
 
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
