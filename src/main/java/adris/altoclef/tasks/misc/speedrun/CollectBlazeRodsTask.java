@@ -33,7 +33,8 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     private final int _count;
 
-    private Entity _toKill;
+    // Why was this here???
+    //private Entity _toKill;
 
     private final SearchNetherFortressTask _searcher = new SearchNetherFortressTask();
 
@@ -55,6 +56,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             Debug.logWarning("Can't get blaze if we're not in the nether...");
         }
 
+        Entity toKill = null;
         // If there is a blaze, kill it.
         if (mod.getEntityTracker().entityFound(BlazeEntity.class)) {
 
@@ -64,7 +66,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
                 return new TimeoutWanderTask();
             }
 
-            Entity toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
+            toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
             if (_foundBlazeSpawner != null && toKill != null) {
                 Vec3d nearest = toKill.getPos();
 
@@ -78,12 +80,9 @@ public class CollectBlazeRodsTask extends ResourceTask {
                     }
                 }
             }
-            if (toKill != null) {
-                _toKill = toKill;
-            }
         }
 
-        if (_toKill != null && _toKill.isAlive()) {
+        if (toKill != null && toKill.isAlive()) {
             setDebugState("Killing blaze");
             return new KillEntitiesTask(entity -> isHoveringAboveLavaOrTooHigh(mod, entity), BlazeEntity.class);
             //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
