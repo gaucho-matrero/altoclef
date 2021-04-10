@@ -9,7 +9,9 @@ import adris.altoclef.util.SmeltTarget;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -113,6 +115,8 @@ public class TaskCatalogue {
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
             mob("feather", Items.FEATHER, ChickenEntity.class);
+            mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
+            mob("spider_eye", Items.BONE, SpiderEntity.class);
         }
     }
 
