@@ -121,8 +121,6 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                         //Debug.logMessage("TEMP: Placed at " + placePos);
                         _placed = placePos;
                         return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-                    } else {
-                        //Debug.logMessage("TEMP: Failed to click");
                     }
                 }
             }
@@ -162,6 +160,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
 
     @Override
     public void onLostControl() {
+        MinecraftClient.getInstance().options.keySneak.setPressed(false);
         _toPlace = null;
     }
 
@@ -251,10 +250,11 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
                 baritone.getLookBehavior().updateTarget(rot.get(), true);
                 if (ctx.isLookingAt(placeOn)) { // TODO: Fix this part.
                     BlockState hitState = ctx.world().getBlockState(new BlockPos(result.getPos()));
-                    // Sneak if we need to. TODO: This does not work.
+                    // Sneak if we need to.
                     if (blockIsContainer(hitState.getBlock())) {
                         baritone.getInputOverrideHandler().clearAllKeys();
-                        baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
+                        MinecraftClient.getInstance().options.keySneak.setPressed(true);
+                        //baritone.getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
                     }
                     // If we are within player, jump and say we're false.
                     if (withinPlayer(pos, offs)) {

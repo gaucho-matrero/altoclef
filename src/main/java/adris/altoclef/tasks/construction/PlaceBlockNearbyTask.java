@@ -5,9 +5,11 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
 public class PlaceBlockNearbyTask extends Task {
@@ -23,6 +25,8 @@ public class PlaceBlockNearbyTask extends Task {
     private boolean _placing;
 
     private final Timer _placeTimer = new Timer(5.0);
+
+    private final Timer _randomRotationTimer = new Timer(0.5);
 
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
 
@@ -52,6 +56,15 @@ public class PlaceBlockNearbyTask extends Task {
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Timed out: Wandering");
             return _wanderTask;
+        }
+
+        // Random rotation
+        if (mod.getControllerExtras().isBreakingBlock()) {
+            _randomRotationTimer.reset();
+        }
+        if (_randomRotationTimer.elapsed()) {
+            LookUtil.randomOrientation(mod);
+            _randomRotationTimer.reset();
         }
 
         if (!mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive()) {

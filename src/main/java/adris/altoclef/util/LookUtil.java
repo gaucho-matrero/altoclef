@@ -86,7 +86,7 @@ public class LookUtil {
     }
 
     public static void randomOrientation(AltoClef mod) {
-        Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
+        Rotation r = new Rotation((float)Math.random() * 360f, -90 + (float)Math.random() * 180f);
         mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
     }
 
