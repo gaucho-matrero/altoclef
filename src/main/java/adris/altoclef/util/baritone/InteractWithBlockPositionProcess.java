@@ -8,6 +8,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
+import baritone.altoclef.AltoClefSettings;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
@@ -181,6 +182,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
 
     private ClickResponse rightClick() {
+
+        // Don't interact if baritone can't interact.
+        if (Baritone.getAltoClefSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
 
         Optional<Rotation> reachable = getReach();
         if (reachable.isPresent()) {
