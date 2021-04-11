@@ -63,6 +63,9 @@ public class TaskCatalogue {
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
             mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
 
+            mine("sand", MiningRequirement.HAND, Blocks.SAND, Items.SAND);
+            smelt("glass", Items.GLASS, "sand");
+
             mine("gravel", MiningRequirement.HAND, Blocks.GRAVEL, Items.GRAVEL);
 
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
