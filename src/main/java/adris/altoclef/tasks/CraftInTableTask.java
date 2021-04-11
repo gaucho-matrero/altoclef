@@ -108,6 +108,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private boolean _fullCheckFailed = false;
     private int _craftCount;
 
+    private final Timer _craftResetTimer = new Timer(10);
+
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _targets = targets;
@@ -135,6 +137,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
         mod.getConfigState().pop();
+        mod.getPlayer().closeHandledScreen();
     }
 
     @Override
@@ -170,6 +173,10 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
          */
 
+        if (!isContainerOpen(mod)) {
+            _craftResetTimer.reset();
+        }
+
         return super.onTick(mod);
     }
 
@@ -204,6 +211,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
         }
          */
+
+        if (_craftResetTimer.elapsed()) {
+            Debug.logMessage("Refreshing crafting table.");
+            mod.getPlayer().closeHandledScreen();
+            return null;
+        }
 
 
         for (RecipeTarget target : _targets) {
