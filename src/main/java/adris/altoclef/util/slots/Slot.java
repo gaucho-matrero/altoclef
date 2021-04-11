@@ -69,13 +69,10 @@ public abstract class Slot {
                 return new PlayerInventorySlot(inventorySlot);
             case CRAFTING_TABLE:
                 return new CraftingTableInventorySlot(inventorySlot);
-            case CHEST_SMALL:
-                return null;
-            case CHEST_LARGE:
-                return null;
             case FURNACE:
                 return new FurnaceInventorySlot(inventorySlot);
         }
+        Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
         return null;
     }
 
