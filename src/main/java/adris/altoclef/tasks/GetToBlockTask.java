@@ -20,7 +20,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 1, 5, 0.1);
 
-    private static TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
+    private static TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10, true);
 
     public GetToBlockTask(BlockPos position, boolean rightClickOnArrival, boolean preferStairs) {
         _position = position;

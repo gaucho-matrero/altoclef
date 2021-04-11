@@ -20,7 +20,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private boolean _failedFirstTry;
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 0.1, 4, 0.01);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
 
 
     public DestroyBlockTask(BlockPos pos) {
@@ -47,6 +47,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             // Only when we've tried both outcomes and have looped back to the beginning do we wander.
             if (!_failedFirstTry) {
                 Debug.logMessage("Failed both ways, wandering for a bit...");
+                mod.getBlockTracker().requestBlockUnreachable(_pos);
                 return _wanderTask;
             } else {
                 Debug.logMessage("Switching methods of breaking, may work better.");

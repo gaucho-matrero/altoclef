@@ -41,12 +41,19 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     private int _failCounter;
 
-    public TimeoutWanderTask(float distanceToWander) {
+    private final boolean _increaseRange;
+    private double _wanderDistanceExtension;
+
+    public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
         _distanceToWander = distanceToWander;
+        _increaseRange = increaseRange;
         _forceExplore = false;
     }
+    public TimeoutWanderTask(float distanceToWander) {
+        this(distanceToWander, false);
+    }
     public TimeoutWanderTask() {
-        this(Float.POSITIVE_INFINITY);
+        this(Float.POSITIVE_INFINITY, false);
     }
     public TimeoutWanderTask(boolean forceExplore) {
         this();
@@ -55,6 +62,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     public void resetWander() {
         _executingPlanB = false;
+        _wanderDistanceExtension = 0;
     }
 
     @Override
@@ -114,7 +122,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     }
 
     private Goal getRandomDirectionGoal(AltoClef mod) {
-        double distance = Float.isInfinite(_distanceToWander)? _distanceToWander : _distanceToWander + Math.random() * 25;
+        double distance = Float.isInfinite(_distanceToWander)? _distanceToWander : _distanceToWander + _wanderDistanceExtension;
         return new GoalRunAway(distance, mod.getPlayer().getBlockPos());
     }
 
@@ -122,6 +130,12 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getExploreProcess().onLostControl();
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+        if (isFinished(mod)) {
+            if (_increaseRange) {
+                _wanderDistanceExtension += _distanceToWander;
+                Debug.logMessage("Increased wander range");
+            }
+        }
     }
 
     @Override
@@ -137,7 +151,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
-            return sqDist > _distanceToWander * _distanceToWander;
+            double toWander = _distanceToWander + _wanderDistanceExtension;
+            return sqDist > toWander * toWander;
         } else {
             return false;
         }
@@ -157,7 +172,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected String toDebugString() {
-        return "Wander for " + _distanceToWander + " blocks";
+        return "Wander for " + (_distanceToWander + _wanderDistanceExtension) + " blocks";
     }
 
     // This happens all the time in mineshafts.
