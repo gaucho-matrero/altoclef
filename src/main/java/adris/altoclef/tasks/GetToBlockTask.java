@@ -116,6 +116,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
         }
     }
     private void stopProc(AltoClef mod) {
+        if (!mod.inGame()) return;
         if (_rightClickOnArrival) {
             mod.getCustomBaritone().getInteractWithBlockPositionProcess().onLostControl();
         } else {

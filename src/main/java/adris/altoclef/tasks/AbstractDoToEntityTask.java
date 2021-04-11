@@ -89,7 +89,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
             // Move to target
 
-            return new GetToEntityTask(entity);
+            return new GetToEntityTask(entity, _maintainDistance);
         }
 
         return null;

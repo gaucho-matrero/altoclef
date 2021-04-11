@@ -12,11 +12,17 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     private final Entity _entity;
 
-    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(20);
+    private final double _closeEnoughDistance;
 
-    public GetToEntityTask(Entity entity) {
+    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
+
+    public GetToEntityTask(Entity entity, double closeEnoughDistance) {
         _entity = entity;
+        _closeEnoughDistance = closeEnoughDistance;
+    }
+    public GetToEntityTask(Entity entity) {
+        this(entity, 1);
     }
 
     @Override
@@ -35,7 +41,11 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
         }
 
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(_entity));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(_entity, _closeEnoughDistance));
+        }
+
+        if (mod.getPlayer().isInRange(_entity, _closeEnoughDistance)) {
+            _progress.reset();
         }
 
         if (!_progress.check(mod)) {
@@ -55,7 +65,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToEntityTask) {
             GetToEntityTask task = (GetToEntityTask) obj;
-            return task._entity.equals(_entity);
+            return task._entity.equals(_entity) && Math.abs(task._closeEnoughDistance - _closeEnoughDistance) < 0.1;
         }
         return false;
     }

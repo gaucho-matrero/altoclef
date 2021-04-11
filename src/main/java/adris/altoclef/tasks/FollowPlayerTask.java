@@ -38,7 +38,7 @@ public class FollowPlayerTask extends Task {
             // Go to last location
             return new GetToBlockTask(new BlockPos((int) target.x, (int) target.y, (int) target.z), false);
         }
-        return new GetToEntityTask(mod.getEntityTracker().getPlayerEntity(_playerName));
+        return new GetToEntityTask(mod.getEntityTracker().getPlayerEntity(_playerName), 2);
     }
 
     @Override
