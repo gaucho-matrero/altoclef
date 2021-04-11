@@ -6,8 +6,10 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
+import baritone.api.utils.RotationUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -43,9 +45,12 @@ public class GiveItemToPlayerTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+
         if (_droppingItems) {
             // THROW ITEMS
             setDebugState("Throwing items");
+            LookUtil.lookAt(mod, targetPos);
             for (ItemTarget target : _throwTarget) {
                 if (target.targetCount > 0) {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
@@ -68,7 +73,7 @@ public class GiveItemToPlayerTask extends Task {
             setDebugState("Collecting resources...");
             return _resourceTask;
         }
-        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+
         if (targetPos == null) {
             mod.logWarning("Failed to get to player \"" + _playerName + "\" because we have no idea where they are.");
             stop(mod);

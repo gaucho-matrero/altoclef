@@ -85,8 +85,13 @@ public class LookUtil {
         return false;
     }
 
-    private static void randomOrientation(AltoClef mod) {
+    public static void randomOrientation(AltoClef mod) {
         Rotation r = new Rotation((float)Math.random() * 360f, (float)Math.random() * 360f);
         mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
+    }
+
+    public static void lookAt(AltoClef mod, Vec3d toLook) {
+        Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), toLook, mod.getClientBaritone().getPlayerContext().playerRotations());
+        mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
     }
 }
