@@ -194,30 +194,31 @@ public class BeatMinecraftTask extends Task {
 
 
                 int eyesNeeded = 12 - portalEyesInFrame(mod);
-                if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < eyesNeeded) {
-                    setDebugState("Really bad news, we don't have enough eyes to fill the portal.");
-                } else {
+                if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= eyesNeeded) {
+                    // We have ENOUGH Eyes OR the portal is open.
                     return foundPortalGetToEndTask(mod);
                 }
-            } else {
-                // Portal is not loaded, go to portal
+            } else if (isEndPortalOpened(mod)) {
+                // Portal is not loaded but is open, go to portal
                 setDebugState("Going back to end portal...");
                 return new GetToBlockTask(_endPortalFrame.get(0), false);
             }
         }
 
-        // Locate stronghold portal
-        if (mod.getInventoryTracker().getItemCountIncludingTable (Items.ENDER_EYE) > 1 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
-            setDebugState("Locating end portal.");
-            return _strongholdLocater;
-        } else {
-            if (_endPortalFrame == null && _strongholdLocater.portalFound()) {
-                Debug.logMessage("Now we have our portal position.");
-                _endPortalFrame = _strongholdLocater.getPortalFrame();
+        // Locate stronghold portal if we can.
+        if (!strongholdPortalFound()) {
+            if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) > 1 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
+                setDebugState("Locating end portal.");
+                return _strongholdLocater;
+            } else {
+                if (_endPortalFrame == null && _strongholdLocater.portalFound()) {
+                    Debug.logMessage("Now we have our portal position.");
+                    _endPortalFrame = _strongholdLocater.getPortalFrame();
+                }
             }
-        }
-        if (_endPortalFrame == null && mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= TARGET_ENDER_EYES) {
-            return _strongholdLocater;
+            if (_endPortalFrame == null && mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= TARGET_ENDER_EYES) {
+                return _strongholdLocater;
+            }
         }
 
 
@@ -513,9 +514,9 @@ public class BeatMinecraftTask extends Task {
                     count++;
                 }
             }
+            _cachedEndPearlsInFrame = count;
         }
-        _cachedEndPearlsInFrame = count;
-        return count;
+        return _cachedEndPearlsInFrame;
     }
 
     public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
