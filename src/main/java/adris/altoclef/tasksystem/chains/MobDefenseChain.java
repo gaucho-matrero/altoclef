@@ -210,7 +210,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
 
-                    canDealWith += 2;
+                    canDealWith += 1;
                     if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
 
@@ -490,5 +490,5 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     // Kind of a silly solution
-    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[] {SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class};
+    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[] {SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class, DrownedEntity.class};
 }
