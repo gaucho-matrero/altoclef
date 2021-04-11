@@ -105,6 +105,9 @@ public class CollectBucketLiquidTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
+        // Run one update to prevent the false fail bug?
+        _progressChecker.check(mod);
+
         // If we're standing inside a liquid, go pick it up.
         if (_tryImmediatePickupTimer.elapsed()) {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
