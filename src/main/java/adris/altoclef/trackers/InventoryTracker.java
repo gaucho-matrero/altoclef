@@ -239,7 +239,8 @@ public class InventoryTracker extends Tracker {
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             List<ItemStack> result = new ArrayList<>(_foodSlots.size());
             for (int slot : _foodSlots) {
-                result.add(getItemStackInSlot(Slot.getFromInventory(slot)));
+                ItemStack stack = getItemStackInSlot(Slot.getFromInventory(slot));
+                if (stack != null) result.add(stack);
             }
             return result;
         }
@@ -802,6 +803,11 @@ public class InventoryTracker extends Tracker {
 
     public ItemStack getItemStackInSlot(Slot slot) {
 
+        if (slot == null) {
+            Debug.logError("Null slot checked.");
+            return ItemStack.EMPTY;
+        }
+
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;
 
@@ -810,7 +816,8 @@ public class InventoryTracker extends Tracker {
         }
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
-        return player.currentScreenHandler.getSlot(slot.getWindowSlot()).getStack();
+        net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
+        return (mcSlot != null)? mcSlot.getStack() : ItemStack.EMPTY;
     }
 
     private static boolean slotIsCursor(Slot slot) {
