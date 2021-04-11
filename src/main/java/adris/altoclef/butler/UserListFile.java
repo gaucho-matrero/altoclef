@@ -1,5 +1,7 @@
 package adris.altoclef.butler;
 
+import adris.altoclef.Debug;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class UserListFile {
         File loadFrom = new File(path);
         if (!loadFrom.exists()) {
             // Empty
+            Debug.logInternal("User lists file not found at " + path);
             return new UserListFile();
         }
 
@@ -60,7 +63,7 @@ public class UserListFile {
         StringBuilder result = new StringBuilder();
         for (String line : startingComment.split("\\r?\\n")) {
             if (line.length() != 0) {
-                result.append("#").append(line).append("\n");
+                result.append("# ").append(line).append("\n");
             }
         }
         try {

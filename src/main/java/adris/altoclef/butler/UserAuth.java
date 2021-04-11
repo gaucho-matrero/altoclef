@@ -26,7 +26,7 @@ public class UserAuth {
 
     public void reloadLists() {
         _blacklist = UserListFile.load(BLACKLIST_PATH);
-        _whitelist = UserListFile.load(BLACKLIST_PATH);
+        _whitelist = UserListFile.load(WHITELIST_PATH);
     }
 
     public boolean isUserAuthorized(String username) {
