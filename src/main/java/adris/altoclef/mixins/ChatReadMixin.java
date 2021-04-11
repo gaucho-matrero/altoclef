@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPlayNetworkHandler.class)
 public final class ChatReadMixin {
 
-    private static final String MIDDLE_PART = " whispers to you: ";
+    private static final String[] MIDDLE_PARTS = new String[] {" whispers to you: ", " whispers: "};
 
     private static final Timer _repeatTimer = new Timer(0.1);
 
@@ -35,12 +35,20 @@ public final class ChatReadMixin {
 
             if (msgPacket.isNonChat()) {
                 // Format: <USER> whispers to you: <MESSAGE>
+                // Format: <USER> whispers: <MESSAGE>
                 String msg = msgPacket.getMessage().getString();
-                int index = msg.indexOf(MIDDLE_PART);
+                String foundMiddlePart = "";
+                int index = -1;
+                for (String middle : MIDDLE_PARTS) {
+                    index = msg.indexOf(middle);
+                    if (index != -1) {
+                        foundMiddlePart = middle;
+                        break;
+                    }
+                }
                 if (index != -1) {
-
                     String user = msg.substring(0, index);
-                    String message = msg.substring(index + MIDDLE_PART.length());
+                    String message = msg.substring(index + foundMiddlePart.length());
 
                     //noinspection ConstantConditions
                     if (user == null || message == null) return;

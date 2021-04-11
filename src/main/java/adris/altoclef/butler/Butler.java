@@ -9,6 +9,8 @@ import adris.altoclef.util.csharpisbetter.ActionListener;
 
 public class Butler {
 
+    private static final String BUTLER_MESSAGE_START = "` ";
+
     private final AltoClef _mod;
 
     private final UserAuth _userAuth;
@@ -40,6 +42,10 @@ public class Butler {
     }
 
     public void receiveWhisper(String username, String message) {
+
+        // Ignore messages from other bots.
+        if (message.startsWith(BUTLER_MESSAGE_START)) return;
+
         if (_userAuth.isUserAuthorized(username)) {
             executeWhisper(username, message);
         } else {
@@ -108,6 +114,6 @@ public class Butler {
         }
     }
     private void sendWhisper(String username, String message, MessagePriority priority) {
-        _mod.getMessageSender().enqueueWhisper(username, message, priority);
+        _mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
     }
 }

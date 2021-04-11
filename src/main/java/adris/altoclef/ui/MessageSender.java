@@ -4,6 +4,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.client.MinecraftClient;
 
+import java.util.Comparator;
 import java.util.PriorityQueue;
 
 /**
@@ -17,13 +18,8 @@ public class MessageSender {
     private static final int SLOW_LIMIT = 3;
 
     private final PriorityQueue<BaseMessage> _whisperQueue = new PriorityQueue<>(
-            (left, right) -> {
-                int deltaImportance = right.priority.getImportance() - left.priority.getImportance();
-                if (deltaImportance != 0) {
-                    return deltaImportance;
-                }
-                return right.index - left.index;
-            }
+            Comparator.comparingInt((BaseMessage msg) -> msg.priority.getImportance())
+                    .thenComparingInt(msg -> msg.index)
     );
     //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
