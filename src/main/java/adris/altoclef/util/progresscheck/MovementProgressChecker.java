@@ -30,6 +30,13 @@ public class MovementProgressChecker {
     }
 
     public boolean check(AltoClef mod) {
+
+        // Allow pause on eat
+        if (mod.getFoodChain().isTryingToEat()) {
+            _distanceChecker.reset();
+            _mineChecker.reset();
+        }
+
         if (mod.getControllerExtras().isBreakingBlock()) {
             BlockPos breakBlock = mod.getControllerExtras().getBreakingBlockPos();
             // If we broke a block, we made progress.
