@@ -169,6 +169,14 @@ public class AltoClef implements ModInitializer {
 
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
+
+        // Give baritone more time to calculate paths. Sometimes they can be really far away.
+        // Was: 2000L
+        getClientBaritoneSettings().failureTimeoutMS.value = 6000L;
+        // Was: 5000L
+        getClientBaritoneSettings().planAheadFailureTimeoutMS.value = 10000L;
+        // Was 100
+        getClientBaritoneSettings().movementTimeoutTicks.value = 200;
     }
 
     // List all command sources here.
