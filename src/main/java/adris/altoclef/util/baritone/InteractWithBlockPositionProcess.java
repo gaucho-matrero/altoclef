@@ -9,9 +9,11 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
@@ -186,7 +188,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         // Don't interact if baritone can't interact.
         if (Baritone.getAltoClefSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
 
-        Optional<Rotation> reachable = getReach();
+        Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
             //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
@@ -226,18 +228,24 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         return _interactSide == null;
     }
 
-    public Optional<Rotation> getReach() {
+    public Optional<Rotation> getCurrentReach() {
+        return getReach(_target, _interactSide);
+    }
+
+    public static Optional<Rotation> getReach(BlockPos target, Direction side) {
         Optional<Rotation> reachable;
-        if (sideDoesntMatter()) {
-            reachable = RotationUtils.reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
+        if (side == null) {
+            assert MinecraftClient.getInstance().player != null;
+            reachable = RotationUtils.reachable(ctx.player(), target, ctx.playerController().getBlockReachDistance());
         } else {
-            Vec3i sideVector = _interactSide.getVector();
+            Vec3i sideVector = side.getVector();
             Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
 
-            Vec3d sidePoint = centerOffset.add(_target.getX(), _target.getY(), _target.getZ());
+            Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
 
             //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-            reachable = RotationUtils.reachableOffset(ctx.player(), _target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
+            reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
 
             // Check for right angle
             if (reachable.isPresent()) {
@@ -252,7 +260,6 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 }
             }
         }
-
         return reachable;
     }
 }

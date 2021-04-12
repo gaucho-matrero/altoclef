@@ -28,9 +28,12 @@ public class MLGBucketTask extends Task {
 
     private boolean _clicked;
 
+    private BlockPos _placedPos;
+
     @Override
     protected void onStart(AltoClef mod) {
         _clicked = false;
+        _placedPos = null;
         // hold shift while falling.
         //MinecraftClient.getInstance().options.keySneak.setPressed(true);
     }
@@ -62,6 +65,8 @@ public class MLGBucketTask extends Task {
             // If we're water, we're ok. Do nothing.
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
             if (willLandInState.getBlock() == Blocks.WATER) {
+                Debug.logMessage("(HIT SET): " + willLandIn);
+                _placedPos = willLandIn;
                 // We good.
                 setDebugState("Waiting to fall into water");
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
@@ -79,7 +84,8 @@ public class MLGBucketTask extends Task {
                 setDebugState("Performing MLG");
                 mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
-                    Debug.logMessage("HIT");
+                    Debug.logMessage("HIT: " + willLandIn);
+                    _placedPos = willLandIn;
                     if (!_clicked) {
                         MinecraftClient.getInstance().options.keyUse.setPressed(true);
                         _clicked = true;
@@ -126,6 +132,11 @@ public class MLGBucketTask extends Task {
     @Override
     protected String toDebugString() {
         return "Epic gaemer moment";
+    }
+
+
+    public BlockPos getWaterPlacedPos() {
+        return _placedPos;
     }
 
 }

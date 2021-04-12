@@ -98,6 +98,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         _wanderTask.resetWander();
 
         _progressChecker.reset();
+        _reachTimer.reset();
     }
 
 
@@ -160,7 +161,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 return true;
             }
 
-            return !WorldUtil.isSourceBlock(mod, blockPos);
+            return !WorldUtil.isSourceBlock(mod, blockPos, false);
         }), _toCollect);
 
         // Find nearest water and right click it
@@ -173,7 +174,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
             // If we're able to reach the block but we fail...
             if (mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive()) {
-                Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getReach();
+                Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getCurrentReach();
                 if (reach.isPresent()) {
                     if (_reachTimer.elapsed()) {
                         _reachTimer.reset();
@@ -186,6 +187,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 } else {
                     _reachTimer.reset();
                 }
+            } else {
+                _reachTimer.reset();
             }
 
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
