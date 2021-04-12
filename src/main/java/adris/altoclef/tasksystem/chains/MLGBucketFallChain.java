@@ -56,7 +56,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         return true;
     }
 
-    private boolean isFallingOhNo(AltoClef mod) {
+    public boolean isFallingOhNo(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
         }
