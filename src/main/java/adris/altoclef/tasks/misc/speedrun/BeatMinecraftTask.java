@@ -192,7 +192,6 @@ public class BeatMinecraftTask extends Task {
         if (strongholdPortalFound() || isEndPortalOpened(mod)) {
             if (mod.getChunkTracker().isChunkLoaded(_endPortalFrame.get(0))) {
 
-
                 int eyesNeeded = 12 - portalEyesInFrame(mod);
                 if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= eyesNeeded) {
                     // We have ENOUGH Eyes OR the portal is open.
@@ -269,19 +268,25 @@ public class BeatMinecraftTask extends Task {
                 setDebugState("Build nether portal + go to nether");
                 return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
             } else {
-                int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
+                int targetEyes = TARGET_ENDER_EYES;
+                int targetPearls = TARGET_ENDER_PEARLS;
+                if (strongholdPortalFound()) {
+                    targetEyes = 12 - portalEyesInFrame(mod);
+                    targetPearls = targetEyes;
+                }
+                int pearlsNeeded = targetPearls - eyes;
                 if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded) {
                     setDebugState("Collecting ender pearls");
-                    return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
+                    return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, targetPearls));
                 }
                 setDebugState("Crafting our blaze powder + eyes");
-                int powderNeeded = (TARGET_ENDER_EYES - eyes);
+                int powderNeeded = (targetEyes - eyes);
                 if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
                     return new CraftInInventoryTask(new ItemTarget(Items.BLAZE_POWDER, powderNeeded), CraftingRecipe.newShapedRecipe("blaze_powder",
                             new ItemTarget[]{new ItemTarget(Items.BLAZE_ROD, 1), null, null, null}, 2));
                 }
                 // Craft
-                return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, TARGET_ENDER_EYES), CraftingRecipe.newShapedRecipe("ender_eye",
+                return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, targetEyes), CraftingRecipe.newShapedRecipe("ender_eye",
                         new ItemTarget[]{new ItemTarget(Items.ENDER_PEARL, 1), new ItemTarget(Items.BLAZE_POWDER, 1), null, null}, 1));
             }
         }
