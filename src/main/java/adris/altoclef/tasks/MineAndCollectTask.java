@@ -252,7 +252,7 @@ public class MineAndCollectTask extends ResourceTask {
         protected boolean isValid(AltoClef mod, Object obj) {
             if (obj instanceof BlockPos) {
                 BlockPos b = (BlockPos) obj;
-                return mod.getBlockTracker().blockIsValid(b, _blocks);
+                return mod.getBlockTracker().blockIsValid(b, _blocks) && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(b);
             }
             if (obj instanceof ItemEntity) {
                 ItemEntity drop = (ItemEntity) obj;
