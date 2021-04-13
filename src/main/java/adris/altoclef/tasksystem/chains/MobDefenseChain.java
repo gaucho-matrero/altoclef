@@ -6,9 +6,11 @@ import adris.altoclef.tasks.KillEntitiesTask;
 import adris.altoclef.tasks.misc.DodgeProjectilesTask;
 import adris.altoclef.tasks.misc.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.misc.RunAwayFromHostilesTask;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.KillAura;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
@@ -44,14 +46,17 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private static final double SAFE_KEEP_DISTANCE = 8;
 
+    private final KillAura _killAura = new KillAura();
+
     private Entity _targetEntity;
-    private double _forceFieldRange = Double.POSITIVE_INFINITY;
 
     private boolean _doingFunkyStuff = false;
 
     private boolean _wasPuttingOutFire = false;
 
     private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
+
+    private Task _runAwayTask;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -91,6 +96,7 @@ public class MobDefenseChain extends SingleTaskChain {
         // Force field
         doForceField(mod);
 
+
         // Tell baritone to avoid mobs if we're vulnurable.
         // Costly.
         //mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
@@ -98,7 +104,8 @@ public class MobDefenseChain extends SingleTaskChain {
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
         if (universallyDangerous != null) {
-            setTask(new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE));
+            _runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
+            setTask(_runAwayTask);
             return 70;
         }
 
@@ -108,7 +115,8 @@ public class MobDefenseChain extends SingleTaskChain {
         if (blowingUp != null) {
             _doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
-            setTask(new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE));
+            _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
+            setTask(_runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
 
@@ -124,7 +132,8 @@ public class MobDefenseChain extends SingleTaskChain {
         if (isInDanger(mod)) {
             _doingFunkyStuff = true;
             if (_targetEntity == null) {
-                setTask(new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE));
+                _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
+                setTask(_runAwayTask);
                 return 70;
             }
         }
@@ -221,11 +230,19 @@ public class MobDefenseChain extends SingleTaskChain {
                         return 65;
                     } else {
                         // We can't deal with it
-                        setTask(new RunAwayFromHostilesTask(30, true));
+                        _runAwayTask = new RunAwayFromHostilesTask(30, true);
+                        setTask(_runAwayTask);
                         return 80;
                     }
                 }
             }
+        }
+
+
+        // By default if we aren't "immediately" in danger but were running away, keep running away until we're good.
+        if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
+            setTask(_runAwayTask);
+            return 60;
         }
 
         return 0;
@@ -272,6 +289,9 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void doForceField(AltoClef mod) {
+
+        _killAura.tickStart(mod);
+
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
@@ -303,15 +323,13 @@ public class MobDefenseChain extends SingleTaskChain {
         } catch (Exception e) {
             Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
         }
+
+        _killAura.tickEnd(mod);
     }
 
     private void applyForceField(AltoClef mod, Entity entity) {
         if (_targetEntity != null && _targetEntity.equals(entity)) return;
-        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
-            // Equip non-tool
-            deequipTool(mod);
-            mod.getControllerExtras().attack(entity);
-        }
+        _killAura.applyAura(mod, entity);
     }
 
     private CreeperEntity getClosestFusingCreeper(AltoClef mod) {
@@ -443,34 +461,14 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     public void setForceFieldRange(double range) {
-        _forceFieldRange = range;
+        _killAura.setRange(range);
     }
     public void resetForceField() {
-        _forceFieldRange = Double.POSITIVE_INFINITY;
+        _killAura.setRange(Double.POSITIVE_INFINITY);
     }
 
     public boolean isDoingAcrobatics() {
         return _doingFunkyStuff;
-    }
-
-    private void deequipTool(AltoClef mod) {
-        boolean toolEquipped = false;
-        Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
-        if (equip instanceof ToolItem) {
-            // Pick non tool item or air
-            if (mod.getInventoryTracker().getEmptySlotCount() == 0) {
-                for (int i = 0; i < 35; ++i) {
-                    Slot s = Slot.getFromInventory(i);
-                    Item item = mod.getInventoryTracker().getItemStackInSlot(s).getItem();
-                    if (!(item instanceof ToolItem)) {
-                        mod.getInventoryTracker().equipSlot(s);
-                        break;
-                    }
-                }
-            } else {
-                mod.getInventoryTracker().equipItem(Items.AIR);
-            }
-        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.mixins.ClientConnectionAccessor;
+import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commands.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
@@ -165,8 +166,9 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 2.0;
         getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
 
-        // Don't break blocks we explicitly protect.
+        // Don't break blocks or place blocks where we are explicitly protected.
         getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+        getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
 
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
@@ -233,6 +235,11 @@ public class AltoClef implements ModInitializer {
         if (result != null) {
             _settings = result;
         }
+        // If we weren't running anything and are now "idling", idle.
+        if (getModSettings().shouldIdleWhenNotActive()) {
+            runUserTask(new IdleTask());
+        }
+
         return result;
     }
 

@@ -210,6 +210,14 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
             //Debug.logInternal("Failed to place " + pos.toShortString() + " in " + state.getBlock().getTranslationKey());
             return false;
         }
+        // We can't place here.
+        if (Baritone.getAltoClefSettings().shouldAvoidPlacingAt(pos.getX(), pos.getY(), pos.getZ())) {
+            return false;
+        }
+        // Block is solid and we can't break.
+        if (WorldUtil.isSolid(_mod, pos) && Baritone.getAltoClefSettings().shouldAvoidBreaking(pos)) {
+            return false;
+        }
 
         // Place
         Vec3d placeBelow = new Vec3d(0.5, 0, 0.5);

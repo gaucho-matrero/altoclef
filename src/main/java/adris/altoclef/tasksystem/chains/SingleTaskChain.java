@@ -69,4 +69,8 @@ public abstract class SingleTaskChain extends TaskChain {
             _mainTask.stop(mod);
         }
     }
+
+    public Task getCurrentTask() {
+        return _mainTask;
+    }
 }

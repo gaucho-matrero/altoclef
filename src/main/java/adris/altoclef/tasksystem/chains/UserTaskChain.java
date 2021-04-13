@@ -2,13 +2,12 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Input;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.Stopwatch;
-import net.minecraft.client.MinecraftClient;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -31,13 +30,6 @@ public class UserTaskChain extends SingleTaskChain {
     @Override
     protected void onTick(AltoClef mod) {
 
-        // Stop shortcut
-        if (_mainTask != null && _mainTask.isActive() && Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW.GLFW_KEY_K)) {
-            Debug.logMessage("(stop shortcut sent)");
-            cancel(mod);
-            return;
-        }
-
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return;
 
@@ -53,6 +45,15 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+        // Stop shortcut
+        if (_mainTask != null && _mainTask.isActive() && Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(GLFW.GLFW_KEY_K)) {
+            // Ignore if we're idling as a background task.
+            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
+                return 50;
+            }
+            Debug.logMessage("(stop shortcut sent)");
+            cancel(mod);
+        }
         return 50;
     }
 
@@ -71,7 +72,11 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     protected void onTaskFinish(AltoClef mod) {
-        mod.getTaskRunner().disable();
+        boolean shouldIdle = mod.getModSettings().shouldIdleWhenNotActive();
+        if (!shouldIdle) {
+            // Stop.
+            mod.getTaskRunner().disable();
+        }
         double seconds = _taskStopwatch.time();
         Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
         if (_currentOnFinish != null) {
@@ -81,6 +86,9 @@ public class UserTaskChain extends SingleTaskChain {
         _currentOnFinish = null;
         onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
         _mainTask = null;
+        if (shouldIdle) {
+            mod.runUserTask(new IdleTask());
+        }
     }
 
     private static String prettyPrintTimeDuration(double seconds) {

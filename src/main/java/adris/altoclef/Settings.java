@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.util.KillAura;
 import adris.altoclef.util.csharpisbetter.Util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -67,6 +68,17 @@ public class Settings {
     private boolean mobDefense = true;
 
     /**
+     * Defines how killaura behaves when "mobDefense" is set to true.
+     *
+     *
+     * Strategies:
+     *
+     *      FASTEST: All hostiles are attacked at every possible moment, every frame.
+     *      SMART: Closest hostile is attacked at max every 0.2 seconds.
+     */
+    private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
+
+    /**
      * Only applies if mobDefense is on.
      *
      * If enabled, will attempt to dodge all incoming projectiles
@@ -124,6 +136,13 @@ public class Settings {
      * If true, will use whitelist to only accept users from said whitelist.
      */
     private boolean useButlerWhitelist = true;
+
+    /**
+     * If true, the bot will perform basic survival tasks when no commands are in progress
+     * (eat food, force field mobs, etc.)
+     * It will only perform survival tasks allowed by other parameters in the settings file.
+     */
+    private boolean idleWhenNotActive = false;
 
     /**
      * If we need to throw away something, throw away these items first.
@@ -307,6 +326,10 @@ public class Settings {
     }
 
     public boolean shouldDealWithAnnoyingHostiles() {return killOrAvoidAnnoyingHostiles;}
+
+    public KillAura.Strategy getForceFieldStrategy() {return forceFieldStrategy;}
+
+    public boolean shouldIdleWhenNotActive() {return idleWhenNotActive;}
 
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
