@@ -31,11 +31,11 @@ public interface WorldUtil {
         return new Vec3i(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    static boolean isSourceBlock(AltoClef mod, BlockPos pos) {
+    static boolean isSourceBlock(AltoClef mod, BlockPos pos, boolean onlyAcceptStill) {
         BlockState s = mod.getWorld().getBlockState(pos);
         if (s.getBlock() instanceof FluidBlock) {
             // Only accept still fluids.
-            if (!s.getFluidState().isStill()) return false;
+            if (!s.getFluidState().isStill() && onlyAcceptStill) return false;
             int level = s.getFluidState().getLevel();
             // Ignore if there's liquid above, we can't tell if it's a source block or not.
             BlockState above = mod.getWorld().getBlockState(pos.up());

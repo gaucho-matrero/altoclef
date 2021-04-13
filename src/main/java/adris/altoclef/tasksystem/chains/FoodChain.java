@@ -73,7 +73,7 @@ public class FoodChain extends SingleTaskChain {
          */
 
         // We're in danger, don't eat now!!
-        if (mod.getMobDefenseChain().isDoingAcrobatics()) {
+        if (mod.getMobDefenseChain().isDoingAcrobatics() || mod.getMLGBucketChain().isFallingOhNo(mod)) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }

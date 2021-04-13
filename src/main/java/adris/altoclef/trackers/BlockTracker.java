@@ -263,7 +263,7 @@ public class BlockTracker extends Tracker {
         requestBlockUnreachable(pos, DEFAULT_REACH_ATTEMPTS_ALLOWED);
     }
 
-        private PosCache currentCache() {
+    private PosCache currentCache() {
         Dimension dimension = _mod.getCurrentDimension();
         if (!_caches.containsKey(dimension)) {
             _caches.put(dimension, new PosCache(100, 64*1.5));
@@ -437,6 +437,30 @@ public class BlockTracker extends Tracker {
          * Purge enough blocks so our size is small enough
          */
         public void smartPurge(Vec3d playerPos) {
+
+            // Clear cached by position blocks, as they can be a handful.
+            try {
+                int MAX_CACHE_SIZE = 10000;
+                if (_cachedByPosition.size() > MAX_CACHE_SIZE) {
+                    List<BlockPos> toRemoveList = new ArrayList<>(_cachedByPosition.size() - MAX_CACHE_SIZE);
+                    // Just purge randomly.
+                    for (BlockPos pos : _cachedByPosition.keySet()) {
+                        if (_cachedByPosition.size() - toRemoveList.size() < MAX_CACHE_SIZE) {
+                            break;
+                        }
+                        toRemoveList.add(pos);
+                    }
+                    for (BlockPos toDelete : toRemoveList) {
+                        _cachedByPosition.remove(toDelete);
+                    }
+                }
+            } catch (Exception e) {
+                Debug.logWarning("Failed to purge/reduce _cachedByPosition cache.: Its size remains at " + _cachedByPosition.size());
+            }
+
+            // ^^^ TODO: Something about that feels fishy, particularly how it's disconnected from the _cachedBlocks purging.
+            // I smell a dangerous edge case bug.
+
             for (Block block : _cachedBlocks.keySet()) {
                 List<BlockPos> tracking = _cachedBlocks.get(block);
 

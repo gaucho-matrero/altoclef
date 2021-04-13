@@ -238,7 +238,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             if (frameBlock == Blocks.OBSIDIAN) {
                 // Already satisfied, clear water above if need be.
                 BlockPos waterCheck = framePos.up();
-                if (mod.getWorld().getBlockState(waterCheck).getBlock() == Blocks.WATER && WorldUtil.isSourceBlock(mod, waterCheck)) {
+                if (mod.getWorld().getBlockState(waterCheck).getBlock() == Blocks.WATER && WorldUtil.isSourceBlock(mod, waterCheck, true)) {
                     setDebugState("Clearing water from cast");
                     return new ClearLiquidTask(waterCheck);
                 }

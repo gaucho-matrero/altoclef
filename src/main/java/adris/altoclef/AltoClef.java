@@ -45,6 +45,7 @@ public class AltoClef implements ModInitializer {
     private UserTaskChain _userTaskChain;
     private FoodChain _foodChain;
     private MobDefenseChain _mobDefenseChain;
+    private MLGBucketFallChain _mlgBucketChain;
 
     // Trackers
     private InventoryTracker _inventoryTracker;
@@ -101,7 +102,7 @@ public class AltoClef implements ModInitializer {
         _mobDefenseChain = new MobDefenseChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
         new PlayerInteractionFixChain(_taskRunner);
-        new MLGBucketFallChain(_taskRunner);
+        _mlgBucketChain = new MLGBucketFallChain(_taskRunner);
         new WorldSurvivalChain(_taskRunner);
         _foodChain = new FoodChain(_taskRunner);
 
@@ -264,12 +265,15 @@ public class AltoClef implements ModInitializer {
         _userTaskChain.runTask(this, task, onFinish);
     }
     public void cancelUserTask() {_userTaskChain.cancel(this);}
+
+    // Chains
     public FoodChain getFoodChain() {
         return _foodChain;
     }
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
+    public MLGBucketFallChain getMLGBucketChain() {return _mlgBucketChain;}
 
 
     // Are we in game (playing in a server/world)

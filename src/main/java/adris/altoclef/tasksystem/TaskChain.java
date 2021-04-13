@@ -43,4 +43,8 @@ public abstract class TaskChain {
         _cachedTaskChain.add(task);
     }
 
+    public String toString() {
+        return getName();
+    }
+
 }

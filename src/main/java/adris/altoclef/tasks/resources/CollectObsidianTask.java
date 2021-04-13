@@ -101,7 +101,7 @@ public class CollectObsidianTask extends ResourceTask {
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
             if (nearestObby != null) {
-                BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldUtil.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos), Blocks.WATER);
+                BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldUtil.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
 
                 if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 10 * 10) {
                     _forceCompleteTask = new ClearLiquidTask(nearestWater);
@@ -117,7 +117,7 @@ public class CollectObsidianTask extends ResourceTask {
         Function<Vec3d, BlockPos> getNearestLava = ppos -> mod.getBlockTracker().getNearestTracking(ppos,
                 blockPos -> {
                     if (_lavaBlacklist.contains(blockPos)) return true;
-                    if (!WorldUtil.isSourceBlock(mod, blockPos)) return true;
+                    if (!WorldUtil.isSourceBlock(mod, blockPos, true)) return true;
 
                     BlockPos placeOnPos = getLavaStructurePos(blockPos);
 
