@@ -222,6 +222,7 @@ public class MineAndCollectTask extends ResourceTask {
                 mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);
                 _miningPos = null;
+                _progressChecker.reset();
             }
             return super.onTick(mod);
         }
