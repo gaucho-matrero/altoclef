@@ -214,7 +214,7 @@ public class BlockTracker extends Tracker {
             }
 
             // Purge if we have too many blocks tracked at once.
-            currentCache().smartPurge(_mod.getPlayer().getPos());
+            currentCache().smartPurge(_mod, _mod.getPlayer().getPos());
         }
     }
 
@@ -436,7 +436,7 @@ public class BlockTracker extends Tracker {
         /**
          * Purge enough blocks so our size is small enough
          */
-        public void smartPurge(Vec3d playerPos) {
+        public void smartPurge(AltoClef mod, Vec3d playerPos) {
 
             // Clear cached by position blocks, as they can be a handful.
             try {
@@ -468,6 +468,8 @@ public class BlockTracker extends Tracker {
                 try {
                     tracking = tracking.stream()
                             .filter(pos -> !_blacklist.unreachable(pos))
+                            // This is invalid, because some blocks we may want to GO TO not BREAK.
+                            //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
                             .sorted((BlockPos left, BlockPos right) -> {
                                 double leftDist = left.getSquaredDistance(playerPos, false);

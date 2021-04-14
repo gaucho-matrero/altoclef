@@ -62,7 +62,7 @@ public interface WorldUtil {
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {
-        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0;
+        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos);
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {

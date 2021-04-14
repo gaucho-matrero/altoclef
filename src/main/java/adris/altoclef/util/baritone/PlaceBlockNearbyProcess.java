@@ -215,7 +215,7 @@ public class PlaceBlockNearbyProcess extends BaritoneProcessHelper {
             return false;
         }
         // Block is solid and we can't break.
-        if (WorldUtil.isSolid(_mod, pos) && Baritone.getAltoClefSettings().shouldAvoidBreaking(pos)) {
+        if (WorldUtil.isSolid(_mod, pos) && !WorldUtil.canBreak(_mod, pos)) {
             return false;
         }
 

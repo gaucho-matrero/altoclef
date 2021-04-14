@@ -11,6 +11,7 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
@@ -184,6 +185,8 @@ public class CollectFoodTask extends Task {
                             return !crop.isMature(s);
                         }
                     }
+                    // Unbreakable.
+                    if (!WorldUtil.canBreak(mod, blockPos)) return true;
                     // We're not wheat so do NOT reject.
                     return false;
                 }), 100);
@@ -296,7 +299,11 @@ public class CollectFoodTask extends Task {
      * Returns null if task cannot reasonably run.
      */
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), reject, blockToCheck);
+        Predicate<BlockPos> rejectPlus = (blockPos) -> {
+            if (!WorldUtil.canBreak(mod, blockPos)) return true;
+            return reject.test(blockPos);
+        };
+        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), rejectPlus, blockToCheck);
 
         if (nearestBlock != null && !nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
             nearestBlock = null;
@@ -315,7 +322,7 @@ public class CollectFoodTask extends Task {
                 //new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), GetToEntityTask::new,)
                 //return new GetToEntityTask(nearestDrop);
             } else {
-                return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), DestroyBlockTask::new, blockToCheck);
+                return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck),  blockToCheck);
                 //return new DestroyBlockTask(nearestBlock);
             }
         }
