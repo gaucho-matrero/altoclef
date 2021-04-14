@@ -139,6 +139,7 @@ public class Settings {
 
     /**
      *
+     *
      * Servers have different messaging plugins that change the way messages are displayed.
      * Rather than attempt to implement all of them and introduce a big security risk,
      * you may define custom whisper formats that the butler will watch out for.
@@ -148,6 +149,11 @@ public class Settings {
      * {from}: Who the message was sent from
      * {to}: Who the message was sent to, butler will ignore if this is not your username.
      * {message}: The message.
+     *
+     *
+     * WARNING: The butler will only accept non-chat messages as commands, but don't make this too lenient,
+     *      else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
+     *      create the following messages.
      */
     private String[] whisperFormats = new String[] {
             "{from} whispers to you: {message}",
