@@ -2,16 +2,20 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.StaticMixinHookups;
 import adris.altoclef.commands.CommandException;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.csharpisbetter.ActionListener;
+import net.minecraft.client.MinecraftClient;
 
 public class Butler {
 
     private static final String BUTLER_MESSAGE_START = "` ";
 
     private final AltoClef _mod;
+
+    private final WhisperChecker _whisperChecker = new WhisperChecker();
 
     private final UserAuth _userAuth;
 
@@ -39,6 +43,16 @@ public class Butler {
 
     public void reloadLists() {
         _userAuth.reloadLists();
+    }
+
+    public void receiveMessage(String msg) {
+        // Format: <USER> whispers to you: <MESSAGE>
+        // Format: <USER> whispers: <MESSAGE>
+        String ourName = MinecraftClient.getInstance().getName();
+        WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
+        if (result != null) {
+            this.receiveWhisper(result.from, result.message);
+        }
     }
 
     public void receiveWhisper(String username, String message) {

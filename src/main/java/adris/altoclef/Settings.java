@@ -138,6 +138,24 @@ public class Settings {
     private boolean useButlerWhitelist = true;
 
     /**
+     *
+     * Servers have different messaging plugins that change the way messages are displayed.
+     * Rather than attempt to implement all of them and introduce a big security risk,
+     * you may define custom whisper formats that the butler will watch out for.
+     *
+     * Within curly brackets are three special parts:
+     *
+     * {from}: Who the message was sent from
+     * {to}: Who the message was sent to, butler will ignore if this is not your username.
+     * {message}: The message.
+     */
+    private String[] whisperFormats = new String[] {
+            "{from} whispers to you: {message}",
+            "{from} whispers: {message}",
+            "\\[{from} -> {to}\\] {message}"
+    };
+
+    /**
      * If true, the bot will perform basic survival tasks when no commands are in progress
      * (eat food, force field mobs, etc.)
      * It will only perform survival tasks allowed by other parameters in the settings file.
@@ -235,6 +253,11 @@ public class Settings {
         Settings result = gson.fromJson(data, Settings.class);
         result.markDirty();
         result.save();
+
+        for (ProtectionRange protection : result.areasToProtect) {
+            Debug.logInternal("Debug: Protection range: " + protection);
+        }
+
         return result;
     }
 
@@ -366,6 +389,8 @@ public class Settings {
         return result;
     }
 
+    public String[] getWhisperFormats() {return whisperFormats;}
+
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
         for (ProtectionRange protection : areasToProtect) {
             if (protection.includes(pos)) return true;
@@ -389,6 +414,10 @@ public class Settings {
             return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
                     start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
                     start.getY() <= pos.getY() && pos.getY() <= end.getY());
+        }
+
+        public String toString() {
+            return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
         }
     }
 }

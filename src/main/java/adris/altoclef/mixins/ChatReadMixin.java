@@ -1,72 +1,27 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
-import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.event.events.ChatEvent;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.gui.hud.ChatHudListener;
 import net.minecraft.network.MessageType;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.UUID;
 
-@Mixin(ClientPlayNetworkHandler.class)
+
+@Mixin(ChatHudListener.class)
 public final class ChatReadMixin {
 
-    private static final String[] MIDDLE_PARTS = new String[] {" whispers to you: ", " whispers: "};
-
-    private static final Timer _repeatTimer = new Timer(0.1);
-
-    private static String _lastUser = null, _lastMessage = null;
-
     @Inject(
-            method = "onGameMessage",
+            method = "onChatMessage",
             at = @At("HEAD")
     )
-    private void onGameMessage(GameMessageS2CPacket msgPacket, CallbackInfo ci) {
-        if (msgPacket.getLocation() == MessageType.SYSTEM) {
-            StaticMixinHookups.onGameMessage(msgPacket.getMessage().getString());
-
-            if (msgPacket.isNonChat()) {
-                // Format: <USER> whispers to you: <MESSAGE>
-                // Format: <USER> whispers: <MESSAGE>
-                String msg = msgPacket.getMessage().getString();
-                String foundMiddlePart = "";
-                int index = -1;
-                for (String middle : MIDDLE_PARTS) {
-                    index = msg.indexOf(middle);
-                    if (index != -1) {
-                        foundMiddlePart = middle;
-                        break;
-                    }
-                }
-                if (index != -1) {
-                    String user = msg.substring(0, index);
-                    String message = msg.substring(index + foundMiddlePart.length());
-
-                    //noinspection ConstantConditions
-                    if (user == null || message == null) return;
-                    boolean duplicate = (user.equals(_lastUser) && message.equals(_lastMessage));
-
-                    if (duplicate && !_repeatTimer.elapsed()) {
-                        // It's probably an actual duplicate. IDK why we get those but yeah.
-                        return;
-                    }
-
-                    _lastUser = user;
-                    _lastMessage = message;
-                    _repeatTimer.reset();
-
-                    //Debug.logInternal("USER: \"" + user + "\" MESSAGE: \"" + message + "\" " + msgPacket.isWritingErrorSkippable() + " : " + msgPacket.getSenderUuid());
-                    StaticMixinHookups.onWhisperReceive(user, message);
-                }
-            }
+    private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
+        if (messageType == MessageType.SYSTEM) {
+            StaticMixinHookups.onGameMessage(message.getString(), true);
         }
     }
 }
