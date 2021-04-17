@@ -26,6 +26,8 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {
             mod.getConfigState().allowWalkThroughLava(true);

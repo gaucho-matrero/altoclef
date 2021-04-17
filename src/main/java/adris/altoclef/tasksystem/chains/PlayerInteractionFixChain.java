@@ -51,7 +51,7 @@ public class PlayerInteractionFixChain extends TaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (mod.getPlayer() == null) return Float.NEGATIVE_INFINITY;
+        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
 
         if (_betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.

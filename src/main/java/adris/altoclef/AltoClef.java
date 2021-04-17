@@ -289,6 +289,7 @@ public class AltoClef implements ModInitializer {
     }
 
     public Dimension getCurrentDimension() {
+        if (!inGame()) return Dimension.OVERWORLD;
         if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
         if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
         return Dimension.END;

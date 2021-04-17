@@ -42,6 +42,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
 
     @Override
     public float getPriority(AltoClef mod) {
+        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
         // Won't work in the nether, duh
         if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
 
