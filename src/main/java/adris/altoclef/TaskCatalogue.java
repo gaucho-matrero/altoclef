@@ -55,6 +55,8 @@ public class TaskCatalogue {
                 shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
             }
 
+            shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p);
+
             smelt("stone", Items.STONE, "cobblestone");
 
             mine("netherrack",  MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK);

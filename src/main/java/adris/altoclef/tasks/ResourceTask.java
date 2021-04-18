@@ -1,18 +1,25 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import adris.altoclef.tasks.chest.PickupFromChestTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
 
 public abstract class ResourceTask extends Task {
 
     protected final ItemTarget[] _itemTargets;
 
     private final PickupDroppedItemTask _pickupTask;
+    private BlockPos _currentChest;
 
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
@@ -63,6 +70,30 @@ public abstract class ResourceTask extends Task {
                 if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod)) ) {
                     return _pickupTask;
                 }
+            }
+        }
+
+        // Check for chests and grab resources from them.
+        if (_currentChest != null) {
+            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_currentChest);
+            if (data == null) {
+                _currentChest = null;
+            } else {
+                if (!data.hasItem(_itemTargets)) {
+                    _currentChest = null;
+                } else {
+                    // We have a current chest, grab from it.
+                    return new PickupFromChestTask(_currentChest, _itemTargets);
+                }
+            }
+        }
+        List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(_itemTargets);
+        Debug.logInternal("CHESTS: " + Util.arrayToString(Util.toArray(BlockPos.class, chestsWithItem)));
+        if (!chestsWithItem.isEmpty()) {
+            BlockPos closest = Util.minItem(chestsWithItem, (left, right) -> (int) (right.getSquaredDistance(mod.getPlayer().getPos(), false) - left.getSquaredDistance(mod.getPlayer().getPos(), false)));
+            if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
+                _currentChest = closest;
+                return new PickupFromChestTask(_currentChest, _itemTargets);
             }
         }
 

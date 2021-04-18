@@ -113,6 +113,11 @@ public class BlockTracker extends Tracker {
         return currentCache().anyFound(blocks);
     }
 
+    public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block ...blocks) {
+        updateState();
+        return currentCache().anyFound(isInvalidTest, blocks);
+    }
+
     public BlockPos getNearestTracking(Vec3d pos, Block ...blocks) {
         return getNearestTracking(pos, (p) -> false, blocks);
     }
@@ -291,6 +296,18 @@ public class BlockTracker extends Tracker {
         public boolean anyFound(Block ...blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) return true;
+            }
+            return false;
+        }
+        public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block ...blocks) {
+            for (Block block : blocks) {
+                if (_cachedBlocks.containsKey(block)) {
+                    for (BlockPos pos : _cachedBlocks.get(block)) {
+                        if (!isInvalidTest.test(pos)) {
+                            return true;
+                        }
+                    }
+                }
             }
             return false;
         }

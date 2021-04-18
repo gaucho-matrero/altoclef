@@ -2,7 +2,11 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.slots.ChestSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.screen.Screen;
@@ -15,9 +19,8 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * Keeps track of items that are in containers. Uses the blocktracker to verify container existance.
@@ -36,7 +39,7 @@ public class ContainerTracker extends Tracker {
 
     public ContainerTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
-        _chestMap = new ChestMap();
+        _chestMap = new ChestMap(mod);
         _furnaceMap = new FurnaceMap(mod);
     }
 
@@ -108,9 +111,7 @@ public class ContainerTracker extends Tracker {
     public FurnaceMap getFurnaceMap() {
         return _furnaceMap;
     }
-    public ChestMap getChestMap() {
-        return _chestMap;
-    }
+    public ChestMap getChestMap() { return _chestMap; }
 
     abstract static class ContainerMap<T extends ScreenHandler> {
 
@@ -144,25 +145,173 @@ public class ContainerTracker extends Tracker {
         public abstract void clear();
     }
 
-    static class ChestMap extends ContainerMap<GenericContainerScreenHandler> {
+    public static class ChestMap extends ContainerMap<GenericContainerScreenHandler> {
+
+        private final AltoClef _mod;
+        private final HashMap<BlockPos, ChestData> _blockData = new HashMap<>();
+        //private final HashMap<Item, List<BlockPos>> _chestsWithItem = new HashMap<>();
+
+        public ChestMap(AltoClef mod) {
+            _mod = mod;
+        }
+
         @Override
         public void updateContainer(BlockPos pos, GenericContainerScreenHandler screenHandler) {
+            BlockPos leftSide = WorldUtil.getChestLeft(_mod, pos);
+            if (leftSide == null) {
+                Debug.logInternal("PROBLEM: (could not find chest left side?)");
+                return;
+            }
+
+
+            boolean big = screenHandler.getRows() >= 6;
+
+            _blockData.putIfAbsent(pos, new ChestData(big));
+            ChestData data = _blockData.get(pos);
+
+            data.clear();
+            data.setBig(big);
+
+            int start = 0;
+            int end = big ? 53 : 26;
+            int occupied = 0;
+            for (int slotIndex = start; slotIndex <= end; ++slotIndex) {
+                ItemStack stack = screenHandler.getInventory().getStack(slotIndex);
+                if (!stack.isEmpty()) {
+                    data.addItem(stack.getItem(), stack.getCount(), slotIndex);
+                    occupied ++;
+                }
+            }
+            data.setOccupiedSlots(occupied);
 
         }
 
         @Override
         public void updateBlocks() {
-
+            // Check for deleted blocks and delete if they no longer exist
+            for (BlockPos blockToCheck : _blockData.keySet()) {
+                if (!_mod.getBlockTracker().blockIsValid(blockToCheck, Blocks.CHEST)) {
+                    deleteBlock(blockToCheck);
+                }
+                if (_mod.getChunkTracker().isChunkLoaded(blockToCheck)) {
+                    ChestData data = _blockData.get(blockToCheck);
+                    if (data._big && !WorldUtil.isChestBig(_mod, blockToCheck)) {
+                        Debug.logMessage("Cached chest size at " + blockToCheck.toShortString() + " reduced, will delete chest info/uncache.");
+                        deleteBlock(blockToCheck);
+                    }
+                }
+            }
         }
 
         @Override
         public void deleteBlock(BlockPos pos) {
-
+            _blockData.remove(pos);
         }
 
         @Override
         public void clear() {
+            _blockData.clear();
+            //_chestsWithItem.clear();
+        }
 
+        private void validateItemChestMap(Item item) {
+            //if (_chestsWithItem.containsKey(item)) {
+                // Remove if we're not tracking this block anymore.
+            //    _chestsWithItem.get(item).removeIf(blockPos -> !_blockData.containsKey(blockPos));
+            //}
+        }
+
+        public ChestData getCachedChestData(BlockPos pos) {
+            return _blockData.getOrDefault(pos, null);
+        }
+
+        public List<BlockPos> getBlocksWithItem(ItemTarget[] targets, boolean requireMinAmount) {
+            List<BlockPos> result = new ArrayList<>();
+            int count = 0;
+            for (BlockPos pos : _blockData.keySet()) {
+                ChestData data = getCachedChestData(pos);
+                for (ItemTarget target : targets) {
+                    for (Item item : target.getMatches()) {
+                        if (data.getItemCount(item) > 0) {
+                            result.add(pos);
+                            count += data.getItemCount(item);
+                        }
+                    }
+                }
+            }
+            return result;
+            //return new ArrayList<>();
+        }
+        public List<BlockPos> getBlocksWithItem(ItemTarget[] targets) {
+            return getBlocksWithItem(targets, false);
+        }
+
+    }
+
+    public static class ChestData {
+        public Instant _lastOpened;
+
+        private HashMap<Item, Integer> _itemCounts = new HashMap<>();
+        private HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
+
+        private boolean _big;
+
+        private int _occupiedSlots;
+
+        public ChestData(boolean big) {
+            _big = big;
+        }
+
+        public boolean isBig() {
+            return _big;
+        }
+        public void onOpen() {
+            _lastOpened = Instant.now();
+        }
+        public long openedHowManyMillisecondsAgo() {
+            return Instant.now().toEpochMilli() - _lastOpened.toEpochMilli();
+        }
+
+        public boolean hasItem(Item ...items) {
+            for (Item item : items) {
+                if (_itemCounts.containsKey(item)) return true;
+            }
+            return false;
+        }
+        public boolean hasItem(ItemTarget ...targets) {
+            for (ItemTarget target : targets) {
+                if (hasItem(target.getMatches())) return true;
+            }
+            return false;
+        }
+        public int getItemCount(Item item) {
+            return _itemCounts.getOrDefault(item, 0);
+        }
+        public List<Slot> getItemSlotsWithItem(Item item) {
+            return _itemSlots.getOrDefault(item, new ArrayList<>());
+        }
+
+        public void clear() {
+            _itemCounts.clear();
+            _itemSlots.clear();
+            _occupiedSlots = 0;
+        }
+        public void addItem(Item item, int count, int slotIndex) {
+            _itemCounts.putIfAbsent(item, 0);
+            _itemCounts.put(item, _itemCounts.get(item) + count);
+            _itemSlots.putIfAbsent(item, new ArrayList<>());
+            _itemSlots.get(item).add(new ChestSlot(slotIndex, _big));
+        }
+
+        public int getOccupiedSlots() {return _occupiedSlots;}
+        public void setOccupiedSlots(int slotCount) { _occupiedSlots = slotCount; }
+
+        public void setBig(boolean big) {
+            _big = big;
+        }
+
+        public boolean isFull() {
+            return _occupiedSlots >= (_big? 9*3*2 : 9*3);
         }
     }
 

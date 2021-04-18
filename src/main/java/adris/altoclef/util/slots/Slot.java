@@ -33,23 +33,31 @@ public abstract class Slot {
         _isInventory = inventory;
         if (inventory) {
             _inventorySlot = slot;
-            _windowSlot = inventorySlotToWindowSlot(slot);
+            _windowSlot = -1;
+            //_windowSlot = inventorySlotToWindowSlot(slot);
         } else {
-            _inventorySlot = windowSlotToInventorySlot(slot);
+            //_inventorySlot = windowSlotToInventorySlot(slot);
+            _inventorySlot = -1;
             _windowSlot = slot;
         }
     }
 
-    @SuppressWarnings("CopyConstructorMissesField")
-    public Slot(Slot other) {
+    //@SuppressWarnings("CopyConstructorMissesField")
+    /*public Slot(Slot other) {
         this(other._inventorySlot, true);
-    }
+    }*/
 
     public int getInventorySlot() {
+        if (!_isInventory) {
+            return windowSlotToInventorySlot(_windowSlot);
+        }
         return _inventorySlot;
     }
 
     public int getWindowSlot() {
+        if (_isInventory) {
+            return inventorySlotToWindowSlot(_inventorySlot);
+        }
         return _windowSlot;
     }
 
@@ -71,6 +79,10 @@ public abstract class Slot {
                 return new CraftingTableInventorySlot(inventorySlot);
             case FURNACE:
                 return new FurnaceInventorySlot(inventorySlot);
+            case CHEST_LARGE:
+                return new ChestInventorySlot(inventorySlot, true);
+            case CHEST_SMALL:
+                return new ChestInventorySlot(inventorySlot, false);
         }
         Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
         return null;
@@ -83,10 +95,8 @@ public abstract class Slot {
         }
         if (screen instanceof GenericContainerScreen) {
             GenericContainerScreenHandler handler = ((GenericContainerScreen)screen).getScreenHandler();
-            int size = handler.slots.size();
-            Debug.logMessage("TODO PLEASE: CHECK: " + size);
-            //int a = 1 / 0;
-            return ContainerType.CHEST_LARGE;
+            boolean big = (handler.getRows() == 6);
+            return big ? ContainerType.CHEST_LARGE : ContainerType.CHEST_SMALL;
         }
         if (screen instanceof CraftingScreen) {
             return ContainerType.CRAFTING_TABLE;
@@ -99,7 +109,7 @@ public abstract class Slot {
     @Override
     public String toString() {
         return getName() + (_isInventory? "InventorySlot" : "Slot") +  "{" +
-                "inventory slot = " + _inventorySlot +
+                "inventory slot = " + getInventorySlot() +
                 ", window slot = " + getWindowSlot() +
                 '}';
     }

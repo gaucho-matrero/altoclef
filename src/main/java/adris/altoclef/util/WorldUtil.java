@@ -12,6 +12,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.block.enums.BedPart;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BlazeEntity;
@@ -59,6 +60,30 @@ public interface WorldUtil {
             return posWithBed.offset(facing);
         }
         return null;
+    }
+
+    // Get the left side of a chest, given a block pos.
+    // Used to consistently identify whether a double chest is part of the same chest.
+    static BlockPos getChestLeft(AltoClef mod, BlockPos posWithChest) {
+        BlockState state = mod.getWorld().getBlockState(posWithChest);
+        if (state.getBlock() instanceof ChestBlock) {
+            ChestType type = state.get(ChestBlock.CHEST_TYPE);
+            if (type == ChestType.SINGLE || type == ChestType.LEFT) {
+                return posWithChest;
+            }
+            Direction facing = state.get(ChestBlock.FACING);
+            return posWithChest.offset(facing.rotateYCounterclockwise());
+        }
+        return null;
+    }
+
+    static boolean isChestBig(AltoClef mod, BlockPos posWithChest) {
+        BlockState state = mod.getWorld().getBlockState(posWithChest);
+        if (state.getBlock() instanceof ChestBlock) {
+            ChestType type = state.get(ChestBlock.CHEST_TYPE);
+            return (type == ChestType.RIGHT || type == ChestType.LEFT);
+        }
+        return false;
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {

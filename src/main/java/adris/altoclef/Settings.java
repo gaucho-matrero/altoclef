@@ -40,6 +40,27 @@ public class Settings {
      */
     private float resourcePickupDropRange = -1;
 
+    /**
+     * Chests are cached for their contents.
+     *
+     * If the bot is collecting a resource and finds a chest within this range,
+     * it will grab the resource from the chest.
+     *
+     * Set this to 0 to disable chest pickups.
+     *
+     * Don't set this too high, as the bot will prioritize chests even if the resource
+     * is easily accesible now.
+     *
+     */
+    private float resourceChestLocateRange = 500;
+
+    /**
+     * When going to the nearest chest to store items, the bot may normally
+     * dig up dungeons constantly. If this is set to true, the bot will
+     * search around each chest to make sure it's not in a dungeon.
+     */
+    private boolean avoidSearchingDungeonChests = true;
+
 
     /**
      * Some larger special tasks will perform extra preparation work to ensure your player
@@ -301,6 +322,8 @@ public class Settings {
 
     public float getResourcePickupRange() {return resourcePickupDropRange;}
 
+    public float getResourceChestLocateRange() {return resourceChestLocateRange;}
+
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
     }
@@ -367,6 +390,8 @@ public class Settings {
     public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
 
     public boolean shouldAvoidDrowning() {return avoidDrowning;}
+
+    public boolean shouldAvoidSearchingForDungeonChests() {return avoidSearchingDungeonChests;}
 
     public boolean isThrowaway(Item item) {
         return idArrayContainsItem(item, throwawayItems);
