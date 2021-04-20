@@ -23,6 +23,8 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -139,6 +141,11 @@ public class BeatMinecraftTask extends Task {
                 return endTick(mod);
         }
         throw new IllegalStateException("Shouldn't ever happen.");
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return MinecraftClient.getInstance().currentScreen instanceof CreditsScreen;
     }
 
     private Task overworldTick(AltoClef mod) {
@@ -271,13 +278,14 @@ public class BeatMinecraftTask extends Task {
                 int targetEyes = TARGET_ENDER_EYES;
                 int targetPearls = TARGET_ENDER_PEARLS;
                 if (strongholdPortalFound()) {
-                    targetEyes = 12 - portalEyesInFrame(mod);
+                    targetEyes = 12;
                     targetPearls = targetEyes;
                 }
+                // eyes already accounts for portal eyes in frame.
                 int pearlsNeeded = targetPearls - eyes;
                 if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded) {
                     setDebugState("Collecting ender pearls");
-                    return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, targetPearls));
+                    return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, pearlsNeeded));
                 }
                 setDebugState("Crafting our blaze powder + eyes");
                 int powderNeeded = (targetEyes - eyes);

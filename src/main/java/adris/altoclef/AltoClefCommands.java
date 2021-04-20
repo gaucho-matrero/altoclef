@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
@@ -288,6 +289,12 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "bed":
                 mod.runUserTask(new PlaceBedAndSetSpawnTask());
+                break;
+            case "dragon":
+                mod.runUserTask(new KillEnderDragonTask());
+                break;
+            case "chest":
+                mod.runUserTask(new StoreInAnyChestTask(new ItemTarget(Items.DIAMOND, 3)));
                 break;
         }
     }

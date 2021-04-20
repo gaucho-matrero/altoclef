@@ -1,11 +1,7 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
-import baritone.Baritone;
 import baritone.api.BaritoneAPI;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.RotationUtils;
 import baritone.pathing.movement.MovementHelper;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
@@ -15,13 +11,15 @@ import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public interface WorldUtil {
 
@@ -84,6 +82,23 @@ public interface WorldUtil {
             return (type == ChestType.RIGHT || type == ChestType.LEFT);
         }
         return false;
+    }
+
+    static int getGroundHeight(AltoClef mod, int x, int z) {
+        for (int y = 255; y >= 0; --y) {
+            BlockPos check = new BlockPos(x, y, z);
+            if (isSolid(mod, check)) return y;
+        }
+        return -1;
+    }
+    static int getGroundHeight(AltoClef mod, int x, int z, Block ...groundBlocks) {
+        Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
+        for (int y = 255; y >= 0; --y) {
+            BlockPos check = new BlockPos(x, y, z);
+            if (possibleBlocks.contains(mod.getWorld().getBlockState(check).getBlock())) return y;
+
+        }
+        return -1;
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {

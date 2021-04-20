@@ -46,7 +46,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         return null;
     }
 
-    private void equipWeapon(AltoClef mod) {
+    public static void equipWeapon(AltoClef mod) {
         for (Item item : WEAPON_ITEMS) {
             if (mod.getInventoryTracker().hasItem(item)) {
                 mod.getInventoryTracker().equipItem(item);

@@ -12,6 +12,10 @@ public class KillEntityTask extends AbstractKillEntityTask {
     public KillEntityTask(Entity entity) {
         _target = entity;
     }
+    public KillEntityTask(Entity entity, double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
+        _target = entity;
+    }
 
     @Override
     protected Entity getEntityTarget(AltoClef mod) {
