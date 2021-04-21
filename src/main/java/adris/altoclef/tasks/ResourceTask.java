@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.chest.PickupFromChestTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
@@ -88,7 +87,6 @@ public abstract class ResourceTask extends Task {
             }
         }
         List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(_itemTargets);
-        Debug.logInternal("CHESTS: " + Util.arrayToString(Util.toArray(BlockPos.class, chestsWithItem)));
         if (!chestsWithItem.isEmpty()) {
             BlockPos closest = Util.minItem(chestsWithItem, (left, right) -> (int) (right.getSquaredDistance(mod.getPlayer().getPos(), false) - left.getSquaredDistance(mod.getPlayer().getPos(), false)));
             if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
