@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.math.BlockPos;
@@ -27,6 +28,8 @@ public class PlayerExtraController {
 
     public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
     public static class BlockBrokenEvent {public BlockPos blockPos; public BlockState blockState; public PlayerEntity player;}
+    public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
+    public static class BlockPlaceEvent {public BlockPos blockPos; public BlockState blockState; public LivingEntity placer;}
 
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
@@ -48,6 +51,15 @@ public class PlayerExtraController {
             evt.blockState = state;
             evt.player = player;
             onBlockBroken.invoke(evt);
+        }
+    }
+    public void onBlockPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer) {
+        if (world == _mod.getWorld()) {
+            BlockPlaceEvent evt = new BlockPlaceEvent();
+            evt.blockPos = pos;
+            evt.blockState = state;
+            evt.placer = placer;
+            onBlockPlaced.invoke(evt);
         }
     }
 

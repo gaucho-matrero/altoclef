@@ -15,6 +15,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.baritone.BaritoneCustom;
 import adris.altoclef.util.csharpisbetter.Action;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -121,6 +122,16 @@ public class AltoClef implements ModInitializer {
         _messageSender = new MessageSender();
 
         _butler = new Butler(this);
+
+        // Misc wiring
+        // When we place a block and might be tracking it, make the change immediate.
+        _extraController.onBlockPlaced.addListener(new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
+            @Override
+            public void invoke(PlayerExtraController.BlockPlaceEvent value) {
+                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
+            }
+        });
+
 
         initializeCommands();
 
