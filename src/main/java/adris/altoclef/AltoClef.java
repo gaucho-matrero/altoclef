@@ -4,7 +4,7 @@ import adris.altoclef.butler.Butler;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.commands.CommandExecutor;
+import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.chains.*;

@@ -1,6 +1,5 @@
-package adris.altoclef.commands;
+package adris.altoclef.commandsystem;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.

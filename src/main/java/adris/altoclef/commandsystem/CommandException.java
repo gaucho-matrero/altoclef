@@ -1,4 +1,4 @@
-package adris.altoclef.commands;
+package adris.altoclef.commandsystem;
 
 public class CommandException extends Exception {
 

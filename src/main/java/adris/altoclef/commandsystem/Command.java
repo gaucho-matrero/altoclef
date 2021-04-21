@@ -1,8 +1,7 @@
-package adris.altoclef.commands;
+package adris.altoclef.commandsystem;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.Action;
 
 import java.util.function.Consumer;
 
