@@ -9,6 +9,8 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.tasks.GiveItemToPlayerTask;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.Util;
+import net.minecraft.item.ItemStack;
 
 public class GiveCommand extends Command {
     public GiveCommand() throws CommandException {
@@ -29,13 +31,30 @@ public class GiveCommand extends Command {
         }
         String item = parser.Get(String.class);
         int count = parser.Get(Integer.class);
+        ItemTarget target = null;
         if (TaskCatalogue.taskExists(item)) {
-            ItemTarget target = TaskCatalogue.getItemTarget(item, count);
+            // Registered item with task.
+            target = TaskCatalogue.getItemTarget(item, count);
+        } else {
+            // Unregistered item, might still be in inventory though.
+            for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
+                ItemStack stack = mod.getPlayer().inventory.getStack(i);
+                if (!stack.isEmpty()) {
+                    String name =  Util.stripItemName(stack.getItem());
+                    if (name.equals(item)) {
+                        target = new ItemTarget(stack.getItem(), count);
+                        break;
+                    }
+                }
+            }
+        }
+        if (target != null) {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
             mod.runUserTask(new GiveItemToPlayerTask(username, target), nothing -> finish());
         } else {
-            mod.log("Task for item does not exist: " + item);
+            mod.log("Item not found or task does not exist for item: " + item);
             finish();
         }
     }
+
 }

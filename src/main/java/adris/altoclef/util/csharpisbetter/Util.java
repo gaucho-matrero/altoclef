@@ -15,7 +15,6 @@ import java.util.function.Function;
 public interface Util {
 
     static <T> T[] toArray(Class<T> type, Collection<T> collection) {
-        @SuppressWarnings("unchecked")
         T[] result = (T[]) Array.newInstance(type, collection.size());
         collection.toArray(result);
         return result;
@@ -24,6 +23,17 @@ public interface Util {
     static Vec3d toVec3d(BlockPos pos) {
         if (pos == null) return null;
         return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+
+    static String stripItemName(Item item) {
+        String[] possibilities = new String[] {"item.minecraft.", "block.minecraft."};
+        for (String possible : possibilities) {
+            if (item.getTranslationKey().startsWith(possible)) {
+                return item.getTranslationKey().substring(possible.length());
+            }
+        }
+        return item.getTranslationKey();
     }
 
     static <T> boolean arraysEqual(T[] a1, T[] a2, BiPredicate<T, T> equals) {

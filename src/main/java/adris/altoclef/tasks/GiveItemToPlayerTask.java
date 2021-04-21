@@ -23,7 +23,7 @@ public class GiveItemToPlayerTask extends Task {
     private final String _playerName;
     private final ItemTarget[] _targets;
 
-    private CataloguedResourceTask _resourceTask;
+    private final CataloguedResourceTask _resourceTask;
 
     private boolean _droppingItems;
 
@@ -33,7 +33,12 @@ public class GiveItemToPlayerTask extends Task {
         _playerName = player;
         _targets = targets;
 
-        _resourceTask = TaskCatalogue.getSquashedItemTask(_targets);
+        // Some targets may not exist, so ignore the resources for them!
+        List<ItemTarget> result = new ArrayList<>();
+        for (ItemTarget target : targets) {
+            if (target.isCatalogueItem()) result.add(target);
+        }
+        _resourceTask = TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, result));
     }
 
     @Override
@@ -80,7 +85,7 @@ public class GiveItemToPlayerTask extends Task {
             return null;
         }
 
-        if (targetPos.isInRange(mod.getPlayer().getPos(), 1)) {
+        if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
             if (!mod.getEntityTracker().isPlayerLoaded(_playerName)) {
                 mod.logWarning("Failed to get to player \"" + _playerName + "\". We moved to where we last saw them but now have no idea where they are.");
                 stop(mod);

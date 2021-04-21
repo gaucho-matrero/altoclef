@@ -2,13 +2,19 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.StaticMixinHookups;
-import adris.altoclef.commands.CommandException;
+import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.client.MinecraftClient;
 
+/**
+ * The butler system lets authorized players send commands to the bot to execute.
+ *
+ * This effectively makes the bot function as a servant, or butler.
+ *
+ * Authorization is defined in "altoclef_butler_whitelist.txt" and "altoclef_butler_blacklist.txt"
+ * and depends on the "useButlerWhitelist" and "useButlerBlacklist" settings in "altoclef_settings.json"
+ */
 public class Butler {
 
     private static final String BUTLER_MESSAGE_START = "` ";
