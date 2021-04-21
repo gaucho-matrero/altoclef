@@ -25,6 +25,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CreditsScreen;
+import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -90,6 +91,8 @@ public class BeatMinecraftTask extends Task {
     private boolean _endKamakazeeEngaged = false;
     private BlockPos _endBedSpawnPos = null;
     private final PlaceBedAndSetSpawnTask _placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
+    // If true, we were near the end portal, don't do traveling.
+    private boolean _wasNearEndPortal = false;
 
     private Dimension _prevDimension = Dimension.OVERWORLD;
 
@@ -107,6 +110,14 @@ public class BeatMinecraftTask extends Task {
 
         // Dodge ALL projectiles in the end.
         mod.getConfigState().avoidDodgingProjectile(proj -> mod.getCurrentDimension() == Dimension.END);
+
+        // Don't break blocks around our bed, can lead to problems.
+        mod.getConfigState().avoidBlockBreaking(pos -> {
+            if (_endBedSpawnPos != null) {
+                return _endBedSpawnPos.isWithinDistance(pos, 4);
+            }
+            return false;
+        });
     }
 
     @Override
@@ -197,8 +208,14 @@ public class BeatMinecraftTask extends Task {
 
         // Stronghold portal located.
         if (strongholdPortalFound() || isEndPortalOpened(mod)) {
-            if (mod.getChunkTracker().isChunkLoaded(_endPortalFrame.get(0))) {
 
+            // Reset close to end on death.
+            if (MinecraftClient.getInstance().currentScreen instanceof DeathScreen) {
+                _wasNearEndPortal = false;
+            }
+
+            if (mod.getChunkTracker().isChunkLoaded(_endPortalFrame.get(0)) || _wasNearEndPortal) {
+                _wasNearEndPortal = true;
                 int eyesNeeded = 12 - portalEyesInFrame(mod);
                 if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) >= eyesNeeded) {
                     // We have ENOUGH Eyes OR the portal is open.
