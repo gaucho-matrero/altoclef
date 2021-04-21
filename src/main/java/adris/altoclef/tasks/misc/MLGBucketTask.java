@@ -36,6 +36,8 @@ public class MLGBucketTask extends Task {
         _placedPos = null;
         // hold shift while falling.
         //MinecraftClient.getInstance().options.keySneak.setPressed(true);
+        // Look down at first, usually does the trick.
+        mod.getPlayer().pitch = 90;
     }
 
     @Override
@@ -97,6 +99,9 @@ public class MLGBucketTask extends Task {
                 }
             } else {
                 setDebugState("Waiting to reach target block...");
+                // Look down by default
+                //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
+                mod.getPlayer().pitch = 90;
             }
                 //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
