@@ -51,9 +51,10 @@ public class CollectBlazeRodsTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
-        // Fail if we're in nether.
+        // We must go to the nether.
         if (mod.getCurrentDimension() != Dimension.NETHER) {
-            Debug.logWarning("Can't get blaze if we're not in the nether...");
+            setDebugState("Going to nether");
+            return new DefaultGoToNetherTask();
         }
 
         Entity toKill = null;
