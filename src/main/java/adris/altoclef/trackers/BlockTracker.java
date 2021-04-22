@@ -259,6 +259,9 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    public boolean unreachable(BlockPos pos) {
+        return currentCache().blockUnreachable(pos);
+    }
 
     public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {
         currentCache().blacklistBlockUnreachable(_mod, pos, allowedFailures);

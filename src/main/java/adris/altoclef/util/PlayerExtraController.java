@@ -1,6 +1,7 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import adris.altoclef.mixins.MinecraftMouseInputAccessor;
 import adris.altoclef.util.csharpisbetter.Action;
@@ -29,7 +30,7 @@ public class PlayerExtraController {
     public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
     public static class BlockBrokenEvent {public BlockPos blockPos; public BlockState blockState; public PlayerEntity player;}
     public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
-    public static class BlockPlaceEvent {public BlockPos blockPos; public BlockState blockState; public LivingEntity placer;}
+    public static class BlockPlaceEvent {public BlockPos blockPos; public BlockState blockState;}
 
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
@@ -53,14 +54,11 @@ public class PlayerExtraController {
             onBlockBroken.invoke(evt);
         }
     }
-    public void onBlockPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer) {
-        if (world == _mod.getWorld()) {
-            BlockPlaceEvent evt = new BlockPlaceEvent();
-            evt.blockPos = pos;
-            evt.blockState = state;
-            evt.placer = placer;
-            onBlockPlaced.invoke(evt);
-        }
+    public void onBlockPlaced(BlockPos pos, BlockState state) {
+        BlockPlaceEvent evt = new BlockPlaceEvent();
+        evt.blockPos = pos;
+        evt.blockState = state;
+        onBlockPlaced.invoke(evt);
     }
 
     public BlockPos getBreakingBlockPos() {

@@ -135,6 +135,7 @@ public class AltoClef implements ModInitializer {
 
         initializeCommands();
 
+        AltoClefCommands.IDLE_TEST_INIT_FUNCTION(this);
     }
 
     // Client tick

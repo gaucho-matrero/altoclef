@@ -12,7 +12,8 @@
     "ClientUIMixin",
     "GameOverlayMixin",
     "MinecraftMouseInputAccessor",
-    "PersistentProjectileEntityAccessor"
+    "PersistentProjectileEntityAccessor",
+    "WorldBlockModifiedMixin"
   ],
   "client": [
     "ChatInputMixin",

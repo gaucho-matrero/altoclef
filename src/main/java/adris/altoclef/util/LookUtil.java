@@ -5,7 +5,6 @@ import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
-import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -87,15 +86,7 @@ public class LookUtil {
         HitResult result = MinecraftClient.getInstance().crosshairTarget;
         if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
-            Block block = mod.getWorld().getBlockState(new BlockPos(result.getPos())).getBlock();
-            if (block instanceof ChestBlock
-                    || block instanceof EnderChestBlock
-                    || block instanceof CraftingTableBlock
-                    || block instanceof AbstractFurnaceBlock
-                    || block instanceof LoomBlock
-                    || block instanceof CartographyTableBlock
-                    || block instanceof EnchantingTableBlock
-            ) {
+            if (WorldUtil.isContainerBlock(mod, new BlockPos(result.getPos()))) {
                 return true;
             }
         } else if (result.getType() == HitResult.Type.ENTITY) {

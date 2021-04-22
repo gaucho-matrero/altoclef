@@ -6,6 +6,7 @@ import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.commandsystem.CommandList;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
+import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
@@ -14,10 +15,7 @@ import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.SCP173Task;
 import adris.altoclef.tasks.stupid.TerminatorTask;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.*;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -39,17 +37,12 @@ import java.util.List;
 @SuppressWarnings({"rawtypes"})
 public class AltoClefCommands extends CommandList {
 
+    public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
+        // Test code here
+    }
+
     public static void IDLE_TEST_TICK_FUNCTION(AltoClef mod) {
         // Test code here
-
-        // Def overkill
-        /*
-        if (mod.getEntityTracker().entityFound(PlayerEntity.class)) {
-            PlayerEntity other = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), PlayerEntity.class);
-            Vec3d rot = other.getRotationVecClient();
-            Debug.logInternal("Rot: " + other.getName().getString() + " : " + rot.toString());
-        }
-         */
     }
 
     public static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
@@ -100,8 +93,8 @@ public class AltoClefCommands extends CommandList {
                 //mod.runUserTask(new PlaceSignTask(targetPos, "Hello"));
                 //Direction direction = Direction.WEST;
                 //mod.runUserTask(new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("lava_bucket", 1), direction, targetPos, false));
-                //mod.runUserTask(new PlaceBlockNearbyTask(new Block[] {Blocks.CRAFTING_TABLE}));
-                mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(472, 24, -324)));
+                mod.runUserTask(new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE, Blocks.FURNACE));
+                //mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(472, 24, -324)));
                 break;
             }
             case "deadmeme":

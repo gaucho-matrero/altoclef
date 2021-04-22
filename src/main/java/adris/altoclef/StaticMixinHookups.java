@@ -74,8 +74,8 @@ public class StaticMixinHookups {
         //Debug.logMessage("BLOCK BROKEN: " + (world == _mod.getWorld()) + " : " + pos + " " + state.getBlock().getTranslationKey() + " " + player.getName().getString());
         _mod.getControllerExtras().onBlockBroken(world, pos, state, player);
     }
-    public static void onBlockPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
-        _mod.getControllerExtras().onBlockPlaced(world, pos, state, placer);
+    public static void onBlockPlaced(BlockPos pos, BlockState state) {
+        _mod.getControllerExtras().onBlockPlaced(pos, state);
     }
 
     public static void onScreenOpenBegin(Screen screen) {

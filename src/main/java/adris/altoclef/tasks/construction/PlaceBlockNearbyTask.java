@@ -4,112 +4,227 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.PlayerExtraController;
+import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.Baritone;
+import baritone.api.utils.IPlayerContext;
+import baritone.api.utils.input.Input;
+import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 
 public class PlaceBlockNearbyTask extends Task {
 
-    // This would've been nice
-    // Action<BlockPos, Block>
-    //private Consumer<Pair<BlockPos, BlockState>> _onPlace;
-
     private final Block[] _toPlace;
 
-    private AltoClef _mod;
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
 
-    private boolean _placing;
+    private final Timer _randomlookTimer = new Timer(0.25);
 
-    private final Timer _placeTimer = new Timer(5.0);
+    private BlockPos _justPlaced; // Where we JUST placed a block.
+    private BlockPos _tryPlace;   // Where we should TRY placing a block.
 
-    private final Timer _randomRotationTimer = new Timer(0.5);
-
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
-
-    public PlaceBlockNearbyTask(Block[] toPlace) {
+    public PlaceBlockNearbyTask(Block ...toPlace) {
         _toPlace = toPlace;
     }
-    public PlaceBlockNearbyTask(Block toPlace) {
-        this(new Block[] {toPlace});
-    }
+
+    // Oof, necesarry for the onBlockPlaced action.
+    private AltoClef _mod;
 
     @Override
     protected void onStart(AltoClef mod) {
         _mod = mod;
-
-        mod.getCustomBaritone().getPlaceBlockNearbyProcess().place(_toPlace);
-        //Debug.logInternal("DONE? %b %b", isFinished(mod), mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive() );
-        _placeTimer.reset();
-        _placing = true;
-        _wanderTask.resetWander();
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
     }
+
+    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced = new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
+        @Override
+        public void invoke(PlayerExtraController.BlockPlaceEvent value) {
+            if (Util.arrayContains(_toPlace, value.blockState.getBlock())) {
+                stopPlacing(_mod);
+            }
+        }
+    };
 
     @Override
     protected Task onTick(AltoClef mod) {
-        // Baritone takes care of this.
+        // Method:
+        // - If looking at placable block
+        //      Place immediately
+        // Find a spot to place
+        // - Prefer flat areas (open space, block below) closest to player
+        // -
 
-        // If we're wandering, keep wandering.
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            setDebugState("Timed out: Wandering");
-            return _wanderTask;
+        // Close screen first
+        mod.getPlayer().closeHandledScreen();
+
+
+        // Try placing where we're looking right now.
+        BlockPos current = getCurrentlyLookingBlockPlace(mod);
+        if (current != null) {
+            if (place(mod, current)) {
+                return null;
+            }
         }
 
-        // Random rotation
-        if (mod.getControllerExtras().isBreakingBlock()) {
-            _randomRotationTimer.reset();
+        // Wander while we can.
+        if (_wander.isActive() && !_wander.isFinished(mod)) {
+            setDebugState("Wandering, will try to place again later.");
+            _progressChecker.reset();
+            return _wander;
         }
-        if (_randomRotationTimer.elapsed()) {
+        // Fail check
+        if (!_progressChecker.check(mod)) {
+            Debug.logMessage("Failed placing, wandering and trying again.");
             LookUtil.randomOrientation(mod);
-            _randomRotationTimer.reset();
+            if (_tryPlace != null) {
+                mod.getBlockTracker().requestBlockUnreachable(_tryPlace);
+                _tryPlace = null;
+            }
+            return _wander;
         }
 
-        if (!mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive()) {
-            _placeTimer.reset();
-            mod.getCustomBaritone().getPlaceBlockNearbyProcess().place(_toPlace);
+        // Try to place at a particular spot.
+        if (_tryPlace == null || mod.getBlockTracker().unreachable(_tryPlace)) {
+            _tryPlace = locateClosePlacePos(mod);
+        }
+        if (_tryPlace != null) {
+            setDebugState("Trying to place at " + _tryPlace);
+            _justPlaced = _tryPlace;
+            return new PlaceBlockTask(_tryPlace, _toPlace);
         }
 
-        if (_placeTimer.elapsed()) {
-            Debug.logMessage("Failed to place timeout. Wandering...");
-            return _wanderTask;
+        // Look in random places to maybe get a random hit
+        if (_randomlookTimer.elapsed()) {
+            _randomlookTimer.reset();
+            LookUtil.randomOrientation(mod);
         }
 
-        return null;
+        setDebugState("Wandering until we randomly place or find a good place spot.");
+        return new TimeoutWanderTask();
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getCustomBaritone().getPlaceBlockNearbyProcess().onLostControl();
-        _placing = false;
+        stopPlacing(mod);
+        mod.getControllerExtras().onBlockPlaced.removeListener(onBlockPlaced);
     }
 
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockNearbyTask) {
-            PlaceBlockNearbyTask other = (PlaceBlockNearbyTask) obj;
-            return Util.arraysEqual(other._toPlace, _toPlace);
+            PlaceBlockNearbyTask task = (PlaceBlockNearbyTask) obj;
+            return Util.arraysEqual(task._toPlace, _toPlace);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Place " + ItemTarget.trimItemName(_toPlace[0].getTranslationKey()) + " nearby";
+        return "Place " + Util.arrayToString(_toPlace) + " nearby";
     }
 
-    // Also used to determine when we placed the block
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _placing && !mod.getCustomBaritone().getPlaceBlockNearbyProcess().isActive();// && mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock() != null;
+        return _justPlaced != null && Util.arrayContains(_toPlace, mod.getWorld().getBlockState(_justPlaced).getBlock());
     }
 
-    // Used to determine where we placed the block
     public BlockPos getPlaced() {
-        if (_mod == null) return null;
-        return _mod.getCustomBaritone().getPlaceBlockNearbyProcess().placedBlock();
+        return _justPlaced;
     }
 
+    private BlockPos getCurrentlyLookingBlockPlace(AltoClef mod) {
+        HitResult hit = MinecraftClient.getInstance().crosshairTarget;
+        if (hit instanceof BlockHitResult) {
+            BlockHitResult bhit = (BlockHitResult) hit;
+            BlockPos bpos = bhit.getBlockPos();//.subtract(bhit.getSide().getVector());
+            //Debug.logMessage("TEMP: A: " + bpos);
+            IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
+            if (MovementHelper.canPlaceAgainst(ctx, bpos)) {
+                BlockPos placePos = bhit.getBlockPos().add(bhit.getSide().getVector());
+                // Don't place inside the player.
+                if (WorldUtil.isInsidePlayer(mod, placePos)) {
+                    return null;
+                }
+                //Debug.logMessage("TEMP: B (actual): " + placePos);
+                if (!Baritone.getAltoClefSettings().shouldAvoidPlacingAt(placePos.getX(), placePos.getY(), placePos.getZ())) {
+                    return placePos;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean equipBlock(AltoClef mod) {
+        for (Block block : _toPlace) {
+            if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
+                if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean place(AltoClef mod, BlockPos targetPlace) {
+        if (equipBlock(mod)) {
+            // Shift click just for 100% container security.
+            MinecraftClient.getInstance().options.keySneak.setPressed(true);
+            mod.getControllerExtras().mouseClickOverride(1, true);
+            //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+            _justPlaced = targetPlace;
+            return true;
+        }
+        return false;
+    }
+
+    private void stopPlacing(AltoClef mod) {
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+        mod.getControllerExtras().mouseClickOverride(1, false);
+        MinecraftClient.getInstance().options.keySneak.setPressed(false);
+        // Oof, these sometimes cause issues so this is a bit of a duct tape fix.
+        mod.getClientBaritone().getBuilderProcess().onLostControl();
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+    }
+
+    private BlockPos locateClosePlacePos(AltoClef mod) {
+        int range = 7;
+        BlockPos best = null;
+        double smallestScore = Double.POSITIVE_INFINITY;
+        BlockPos start = mod.getPlayer().getBlockPos().add(-range, -range, -range);
+        BlockPos end = mod.getPlayer().getBlockPos().add(range, range, range);
+
+        for (BlockPos blockPos : WorldUtil.scanRegion(mod, start, end)) {
+            boolean solid = WorldUtil.isSolid(mod, blockPos);
+            boolean inside = WorldUtil.isInsidePlayer(mod, blockPos);
+            // We can't break this block.
+            if ( solid && !WorldUtil.canBreak(mod, blockPos)) {
+                continue;
+            }
+            // We can't place here.
+            if (mod.getBlockTracker().unreachable(blockPos) || !WorldUtil.canPlace(mod, blockPos)) {
+                continue;
+            }
+            boolean hasBelow = WorldUtil.isSolid(mod, blockPos.down());
+            double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos(), false);
+
+            double score = distSq + (solid ? 4:0) + (hasBelow? 0 : 10) + (inside ? 3 : 0);
+
+            if (score < smallestScore) {
+                best = blockPos;
+                smallestScore = score;
+            }
+        }
+
+        return best;
+    }
 }

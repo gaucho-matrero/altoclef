@@ -16,9 +16,6 @@ public class Action<T> {
     private final List<ActionListener<T>> _toRemove = new ArrayList<>();
 
     public void addListener(ActionListener<T> listener) {
-
-        Method m;
-
         if (_lock) {
             _toAdd.add(listener);
         } else {
@@ -38,6 +35,8 @@ public class Action<T> {
 
     public void invoke(T value) {
         _lock = true;
+        _consumers.addAll(_toAdd);
+        _toAdd.clear();
         for(ActionListener<T> consumer : _consumers) {
             consumer.invoke(value);
         }
@@ -45,11 +44,9 @@ public class Action<T> {
 
         // If we made modifications while iterating, do the thing.
 
-        _consumers.addAll(_toAdd);
         for (ActionListener<T> consumer : _toRemove) {
             _consumers.remove(consumer);
         }
-        _toAdd.clear();
         _toRemove.clear();
     }
 

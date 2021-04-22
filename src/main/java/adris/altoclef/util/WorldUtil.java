@@ -16,10 +16,13 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public interface WorldUtil {
 
@@ -104,6 +107,9 @@ public interface WorldUtil {
     static boolean canBreak(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos);
     }
+    static boolean canPlace(AltoClef mod, BlockPos pos) {
+        return !mod.getExtraBaritoneSettings().shouldAvoidPlacingAt(pos);
+    }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {
         return mod.getBlockTracker().blockIsValid(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
@@ -111,6 +117,47 @@ public interface WorldUtil {
     }
     static boolean isAir(Block block) {
         return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
+    }
+
+    static boolean isContainerBlock(AltoClef mod, BlockPos pos) {
+        Block block = mod.getWorld().getBlockState(pos).getBlock();
+        return (block instanceof ChestBlock
+                || block instanceof EnderChestBlock
+                || block instanceof CraftingTableBlock
+                || block instanceof AbstractFurnaceBlock
+                || block instanceof LoomBlock
+                || block instanceof CartographyTableBlock
+                || block instanceof EnchantingTableBlock
+        );
+    }
+
+    static boolean isInsidePlayer(AltoClef mod, BlockPos pos) {
+        return pos.isWithinDistance(mod.getPlayer().getPos(), 2);
+    }
+
+    static Iterable<BlockPos> scanRegion(AltoClef mod, BlockPos start, BlockPos end) {
+        return () -> new Iterator<BlockPos>() {
+            int x = start.getX(), y = start.getY(), z = start.getZ();
+            @Override
+            public boolean hasNext() {
+                return y <= end.getX() && z <= end.getZ() && x <= end.getX();
+            }
+
+            @Override
+            public BlockPos next() {
+                BlockPos result = new BlockPos(x, y, z);
+                ++x;
+                if (x > end.getX()) {
+                    x = start.getX();
+                    ++z;
+                    if (z > end.getZ()) {
+                        z = start.getZ();
+                        ++y;
+                    }
+                }
+                return result;
+            }
+        };
     }
 
     static boolean fallingBlockSafeToBreak(BlockPos pos) {

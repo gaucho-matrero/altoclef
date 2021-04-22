@@ -1,10 +1,9 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -27,6 +26,7 @@ import net.minecraft.util.math.Vec3d;
  *  - Test crafting 2 stone pickaxes. Make sure we __delay__ the crafting table stuff until we get all resources.
  */
 
+@SuppressWarnings("ConstantConditions")
 public abstract class DoStuffInContainerTask extends Task {
 
     private final String _containerCatalogueName;
@@ -69,7 +69,7 @@ public abstract class DoStuffInContainerTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         // If we're placing, keep on placing.
-        if (_placeTask.isActive() && !_placeTask.isFinished(mod)) {
+        if (mod.getInventoryTracker().hasItem(_containerBlock.asItem()) && _placeTask.isActive() && !_placeTask.isFinished(mod)) {
             setDebugState("Placing container");
             return _placeTask;
         }
