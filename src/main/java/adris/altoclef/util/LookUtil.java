@@ -9,6 +9,7 @@ import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.MerchantEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.hit.BlockHitResult;
@@ -29,8 +30,31 @@ public class LookUtil {
         return ProjectileUtil.raycast(from, fromPos, fromPos.add(direction), box, entity -> entity.equals(to), 0);
     }
 
+    public static boolean seesPlayer(Entity entity, Entity player, double maxRange, Vec3d entityOffs, Vec3d playerOffs) {
+        return seesPlayerOffset(entity, player, maxRange, entityOffs, playerOffs) || seesPlayerOffset(entity, player, maxRange, entityOffs, new Vec3d(0, -1, 0).add(playerOffs));
+    }
     public static boolean seesPlayer(Entity entity, Entity player, double maxRange) {
-        return seesPlayerOffset(entity, player, maxRange, Vec3d.ZERO) || seesPlayerOffset(entity, player, maxRange, new Vec3d(0, -1, 0));
+        return seesPlayer(entity, player, maxRange, Vec3d.ZERO, Vec3d.ZERO);
+    }
+
+    public static Vec3d getCameraPos(Entity entity) {
+        boolean isSneaking = false;
+        if (entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
+            isSneaking = player.isSneaking();
+        }
+        return isSneaking? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
+    }
+
+    //  1: Looking straight at pos
+    //  0: pos is 90 degrees to the side
+    // -1: pos is 180 degrees away (looking away completely)
+    public static double getLookCloseness(Entity entity, Vec3d pos) {
+        Vec3d rotDirection = entity.getRotationVecClient();
+        Vec3d lookStart = getCameraPos(entity);
+        Vec3d deltaToPos = pos.subtract(lookStart);
+        Vec3d deltaDirection = deltaToPos.normalize();
+        return rotDirection.dotProduct(deltaDirection);
     }
 
     public static boolean tryAvoidingInteractable(AltoClef mod) {
@@ -41,9 +65,9 @@ public class LookUtil {
         return true;
     }
 
-    private static boolean seesPlayerOffset(Entity entity, Entity player, double maxRange, Vec3d offset) {
-        Vec3d start = entity.getCameraPosVec(1f);
-        Vec3d end = player.getCameraPosVec(1f).add(offset);
+    private static boolean seesPlayerOffset(Entity entity, Entity player, double maxRange, Vec3d offsetEntity, Vec3d offsetPlayer) {
+        Vec3d start = entity.getCameraPosVec(1f).add(offsetEntity);
+        Vec3d end = player.getCameraPosVec(1f).add(offsetPlayer);
         Vec3d delta = end.subtract(start);
         if (delta.lengthSquared() > maxRange*maxRange) {
             end = start.add(delta.normalize().multiply(maxRange));

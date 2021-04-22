@@ -1,9 +1,9 @@
 package adris.altoclef;
 
+import adris.altoclef.commands.*;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.commandsystem.CommandList;
-import adris.altoclef.commands.*;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -12,6 +12,7 @@ import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
 import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
@@ -35,17 +36,18 @@ import java.io.*;
 import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"rawtypes"})
 public class AltoClefCommands extends CommandList {
 
     public static void IDLE_TEST_TICK_FUNCTION(AltoClef mod) {
         // Test code here
 
-        /* Def overkill
+        // Def overkill
+        /*
         if (mod.getEntityTracker().entityFound(PlayerEntity.class)) {
             PlayerEntity other = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), PlayerEntity.class);
             Vec3d rot = other.getRotationVecClient();
-            Debug.logInternal("Rot: " + rot.toString());
+            Debug.logInternal("Rot: " + other.getName().getString() + " : " + rot.toString());
         }
          */
     }
@@ -292,6 +294,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "chest":
                 mod.runUserTask(new StoreInAnyChestTask(new ItemTarget(Items.DIAMOND, 3)));
+                break;
+            case "173":
+                mod.runUserTask(new SCP173Task());
                 break;
         }
     }
