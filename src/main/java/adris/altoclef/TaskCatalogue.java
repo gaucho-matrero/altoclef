@@ -3,29 +3,29 @@ package adris.altoclef;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.tasks.resources.wood.*;
+import adris.altoclef.util.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.MaterialColor;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.DyeColor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @SuppressWarnings({"rawtypes"})
 public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
-    private static final HashMap<String, TaskFactory> _nameToResourceTask = new HashMap<>();
+    private static final HashMap<String, Function<Integer, ResourceTask>> _nameToResourceTask = new HashMap<>();
     private static final HashSet<Item> _resourcesObtainable = new HashSet<>();
     static {
         /// DEFINE RESOURCE TASKS HERE
@@ -35,9 +35,10 @@ public class TaskCatalogue {
             String o = null;
 
             /// RAW RESOURCES
-            mine("log", MiningRequirement.HAND, ItemTarget.LOG, ItemTarget.LOG);
+            mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG);
+            woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
-            simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask.class);
+            simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new);
             mine("netherrack",  MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK);
             mine("coal",  MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
@@ -50,9 +51,10 @@ public class TaskCatalogue {
             mine("sand", Blocks.SAND, Items.SAND);
             mine("gravel", Blocks.GRAVEL, Items.GRAVEL);
             mine("clay_ball", Blocks.CLAY, Items.CLAY_BALL);
-            simple("flint", Items.FLINT, CollectFlintTask.class);
-            simple("obsidian", Items.OBSIDIAN, CollectObsidianTask.class);
-            simple("wool", ItemTarget.WOOL, CollectWoolTask.class);
+            simple("flint", Items.FLINT, CollectFlintTask::new);
+            simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new);
+            simple("wool", ItemUtil.WOOL, CollectWoolTask::new);
+            colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
             mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
@@ -62,11 +64,12 @@ public class TaskCatalogue {
             mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
             mob("slimeball", Items.SLIME_BALL, SlimeEntity.class);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
+            mob("string", Items.STRING, SpiderEntity.class); // Warning, this probably won't work.
             mine("sugar_cane", Blocks.SUGAR_CANE, Items.SUGAR_CANE);
             mine("brown_mushroom", MiningRequirement.HAND, new Block[] {Blocks.BROWN_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK}, Items.BROWN_MUSHROOM);
             mine("red_mushroom", MiningRequirement.HAND, new Block[] {Blocks.RED_MUSHROOM, Blocks.RED_MUSHROOM_BLOCK}, Items.RED_MUSHROOM);
-            simple("blaze_rod", Items.BLAZE_ROD, CollectBlazeRodsTask.class); // Not super simple tbh lmao
-            simple("quartz", Items.QUARTZ, CollectQuartzTask.class);
+            simple("blaze_rod", Items.BLAZE_ROD, CollectBlazeRodsTask::new); // Not super simple tbh lmao
+            simple("quartz", Items.QUARTZ, CollectQuartzTask::new);
             // Flowers
             mine("allium", Blocks.ALLIUM, Items.ALLIUM);
             mine("azure_bluet", Blocks.AZURE_BLUET, Items.AZURE_BLUET);
@@ -78,7 +81,8 @@ public class TaskCatalogue {
 
 
             // MATERIALS
-            simple("planks", ItemTarget.PLANKS, CollectPlanksTask.class);
+            simple("planks", ItemUtil.PLANKS, CollectPlanksTask::new);
+            woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count));
             shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
             smelt("stone", Items.STONE, "cobblestone");
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
@@ -87,13 +91,14 @@ public class TaskCatalogue {
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("green_dye", Items.GREEN_DYE, "cactus");
-            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask.class); // accounts for nether too
+            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask::new); // accounts for nether too
             shapedRecipe3x3Block("iron_block", Items.IRON_BLOCK, "iron_ingot");
             shapedRecipe3x3Block("gold_block", Items.GOLD_BLOCK, "gold_ingot");
             shapedRecipe3x3Block("diamond_block", Items.DIAMOND_BLOCK, "diamond");
             shapedRecipe3x3Block("redstone_block", Items.REDSTONE_BLOCK, "redstone");
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
+            shapedRecipe2x2("sugar", Items.SUGAR,1, "sugar_cane", o, o, o);
             shapedRecipe2x2("bone_meal", Items.BONE_MEAL, 3, "bone", o, o, o);
             shapedRecipeSlab("smooth_stone_slab", Items.SMOOTH_STONE_SLAB, "smooth_stone");
             shapedRecipe3x3("paper", Items.PAPER, 3, "sugar_cane", "sugar_cane", "sugar_cane", o, o, o, o, o, o);
@@ -111,41 +116,6 @@ public class TaskCatalogue {
             }t
              */
 
-
-            // FURNITURE
-            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p);
-            shapedRecipe2x2("wooden_pressure_plate", ItemTarget.WOOD_PRESSURE_PLATE, 1, o, o, p, p);
-            shapedRecipe2x2("wooden_button", ItemTarget.WOOD_BUTTON, 1, p, o, o, o);
-            shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, o, o, "stone", "stone");
-            shapedRecipe2x2("stone_button", Items.STONE_BUTTON, 1, "stone", o, o, o);
-            simple("sign", ItemTarget.WOOD_SIGN, CollectSignTask.class);
-            {
-                String c = "cobblestone";
-                shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
-                shapedRecipe3x3("dropper", Items.DISPENSER, 1, c,c,c, c,o,c, c,"redstone",c);
-                shapedRecipe3x3("dispenser", Items.DISPENSER, 1, c,c,c, c,"bow",c, c,"redstone",c);
-            }
-            shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p);
-            shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
-            simple("bed", ItemTarget.BED, CollectBedTask.class);
-            {
-                String i = "iron_ingot";
-                String b = "iron_block";
-                shapedRecipe3x3("anvil", Items.ANVIL, 1, b, b, b, o, i, o, i, i, i);
-                shapedRecipe3x3("cauldron", Items.CAULDRON, 1, i, o, i, i, o, i, i, i, i);
-                shapedRecipe3x3("minecart", Items.MINECART, 1, o, o, o, i, o, i, i, i, i);
-            }
-            shapedRecipe3x3("armor_stand", Items.ARMOR_STAND, 1, s, s, s, o, s, o, s, "smooth_stone_slab", s);
-            {
-                String b = "obsidian";
-                shapedRecipe3x3("enchanting_table", Items.ENCHANTING_TABLE, 1, o, "book", o, "diamond", b, "diamond", b, b, b);
-                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o);
-            }
-            {
-                String b = "brick";
-                shapedRecipe3x3("flower_pot", Items.FLOWER_POT,1, b, o, b, o, b, o, o, o, o);
-            }
-            //shapedRecipe3x3("daylight_detector", Items.DAYLIGHT_DETECTOR, 1, ); <- NEED WOOD SLABS
 
             /// TOOLS
             tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
@@ -168,8 +138,8 @@ public class TaskCatalogue {
                 String g = "gold_ingot";
                 shapedRecipe3x3("clock", Items.CLOCK, 1, o, g, o, g, "redstone", g, o, g, o);
             }
-            simple("water_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectWaterBucketTask.class);
-            simple("lava_bucket", Items.LAVA_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask.class);
+            simple("water_bucket", Items.WATER_BUCKET, CollectBucketLiquidTask.CollectWaterBucketTask::new);
+            simple("lava_bucket", Items.LAVA_BUCKET, CollectBucketLiquidTask.CollectLavaBucketTask::new);
             {
                 String a = "paper";
                 shapedRecipe3x3("map", Items.MAP, 1, a,a,a, a,"compass",a, a,a,a);
@@ -181,6 +151,68 @@ public class TaskCatalogue {
             alias("iron_pick", "iron_pickaxe");
             alias("gold_pick", "gold_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
+            simple("boat", ItemUtil.WOOD_BOAT, CollectBoatTask::new);
+            woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
+
+
+
+            // FURNITURE
+            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p);
+            simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
+            woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate, (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));
+            shapedRecipe2x2("wooden_button", ItemUtil.WOOD_BUTTON, 1, p, o, o, o);
+            woodTasks("button", woodItems -> woodItems.button, (woodItems, count) -> new CraftInInventoryTask(new ItemTarget(woodItems.button, 1), CraftingRecipe.newShapedRecipe(woodItems.prefix + "_button", new ItemTarget[]{new ItemTarget(woodItems.planks, 1), null, null, null}, 1 )));
+            shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, o, o, "stone", "stone");
+            shapedRecipe2x2("stone_button", Items.STONE_BUTTON, 1, "stone", o, o, o);
+            simple("sign", ItemUtil.WOOD_SIGN, CollectSignTask::new);
+            woodTasks("sign", woodItems -> woodItems.sign, (woodItems, count) -> new CollectSignTask(woodItems.sign, woodItems.prefix + "_planks", count));
+            {
+                String c = "cobblestone";
+                shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
+                shapedRecipe3x3("dropper", Items.DISPENSER, 1, c,c,c, c,o,c, c,"redstone",c);
+                shapedRecipe3x3("dispenser", Items.DISPENSER, 1, c,c,c, c,"bow",c, c,"redstone",c);
+            }
+            shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p);
+            shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
+            simple("bed", ItemUtil.BED, CollectBedTask::new);
+            colorfulTasks("bed", colors -> colors.bed, (colors, count) -> new CollectBedTask(colors.bed, colors.colorName + "_wool", count));
+            {
+                String i = "iron_ingot";
+                String b = "iron_block";
+                shapedRecipe3x3("anvil", Items.ANVIL, 1, b, b, b, o, i, o, i, i, i);
+                shapedRecipe3x3("cauldron", Items.CAULDRON, 1, i, o, i, i, o, i, i, i, i);
+                shapedRecipe3x3("minecart", Items.MINECART, 1, o, o, o, i, o, i, i, i, i);
+            }
+            shapedRecipe3x3("armor_stand", Items.ARMOR_STAND, 1, s, s, s, o, s, o, s, "smooth_stone_slab", s);
+            {
+                String b = "obsidian";
+                shapedRecipe3x3("enchanting_table", Items.ENCHANTING_TABLE, 1, o, "book", o, "diamond", b, "diamond", b, b, b);
+                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o);
+            }
+            {
+                String b = "brick";
+                shapedRecipe3x3("flower_pot", Items.FLOWER_POT,1, b, o, b, o, b, o, o, o, o);
+            }
+            // A BUNCH OF WOODEN STUFF
+            simple("wooden_stairs", ItemUtil.WOOD_STAIRS, CollectWoodenStairsTask::new);
+            woodTasks("stairs", woodItems -> woodItems.stairs, (woodItems, count) -> new CollectWoodenStairsTask(woodItems.stairs, woodItems.prefix + "_planks", count));
+            simple("wooden_slab", ItemUtil.WOOD_SLAB, CollectWoodenSlabTask::new);
+            woodTasks("slab", woodItems -> woodItems.slab, (woodItems, count) -> new CollectWoodenSlabTask(woodItems.slab, woodItems.prefix + "_planks", count));
+            simple("wooden_door", ItemUtil.WOOD_DOOR, CollectWoodenDoorTask::new);
+            woodTasks("door", woodItems -> woodItems.door, (woodItems, count) -> new CollectWoodenDoorTask(woodItems.door, woodItems.prefix + "_planks", count));
+            simple("wooden_trapdoor", ItemUtil.WOOD_TRAPDOOR, CollectWoodenTrapDoorTask::new);
+            woodTasks("trapdoor", woodItems -> woodItems.trapdoor, (woodItems, count) -> new CollectWoodenTrapDoorTask(woodItems.trapdoor, woodItems.prefix + "_planks", count));
+            simple("wooden_fence", ItemUtil.WOOD_FENCE, CollectFenceTask::new);
+            woodTasks("fence", woodItems -> woodItems.fence, (woodItems, count) -> new CollectFenceTask(woodItems.fence, woodItems.prefix + "_planks", count));
+            simple("wooden_fence_gate", ItemUtil.WOOD_FENCE_GATE, CollectFenceGateTask::new);
+            woodTasks("fence_gate", woodItems -> woodItems.fenceGate, (woodItems, count) -> new CollectFenceGateTask(woodItems.fenceGate, woodItems.prefix + "_planks", count));
+            // Most people will always think "wooden door" when they say "door".
+            alias("door", "wooden_door");
+            alias("trapdoor", "wooden_trapdoor");
+            alias("fence", "wooden_fence");
+            alias("fence_gate", "wooden_fence_gate");
+
+            //shapedRecipe3x3("daylight_detector", Items.DAYLIGHT_DETECTOR, 1, ); <- NEED WOOD SLABS
 
             /// FOOD
             mobCook("porkchop", Items.PORKCHOP, Items.COOKED_PORKCHOP, PigEntity.class);
@@ -194,8 +226,8 @@ public class TaskCatalogue {
         }
     }
 
-    private static void put(String name, Item[] matches, TaskFactory factory) {
-        _nameToResourceTask.put(name, factory);
+    private static void put(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
+        _nameToResourceTask.put(name, getTask);
         _nameToItemMatches.put(name, matches);
         _resourcesObtainable.addAll(Arrays.asList(matches));
     }
@@ -236,8 +268,8 @@ public class TaskCatalogue {
             return null;
         }
 
-        TaskFactory creator = _nameToResourceTask.get(name);
-        return creator.createResourceTask(name, count);
+        Function<Integer, ResourceTask> creator = _nameToResourceTask.get(name);
+        return creator.apply(count);
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
@@ -252,11 +284,11 @@ public class TaskCatalogue {
         return _nameToResourceTask.keySet();
     }
 
-    private static <T> void simple(String name, Item[] matches, Class<T> type) {
-        put(name, matches, new SimpleTaskFactory(type));
+    private static <T> void simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
+        put(name, matches, getTask);
     }
-    private static <T> void simple(String name, Item matches, Class<T> type) {
-        simple(name, new Item[] {matches}, type);
+    private static <T> void simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
+        simple(name, new Item[] {matches}, getTask);
     }
     private static void mine(String name, MiningRequirement requirement, Item[] toMine, Item ...targets) {
         Block[] toMineBlocks = new Block[toMine.length];
@@ -264,7 +296,7 @@ public class TaskCatalogue {
         mine(name, requirement, toMineBlocks, targets);
     }
     private static void mine(String name, MiningRequirement requirement, Block[] toMine, Item ...targets) {
-        put(name, targets, new MineTaskFactory(MineAndCollectTask.class, targets, toMine, requirement));
+        put(name, targets, count -> new MineAndCollectTask(new ItemTarget(targets, count), toMine, requirement));
     }
     private static void mine(String name, MiningRequirement requirement, Block toMine, Item target) {
         mine(name, requirement, new Block[]{toMine}, target);
@@ -275,11 +307,11 @@ public class TaskCatalogue {
 
     private static void shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)}, outputCount);
-        put(name, matches, new CraftTaskFactory(CraftInInventoryTask.class, name, recipe));
+        put(name, matches, count -> new CraftInInventoryTask(new ItemTarget(matches, count), recipe));
     }
     private static void shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)}, outputCount);
-        put(name, matches, new CraftTaskFactory(CraftInTableTask.class, name, recipe));
+        put(name, matches, count -> new CraftInTableTask(new ItemTarget(matches, count), recipe));
     }
     private static void shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
         shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
@@ -298,14 +330,14 @@ public class TaskCatalogue {
     }
 
     private static void smelt(String name, Item[] matches, String materials) {
-        put(name, matches, new SmeltTaskFactory(SmeltInFurnaceTask.class, name, materials));
+        put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
     private static void smelt(String name, Item match, String materials) {
         smelt(name, new Item[]{match}, materials);
     }
 
     private static void mob(String name, Item[] matches, Class mobClass) {
-        put(name, matches, new MobTaskFactory(mobClass, matches));
+        put(name, matches, count -> new KillAndLootTask(mobClass, new ItemTarget(matches, count)));
     }
     private static void mob(String name, Item match, Class mobClass) {
         mob(name, new Item[] {match}, mobClass);
@@ -317,6 +349,22 @@ public class TaskCatalogue {
     }
     private static void mobCook(String uncookedName, Item uncooked, Item cooked, Class mobClass) {
         mobCook(uncookedName, "cooked_" + uncookedName, uncooked, cooked, mobClass);
+    }
+
+    private static void colorfulTasks(String baseName, Function<ItemUtil.ColorfulItems, Item> getMatch, BiFunction<ItemUtil.ColorfulItems, Integer, ResourceTask> getTask) {
+        for (DyeColor dcol : DyeColor.values()) {
+            MaterialColor mcol = dcol.getMaterialColor();
+            ItemUtil.ColorfulItems color = ItemUtil.getColorfulItems(mcol);
+            String prefix = color.colorName;
+            put(prefix + "_" + baseName, new Item[]{getMatch.apply(color)}, count -> getTask.apply(color, count) );
+        }
+    }
+    private static void woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask) {
+        for (WoodType woodType : WoodType.values()) {
+            ItemUtil.WoodItems woodItems = ItemUtil.getWoodItems(woodType);
+            String prefix = woodItems.prefix;
+            put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count) );
+        }
     }
 
     private static void tools(String toolMaterialName, String material, Item pickaxeItem, Item shovelItem, Item swordItem, Item axeItem, Item hoeItem) {
@@ -353,120 +401,6 @@ public class TaskCatalogue {
 
     private static ItemTarget t(String cataloguedName) {
         return new ItemTarget(cataloguedName);
-    }
-
-
-    /// TASK FACTORIES (I think I'm using the term "factory" wrong here but screw OOP I'll call it whatever I want)
-
-    // Basically the issue is that tasks usually accept ItemTargets, which are pairs of items and their COUNTS.
-    // These factories let you create these tasks with a count passed in LATER
-
-    static class SimpleTaskFactory extends TaskFactory {
-        public SimpleTaskFactory(Class type) {
-            super(type);
-        }
-
-        @Override
-        protected ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-            Constructor constructor = _class.getConstructor(int.class);
-            return (ResourceTask) constructor.newInstance(count);
-        }
-    }
-
-    static class SmeltTaskFactory extends TaskFactory {
-
-        private String _targetName;
-        private String _materials;
-
-        public SmeltTaskFactory(Class type, String targetName, String materials) {
-            super(type);
-            _targetName = targetName;
-            _materials = materials;
-        }
-
-        @Override
-        protected ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-            Constructor constructor = _class.getConstructor(SmeltTarget.class);
-            return (ResourceTask) constructor.newInstance(new SmeltTarget(new ItemTarget(_targetName, count), new ItemTarget(_materials, count)));
-        }
-    }
-
-    static class CraftTaskFactory extends TaskFactory {
-        // Generic Resource Task
-        private String _targetName;
-
-        // Craft task
-        private CraftingRecipe _recipe;
-
-        public CraftTaskFactory(Class type, String targetName, CraftingRecipe recipe) {
-            super(type);
-            _targetName = targetName;
-            _recipe = recipe;
-
-        }
-
-        @Override
-        protected ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-            Constructor constructor = _class.getConstructor(ItemTarget.class, CraftingRecipe.class);
-            return (ResourceTask) constructor.newInstance(new ItemTarget(_targetName, count), _recipe);
-        }
-    }
-
-    static class MineTaskFactory extends TaskFactory {
-
-        // Mine task
-        private Block[] _toMine;
-        private MiningRequirement _requirement;
-        private Item[] _target;
-
-
-        public MineTaskFactory(Class type, Item[] target, Block[] toMine, MiningRequirement requirement) {
-            super(type);
-            _target = target;
-            _toMine = toMine;
-            _requirement = requirement;
-        }
-
-        @Override
-        protected ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-            Constructor constructor = _class.getConstructor(ItemTarget.class, Block[].class, MiningRequirement.class);
-            return (ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
-        }
-    }
-
-    static class MobTaskFactory extends TaskFactory {
-        private Item[] _target;
-        private Class _mob;
-        public MobTaskFactory(Class mob, Item[] target) {
-            super(KillAndLootTask.class);
-            _mob = mob;
-            _target = target;
-        }
-        @Override
-        protected ResourceTask createResourceTaskInternal(String name, int count) {
-            //Constructor constructor = _class.getConstructor(ItemTarget.class, Block[].class, MiningRequirement.class);
-            ItemTarget[] targets = new ItemTarget[_target.length];
-            for (int i = 0; i < targets.length; ++i) targets[i] = new ItemTarget(_target[i], count);
-            return new KillAndLootTask(_mob, targets);//(ResourceTask) constructor.newInstance(new ItemTarget(_target,  count), _toMine, _requirement);
-        }
-    }
-
-    static abstract class TaskFactory {
-        protected final Class _class;
-
-        public TaskFactory(Class type) {
-            _class = type;
-        }
-        protected abstract ResourceTask createResourceTaskInternal(String name, int count) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
-
-        public ResourceTask createResourceTask(String name, int count) {
-            try {
-                return createResourceTaskInternal(name, count);
-            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                Debug.logWarning(e.getMessage() + "Couldn't find standard resource constructor for task for \"" + name + "\".");
-                return null;
-            }
-        }
     }
 
 }

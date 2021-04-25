@@ -44,12 +44,14 @@ public class MineAndCollectTask extends ResourceTask {
         _blocksToMine = blocksToMine;
         _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
     }
-
+    public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
+        this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
+    }
     public MineAndCollectTask(ItemTarget target, Block[] blocksToMine, MiningRequirement requirement) {
         this(new ItemTarget[] {target}, blocksToMine, requirement);
     }
-    public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
-        this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
+    public MineAndCollectTask(Item item, int count, Block[] blocksToMine, MiningRequirement requirement) {
+        this(new ItemTarget(item, count), blocksToMine, requirement);
     }
 
     private static Block[] itemTargetToBlockList(ItemTarget[] targets) {

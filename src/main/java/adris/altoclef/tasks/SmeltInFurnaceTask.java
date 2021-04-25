@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -184,7 +185,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 // and 2 sticks if we want to make a wooden pickaxe.
                 boolean planksProtected = mod.getConfigState().isProtected(Items.OAK_PLANKS);
                 boolean sticksProtected = mod.getConfigState().isProtected(Items.STICK);
-                int plankCount = planksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS), 4);
+                int plankCount = planksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS), 4);
                 int stickCount = sticksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCount(Items.STICK), 2);
                 hasFuel -= InventoryTracker.getFuelAmount(Items.OAK_PLANKS) * plankCount;
                 hasFuel -= InventoryTracker.getFuelAmount(Items.STICK) * stickCount;

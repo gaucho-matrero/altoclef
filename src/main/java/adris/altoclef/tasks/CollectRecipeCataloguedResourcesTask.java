@@ -26,9 +26,11 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     private final RecipeTarget[] _targets;
 
     private boolean _finished = false;
+    private final boolean _ignoreUncataloguedSlots;
 
-    public CollectRecipeCataloguedResourcesTask(RecipeTarget ...targets) {
+    public CollectRecipeCataloguedResourcesTask(boolean ignoreUncataloguedSlots, RecipeTarget ...targets) {
         _targets = targets;
+        _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                 for (int i = 0; i < recipe.getSlotCount(); ++i) {
                     ItemTarget slot = recipe.getSlot(i);
                     if (slot == null || slot.isEmpty()) continue;
-                    if (!slot.isCatalogueItem()) {
+                    if (!slot.isCatalogueItem() && !_ignoreUncataloguedSlots) {
                         Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
                                 + " is not catalogued. Please define an explicit"
                                 + " collectRecipeSubTask() function for this task."

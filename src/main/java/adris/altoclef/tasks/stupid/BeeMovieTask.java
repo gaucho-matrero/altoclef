@@ -9,6 +9,7 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
 import net.minecraft.block.Block;
@@ -106,7 +107,7 @@ public class BeeMovieTask extends Task {
                 setDebugState("Sharpening the axe: Signs");
                 return _extraSignAcquireTask;
             }
-            if (!mod.getInventoryTracker().hasItem(ItemTarget.WOOD_SIGN)) {
+            if (!mod.getInventoryTracker().hasItem(ItemUtil.WOOD_SIGN)) {
                 // Get a bunch of signs in bulk
                 return _extraSignAcquireTask;
             }
@@ -203,7 +204,7 @@ public class BeeMovieTask extends Task {
 
     private static boolean isSign(Block block) {
         if (block == null) return false;
-        Block[] candidates = ItemTarget.WOOD_SIGNS_ALL;
+        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
         for(Block candidate : candidates) {
             if (block.is(candidate)) return true;
         }

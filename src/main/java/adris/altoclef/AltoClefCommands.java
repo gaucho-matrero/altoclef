@@ -55,8 +55,8 @@ public class AltoClefCommands extends CommandList {
 
         mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(target, true);
         */
-        //mod.runUserTask(new PickupDroppedItemTask(Arrays.asList(new ItemTarget(ItemTarget.LOG))));
-        //mod.runUserTask(new MineAndCollectTask(Arrays.asList(new ItemTarget(ItemTarget.LOG))));
+        //mod.runUserTask(new PickupDroppedItemTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
+        //mod.runUserTask(new MineAndCollectTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
         ItemTarget B = new ItemTarget("planks");
         ItemTarget s = new ItemTarget("stick");
         ItemTarget o = null;

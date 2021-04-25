@@ -8,6 +8,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -51,7 +52,7 @@ public class PlaceSignTask extends Task {
 
         // Place sign
         if (placeAnywhere()) {
-            return new PlaceBlockNearbyTask(ItemTarget.WOOD_SIGNS_ALL);
+            return new PlaceBlockNearbyTask(ItemUtil.WOOD_SIGNS_ALL);
         } else {
 
             assert MinecraftClient.getInstance().world != null;
@@ -145,7 +146,7 @@ public class PlaceSignTask extends Task {
     }
 
     private static boolean isSign(Block block) {
-        for(Block check : ItemTarget.WOOD_SIGNS_ALL) {
+        for(Block check : ItemUtil.WOOD_SIGNS_ALL) {
             if (check == block) return true;
         }
         return false;

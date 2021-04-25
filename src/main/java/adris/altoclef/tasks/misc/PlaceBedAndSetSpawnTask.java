@@ -12,6 +12,7 @@ import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -20,14 +21,9 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SleepingChatScreen;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
@@ -157,7 +153,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
 
         // Get a bed if we don't have one.
-        if (!mod.getInventoryTracker().hasItem(ItemTarget.BED)) {
+        if (!mod.getInventoryTracker().hasItem(ItemUtil.BED)) {
             setDebugState("Getting a bed first");
             return TaskCatalogue.getItemTask("bed", 1);
         }

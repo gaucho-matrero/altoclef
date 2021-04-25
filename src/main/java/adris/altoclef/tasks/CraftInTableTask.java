@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -30,13 +31,13 @@ public class CraftInTableTask extends ResourceTask {
         _targets = targets;
         _craftTask = new DoCraftInTableTask(_targets);
     }
-    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect) {
+    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
         _targets = new RecipeTarget[] {new RecipeTarget(target, recipe)};
-        _craftTask = new DoCraftInTableTask(_targets, collect);
+        _craftTask = new DoCraftInTableTask(_targets, collect, ignoreUncataloguedSlots);
     }
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
-        this(target, recipe, true);
+        this(target, recipe, true, false);
     }
     public CraftInTableTask(Item[] items, int count, CraftingRecipe recipe) {
         this(new ItemTarget(items, count), recipe);
@@ -110,14 +111,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private final Timer _craftResetTimer = new Timer(10);
 
-    public DoCraftInTableTask(RecipeTarget[] targets, boolean collect) {
+    public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
+        _collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
         _targets = targets;
         _collect = collect;
-        _collectTask = new CollectRecipeCataloguedResourcesTask(targets);
     }
     public DoCraftInTableTask(RecipeTarget[] targets) {
-        this(targets, true);
+        this(targets, true, false);
     }
 
     @Override
@@ -254,7 +255,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // TODO: If we have an axe, lower the cost.
-        if (mod.getInventoryTracker().hasItem(ItemTarget.LOG) || mod.getInventoryTracker().getItemCount(ItemTarget.PLANKS) >= 4) {
+        if (mod.getInventoryTracker().hasItem(ItemUtil.LOG) || mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
             return 150;
         }

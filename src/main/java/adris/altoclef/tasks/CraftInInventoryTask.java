@@ -15,14 +15,16 @@ public class CraftInInventoryTask extends ResourceTask {
     private boolean _fullCheckFailed = false;
 
     private final boolean _collect;
+    private final boolean _ignoreUncataloguedSlots;
 
-    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect) {
+    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
         _recipe = recipe;
         _collect = collect;
+        _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
-        this(target, recipe, true);
+        this(target, recipe, true, false);
     }
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
@@ -85,7 +87,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-        return new CollectRecipeCataloguedResourcesTask(new RecipeTarget(_itemTargets[0], _recipe));
+        return new CollectRecipeCataloguedResourcesTask(_ignoreUncataloguedSlots, new RecipeTarget(_itemTargets[0], _recipe));
     }
 
     protected String toCraftingDebugStringName() {
