@@ -2,22 +2,18 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
 
-public class SearchForDesertPyramidTask extends SearchChunksExploreTask {
+public class LocateDesertTempleTask extends Task {
 
     private BlockPos _finalPos;
 
     @Override
     protected void onStart(AltoClef mod) {
-
-        super.onStart(mod);
         // Track desert pyramid blocks
         mod.getBlockTracker().trackBlock(Blocks.STONE_PRESSURE_PLATE);
     }
@@ -32,18 +28,17 @@ public class SearchForDesertPyramidTask extends SearchChunksExploreTask {
             setDebugState("Going to found desert temple");
             return new GetToBlockTask(_finalPos, false);
         }
-        return super.onTick(mod);
+        return new SearchWithinBiomeTaks(Biome.Category.DESERT);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        super.onStop(mod, interruptTask);
         mod.getBlockTracker().stopTracking(Blocks.STONE_PRESSURE_PLATE);
     }
 
     @Override
     protected boolean isEqual(Task obj) {
-        return obj instanceof SearchForDesertPyramidTask;
+        return obj instanceof LocateDesertTempleTask;
     }
 
     @Override
@@ -68,12 +63,6 @@ public class SearchForDesertPyramidTask extends SearchChunksExploreTask {
     }
     private Block b(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getBlock();
-    }
-
-    @Override
-    protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
-        Biome b = mod.getWorld().getBiome(pos.getStartPos().add(1, 1, 1));
-        return b.getCategory() == Biome.Category.DESERT;
     }
 
 }

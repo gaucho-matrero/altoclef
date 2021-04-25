@@ -79,7 +79,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         Item majorityCraftItem = null;
         for (Item sameCheck : _sameResourceTarget.getMatches()) {
             int count = getExpectedTotalCountOfSameItem(mod, sameCheck);
-            int canCraft = (count / _sameResourcePerRecipe);
+            int canCraft = (count / _sameResourcePerRecipe) * _recipe.outputCount();
             canCraftTotal += canCraft;
             if (canCraft > majorityCraftCount) {
                 majorityCraftCount = canCraft;
@@ -99,7 +99,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             int trueCanCraftTotal = 0;
             for (Item sameCheck : _sameResourceTarget.getMatches()) {
                 int trueCount = mod.getInventoryTracker().getItemCountIncludingTable(false, sameCheck);
-                int trueCanCraft = (trueCount / _sameResourcePerRecipe);
+                int trueCanCraft = (trueCount / _sameResourcePerRecipe) * _recipe.outputCount();
                 trueCanCraftTotal += trueCanCraft;
             }
             if (trueCanCraftTotal < currentTargetsRequired) {

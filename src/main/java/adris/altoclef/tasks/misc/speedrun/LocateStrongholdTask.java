@@ -2,6 +2,7 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToYTask;
 import adris.altoclef.tasks.GoInDirectionXZTask;
 import adris.altoclef.tasks.PickupDroppedItemTask;
@@ -100,6 +101,12 @@ public class LocateStrongholdTask extends Task {
 
         // Throw the eye since we don't have any eye info.
         if (_cachedEyeDirection == null) {
+
+            if (!mod.getInventoryTracker().hasItem(Items.ENDER_EYE)) {
+                setDebugState("Collecting eye of ender.");
+                return TaskCatalogue.getItemTask("eye_of_ender", 1);
+            }
+
             setDebugState("Throwing eye.");
             // First get to a proper throwing height
             if (mod.getPlayer().getPos().y < EYE_THROW_MINIMUM_Y_POSITION) {

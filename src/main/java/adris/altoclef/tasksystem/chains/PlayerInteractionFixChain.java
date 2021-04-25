@@ -70,6 +70,13 @@ public class PlayerInteractionFixChain extends TaskChain {
                             bestToolSlot = slot;
                         }
                     }
+                    if (stack.getItem() == Items.SHEARS) {
+                        // Shears take priority over leaf blocks.
+                        if (ToolSet.areShearsEffective(state.getBlock())) {
+                            bestToolSlot = slot;
+                            break;
+                        }
+                    }
                 }
 
                 // Only accept tools OUTSIDE OF HOTBAR!

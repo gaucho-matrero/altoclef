@@ -32,7 +32,7 @@ public class Arg<T> extends ArgBase {
         _showDefault = true;
         _hasDefault = false;
         // If enum, take action.
-        if ( IsInstanceOf(_tType, Enum.class) ) {
+        if ( _tType.isEnum() ) {
             _enumValues = new HashMap<String, T>();
             for ( T v : _tType.getEnumConstants() ) {
                 _enumValues.put(v.toString().toLowerCase(), v);

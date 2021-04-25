@@ -218,7 +218,7 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new CollectFoodTask(20));
                 break;
             case "temple":
-                mod.runUserTask(new SearchForDesertPyramidTask());
+                mod.runUserTask(new LocateDesertTempleTask());
                 break;
             case "blaze":
                 mod.runUserTask(new CollectBlazeRodsTask(7));
@@ -306,6 +306,7 @@ public class AltoClefCommands extends CommandList {
             new CoordsCommand(),
             new StatusCommand(),
             new InventoryCommand(),
+            new LocateStructureCommand(),
             new StopCommand(),
             new TestCommand(),
             new FoodCommand(),

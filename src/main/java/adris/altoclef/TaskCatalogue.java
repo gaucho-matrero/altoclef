@@ -5,6 +5,7 @@ import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
 import adris.altoclef.util.*;
+import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MaterialColor;
@@ -39,6 +40,9 @@ public class TaskCatalogue {
             woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new);
+            mine("andesite", MiningRequirement.WOOD, Blocks.ANDESITE, Items.ANDESITE);
+            mine("granite", MiningRequirement.WOOD, Blocks.GRANITE, Items.GRANITE);
+            mine("diorite", MiningRequirement.WOOD, Blocks.DIORITE, Items.DIORITE);
             mine("netherrack",  MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK);
             mine("coal",  MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
@@ -51,33 +55,63 @@ public class TaskCatalogue {
             mine("sand", Blocks.SAND, Items.SAND);
             mine("gravel", Blocks.GRAVEL, Items.GRAVEL);
             mine("clay_ball", Blocks.CLAY, Items.CLAY_BALL);
+            simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new);
             simple("flint", Items.FLINT, CollectFlintTask::new);
             simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new);
             simple("wool", ItemUtil.WOOL, CollectWoolTask::new);
+            simple("wheat", Items.WHEAT, CollectWheatTask::new);
             colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
+            simple("egg", Items.EGG, CollectEggsTask::new);
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
             mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
             mob("spider_eye", Items.SPIDER_EYE, SpiderEntity.class);
             mob("leather", Items.LEATHER, CowEntity.class);
             mob("feather", Items.FEATHER, ChickenEntity.class);
+            mob("rotten_flesh", Items.ROTTEN_FLESH, ZombieEntity.class);
+            mob("rabbits_foot", Items.RABBIT_FOOT, RabbitEntity.class);
+            mob("rabbit_hide", Items.RABBIT_HIDE, RabbitEntity.class);
             mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
             mob("slimeball", Items.SLIME_BALL, SlimeEntity.class);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
             mob("string", Items.STRING, SpiderEntity.class); // Warning, this probably won't work.
-            mine("sugar_cane", Blocks.SUGAR_CANE, Items.SUGAR_CANE);
+            mine("sugar_cane", Items.SUGAR_CANE);
             mine("brown_mushroom", MiningRequirement.HAND, new Block[] {Blocks.BROWN_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK}, Items.BROWN_MUSHROOM);
             mine("red_mushroom", MiningRequirement.HAND, new Block[] {Blocks.RED_MUSHROOM, Blocks.RED_MUSHROOM_BLOCK}, Items.RED_MUSHROOM);
+            mine("melon_slice", MiningRequirement.HAND, Blocks.MELON, Items.MELON_SLICE);
+            mine("pumpkin", MiningRequirement.HAND, Blocks.PUMPKIN, Items.PUMPKIN);
             simple("blaze_rod", Items.BLAZE_ROD, CollectBlazeRodsTask::new); // Not super simple tbh lmao
             simple("quartz", Items.QUARTZ, CollectQuartzTask::new);
+            simple("cocoa_beans", Items.COCOA_BEANS, CollectCocoaBeansTask::new);
+            shear("cobweb", Blocks.COBWEB, Items.COBWEB);
+            // Misc greenery
+            shear("leaves", Util.itemsToBlocks(ItemUtil.LEAVES), ItemUtil.LEAVES);
+            woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves) ));
+            shear("vine", Blocks.VINE, Items.VINE);
+            shear("grass", Blocks.GRASS, Items.GRASS);
+            shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD);
+            shear("tall_grass", Blocks.TALL_GRASS, Items.TALL_GRASS);
+            shear("fern", Blocks.FERN, Items.FERN);
+            shear("large_fern", Blocks.LARGE_FERN, Items.LARGE_FERN);
             // Flowers
-            mine("allium", Blocks.ALLIUM, Items.ALLIUM);
-            mine("azure_bluet", Blocks.AZURE_BLUET, Items.AZURE_BLUET);
-            mine("blue_orchid", Blocks.BLUE_ORCHID, Items.BLUE_ORCHID);
-            mine("dandelion", Blocks.DANDELION, Items.DANDELION);
-            mine("poppy", Blocks.POPPY, Items.POPPY);
-            mine("red_tulip", Blocks.RED_TULIP, Items.RED_TULIP);
-            mine("cactus", Blocks.CACTUS, Items.CACTUS);
+            simple("flower", ItemUtil.FLOWER, CollectFlowerTask::new);
+            mine("allium", Items.ALLIUM);
+            mine("azure_bluet", Items.AZURE_BLUET);
+            mine("blue_orchid", Items.BLUE_ORCHID);
+            mine("cactus", Items.CACTUS);
+            mine("cornflower", Items.CORNFLOWER);
+            mine("dandelion", Items.DANDELION);
+            mine("lilac", Items.LILAC);
+            mine("lily_of_the_valley", Items.LILY_OF_THE_VALLEY);
+            mine("orange_tulip", Items.ORANGE_TULIP);
+            mine("oxeye_dasiy", Items.OXEYE_DAISY);
+            mine("pink_tulip", Items.PINK_TULIP);
+            mine("poppy", Items.POPPY);
+            mine("peony", Items.PEONY);
+            mine("red_tulip", Items.RED_TULIP);
+            mine("rose_bush", Items.ROSE_BUSH);
+            mine("sunflower", Items.SUNFLOWER);
+            mine("white_tulip", Items.WHITE_TULIP);
 
 
             // MATERIALS
@@ -98,9 +132,17 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("redstone_block", Items.REDSTONE_BLOCK, "redstone");
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
+            shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slimeball");
             shapedRecipe2x2("sugar", Items.SUGAR,1, "sugar_cane", o, o, o);
             shapedRecipe2x2("bone_meal", Items.BONE_MEAL, 3, "bone", o, o, o);
-            shapedRecipeSlab("smooth_stone_slab", Items.SMOOTH_STONE_SLAB, "smooth_stone");
+            shapedRecipe2x2("polished_andesite", Items.POLISHED_ANDESITE, 4, "andesite", "andesite", "andesite", "andesite");
+            shapedRecipe2x2("polished_diorite", Items.POLISHED_DIORITE, 4, "diorite", "diorite", "diorite", "diorite");
+            shapedRecipe2x2("polished_granite", Items.POLISHED_GRANITE, 4, "granite", "granite", "granite", "granite");
+            shapedRecipe2x2("cut_sandstone", Items.CUT_SANDSTONE, 4, "sandstone", "sandstone", "sandstone", "sandstone");
+            shapedRecipe2x2("stone_bricks", Items.STONE_BRICKS, 4, "stone", "stone", "stone", "stone");
+            shapedRecipe2x2("mossy_stone_bricks", Items.MOSSY_STONE_BRICKS, 1, "stone_bricks", "vine", null,null);
+            smelt("cracked_stone_bricks", Items.CRACKED_STONE_BRICKS, "stone_bricks");
+            smelt("smooth_sandstone", Items.SMOOTH_SANDSTONE, "sandstone");
             shapedRecipe3x3("paper", Items.PAPER, 3, "sugar_cane", "sugar_cane", "sugar_cane", o, o, o, o, o, o);
             shapedRecipe2x2("book", Items.BOOK, 1, "paper", "paper", "paper", "leather");
             shapedRecipe2x2("book_and_quill", Items.WRITABLE_BOOK, 1, "book", "ink_sac", o, "feather");
@@ -110,6 +152,45 @@ public class TaskCatalogue {
             alias("eye_of_ender", "ender_eye");
             shapedRecipe2x2("fermented_spider_eye", Items.SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
+            // DYES
+            smelt("green_dye", Items.GREEN_DYE, "cactus");
+            // Slabs + Stairs + Walls
+            shapedRecipeSlab("cobblestone_slab", Items.COBBLESTONE_SLAB, "cobblestone");
+            shapedRecipeStairs("cobblestone_stairs", Items.COBBLESTONE_STAIRS, "cobblestone");
+            shapedRecipeWall("cobblestone_wall", Items.COBBLESTONE_WALL, "cobblestone");
+            shapedRecipeSlab("stone_slab", Items.STONE_SLAB, "stone");
+            shapedRecipeStairs("stone_stairs", Items.STONE_STAIRS, "stone");
+            shapedRecipeSlab("smooth_stone_slab", Items.SMOOTH_STONE_SLAB, "smooth_stone");
+            shapedRecipeSlab("stone_brick_slab", Items.STONE_BRICK_SLAB, "stone_bricks");
+            shapedRecipeStairs("stone_brick_stairs", Items.STONE_BRICK_STAIRS, "stone_bricks");
+            shapedRecipeWall("stone_brick_wall", Items.STONE_BRICK_WALL, "stone_bricks");
+            shapedRecipeSlab("mossy_stone_brick_slab", Items.MOSSY_STONE_BRICK_SLAB, "mossy_stone_bricks");
+            shapedRecipeStairs("mossy_stone_brick_stairs", Items.MOSSY_STONE_BRICK_STAIRS, "mossy_stone_bricks");
+            shapedRecipeWall("mossy_stone_brick_wall", Items.MOSSY_STONE_BRICK_WALL, "mossy_stone_bricks");
+            shapedRecipeSlab("andesite_slab", Items.ANDESITE_SLAB, "andesite");
+            shapedRecipeStairs("andesite_stairs", Items.ANDESITE_STAIRS, "andesite");
+            shapedRecipeWall("andesite_wall", Items.ANDESITE_WALL, "andesite");
+            shapedRecipeSlab("granite_slab", Items.GRANITE_SLAB, "granite");
+            shapedRecipeStairs("granite_stairs", Items.GRANITE_STAIRS, "granite");
+            shapedRecipeWall("granite_wall", Items.GRANITE_WALL, "granite");
+            shapedRecipeSlab("diorite_slab", Items.DIORITE_SLAB, "diorite");
+            shapedRecipeStairs("diorite_stairs", Items.DIORITE_STAIRS, "diorite");
+            shapedRecipeWall("diorite_wall", Items.DIORITE_WALL, "diorite");
+            shapedRecipeSlab("polished_andesite_slab", Items.POLISHED_ANDESITE_SLAB, "polished_andesite");
+            shapedRecipeStairs("polished_andesite_stairs", Items.POLISHED_ANDESITE_STAIRS, "polished_andesite");
+            shapedRecipeSlab("polished_granite_slab", Items.POLISHED_GRANITE_SLAB, "polished_granite");
+            shapedRecipeStairs("polished_granite_stairs", Items.POLISHED_GRANITE_STAIRS, "polished_granite");
+            shapedRecipeSlab("polished_diorite_slab", Items.POLISHED_DIORITE_SLAB, "polished_diorite");
+            shapedRecipeStairs("polished_diorite_stairs", Items.POLISHED_DIORITE_STAIRS, "polished_diorite");
+            shapedRecipeSlab("sandstone_slab", Items.SANDSTONE_SLAB, "sandstone");
+            shapedRecipeStairs("sandstone_stairs", Items.SANDSTONE_STAIRS, "sandstone");
+            shapedRecipeWall("sandstone_wall", Items.SANDSTONE_WALL, "sandstone");
+            shapedRecipeSlab("cut_sandstone_slab", Items.CUT_SANDSTONE_SLAB, "cut_sandstone");
+            shapedRecipeSlab("smooth_sandstone_slab", Items.SMOOTH_SANDSTONE_SLAB, "smooth_sandstone");
+            shapedRecipeStairs("smooth_sandstone_stairs", Items.SMOOTH_SANDSTONE_STAIRS, "smooth_sandstone");
+            shapedRecipe2x2("chiseled_sandstone", Items.CHISELED_SANDSTONE, 1, "sandstone_slab", "sandstone_slab", o,o);
+            shapedRecipe2x2("chiseled_stone_bricks", Items.CHISELED_STONE_BRICKS, 1, "stone_brick_slab", o, "stone_brick_slab", o);
+
             /*
             {
                 String g = "gold_nugget";
@@ -135,6 +216,7 @@ public class TaskCatalogue {
                 shapedRecipe2x2("flint_and_steel", Items.FLINT_AND_STEEL, 1, i, o, o, "flint");
                 shapedRecipe2x2("shears", Items.SHEARS, 1, i, o, o, i);
                 shapedRecipe3x3("compass", Items.COMPASS, 1, o, i, o, i, "redstone", i, o, i, o);
+                shapedRecipe3x3("shield", Items.SHEARS, 1, p,i,p, p,p,p, o,p,o);
                 String g = "gold_ingot";
                 shapedRecipe3x3("clock", Items.CLOCK, 1, o, g, o, g, "redstone", g, o, g, o);
             }
@@ -153,7 +235,7 @@ public class TaskCatalogue {
             alias("diamond_pick", "diamond_pickaxe");
             simple("boat", ItemUtil.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
-
+            shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string",o, "string", "slimeball",o, o,o,"string");
 
 
             // FURNITURE
@@ -171,6 +253,10 @@ public class TaskCatalogue {
                 shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
                 shapedRecipe3x3("dropper", Items.DISPENSER, 1, c,c,c, c,o,c, c,"redstone",c);
                 shapedRecipe3x3("dispenser", Items.DISPENSER, 1, c,c,c, c,"bow",c, c,"redstone",c);
+                shapedRecipe3x3("brewing_stand", Items.BREWING_STAND, 1, o, o, o, o, "blaze_rod", o, c, c, c);
+                shapedRecipe3x3("piston", Items.PISTON, 1, p,p,p, c,"iron_ingot",c, c,"redstone",c);
+                shapedRecipe3x3("observer", Items.OBSERVER, 1, c,c,c, "redstone", "redstone", "quartz", c,c,c);
+                shapedRecipe2x2("lever", Items.LEVER, 1, s,o, c,o);
             }
             shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p);
             shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
@@ -182,6 +268,9 @@ public class TaskCatalogue {
                 shapedRecipe3x3("anvil", Items.ANVIL, 1, b, b, b, o, i, o, i, i, i);
                 shapedRecipe3x3("cauldron", Items.CAULDRON, 1, i, o, i, i, o, i, i, i, i);
                 shapedRecipe3x3("minecart", Items.MINECART, 1, o, o, o, i, o, i, i, i, i);
+                shapedRecipe3x3("iron_door", Items.IRON_DOOR, 3, i,i,o, i,i,o, i,i,o);
+                shapedRecipe3x3("iron_bars", Items.IRON_BARS, 16, i,i,i, i,i,i, o,o,o);
+                shapedRecipe2x2("iron_trapdoor", Items.IRON_TRAPDOOR, 1, i, i, i, i);
             }
             shapedRecipe3x3("armor_stand", Items.ARMOR_STAND, 1, s, s, s, o, s, o, s, "smooth_stone_slab", s);
             {
@@ -192,7 +281,22 @@ public class TaskCatalogue {
             {
                 String b = "brick";
                 shapedRecipe3x3("flower_pot", Items.FLOWER_POT,1, b, o, b, o, b, o, o, o, o);
+                shapedRecipe2x2("bricks", Items.BRICKS, 1, b,b,b,b);
+                shapedRecipeSlab("brick_slab", Items.BRICK_SLAB, b);
+                shapedRecipeStairs("brick_stairs", Items.BRICK_STAIRS, b);
+                shapedRecipeStairs("brick_wall", Items.BRICK_WALL, "brick");
             }
+            shapedRecipe3x3("ladder", Items.LADDER, 3, s,o,s, s,s,s, s,o,s);
+            shapedRecipe3x3("jukebox", Items.JUKEBOX, 1, p,p,p, p,"diamond",p, p,p,p);
+            shapedRecipe3x3("note_block", Items.NOTE_BLOCK, 1, p,p,p, p,"redstone",p, p,p,p);
+            shapedRecipe3x3("bookshelf", Items.BOOKSHELF, 1, p,p,p, "book", "book", "book", p,p,p);
+            {
+                String g = "glass";
+                shapedRecipe3x3("glass_pane", Items.GLASS_PANE, 16, g,g,g, g,g,g, o,o,o);
+            }
+            simple("carved_pumpkin", Items.CARVED_PUMPKIN, count -> new CarveThenCollectTask(Items.CARVED_PUMPKIN, count, Blocks.CARVED_PUMPKIN, Items.PUMPKIN, Blocks.PUMPKIN, Items.SHEARS));
+            shapedRecipe2x2("jack_o_lantern", Items.JACK_O_LANTERN, 1, "carved_pumpkin",o, "torch",o);
+
             // A BUNCH OF WOODEN STUFF
             simple("wooden_stairs", ItemUtil.WOOD_STAIRS, CollectWoodenStairsTask::new);
             woodTasks("stairs", woodItems -> woodItems.stairs, (woodItems, count) -> new CollectWoodenStairsTask(woodItems.stairs, woodItems.prefix + "_planks", count));
@@ -206,13 +310,49 @@ public class TaskCatalogue {
             woodTasks("fence", woodItems -> woodItems.fence, (woodItems, count) -> new CollectFenceTask(woodItems.fence, woodItems.prefix + "_planks", count));
             simple("wooden_fence_gate", ItemUtil.WOOD_FENCE_GATE, CollectFenceGateTask::new);
             woodTasks("fence_gate", woodItems -> woodItems.fenceGate, (woodItems, count) -> new CollectFenceGateTask(woodItems.fenceGate, woodItems.prefix + "_planks", count));
-            // Most people will always think "wooden door" when they say "door".
+            {
+                String r = "wooden_slab";
+                shapedRecipe3x3("lectern", Items.LECTERN, 1, r, r, r, o, "bookshelf", o, o, r, o);
+            }            // Most people will always think "wooden door" when they say "door".
             alias("door", "wooden_door");
             alias("trapdoor", "wooden_trapdoor");
             alias("fence", "wooden_fence");
             alias("fence_gate", "wooden_fence_gate");
 
-            //shapedRecipe3x3("daylight_detector", Items.DAYLIGHT_DETECTOR, 1, ); <- NEED WOOD SLABS
+            shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, "stone", "stone", o, o);
+            shapedRecipe2x2("heavy_weighted_pressure_plate", Items.HEAVY_WEIGHTED_PRESSURE_PLATE, 1, "iron_ingot", "iron_ingot", o, o);
+            shapedRecipe2x2("light_weighted_pressure_plate", Items.LIGHT_WEIGHTED_PRESSURE_PLATE, 1, "gold_ingot", "gold_ingot", o, o);
+
+            shapedRecipe3x3("daylight_detector", Items.DAYLIGHT_DETECTOR, 1, "glass", "glass", "glass", "quartz", "quartz", "quartz", "wooden_slab", "wooden_slab", "wooden_slab");
+            shapedRecipe3x3("tripwire_hook", Items.TRIPWIRE_HOOK, 2, "iron_ingot",o,o, "stick",o,o, "planks",o,o);
+            shapedRecipe2x2("trapped_chest", Items.TRAPPED_CHEST, 1, "chest", "tripwire_hook", o, o);
+            shapedRecipe3x3("crossbow", Items.CROSSBOW, 1, s,"iron_ingot",s, "string","tripwire_hook","string", o,s,o);
+            {
+                String t = "gunpowder";
+                String n = "sand";
+                shapedRecipe3x3("tnt", Items.TNT, 1, t,n,t, n,t,n, t,n,t);
+            }
+            shapedRecipe2x2("sticky_piston", Items.STICKY_PISTON, 1, "slimeball", o, "piston", o);
+            shapedRecipe2x2("redstone_torch", Items.REDSTONE_TORCH, 1, "redstone",o, s,o);
+            shapedRecipe3x3("repeater", Items.REPEATER, 1, "redstone_torch","redstone","redstone_torch", "stone","stone","stone", o,o,o);
+            shapedRecipe3x3("comparator", Items.COMPARATOR, 1, o,"redstone_torch",o,"redstone_torch","quartz","redstone_torch", "stone","stone","stone");
+            {
+                // Some rails
+                String i = "iron_ingot";
+                String g = "gold_ingot";
+                shapedRecipe3x3("rail", Items.RAIL, 16, i,o,i, i,s,i, i,o,i);
+                shapedRecipe3x3("powered_rail", Items.POWERED_RAIL, 6, g,o,g, g,s,g, g,"redstone",g);
+                shapedRecipe3x3("detector_rail", Items.DETECTOR_RAIL, 6, i,o,i, i,"stone_pressure_plate",i, i,"redstone",i);
+                shapedRecipe3x3("activator_rail", Items.ACTIVATOR_RAIL, 6, i,s,i, i,"redstone_torch",i, i,s,i);
+                shapedRecipe3x3("hopper", Items.HOPPER, 1, i,o,i, i,"chest",i, o,i,o);
+            }
+            shapedRecipe3x3("painting", Items.PAINTING, 1, s,s,s, s,"wool",s, s,s,s);
+            shapedRecipe3x3("item_frame", Items.ITEM_FRAME, 1, s,s,s, s,"leather",s, s,s,s);
+            shapedRecipe2x2("minecart_with_chest", Items.CHEST_MINECART, 1, "chest",o, "minecart",o);
+            shapedRecipe2x2("minecart_with_furnace", Items.FURNACE_MINECART, 1, "furnace",o, "minecart",o);
+            shapedRecipe2x2("minecart_with_hopper", Items.HOPPER_MINECART, 1, "hopper",o, "minecart",o);
+            shapedRecipe2x2("minecart_with_tnt", Items.TNT_MINECART, 1, "tnt",o, "minecart",o);
+
 
             /// FOOD
             mobCook("porkchop", Items.PORKCHOP, Items.COOKED_PORKCHOP, PigEntity.class);
@@ -222,7 +362,14 @@ public class TaskCatalogue {
             mobCook("rabbit", Items.RABBIT, Items.COOKED_RABBIT, RabbitEntity.class);
             mobCook("salmon", Items.SALMON, Items.COOKED_SALMON, SalmonEntity.class);
             mobCook("cod", Items.COD, Items.COOKED_COD, CodEntity.class);
+            simple("milk", Items.MILK_BUCKET, CollectMilkTask::new);
             mine("apple", Blocks.OAK_LEAVES, Items.APPLE);
+            shapedRecipe2x2("mushroom_stew", Items.MUSHROOM_STEW, 1, "red_mushroom", "brown_mushroom", "bowl", o);
+            shapedRecipe2x2("suspicious_stew", Items.SUSPICIOUS_STEW, 1, "red_mushroom", "brown_mushroom", "bowl", "flower");
+            shapedRecipe3x3("bread", Items.BREAD, 1, "wheat", "wheat", "wheat", o, o, o, o, o, o);
+            shapedRecipe3x3("cookie", Items.COOKIE, 8, "wheat", "cocoa_beans", "wheat", o, o, o, o, o, o);
+            shapedRecipe2x2("pumpkin_pie", Items.PUMPKIN_PIE, 1, "pumpkin", "sugar", o,"egg");
+            shapedRecipe3x3("cake", Items.CAKE, 1, "milk", "milk", "milk", "sugar", "egg", "sugar", "wheat", "wheat", "wheat");
         }
     }
 
@@ -304,6 +451,16 @@ public class TaskCatalogue {
     private static void mine(String name, Block toMine, Item target) {
         mine(name, MiningRequirement.HAND, toMine, target);
     }
+    private static void mine(String name, Item target) {
+        mine(name, Block.getBlockFromItem(target), target);
+    }
+
+    private static void shear(String name, Block[] toShear, Item ...targets) {
+        put(name, targets, count -> new ShearAndCollectBlockTask(new ItemTarget[]{new ItemTarget(targets, count)}, toShear));
+    }
+    private static void shear(String name, Block toShear, Item ...targets) {
+        shear(name, new Block[]{toShear}, targets);
+    }
 
     private static void shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)}, outputCount);
@@ -327,6 +484,9 @@ public class TaskCatalogue {
     }
     private static void shapedRecipeStairs(String name, Item match, String material) {
         shapedRecipe3x3(name, match, 4, material, null, null, material, material, null, material, material, material);
+    }
+    private static void shapedRecipeWall(String name, Item match, String material) {
+        shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
 
     private static void smelt(String name, Item[] matches, String materials) {
