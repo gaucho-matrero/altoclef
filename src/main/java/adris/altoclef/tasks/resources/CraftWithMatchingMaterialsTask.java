@@ -71,31 +71,45 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
          * 5) If the most frequent occurrence IS met, run CraftInTable with a custom recipe that only has the frequent material.`
          */
 
-        Item mostCommonSameResource = null;
-        int sameResourceCount = 0;
+        // For each "same" item: How many items can we craft with it?
+        // For instance, if we have 7 red wool, we can craft 2 beds
+        // sameFullCraftsPermitted[Items.RED_WOOL] = 2;
+        int canCraftTotal = 0;
+        int majorityCraftCount = 0;
+        Item majorityCraftItem = null;
         for (Item sameCheck : _sameResourceTarget.getMatches()) {
             int count = getExpectedTotalCountOfSameItem(mod, sameCheck);
-            if (count > sameResourceCount) {
-                sameResourceCount = count;
-                mostCommonSameResource = sameCheck;
+            int canCraft = (count / _sameResourcePerRecipe);
+            canCraftTotal += canCraft;
+            if (canCraft > majorityCraftCount) {
+                majorityCraftCount = canCraft;
+                majorityCraftItem = sameCheck;
             }
         }
 
         // If we already have some of our target, we need less "same" materials.
         int currentTargetCount = mod.getInventoryTracker().getItemCount(_target);
-        int currentlyRequired = _sameResourceRequiredCount - currentTargetCount*_sameResourcePerRecipe;
+        int currentTargetsRequired = _target.targetCount - currentTargetCount;
 
-        if (sameResourceCount >= currentlyRequired) {
+        if (canCraftTotal >= currentTargetsRequired) {
             // We have enough of the same resource!!!
             // Handle crafting normally.
 
-            int trueCount = mod.getInventoryTracker().getItemCountIncludingTable(false, mostCommonSameResource);
-            if (trueCount < currentlyRequired) {
-                return getSpecificSameResourceTask(mod, mostCommonSameResource);
+            // We may need to convert our raw materials into our "matching" materials.
+            int trueCanCraftTotal = 0;
+            for (Item sameCheck : _sameResourceTarget.getMatches()) {
+                int trueCount = mod.getInventoryTracker().getItemCountIncludingTable(false, sameCheck);
+                int trueCanCraft = (trueCount / _sameResourcePerRecipe);
+                trueCanCraftTotal += trueCanCraft;
+            }
+            if (trueCanCraftTotal < currentTargetsRequired) {
+                return getSpecificSameResourceTask(mod, _sameResourceTarget.getMatches());
             }
 
-            CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, mostCommonSameResource, _sameMask);
-            return _recipe.isBig()? new CraftInTableTask(_target, samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
+            CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
+            int toCraftTotal = majorityCraftCount + currentTargetCount;
+            toCraftTotal = Math.min(toCraftTotal, _target.targetCount);
+            return _recipe.isBig()? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
         }
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);
@@ -122,7 +136,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
     }
 
     // Virtual
-    protected Task getSpecificSameResourceTask(AltoClef mod, Item toGet) {
+    protected Task getSpecificSameResourceTask(AltoClef mod, Item[] toGet) {
         Debug.logError("Uh oh!!! getSpecificSameResourceTask should be implemented!!!! Now we're stuck.");
         return null;
     }

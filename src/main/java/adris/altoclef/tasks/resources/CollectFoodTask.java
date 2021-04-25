@@ -118,13 +118,13 @@ public class CollectFoodTask extends Task {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false);
+                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
                 return _currentResourceTask;
             }
             if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9), false);
+                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[] {Items.HAY_BLOCK}, o, o, o}, 9), false, false);
                 return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods

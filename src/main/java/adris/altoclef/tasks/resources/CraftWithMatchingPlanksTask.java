@@ -34,12 +34,14 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
     }
 
     @Override
-    protected Task getSpecificSameResourceTask(AltoClef mod, Item toGet) {
-        Item log = ItemUtil.planksToLog(toGet);
-        // Convert logs to planks
-        if (mod.getInventoryTracker().getItemCountIncludingTable(log) >= 1) {
-            ItemTarget empty = null;
-            return new CraftInInventoryTask(new ItemTarget(toGet, 1), CraftingRecipe.newShapedRecipe("planks", new ItemTarget[]{new ItemTarget(log, 1), empty, empty, empty}, 4), false, true);
+    protected Task getSpecificSameResourceTask(AltoClef mod, Item[] toGet) {
+        for (Item plankToGet : toGet) {
+            Item log = ItemUtil.planksToLog(plankToGet);
+            // Convert logs to planks
+            if (mod.getInventoryTracker().getItemCountIncludingTable(log) >= 1) {
+                ItemTarget empty = null;
+                return new CraftInInventoryTask(new ItemTarget(plankToGet, 1), CraftingRecipe.newShapedRecipe("planks", new ItemTarget[]{new ItemTarget(log, 1), empty, empty, empty}, 4), false, true);
+            }
         }
         Debug.logError("CraftWithMatchingPlanks: Should never happen!");
         return null;
