@@ -26,6 +26,8 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
     protected abstract Task getGoalTask(T obj);
     protected abstract boolean isValid(AltoClef mod, T obj);
 
+    private boolean _wasWandering;
+
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
@@ -38,6 +40,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         _heuristicMap.clear();
         _goalTask = null;
     }
+    public boolean wasWandering() {return _wasWandering;}
 
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();
@@ -50,6 +53,8 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        _wasWandering = false;
 
         // Reset our pursuit if our pursuing object no longer is pursuable.
         if (_currentlyPursuing != null && !isValid(mod, _currentlyPursuing)) {
@@ -102,6 +107,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         //noinspection ConstantConditions
         if (newClosest == null && _currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
+            _wasWandering = true;
             return getWanderTask(mod);
         }
 

@@ -60,6 +60,11 @@ public class CollectCocoaBeansTask extends ResourceTask {
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck), Blocks.COCOA);
         }
 
+        // Dimension
+        if (isInWrongDimension(mod)) {
+            return getToCorrectDimensionTask(mod);
+        }
+
         // Search for jungles
         setDebugState("Exploring around jungles");
         return new SearchWithinBiomeTaks(Biome.Category.JUNGLE);

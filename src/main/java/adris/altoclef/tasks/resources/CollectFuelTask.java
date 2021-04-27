@@ -2,7 +2,9 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 
 // TODO: Make this collect more than just coal. It should smartly pick alternative sources if coal is too far away or if we simply cannot get a wooden pick.
 public class CollectFuelTask extends Task {
@@ -21,8 +23,20 @@ public class CollectFuelTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        // Just collect coal for now.
-        return TaskCatalogue.getItemTask("coal", (int)Math.ceil(_targetFuel / 8));
+        switch (mod.getCurrentDimension()) {
+            case OVERWORLD:
+                // Just collect coal for now.
+                setDebugState("Collecting coal.");
+                return TaskCatalogue.getItemTask("coal", (int) Math.ceil(_targetFuel / 8));
+            case END:
+                setDebugState("Going to overworld, since, well, no more fuel can be found here.");
+                return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+            case NETHER:
+                setDebugState("Collecting nether wood.");
+                return TaskCatalogue.getItemTask("planks", (int)Math.ceil(_targetFuel));
+        }
+        setDebugState("INVALID DIMENSION: " + mod.getCurrentDimension());
+        return null;
     }
 
     @Override

@@ -1,23 +1,21 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-public class CollectQuartzTask extends ResourceTask {
+public class CollectWheatSeedsTask extends ResourceTask {
 
     private final int _count;
 
-    public CollectQuartzTask(int count) {
-        super(Items.QUARTZ, count);
+    public CollectWheatSeedsTask(int count) {
+        super(Items.WHEAT_SEEDS, count);
         _count = count;
     }
 
@@ -28,18 +26,17 @@ public class CollectQuartzTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        mod.getBlockTracker().trackBlock(Blocks.WHEAT);
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (mod.getCurrentDimension() != Dimension.NETHER) {
-            setDebugState("Going to nether");
-            return new DefaultGoToDimensionTask(Dimension.NETHER);
+        // If wheat block found, collect wheat but don't pick up the wheat.
+        if (mod.getBlockTracker().anyFound(Blocks.WHEAT)) {
+            return new CollectCropTask(Items.AIR, 999, Blocks.WHEAT, Items.WHEAT_SEEDS);
         }
-
-        setDebugState("Mining");
-        return new MineAndCollectTask(new ItemTarget("quartz", _count), new Block[]{Blocks.NETHER_QUARTZ_ORE}, MiningRequirement.WOOD);
+        // Otherwise, break grass blocks.
+        return new MineAndCollectTask(Items.WHEAT_SEEDS, _count, new Block[]{Blocks.GRASS, Blocks.TALL_GRASS}, MiningRequirement.HAND);
     }
 
     @Override
@@ -49,11 +46,11 @@ public class CollectQuartzTask extends ResourceTask {
 
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectQuartzTask;
+        return obj instanceof CollectWheatSeedsTask;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " quartz";
+        return "Collecting " + _count + " wheat seeds.";
     }
 }

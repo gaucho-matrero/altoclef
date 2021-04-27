@@ -1,12 +1,15 @@
 package adris.altoclef.util.csharpisbetter;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
@@ -81,11 +84,17 @@ public interface Util {
     }
 
     static Block[] itemsToBlocks(Item[] items) {
-        Block[] result = new Block[items.length];
-        for(int i = 0; i < items.length; ++i) {
-            result[i] = Block.getBlockFromItem(items[i]);
+        ArrayList<Block> result = new ArrayList<>();
+        for (Item item : items) {
+            if (item instanceof BlockItem) {
+                Block b = Block.getBlockFromItem(item);
+                if (b != null && b != Blocks.AIR) {
+                    result.add(b);
+                }
+            }
+            //result[i] = Block.getBlockFromItem(items[i]);
         }
-        return result;
+        return Util.toArray(Block.class, result);
     }
     static Item[] blocksToItems(Block[] blocks) {
         Item[] result = new Item[blocks.length];
@@ -108,6 +117,16 @@ public interface Util {
     }
     static <T> T minItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
         return maxItem(items, (left, right) -> -comparatorRightMinusLeft.compare(left, right));
+    }
+    static <T> T maxItem(Collection<T> items, Function<T, Double> conversionValue) {
+        return maxItem(items, (left, right) -> {
+            double leftVal = conversionValue.apply(left),
+                    rightVal = conversionValue.apply(right);
+            return (int) (rightVal - leftVal);
+        });
+    }
+    static <T> T minItem(Collection<T> items, Function<T, Double> conversionValue) {
+        return maxItem(items, toConvert -> -1* conversionValue.apply(toConvert));
     }
 
     static <T> String arrayToString(T[] arr) {

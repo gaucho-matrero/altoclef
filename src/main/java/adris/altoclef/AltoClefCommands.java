@@ -31,7 +31,11 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 @SuppressWarnings({"rawtypes"})
@@ -39,6 +43,57 @@ public class AltoClefCommands extends CommandList {
 
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
         // Test code here
+
+        // Print all uncatalogued resources as well as resources that don't have a corresponding item
+        /*
+        Set<String> collectable = new HashSet<>(TaskCatalogue.resourceNames());
+        Set<String> allItems = new HashSet<>();
+
+        List<String> notCollected = new ArrayList<>();
+
+        for (Identifier id : Registry.ITEM.getIds()) {
+            Item item = Registry.ITEM.get(id);
+            String name = ItemUtil.trimItemName(item.getTranslationKey());
+            allItems.add(name);
+            if (!collectable.contains(name)) {
+                notCollected.add(name);
+            }
+        }
+
+        List<String> notAnItem = new ArrayList<>();
+        for (String cataloguedName : collectable) {
+            if (!allItems.contains(cataloguedName)) {
+                notAnItem.add(cataloguedName);
+            }
+        }
+
+        notCollected.sort(String::compareTo);
+        notAnItem.sort(String::compareTo);
+
+        Function<List<String>, String> temp = (list) -> {
+            StringBuilder result = new StringBuilder("");
+            for (String name : list) {
+                result.append(name).append("\n");
+            }
+            return result.toString();
+        };
+
+        Debug.logInternal("NOT COLLECTED YET:\n" + temp.apply(notCollected));
+        Debug.logInternal("\n\n\n");
+        Debug.logInternal("NOT ITEMS:\n" + temp.apply(notAnItem));
+        */
+
+        /* Print all catalogued resources
+
+        List<String> resources = new ArrayList<>(TaskCatalogue.resourceNames());
+        resources.sort(String::compareTo);
+        StringBuilder result = new StringBuilder("ALL RESOURCES:\n");
+        for (String name : resources) {
+            result.append(name).append("\n");
+        }
+        Debug.logInternal("We got em:\n" + result.toString());
+
+         */
     }
 
     public static void IDLE_TEST_TICK_FUNCTION(AltoClef mod) {

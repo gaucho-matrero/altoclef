@@ -40,8 +40,12 @@ public class KillAndLootTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (!mod.getEntityTracker().entityFound(_toKill)) {
+            if (isInWrongDimension(mod)) {
+                setDebugState("Going to correct dimension.");
+                return getToCorrectDimensionTask(mod);
+            }
             setDebugState("Searching for mob...");
-            return new TimeoutWanderTask(999999);
+            return new TimeoutWanderTask(9999999);
         }
         // We found the mob!
         return _killTask;

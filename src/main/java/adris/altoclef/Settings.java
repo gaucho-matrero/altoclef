@@ -80,6 +80,11 @@ public class Settings {
     private boolean collectPickaxeFirst = true;
 
     /**
+     * If set to true, crops broken when collecting food will be replanted.
+     */
+    private boolean replantCrops = true;
+
+    /**
      * Uses killaura to move mobs away and performs survival moves including:
      * - Running away from hostile mobs when your health is low
      * - Run away from creepers about to blow up
@@ -362,6 +367,8 @@ public class Settings {
     public void setAutoRespawn(boolean autoRespawn) {
         this.autoRespawn = autoRespawn;
     }
+
+    public boolean shouldReplantCrops() {return replantCrops;}
 
     public boolean isUseButlerBlacklist() {
         return useButlerBlacklist;

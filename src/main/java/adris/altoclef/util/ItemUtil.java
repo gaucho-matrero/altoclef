@@ -245,6 +245,10 @@ public interface ItemUtil {
             this.pressurePlate = pressurePlate;
             this.trapdoor = trapdoor;
         }
+
+        public boolean isNetherWood() {
+            return planks == Items.CRIMSON_PLANKS || planks == Items.WARPED_PLANKS;
+        }
     }
 
 }

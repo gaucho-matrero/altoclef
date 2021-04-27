@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class CollectCobblestoneTask extends ResourceTask {
 
-    private int _count;
+    private final int _count;
 
     public CollectCobblestoneTask(int targetCount) {
         super(Items.COBBLESTONE, targetCount);

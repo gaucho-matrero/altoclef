@@ -1,5 +1,8 @@
 package adris.altoclef.util;
 
+import adris.altoclef.Debug;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
@@ -14,6 +17,21 @@ public enum MiningRequirement implements Comparable<MiningRequirement> {
 
     public Item getMinimumPickaxe() {
         return _minPickaxe;
+    }
+
+    public static MiningRequirement getMinimumRequirementForBlock(Block block) {
+        if (block.getDefaultState().isToolRequired()) {
+            for (MiningRequirement req : MiningRequirement.values()) {
+                if (req == MiningRequirement.HAND) continue;
+                Item pick = req.getMinimumPickaxe();
+                if (pick.isEffectiveOn(block.getDefaultState())) {
+                    return req;
+                }
+            }
+            Debug.logWarning("Failed to find ANY effective tool against: " + block + ". I assume netherite is not required anywhere, so something else probably went wrong.");
+            return MiningRequirement.DIAMOND;
+        }
+        return MiningRequirement.HAND;
     }
 
 }

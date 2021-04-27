@@ -172,6 +172,11 @@ public class ConfigState {
         return false;
     }
 
+    public void allowShears(boolean allow) {
+        current().allowShears = allow;
+        current().applyState();
+    }
+
     /// Stack management
     public void push() {
         if (_states.empty()) {
@@ -221,6 +226,7 @@ public class ConfigState {
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
+        public boolean allowShears;
 
         // Minecraft config
         public boolean pauseOnLostFocus = true;
@@ -283,6 +289,7 @@ public class ConfigState {
                 }
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
+            allowShears = settings.areShearsAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
             mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
@@ -326,6 +333,7 @@ public class ConfigState {
             }
 
             sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
+            sa.allowShears(allowShears);
 
             // Extra / hard coded
             RayTraceUtils.fluidHandling = rayFluidHandling;

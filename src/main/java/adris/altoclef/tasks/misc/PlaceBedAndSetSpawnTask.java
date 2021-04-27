@@ -3,6 +3,7 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
@@ -109,6 +110,12 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Find a 3x2x1 region and clear it
         //      Stand on the edge of the long (3) side
         //      Place on the middle block, reliably placing the bed.
+
+        // We cannot do this anywhere but the overworld.
+        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+            setDebugState("Going to the overworld first.");
+            return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+        }
 
         if (mod.getPlayer().isSleeping()) {
             setDebugState("Sleeping...");

@@ -8,12 +8,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
-import baritone.api.utils.RayTraceUtils;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.SpawnerBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.item.Items;
@@ -54,7 +49,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
         // We must go to the nether.
         if (mod.getCurrentDimension() != Dimension.NETHER) {
             setDebugState("Going to nether");
-            return new DefaultGoToNetherTask();
+            return new DefaultGoToDimensionTask(Dimension.NETHER);
         }
 
         Entity toKill = null;

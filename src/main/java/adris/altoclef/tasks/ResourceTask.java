@@ -4,13 +4,18 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.chest.PickupFromChestTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class ResourceTask extends Task {
@@ -19,6 +24,11 @@ public abstract class ResourceTask extends Task {
 
     private final PickupDroppedItemTask _pickupTask;
     private BlockPos _currentChest;
+
+    // Extra resource parameters
+    private Block[] _mineIfPresent = null;
+    private boolean _forceDimension = false;
+    private Dimension _targetDimension;
 
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
@@ -41,6 +51,9 @@ public abstract class ResourceTask extends Task {
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
+        if (_mineIfPresent != null) {
+            mod.getBlockTracker().trackBlock(_mineIfPresent);
+        }
         onResourceStart(mod);
     }
 
@@ -95,12 +108,26 @@ public abstract class ResourceTask extends Task {
             }
         }
 
+        // We may just mine if a block is found.
+        if (_mineIfPresent != null) {
+            ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
+            satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
+            if (!satisfiedReqs.isEmpty()) {
+                if (mod.getBlockTracker().anyFound(Util.toArray(Block.class, satisfiedReqs))) {
+                    return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                }
+            }
+        }
+
         return onResourceTick(mod);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getConfigState().pop();
+        if (_mineIfPresent != null) {
+            mod.getBlockTracker().stopTracking(_mineIfPresent);
+        }
         onResourceStop(mod, interruptTask);
     }
 
@@ -128,6 +155,26 @@ public abstract class ResourceTask extends Task {
         }
         result.append("]");
         return result.toString();
+    }
+
+    protected boolean isInWrongDimension(AltoClef mod) {
+        if (_forceDimension) {
+            return mod.getCurrentDimension() != _targetDimension;
+        }
+        return false;
+    }
+    protected Task getToCorrectDimensionTask(AltoClef mod) {
+        return new DefaultGoToDimensionTask(_targetDimension);
+    }
+
+    public ResourceTask mineIfPresent(Block[] toMine) {
+        _mineIfPresent = toMine;
+        return this;
+    }
+    public ResourceTask forceDimension(Dimension dimension) {
+        _forceDimension = true;
+        _targetDimension = dimension;
+        return this;
     }
 
     // Returns: Whether this failed.

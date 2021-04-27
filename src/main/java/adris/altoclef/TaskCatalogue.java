@@ -4,6 +4,7 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
@@ -15,10 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -26,7 +24,7 @@ import java.util.function.Function;
 public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
-    private static final HashMap<String, Function<Integer, ResourceTask>> _nameToResourceTask = new HashMap<>();
+    private static final HashMap<String, CataloguedResource> _nameToResourceTask = new HashMap<>();
     private static final HashSet<Item> _resourcesObtainable = new HashSet<>();
     static {
         /// DEFINE RESOURCE TASKS HERE
@@ -36,14 +34,18 @@ public class TaskCatalogue {
             String o = null;
 
             /// RAW RESOURCES
-            mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG);
+            mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG).anyDimension();
             woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
-            simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new);
+            simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             mine("andesite", MiningRequirement.WOOD, Blocks.ANDESITE, Items.ANDESITE);
             mine("granite", MiningRequirement.WOOD, Blocks.GRANITE, Items.GRANITE);
             mine("diorite", MiningRequirement.WOOD, Blocks.DIORITE, Items.DIORITE);
-            mine("netherrack",  MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK);
+            mine("netherrack", MiningRequirement.WOOD, Blocks.NETHERRACK, Items.NETHERRACK).forceDimension(Dimension.NETHER);
+            mine("magma_block", MiningRequirement.WOOD, Blocks.MAGMA_BLOCK, Items.MAGMA_BLOCK).forceDimension(Dimension.NETHER);
+            mine("soul_sand", Items.SOUL_SAND).forceDimension(Dimension.NETHER);
+            mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
+            mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
             mine("coal",  MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
             mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
             mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
@@ -55,44 +57,45 @@ public class TaskCatalogue {
             mine("sand", Blocks.SAND, Items.SAND);
             mine("gravel", Blocks.GRAVEL, Items.GRAVEL);
             mine("clay_ball", Blocks.CLAY, Items.CLAY_BALL);
-            simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new);
+            simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("flint", Items.FLINT, CollectFlintTask::new);
-            simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new);
+            simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new).dontMineIfPresent();
             simple("wool", ItemUtil.WOOL, CollectWoolTask::new);
-            simple("wheat", Items.WHEAT, CollectWheatTask::new);
-            colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             simple("egg", Items.EGG, CollectEggsTask::new);
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
-            mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
+            mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class).anyDimension();
             mob("spider_eye", Items.SPIDER_EYE, SpiderEntity.class);
             mob("leather", Items.LEATHER, CowEntity.class);
             mob("feather", Items.FEATHER, ChickenEntity.class);
             mob("rotten_flesh", Items.ROTTEN_FLESH, ZombieEntity.class);
-            mob("rabbits_foot", Items.RABBIT_FOOT, RabbitEntity.class);
+            mob("rabbit_foot", Items.RABBIT_FOOT, RabbitEntity.class);
             mob("rabbit_hide", Items.RABBIT_HIDE, RabbitEntity.class);
             mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
-            mob("slimeball", Items.SLIME_BALL, SlimeEntity.class);
+            mob("slime_ball", Items.SLIME_BALL, SlimeEntity.class);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
             mob("string", Items.STRING, SpiderEntity.class); // Warning, this probably won't work.
             mine("sugar_cane", Items.SUGAR_CANE);
             mine("brown_mushroom", MiningRequirement.HAND, new Block[] {Blocks.BROWN_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK}, Items.BROWN_MUSHROOM);
             mine("red_mushroom", MiningRequirement.HAND, new Block[] {Blocks.RED_MUSHROOM, Blocks.RED_MUSHROOM_BLOCK}, Items.RED_MUSHROOM);
+            mine("mushroom", MiningRequirement.HAND, new Block[] {Blocks.BROWN_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.RED_MUSHROOM, Blocks.RED_MUSHROOM_BLOCK}, Items.BROWN_MUSHROOM, Items.RED_MUSHROOM);
             mine("melon_slice", MiningRequirement.HAND, Blocks.MELON, Items.MELON_SLICE);
             mine("pumpkin", MiningRequirement.HAND, Blocks.PUMPKIN, Items.PUMPKIN);
-            simple("blaze_rod", Items.BLAZE_ROD, CollectBlazeRodsTask::new); // Not super simple tbh lmao
-            simple("quartz", Items.QUARTZ, CollectQuartzTask::new);
+            simple("blaze_rod", Items.BLAZE_ROD, CollectBlazeRodsTask::new).forceDimension(Dimension.NETHER); // Not super simple tbh lmao
+            //simple("quartz", Items.QUARTZ, CollectQuartzTask::new);
+            mine("quartz", MiningRequirement.WOOD, Blocks.NETHER_QUARTZ_ORE, Items.QUARTZ).forceDimension(Dimension.NETHER);
             simple("cocoa_beans", Items.COCOA_BEANS, CollectCocoaBeansTask::new);
-            shear("cobweb", Blocks.COBWEB, Items.COBWEB);
+            shear("cobweb", Blocks.COBWEB, Items.COBWEB).dontMineIfPresent();
+            colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             // Misc greenery
-            shear("leaves", Util.itemsToBlocks(ItemUtil.LEAVES), ItemUtil.LEAVES);
+            shear("leaves", Util.itemsToBlocks(ItemUtil.LEAVES), ItemUtil.LEAVES).dontMineIfPresent();
             woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves) ));
-            shear("vine", Blocks.VINE, Items.VINE);
-            shear("grass", Blocks.GRASS, Items.GRASS);
-            shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD);
-            shear("tall_grass", Blocks.TALL_GRASS, Items.TALL_GRASS);
-            shear("fern", Blocks.FERN, Items.FERN);
-            shear("large_fern", Blocks.LARGE_FERN, Items.LARGE_FERN);
+            shear("vine", Blocks.VINE, Items.VINE).dontMineIfPresent();
+            shear("grass", Blocks.GRASS, Items.GRASS).dontMineIfPresent();
+            shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD).dontMineIfPresent();
+            shear("tall_grass", Blocks.TALL_GRASS, Items.TALL_GRASS).dontMineIfPresent();
+            shear("fern", Blocks.FERN, Items.FERN).dontMineIfPresent();
+            shear("large_fern", Blocks.LARGE_FERN, Items.LARGE_FERN).dontMineIfPresent();
             // Flowers
             simple("flower", ItemUtil.FLOWER, CollectFlowerTask::new);
             mine("allium", Items.ALLIUM);
@@ -104,7 +107,7 @@ public class TaskCatalogue {
             mine("lilac", Items.LILAC);
             mine("lily_of_the_valley", Items.LILY_OF_THE_VALLEY);
             mine("orange_tulip", Items.ORANGE_TULIP);
-            mine("oxeye_dasiy", Items.OXEYE_DAISY);
+            mine("oxeye_daisy", Items.OXEYE_DAISY);
             mine("pink_tulip", Items.PINK_TULIP);
             mine("poppy", Items.POPPY);
             mine("peony", Items.PEONY);
@@ -112,20 +115,33 @@ public class TaskCatalogue {
             mine("rose_bush", Items.ROSE_BUSH);
             mine("sunflower", Items.SUNFLOWER);
             mine("white_tulip", Items.WHITE_TULIP);
+            // Crops
+            simple("wheat", Items.WHEAT, CollectWheatTask::new);
+            crop("carrot", Items.CARROT, Blocks.CARROTS, Items.CARROT);
+            crop("potato", Items.POTATO, Blocks.POTATOES, Items.POTATO);
+            crop("poisonous_potato", Items.POISONOUS_POTATO, Blocks.POTATOES, Items.POTATO);
+            crop("beetroot", Items.BEETROOT, Blocks.BEETROOTS, Items.BEETROOT_SEEDS);
+            simple("wheat_seeds", Items.WHEAT_SEEDS, CollectWheatSeedsTask::new);
+            crop("beetroot_seeds", Items.BEETROOT_SEEDS, Blocks.BEETROOTS, Items.BEETROOT_SEEDS);
+
 
 
             // MATERIALS
-            simple("planks", ItemUtil.PLANKS, CollectPlanksTask::new);
-            woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count));
+            simple("planks", ItemUtil.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
+            for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count), true)) {
+                // Don't mine individual planks either!! Handled internally.
+                woodCatalogue.dontMineIfPresent();
+            }
             shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
-            smelt("stone", Items.STONE, "cobblestone");
+            smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
-            smelt("glass", Items.GLASS, "sand");
+            smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
             smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
+            smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
             smelt("green_dye", Items.GREEN_DYE, "cactus");
-            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask::new); // accounts for nether too
+            simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask::new).anyDimension(); // accounts for nether too
             shapedRecipe3x3Block("iron_block", Items.IRON_BLOCK, "iron_ingot");
             shapedRecipe3x3Block("gold_block", Items.GOLD_BLOCK, "gold_ingot");
             shapedRecipe3x3Block("diamond_block", Items.DIAMOND_BLOCK, "diamond");
@@ -133,16 +149,30 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slimeball");
+            shapedRecipe2x2("glowstone", Items.GLOWSTONE,1, "glowstone_dust", "glowstone_dust", "glowstone_dust", "glowstone_dust").dontMineIfPresent();
+            simple("gold_nugget", Items.GOLD_NUGGET, CollectGoldNuggetsTask::new);
+            {
+                String g = "gold_nugget";
+                shapedRecipe3x3("glistering_melon_slice", Items.GLISTERING_MELON_SLICE, 1, g,g,g, g,"melon_slice",g, g,g,g);
+            }
             shapedRecipe2x2("sugar", Items.SUGAR,1, "sugar_cane", o, o, o);
             shapedRecipe2x2("bone_meal", Items.BONE_MEAL, 3, "bone", o, o, o);
+            simple("hay_block", Items.HAY_BLOCK, CollectHayBlockTask::new).dontMineIfPresent();
             shapedRecipe2x2("polished_andesite", Items.POLISHED_ANDESITE, 4, "andesite", "andesite", "andesite", "andesite");
             shapedRecipe2x2("polished_diorite", Items.POLISHED_DIORITE, 4, "diorite", "diorite", "diorite", "diorite");
             shapedRecipe2x2("polished_granite", Items.POLISHED_GRANITE, 4, "granite", "granite", "granite", "granite");
             shapedRecipe2x2("cut_sandstone", Items.CUT_SANDSTONE, 4, "sandstone", "sandstone", "sandstone", "sandstone");
             shapedRecipe2x2("stone_bricks", Items.STONE_BRICKS, 4, "stone", "stone", "stone", "stone");
             shapedRecipe2x2("mossy_stone_bricks", Items.MOSSY_STONE_BRICKS, 1, "stone_bricks", "vine", null,null);
+            simple("nether_bricks", Items.NETHER_BRICKS, CollectNetherBricksTask::new).dontMineIfPresent();
             smelt("cracked_stone_bricks", Items.CRACKED_STONE_BRICKS, "stone_bricks");
+            smelt("cracked_nether_bricks", Items.CRACKED_NETHER_BRICKS, "nether_bricks");
             smelt("smooth_sandstone", Items.SMOOTH_SANDSTONE, "sandstone");
+            {
+                String B = "nether_bricks";
+                String b = "nether_brick";
+                shapedRecipe3x3("nether_brick_fence", Items.NETHER_BRICK_FENCE, 6, o, o, o, B,b,B, B,b,B);
+            }
             shapedRecipe3x3("paper", Items.PAPER, 3, "sugar_cane", "sugar_cane", "sugar_cane", o, o, o, o, o, o);
             shapedRecipe2x2("book", Items.BOOK, 1, "paper", "paper", "paper", "leather");
             shapedRecipe2x2("book_and_quill", Items.WRITABLE_BOOK, 1, "book", "ink_sac", o, "feather");
@@ -152,6 +182,7 @@ public class TaskCatalogue {
             alias("eye_of_ender", "ender_eye");
             shapedRecipe2x2("fermented_spider_eye", Items.SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
+            simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
             // DYES
             smelt("green_dye", Items.GREEN_DYE, "cactus");
             // Slabs + Stairs + Walls
@@ -188,8 +219,12 @@ public class TaskCatalogue {
             shapedRecipeSlab("cut_sandstone_slab", Items.CUT_SANDSTONE_SLAB, "cut_sandstone");
             shapedRecipeSlab("smooth_sandstone_slab", Items.SMOOTH_SANDSTONE_SLAB, "smooth_sandstone");
             shapedRecipeStairs("smooth_sandstone_stairs", Items.SMOOTH_SANDSTONE_STAIRS, "smooth_sandstone");
+            shapedRecipeSlab("nether_brick_slab", Items.NETHER_BRICK_SLAB, "nether_bricks");
+            shapedRecipeStairs("nether_brick_stairs", Items.NETHER_BRICK_STAIRS, "nether_bricks");
+            shapedRecipeWall("nether_brick_wall", Items.NETHER_BRICK_WALL, "nether_bricks");
             shapedRecipe2x2("chiseled_sandstone", Items.CHISELED_SANDSTONE, 1, "sandstone_slab", "sandstone_slab", o,o);
             shapedRecipe2x2("chiseled_stone_bricks", Items.CHISELED_STONE_BRICKS, 1, "stone_brick_slab", o, "stone_brick_slab", o);
+            shapedRecipe2x2("chiseled_nether_bricks", Items.CHISELED_NETHER_BRICKS, 1, "nether_brick_slab", o, "nether_brick_slab", o);
 
             /*
             {
@@ -227,6 +262,7 @@ public class TaskCatalogue {
                 shapedRecipe3x3("map", Items.MAP, 1, a,a,a, a,"compass",a, a,a,a);
             }
             shapedRecipe3x3("fishing_rod", Items.FISHING_ROD, 1, o, o, s, o, s, "string", s, o, "string");
+            shapedRecipe2x2("carrot_on_a_stick", Items.CARROT_ON_A_STICK, 1, "fishing_rod","carrot", o,o);
             shapedRecipe3x3("glass_bottle", Items.GLASS_BOTTLE, 3, "glass", o, "glass", o, "glass", o, o, o, o);
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
@@ -246,7 +282,7 @@ public class TaskCatalogue {
             woodTasks("button", woodItems -> woodItems.button, (woodItems, count) -> new CraftInInventoryTask(new ItemTarget(woodItems.button, 1), CraftingRecipe.newShapedRecipe(woodItems.prefix + "_button", new ItemTarget[]{new ItemTarget(woodItems.planks, 1), null, null, null}, 1 )));
             shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, o, o, "stone", "stone");
             shapedRecipe2x2("stone_button", Items.STONE_BUTTON, 1, "stone", o, o, o);
-            simple("sign", ItemUtil.WOOD_SIGN, CollectSignTask::new);
+            simple("sign", ItemUtil.WOOD_SIGN, CollectSignTask::new).dontMineIfPresent(); // By default, we save signs round these parts.
             woodTasks("sign", woodItems -> woodItems.sign, (woodItems, count) -> new CollectSignTask(woodItems.sign, woodItems.prefix + "_planks", count));
             {
                 String c = "cobblestone";
@@ -276,7 +312,7 @@ public class TaskCatalogue {
             {
                 String b = "obsidian";
                 shapedRecipe3x3("enchanting_table", Items.ENCHANTING_TABLE, 1, o, "book", o, "diamond", b, "diamond", b, b, b);
-                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o);
+                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o).dontMineIfPresent();
             }
             {
                 String b = "brick";
@@ -292,10 +328,11 @@ public class TaskCatalogue {
             shapedRecipe3x3("bookshelf", Items.BOOKSHELF, 1, p,p,p, "book", "book", "book", p,p,p);
             {
                 String g = "glass";
-                shapedRecipe3x3("glass_pane", Items.GLASS_PANE, 16, g,g,g, g,g,g, o,o,o);
+                shapedRecipe3x3("glass_pane", Items.GLASS_PANE, 16, g,g,g, g,g,g, o,o,o).dontMineIfPresent();
             }
             simple("carved_pumpkin", Items.CARVED_PUMPKIN, count -> new CarveThenCollectTask(Items.CARVED_PUMPKIN, count, Blocks.CARVED_PUMPKIN, Items.PUMPKIN, Blocks.PUMPKIN, Items.SHEARS));
             shapedRecipe2x2("jack_o_lantern", Items.JACK_O_LANTERN, 1, "carved_pumpkin",o, "torch",o);
+            shapedRecipe3x3("target", Items.TARGET, 1, o,"redstone",o, "redstone","hay_block","redstone", o,"redstone",o);
 
             // A BUNCH OF WOODEN STUFF
             simple("wooden_stairs", ItemUtil.WOOD_STAIRS, CollectWoodenStairsTask::new);
@@ -348,10 +385,14 @@ public class TaskCatalogue {
             }
             shapedRecipe3x3("painting", Items.PAINTING, 1, s,s,s, s,"wool",s, s,s,s);
             shapedRecipe3x3("item_frame", Items.ITEM_FRAME, 1, s,s,s, s,"leather",s, s,s,s);
-            shapedRecipe2x2("minecart_with_chest", Items.CHEST_MINECART, 1, "chest",o, "minecart",o);
-            shapedRecipe2x2("minecart_with_furnace", Items.FURNACE_MINECART, 1, "furnace",o, "minecart",o);
-            shapedRecipe2x2("minecart_with_hopper", Items.HOPPER_MINECART, 1, "hopper",o, "minecart",o);
-            shapedRecipe2x2("minecart_with_tnt", Items.TNT_MINECART, 1, "tnt",o, "minecart",o);
+            shapedRecipe2x2("chest_minecart", Items.CHEST_MINECART, 1, "chest",o, "minecart",o);
+            shapedRecipe2x2("furnace_minecart", Items.FURNACE_MINECART, 1, "furnace",o, "minecart",o);
+            shapedRecipe2x2("hopper_minecart", Items.HOPPER_MINECART, 1, "hopper",o, "minecart",o);
+            shapedRecipe2x2("tnt_minecart", Items.TNT_MINECART, 1, "tnt",o, "minecart",o);
+            alias("minecart_with_chest", "chest_minecart");
+            alias("minecart_with_furnace", "furnace_minecart");
+            alias("minecart_with_hopper", "hopper_minecart");
+            alias("minecart_with_tnt", "tnt_minecart");
 
 
             /// FOOD
@@ -364,20 +405,40 @@ public class TaskCatalogue {
             mobCook("cod", Items.COD, Items.COOKED_COD, CodEntity.class);
             simple("milk", Items.MILK_BUCKET, CollectMilkTask::new);
             mine("apple", Blocks.OAK_LEAVES, Items.APPLE);
+            smelt("baked_potato", Items.BAKED_POTATO, "potato");
             shapedRecipe2x2("mushroom_stew", Items.MUSHROOM_STEW, 1, "red_mushroom", "brown_mushroom", "bowl", o);
             shapedRecipe2x2("suspicious_stew", Items.SUSPICIOUS_STEW, 1, "red_mushroom", "brown_mushroom", "bowl", "flower");
             shapedRecipe3x3("bread", Items.BREAD, 1, "wheat", "wheat", "wheat", o, o, o, o, o, o);
             shapedRecipe3x3("cookie", Items.COOKIE, 8, "wheat", "cocoa_beans", "wheat", o, o, o, o, o, o);
             shapedRecipe2x2("pumpkin_pie", Items.PUMPKIN_PIE, 1, "pumpkin", "sugar", o,"egg");
-            shapedRecipe3x3("cake", Items.CAKE, 1, "milk", "milk", "milk", "sugar", "egg", "sugar", "wheat", "wheat", "wheat");
+            shapedRecipe3x3("cake", Items.CAKE, 1, "milk", "milk", "milk", "sugar", "egg", "sugar", "wheat", "wheat", "wheat").dontMineIfPresent();
+            {
+                String g = "gold_nugget";
+                shapedRecipe3x3("golden_carrot", Items.GOLDEN_CARROT, 1, g,g,g, g,"carrot",g, g,g,g);
+                shapedRecipe3x3("golden_apple", Items.GOLDEN_APPLE, 1, g,g,g, g,"apple",g, g,g,g);
+            }
+            shapedRecipe3x3("rabbit_stew", Items.RABBIT_STEW, 1, o,"cooked_rabbit",o, "carrot", "baked_potato", "mushroom", o,"bowl",o);
+            {
+                String b = "beetroot";
+                shapedRecipe3x3("beetroot_soup", Items.BEETROOT_SOUP, 1, b,b,b, b,b,b, o,"bowl",o);
+            }
         }
     }
 
-    private static void put(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
-        _nameToResourceTask.put(name, getTask);
+    private static CataloguedResource put(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
+        CataloguedResource result = new CataloguedResource(matches, getTask);
+        Block[] blocks = Util.itemsToBlocks(matches);
+        // DEFAULT BEHAVIOUR: Mine if present & assume overworld is required!
+        if (blocks.length != 0) {
+            result.mineIfPresent();
+        }
+        result.forceDimension(Dimension.OVERWORLD);
+        _nameToResourceTask.put(name, result);
         _nameToItemMatches.put(name, matches);
         _resourcesObtainable.addAll(Arrays.asList(matches));
+        return result;
     }
+
     /*private static void put(String name, Item match, TaskFactory factory) {
         put(name, new Item[]{match}, factory);
     }*/
@@ -415,8 +476,8 @@ public class TaskCatalogue {
             return null;
         }
 
-        Function<Integer, ResourceTask> creator = _nameToResourceTask.get(name);
-        return creator.apply(count);
+        CataloguedResource catalogueValue = _nameToResourceTask.get(name);
+        return catalogueValue.getResource(count);
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
@@ -431,76 +492,76 @@ public class TaskCatalogue {
         return _nameToResourceTask.keySet();
     }
 
-    private static <T> void simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
-        put(name, matches, getTask);
+    private static <T> CataloguedResource simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
+        return put(name, matches, getTask);
     }
-    private static <T> void simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
-        simple(name, new Item[] {matches}, getTask);
+    private static <T> CataloguedResource simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
+        return simple(name, new Item[] {matches}, getTask);
     }
-    private static void mine(String name, MiningRequirement requirement, Item[] toMine, Item ...targets) {
+    private static CataloguedResource mine(String name, MiningRequirement requirement, Item[] toMine, Item ...targets) {
         Block[] toMineBlocks = new Block[toMine.length];
         for (int i = 0; i < toMine.length; ++i) toMineBlocks[i] = Block.getBlockFromItem(toMine[i]);
-        mine(name, requirement, toMineBlocks, targets);
+        return mine(name, requirement, toMineBlocks, targets);
     }
-    private static void mine(String name, MiningRequirement requirement, Block[] toMine, Item ...targets) {
-        put(name, targets, count -> new MineAndCollectTask(new ItemTarget(targets, count), toMine, requirement));
+    private static CataloguedResource mine(String name, MiningRequirement requirement, Block[] toMine, Item ...targets) {
+        return put(name, targets, count -> new MineAndCollectTask(new ItemTarget(targets, count), toMine, requirement)).dontMineIfPresent(); // Mining already taken care of!!
     }
-    private static void mine(String name, MiningRequirement requirement, Block toMine, Item target) {
-        mine(name, requirement, new Block[]{toMine}, target);
+    private static CataloguedResource mine(String name, MiningRequirement requirement, Block toMine, Item target) {
+        return mine(name, requirement, new Block[]{toMine}, target);
     }
-    private static void mine(String name, Block toMine, Item target) {
-        mine(name, MiningRequirement.HAND, toMine, target);
+    private static CataloguedResource mine(String name, Block toMine, Item target) {
+        return mine(name, MiningRequirement.HAND, toMine, target);
     }
-    private static void mine(String name, Item target) {
-        mine(name, Block.getBlockFromItem(target), target);
-    }
-
-    private static void shear(String name, Block[] toShear, Item ...targets) {
-        put(name, targets, count -> new ShearAndCollectBlockTask(new ItemTarget[]{new ItemTarget(targets, count)}, toShear));
-    }
-    private static void shear(String name, Block toShear, Item ...targets) {
-        shear(name, new Block[]{toShear}, targets);
+    private static CataloguedResource mine(String name, Item target) {
+        return mine(name, Block.getBlockFromItem(target), target);
     }
 
-    private static void shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
+    private static CataloguedResource shear(String name, Block[] toShear, Item ...targets) {
+        return put(name, targets, count -> new ShearAndCollectBlockTask(new ItemTarget[]{new ItemTarget(targets, count)}, toShear)).dontMineIfPresent();
+    }
+    private static CataloguedResource shear(String name, Block toShear, Item ...targets) {
+        return shear(name, new Block[]{toShear}, targets);
+    }
+
+    private static CataloguedResource shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3)}, outputCount);
-        put(name, matches, count -> new CraftInInventoryTask(new ItemTarget(matches, count), recipe));
+        return put(name, matches, count -> new CraftInInventoryTask(new ItemTarget(matches, count), recipe));
     }
-    private static void shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+    private static CataloguedResource shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[] {t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)}, outputCount);
-        put(name, matches, count -> new CraftInTableTask(new ItemTarget(matches, count), recipe));
+        return put(name, matches, count -> new CraftInTableTask(new ItemTarget(matches, count), recipe));
     }
-    private static void shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
-        shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
+    private static CataloguedResource shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
+        return shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
     }
-    private static void shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        shapedRecipe3x3(name, new Item[]{match}, craftCount, s0, s1, s2, s3, s4, s5, s6, s7, s8);
+    private static CataloguedResource shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+        return shapedRecipe3x3(name, new Item[]{match}, craftCount, s0, s1, s2, s3, s4, s5, s6, s7, s8);
     }
-    private static void shapedRecipe3x3Block(String name, Item match, String material) {
-        shapedRecipe3x3(name, match, 1, material,material,material,material,material,material,material,material,material);
+    private static CataloguedResource shapedRecipe3x3Block(String name, Item match, String material) {
+        return shapedRecipe3x3(name, match, 1, material,material,material,material,material,material,material,material,material);
     }
-    private static void shapedRecipeSlab(String name, Item match, String material) {
-        shapedRecipe3x3(name, match, 6, null, null, null, null, null, null, material, material, material);
+    private static CataloguedResource shapedRecipeSlab(String name, Item match, String material) {
+        return shapedRecipe3x3(name, match, 6, null, null, null, null, null, null, material, material, material);
     }
-    private static void shapedRecipeStairs(String name, Item match, String material) {
-        shapedRecipe3x3(name, match, 4, material, null, null, material, material, null, material, material, material);
+    private static CataloguedResource shapedRecipeStairs(String name, Item match, String material) {
+        return shapedRecipe3x3(name, match, 4, material, null, null, material, material, null, material, material, material);
     }
-    private static void shapedRecipeWall(String name, Item match, String material) {
-        shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
-    }
-
-    private static void smelt(String name, Item[] matches, String materials) {
-        put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
-    }
-    private static void smelt(String name, Item match, String materials) {
-        smelt(name, new Item[]{match}, materials);
+    private static CataloguedResource shapedRecipeWall(String name, Item match, String material) {
+        return shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
 
-    private static void mob(String name, Item[] matches, Class mobClass) {
-        put(name, matches, count -> new KillAndLootTask(mobClass, new ItemTarget(matches, count)));
+    private static CataloguedResource smelt(String name, Item[] matches, String materials) {
+        return put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
-    private static void mob(String name, Item match, Class mobClass) {
-        mob(name, new Item[] {match}, mobClass);
+    private static CataloguedResource smelt(String name, Item match, String materials) {
+        return smelt(name, new Item[]{match}, materials);
+    }
+
+    private static CataloguedResource mob(String name, Item[] matches, Class mobClass) {
+        return put(name, matches, count -> new KillAndLootTask(mobClass, new ItemTarget(matches, count)));
+    }
+    private static CataloguedResource mob(String name, Item match, Class mobClass) {
+        return mob(name, new Item[] {match}, mobClass);
     }
 
     private static void mobCook(String uncookedName, String cookedName, Item uncooked, Item cooked, Class mobClass) {
@@ -511,6 +572,13 @@ public class TaskCatalogue {
         mobCook(uncookedName, "cooked_" + uncookedName, uncooked, cooked, mobClass);
     }
 
+    private static CataloguedResource crop(String name, Item[] matches, Block[] cropBlocks, Item[] cropSeeds) {
+        return put(name, matches, count -> new CollectCropTask(new ItemTarget(matches, count), cropBlocks, cropSeeds));
+    }
+    public static CataloguedResource crop(String name, Item match, Block cropBlock, Item cropSeed) {
+        return crop(name, new Item[]{match}, new Block[]{cropBlock}, new Item[]{cropSeed});
+    }
+
     private static void colorfulTasks(String baseName, Function<ItemUtil.ColorfulItems, Item> getMatch, BiFunction<ItemUtil.ColorfulItems, Integer, ResourceTask> getTask) {
         for (DyeColor dcol : DyeColor.values()) {
             MaterialColor mcol = dcol.getMaterialColor();
@@ -519,12 +587,23 @@ public class TaskCatalogue {
             put(prefix + "_" + baseName, new Item[]{getMatch.apply(color)}, count -> getTask.apply(color, count) );
         }
     }
-    private static void woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask) {
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+        List<CataloguedResource> result = new ArrayList<>();
         for (WoodType woodType : WoodType.values()) {
             ItemUtil.WoodItems woodItems = ItemUtil.getWoodItems(woodType);
             String prefix = woodItems.prefix;
-            put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count) );
+            CataloguedResource t = put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count) );
+            if (requireNetherForNetherStuff) {
+                if (woodItems.isNetherWood()) {
+                    t.forceDimension(Dimension.NETHER);
+                }
+            }
+            result.add(t);
         }
+        return Util.toArray(CataloguedResource.class, result);
+    }
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask) {
+        return woodTasks(baseName, getMatch, getTask, false);
     }
 
     private static void tools(String toolMaterialName, String material, Item pickaxeItem, Item shovelItem, Item swordItem, Item axeItem, Item hoeItem) {
@@ -552,15 +631,52 @@ public class TaskCatalogue {
     private static void alias(String newName, String original) {
         _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
         _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
-
     }
-
-
-
-
 
     private static ItemTarget t(String cataloguedName) {
         return new ItemTarget(cataloguedName);
     }
 
+    private static class CataloguedResource {
+        private final Item[] _targets;
+        private final Function<Integer, ResourceTask> _getResource;
+
+        private boolean _mineIfPresent;
+        private boolean _forceDimension = false;
+        private Dimension _targetDimension;
+
+        public CataloguedResource(Item[] targets, Function<Integer, ResourceTask> getResource) {
+            _targets = targets;
+            _getResource = getResource;
+        }
+
+        public CataloguedResource mineIfPresent() {
+            _mineIfPresent = true;
+            return this;
+        }
+        public CataloguedResource dontMineIfPresent() {
+            _mineIfPresent = false;
+            return this;
+        }
+        public CataloguedResource forceDimension(Dimension dimension) {
+            _forceDimension = true;
+            _targetDimension = dimension;
+            return this;
+        }
+        public CataloguedResource anyDimension() {
+            _forceDimension = false;
+            return this;
+        }
+
+        public ResourceTask getResource(int count) {
+            ResourceTask result = _getResource.apply(count);
+            if (_mineIfPresent) {
+                result = result.mineIfPresent(Util.itemsToBlocks(_targets));
+            }
+            if (_forceDimension) {
+                result = result.forceDimension(_targetDimension);
+            }
+            return result;
+        }
+    }
 }

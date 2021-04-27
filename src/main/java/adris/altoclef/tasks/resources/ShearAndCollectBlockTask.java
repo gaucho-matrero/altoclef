@@ -23,6 +23,19 @@ public class ShearAndCollectBlockTask extends MineAndCollectTask {
     }
 
     @Override
+    protected void onStart(AltoClef mod) {
+        mod.getConfigState().push();
+        mod.getConfigState().allowShears(true);
+        super.onStart(mod);
+    }
+
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getConfigState().pop();
+        super.onStop(mod, interruptTask);
+    }
+
+    @Override
     protected Task onResourceTick(AltoClef mod) {
         if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
             return TaskCatalogue.getItemTask("shears", 1);

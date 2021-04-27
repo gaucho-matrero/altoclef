@@ -36,6 +36,10 @@ public class CollectMilkTask extends ResourceTask {
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
             return TaskCatalogue.getItemTask("bucket", 1);
         }
+        // Dimension
+        if (!mod.getEntityTracker().entityFound(CowEntity.class) && isInWrongDimension(mod)) {
+            return getToCorrectDimensionTask(mod);
+        }
         return new MilkCowTask();
     }
 

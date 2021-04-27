@@ -16,13 +16,10 @@ import adris.altoclef.util.slots.PlayerInventorySlot;
 import baritone.pathing.movement.CalculationContext;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.*;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -95,6 +92,11 @@ public class MineAndCollectTask extends ResourceTask {
             makeSureToolIsEquipped(mod);
         }
 
+        // Wrong dimension check.
+        if (_subtask.wasWandering() && isInWrongDimension(mod)) {
+            return getToCorrectDimensionTask(mod);
+        }
+
         return _subtask;
     }
 
@@ -146,7 +148,6 @@ public class MineAndCollectTask extends ResourceTask {
             _cursorStackTimer.reset();
         }
     }
-
 
     private static class MineOrCollectTask extends AbstractDoToClosestObjectTask<Object> {
 

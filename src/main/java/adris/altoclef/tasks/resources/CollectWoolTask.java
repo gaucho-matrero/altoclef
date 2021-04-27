@@ -69,6 +69,11 @@ public class CollectWoolTask extends ResourceTask {
         // If we have shears, right click nearest sheep
         // Otherwise, kill + loot wool.
 
+        // Dimension
+        if (isInWrongDimension(mod) && !mod.getEntityTracker().entityFound(SheepEntity.class)) {
+            return getToCorrectDimensionTask(mod);
+        }
+
         if (mod.getInventoryTracker().hasItem(Items.SHEARS)) {
             // Shear sheep.
             return new ShearSheepTask();

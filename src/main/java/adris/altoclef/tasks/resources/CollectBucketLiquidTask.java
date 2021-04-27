@@ -3,13 +3,11 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.WorldUtil;
@@ -207,7 +205,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
 
                 InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
-                // noinspection rawtypes,unchecked,unchecked
+                // noinspection rawtypes
                 task.TimedOut.addListener(
                         new ActionListener() {
                             @Override
@@ -222,6 +220,11 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 return task;
             }, getNearestLiquid, _toCollect);
             //return task;
+        }
+
+        // Dimension
+        if (_toCollect == Blocks.WATER && mod.getCurrentDimension() == Dimension.NETHER) {
+            return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
         // Oof, no liquid found.
