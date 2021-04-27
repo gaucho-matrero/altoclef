@@ -9,11 +9,13 @@ Video demo of automatic diamond armor collection from fresh survival world here:
 
 Butler system demo here: https://drive.google.com/file/d/1axVYYMJ5VjmVHaWlCifFHTwiXlFssOUc/view?usp=sharing
 
-Will eventually be capable of beating Minecraft from a random seed survival world with NO player input
+Will try to stream using this bot to beat the game with NO user input. Will be a world first hopefully.
 
 ### How it works
 
 TODO: Fill this with some nerd stuff. Basically each task can run a smaller sub-task, which act recursively. By specifying the order you can have requirements and accomplish pretty large tasks by building them up from smaller bits.
+
+TODO: Image or something to make it easier to explain.
 
 Example pseudocode for getting a Wooden Pickaxe (not actual code):
 ```
@@ -47,26 +49,26 @@ task OpenCraftingTable:
 
 ```
 
-TODO: Create a tree diagram of the above pseudocode that clearly explains what's going on, as a tree is the best way to think about this system.
-
 ### Current capabilities, Examples:
-- Craft & Equip Diamond armor
-- Dodge arrows shot from skeletons and force field mobs away while accomplishing arbitrary tasks
+- Obtain 400+ Items from a fresh survival world, like diamond armor, cake, and nether brick stairs
+- Dodge mob projectiles and force field mobs away while accomplishing arbitrary tasks
 - Collect + smelt food from animals, hay, & crops
 - Receive commands from chat whispers via /msg. Whitelist + Blacklist configurable (hereby dubbed the Butler System)
 - Simple config file that can be reloaded via command (check .minecraft directory)
-- Locate a stronghold portal from a fresh survival world, fully autonomously. This includes:
+- Beat the entire game on its own (no user input.) This includes:
     - Building a nether portal
     - Finding a nether fortress + collecting blaze rods from a blaze
     - Trade with piglins for ender pearls, collecting + crafting gold in the nether
     - Leave nether
     - Craft + throw eyes of ender and follow direction until stronghold portal is discovered.
+    - Setting spawnpoint near stronghold portal
+    - Entering end portal, destroying crystals and killing the dragon as it perches.
 - Print the entire bee movie script with signs in a straight line, automatically collecting signs + bridging materials along the way.
+- Become the terminator: Run away from players while unarmed, gather diamond gear in secret, then return and wreak havoc.
 
 ### TODO's/Future Features:
-- Light end portal and kill ender dragon task, completing the "Beat Minecraft" task
 - Given any schematic, COLLECT ALL RESOURCES and BUILD the schematic, ideally from a fresh survival world if possible.
-- Port to Forge and develop a 1.12 version. I will need somebody's help for this, if you know gradle + want to help me get baritone imported into forge hit me up.
+- (Currently delayed after 2b2t announced moving to 1.16) Port to Forge and develop a 1.12 version. I will need somebody's help for this, if you know gradle + want to help me get baritone imported into forge hit me up.
 - "Travel" task for anarchy servers that travels in one direction or explores, automatically utilizing nether highways, setting bed respawn points and collecting food for survival.
 
 
