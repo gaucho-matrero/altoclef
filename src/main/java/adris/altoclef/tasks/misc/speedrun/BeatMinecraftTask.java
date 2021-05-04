@@ -7,6 +7,8 @@ import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.GetToYTask;
+import adris.altoclef.tasks.chest.PickupFromChestTask;
+import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
@@ -14,6 +16,7 @@ import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.resources.KillAndLootTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
@@ -40,6 +43,8 @@ public class BeatMinecraftTask extends Task {
     /// TUNABLE PROPERTIES
     private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
 
+    private static final boolean STORE_BLAZE_RODS_IN_CHEST = true; // If true, will store blaze rods in chest while collecting ender pearls.
+
     private static final int PRE_NETHER_FOOD = 5 * 40;
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
     private static final int PRE_END_FOOD = 5 * 20;
@@ -52,7 +57,10 @@ public class BeatMinecraftTask extends Task {
 
     private List<BlockPos> _endPortalFrame = null;
 
+    private BlockPos _safetyBlazeRodChestPos = null;
+
     // A flag to determine whether we should continue doing something.
+    // TODO: I handled this poorly. Either LEAN INTO it hard or throw this out completely.
     private ForceState _forceState = ForceState.NONE;
 
     private BlockPos _cachedPortalInNether;
@@ -126,7 +134,10 @@ public class BeatMinecraftTask extends Task {
          * 3) Get to nether
          * 4) Find blaze spawner
          * 5) Kill blazes
-         * 6) ??? How to get ender pearls automated and fast...
+         * 6) Get pearls (trade or enderman)
+         * 7) Find stronghold + place spawn nearby
+         * 8) Destroy all crystals individually
+         * 9) Punk dragon till defeat
          */
 
         // do NOT diagonally ascend in the nether.
@@ -160,8 +171,21 @@ public class BeatMinecraftTask extends Task {
 
         int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
         int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
+        int rodsInPosession = getBlazeRodsInPosession(mod);
+
         //int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-        boolean needsToGoToNether = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < rodsNeeded;// || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
+        boolean needsToGoToNether = rodsInPosession < rodsNeeded;// || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
+
+        if (STORE_BLAZE_RODS_IN_CHEST && !isEndPortalOpened(mod)) {
+            // If we have a place with blaze rods, set our "safety" position to that chest.
+            if (_safetyBlazeRodChestPos == null) {
+                List<BlockPos> blazeContainers = mod.getContainerTracker().getChestMap().getBlocksWithItem(Items.BLAZE_ROD);
+                if (blazeContainers.size() > 0) {
+                    _safetyBlazeRodChestPos = blazeContainers.get(0);
+                    Debug.logMessage("Blaze rods stored at " + _safetyBlazeRodChestPos);
+                }
+            }
+        }
 
         if (!_endKamakazeeEngaged) {
             if (!isEndPortalOpened(mod)) {
@@ -298,12 +322,27 @@ public class BeatMinecraftTask extends Task {
                 // eyes already accounts for portal eyes in frame.
                 int pearlsNeeded = targetPearls - eyes;
                 if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded) {
+                    if (STORE_BLAZE_RODS_IN_CHEST) {
+                        // Chest handling: Store blaze rods in a chest if we have any.
+                        if (mod.getInventoryTracker().hasItem(Items.BLAZE_ROD)) {
+                            setDebugState("Storing Blaze rods (for death safety)");
+                            return new StoreInAnyChestTask(new ItemTarget(Items.BLAZE_ROD, mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD)));
+                        }
+                    }
                     setDebugState("Collecting ender pearls");
                     return new KillAndLootTask(EndermanEntity.class, new ItemTarget(Items.ENDER_PEARL, pearlsNeeded));
                 }
                 setDebugState("Crafting our blaze powder + eyes");
                 int powderNeeded = (targetEyes - eyes);
                 if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
+                    if (STORE_BLAZE_RODS_IN_CHEST) {
+                        // Chest handling: Grab blaze rods if we don't have enough.
+                        if (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < TARGET_BLAZE_RODS && _safetyBlazeRodChestPos != null) {
+                            int needed = TARGET_BLAZE_RODS - mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
+                            setDebugState("Picking up stored blaze rods");
+                            return new PickupFromChestTask(_safetyBlazeRodChestPos, new ItemTarget(Items.BLAZE_ROD, needed));
+                        }
+                    }
                     return new CraftInInventoryTask(new ItemTarget(Items.BLAZE_POWDER, powderNeeded), CraftingRecipe.newShapedRecipe("blaze_powder",
                             new ItemTarget[]{new ItemTarget(Items.BLAZE_ROD, 1), null, null, null}, 2));
                 }
@@ -348,7 +387,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Blaze rods
-        int powderCount = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) * 2;
+        int powderCount = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + getBlazeRodsInPosession(mod) * 2;
         if (powderCount < TARGET_BLAZE_RODS * 2) {
             setDebugState("Collecting Blaze Rods");
             return _blazeCollection;
@@ -501,6 +540,22 @@ public class BeatMinecraftTask extends Task {
             if (!mod.getInventoryTracker().hasItem(item)) return false;
         }
         return true;
+    }
+
+    private int getBlazeRodsInPosession(AltoClef mod) {
+        int rodsInPosession = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
+        if (STORE_BLAZE_RODS_IN_CHEST) {
+            if (_safetyBlazeRodChestPos != null) {
+                ContainerTracker.ChestData chest = mod.getContainerTracker().getChestMap().getCachedChestData(_safetyBlazeRodChestPos);
+                if (chest == null || !chest.hasItem(Items.BLAZE_ROD)) {
+                    Debug.logMessage("Blaze Rod Chest no longer has any rods: " + _safetyBlazeRodChestPos + ".");
+                    _safetyBlazeRodChestPos = null;
+                } else {
+                    rodsInPosession += chest.getItemCount(Items.BLAZE_ROD);
+                }
+            }
+        }
+        return rodsInPosession;
     }
 
     @Override

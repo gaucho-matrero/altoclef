@@ -163,7 +163,6 @@ public class ContainerTracker extends Tracker {
                 return;
             }
 
-
             boolean big = screenHandler.getRows() >= 6;
 
             _blockData.putIfAbsent(pos, new ChestData(big));
@@ -183,7 +182,6 @@ public class ContainerTracker extends Tracker {
                 }
             }
             data.setOccupiedSlots(occupied);
-
         }
 
         @Override
@@ -242,10 +240,10 @@ public class ContainerTracker extends Tracker {
             return result;
             //return new ArrayList<>();
         }
-        public List<BlockPos> getBlocksWithItem(ItemTarget[] targets) {
+        public List<BlockPos> getBlocksWithItem(ItemTarget ...targets) {
             return getBlocksWithItem(targets, false);
         }
-
+        public List<BlockPos> getBlocksWithItem(Item ...items) { return getBlocksWithItem(new ItemTarget(items));}
     }
 
     public static class ChestData {
