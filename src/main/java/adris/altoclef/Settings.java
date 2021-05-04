@@ -55,6 +55,24 @@ public class Settings {
     private float resourceChestLocateRange = 500;
 
     /**
+     * Some block resources are obtained through non-mining means
+     * (like a crafting table or stone block, which can be crafted or smelted).
+     *
+     * However, if the block resource is found within this range it will be mined first.
+     *
+     * Set this to 0 to disable this feature
+     * (keep in mind, this will not affect blocks like "dirt" and "cobblestone"
+     * that can only be obtained through mining)
+     *
+     * Set this to -1 to ALWAYS mine a block if it's catalogued.
+     * This is not recommended. For example, if the bot happens to track a
+     * crafting table 10000 blocks away, and it then tries obtaining one
+     * it will travel 10000 blocks to mine that table, even if it finds
+     * itself in a forest where the wood is abundant.
+     */
+    private float resourceMineRange = 100;
+
+    /**
      * When going to the nearest chest to store items, the bot may normally
      * dig up dungeons constantly. If this is set to true, the bot will
      * search around each chest to make sure it's not in a dungeon.
@@ -328,6 +346,8 @@ public class Settings {
     public float getResourcePickupRange() {return resourcePickupDropRange;}
 
     public float getResourceChestLocateRange() {return resourceChestLocateRange;}
+
+    public float getResourceMineRange() {return resourceMineRange;}
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;

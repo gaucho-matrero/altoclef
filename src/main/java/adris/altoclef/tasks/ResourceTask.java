@@ -30,6 +30,8 @@ public abstract class ResourceTask extends Task {
     private boolean _forceDimension = false;
     private Dimension _targetDimension;
 
+    private BlockPos _mineLastClosest = null;
+
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
         _pickupTask = new PickupDroppedItemTask(_itemTargets, true);
@@ -114,7 +116,15 @@ public abstract class ResourceTask extends Task {
             satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
             if (!satisfiedReqs.isEmpty()) {
                 if (mod.getBlockTracker().anyFound(Util.toArray(Block.class, satisfiedReqs))) {
-                    return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+                    if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
+                        _mineLastClosest = closest;
+                    }
+                    if (_mineLastClosest != null) {
+                        if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
+                            return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                        }
+                    }
                 }
             }
         }

@@ -148,7 +148,7 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("redstone_block", Items.REDSTONE_BLOCK, "redstone");
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
-            shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slimeball");
+            shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
             shapedRecipe2x2("glowstone", Items.GLOWSTONE,1, "glowstone_dust", "glowstone_dust", "glowstone_dust", "glowstone_dust").dontMineIfPresent();
             simple("gold_nugget", Items.GOLD_NUGGET, CollectGoldNuggetsTask::new);
             {
@@ -271,7 +271,7 @@ public class TaskCatalogue {
             alias("diamond_pick", "diamond_pickaxe");
             simple("boat", ItemUtil.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
-            shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string",o, "string", "slimeball",o, o,o,"string");
+            shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string",o, "string", "slime_ball",o, o,o,"string");
 
 
             // FURNITURE
@@ -286,7 +286,7 @@ public class TaskCatalogue {
             woodTasks("sign", woodItems -> woodItems.sign, (woodItems, count) -> new CollectSignTask(woodItems.sign, woodItems.prefix + "_planks", count));
             {
                 String c = "cobblestone";
-                shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c);
+                shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c).dontMineIfPresent();
                 shapedRecipe3x3("dropper", Items.DISPENSER, 1, c,c,c, c,o,c, c,"redstone",c);
                 shapedRecipe3x3("dispenser", Items.DISPENSER, 1, c,c,c, c,"bow",c, c,"redstone",c);
                 shapedRecipe3x3("brewing_stand", Items.BREWING_STAND, 1, o, o, o, o, "blaze_rod", o, c, c, c);
@@ -294,7 +294,7 @@ public class TaskCatalogue {
                 shapedRecipe3x3("observer", Items.OBSERVER, 1, c,c,c, "redstone", "redstone", "quartz", c,c,c);
                 shapedRecipe2x2("lever", Items.LEVER, 1, s,o, c,o);
             }
-            shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p);
+            shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p).dontMineIfPresent();
             shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
             simple("bed", ItemUtil.BED, CollectBedTask::new);
             colorfulTasks("bed", colors -> colors.bed, (colors, count) -> new CollectBedTask(colors.bed, colors.colorName + "_wool", count));
@@ -369,7 +369,7 @@ public class TaskCatalogue {
                 String n = "sand";
                 shapedRecipe3x3("tnt", Items.TNT, 1, t,n,t, n,t,n, t,n,t);
             }
-            shapedRecipe2x2("sticky_piston", Items.STICKY_PISTON, 1, "slimeball", o, "piston", o);
+            shapedRecipe2x2("sticky_piston", Items.STICKY_PISTON, 1, "slime_ball", o, "piston", o);
             shapedRecipe2x2("redstone_torch", Items.REDSTONE_TORCH, 1, "redstone",o, s,o);
             shapedRecipe3x3("repeater", Items.REPEATER, 1, "redstone_torch","redstone","redstone_torch", "stone","stone","stone", o,o,o);
             shapedRecipe3x3("comparator", Items.COMPARATOR, 1, o,"redstone_torch",o,"redstone_torch","quartz","redstone_torch", "stone","stone","stone");
