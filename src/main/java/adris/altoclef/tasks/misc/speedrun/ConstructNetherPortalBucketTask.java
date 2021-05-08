@@ -306,8 +306,8 @@ public class ConstructNetherPortalBucketTask extends Task {
                 // Don't place lava at our position!
                 // Would lead to an embarrassing death.
                 BlockPos targetPos = _currentLavaTarget.add(-1, 1, 0);
-                if (!mod.getPlayer().getBlockPos().equals(targetPos)) {
-                    setDebugState("Positioning player");
+                if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+                    setDebugState("Positioning player before lava");
                     return new GetToBlockTask(targetPos, false);
                 }
 
@@ -330,6 +330,13 @@ public class ConstructNetherPortalBucketTask extends Task {
                     _currentDestroyTarget = waterCheck.up();
                     return null;
                     //return new DestroyBlockTask(waterCheck.up());
+                }
+
+                // Get to position to avoid weird stuck scenario
+                BlockPos targetPos = _currentLavaTarget.add(-1, 1, 0);
+                if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                    setDebugState("Positioning player before water");
+                    return new GetToBlockTask(targetPos, false);
                 }
 
                 return new InteractItemWithBlockTask(new ItemTarget("water_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 1, 0), true);
