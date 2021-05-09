@@ -250,7 +250,7 @@ public class TerminatorTask extends Task {
     }
 
     private boolean isReadyToPunk(AltoClef mod) {
-        if (mod.getPlayer().getHealth() < 3) return false; // We need to heal.
+        if (mod.getPlayer().getHealth() <= 5) return false; // We need to heal.
         return BeatMinecraftTask.diamondArmorEquipped(mod) && mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD);
     }
 
