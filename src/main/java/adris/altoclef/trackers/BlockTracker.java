@@ -10,6 +10,7 @@ import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
+import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
 import baritone.process.MineProcess;
@@ -33,6 +34,11 @@ public class BlockTracker extends Tracker {
 
     private static final int DEFAULT_REACH_ATTEMPTS_ALLOWED = 4;
 
+    // This should be moved to an instance variable
+    // but if set to true, block scanning will happen
+    // asynchronously to spread out the expensive cost of scanning.
+    private static final boolean ASYNC_SCANNING = true;
+
     private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
 
     //private final PosCache _cache = new PosCache(100, 64*1.5);
@@ -41,7 +47,11 @@ public class BlockTracker extends Tracker {
 
     private final Timer _forceElapseTimer = new Timer(2.0);
 
-    private Map<Block, Integer> _trackingBlocks = new HashMap<>();
+    private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
+
+    private final Object _scanMutex = new Object();
+
+    private boolean _scanning = false;
 
     //private Block _currentlyTracking = null;
     private AltoClef _mod;
@@ -103,19 +113,25 @@ public class BlockTracker extends Tracker {
 
     public void addBlock(Block block, BlockPos pos) {
         if (blockIsValid(pos, block)) {
-            currentCache().addBlock(block, pos);
+            synchronized (_scanMutex) {
+                currentCache().addBlock(block, pos);
+            }
         } else {
             Debug.logInternal("INVALID SET: " + block + " " + pos);
         }
     }
     public boolean anyFound(Block ...blocks) {
         updateState();
-        return currentCache().anyFound(blocks);
+        synchronized (_scanMutex) {
+            return currentCache().anyFound(blocks);
+        }
     }
 
     public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block ...blocks) {
         updateState();
-        return currentCache().anyFound(isInvalidTest, blocks);
+        synchronized (_scanMutex) {
+            return currentCache().anyFound(isInvalidTest, blocks);
+        }
     }
 
     public BlockPos getNearestTracking(Vec3d pos, Block ...blocks) {
@@ -130,12 +146,16 @@ public class BlockTracker extends Tracker {
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
+        synchronized (_scanMutex) {
+            return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
+        }
     }
 
     public List<BlockPos> getKnownLocations(Block ...blocks) {
         updateState();
-        return currentCache().getKnownLocations(blocks);
+        synchronized (_scanMutex) {
+            return currentCache().getKnownLocations(blocks);
+        }
     }
 
     public BlockPos getNearestWithinRange(BlockPos pos, double range, Block ...blocks) {
@@ -154,7 +174,9 @@ public class BlockTracker extends Tracker {
             for (int y = minY; y <= maxY; ++y) {
                 for (int z = minZ; z <= maxZ; ++z) {
                     BlockPos check = new BlockPos(x, y, z);
-                    if (currentCache().blockUnreachable(check)) continue;
+                    synchronized (_scanMutex) {
+                        if (currentCache().blockUnreachable(check)) continue;
+                    }
 
                     assert MinecraftClient.getInstance().world != null;
                     Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
@@ -183,52 +205,74 @@ public class BlockTracker extends Tracker {
         return _timer.elapsed();
     }
     private void update() {
+        // Perform a baritone scan
         _timer.reset();
-        // Perform a baritone scan.
-        rescanWorld();
+        CalculationContext ctx = new CalculationContext(_mod.getClientBaritone(), ASYNC_SCANNING);
+        if (ASYNC_SCANNING) {
+            if (!_scanning) {
+                _scanning = true;
+                Baritone.getExecutor().execute(() -> {
+                    rescanWorld(ctx);
+                    _scanning = false;
+                });
+            }
+        } else {
+            // Synchronous scanning.
+            rescanWorld(ctx);
+        }
     }
 
-    private void rescanWorld() {
+    private void rescanWorld(CalculationContext ctx) {
         Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
-        CalculationContext ctx = new CalculationContext(_mod.getClientBaritone());
         Block[] blocksToScan = new Block[_trackingBlocks.size()];
         _trackingBlocks.keySet().toArray(blocksToScan);
-        List<BlockPos> knownBlocks = currentCache().getKnownLocations(blocksToScan);
+
+        List<BlockPos> knownBlocks;
+        synchronized (_scanMutex) {
+            knownBlocks = currentCache().getKnownLocations(blocksToScan);
+        }
 
         // Clear invalid block pos before rescan
         for (BlockPos check : knownBlocks) {
             if (!blockIsValid(check, blocksToScan)) {
                 //Debug.logInternal("Removed at " + check);
-                currentCache().removeBlock(check, blocksToScan);
+                synchronized (_scanMutex) {
+                    currentCache().removeBlock(check, blocksToScan);
+                }
             }
         }
 
+        // The scanning may run asynchronously.
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
         List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
-        if (MinecraftClient.getInstance().world != null) {
-            for (BlockPos pos : found) {
-                Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+        synchronized (_scanMutex) {
+            if (MinecraftClient.getInstance().world != null) {
+                for (BlockPos pos : found) {
+                    Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
 
-                if (_trackingBlocks.containsKey(block)) {
-                    //Debug.logInternal("Good: " + block + " at " + pos);
-                    currentCache().addBlock(block, pos);
-                } else {
-                    //Debug.logInternal("INVALID??? FOUND: " + block + " at " + pos);
+                    if (_trackingBlocks.containsKey(block)) {
+                        //Debug.logInternal("Good: " + block + " at " + pos);
+                        currentCache().addBlock(block, pos);
+                    } else {
+                        //Debug.logInternal("INVALID??? FOUND: " + block + " at " + pos);
+                    }
                 }
-            }
 
-            // Purge if we have too many blocks tracked at once.
-            currentCache().smartPurge(_mod, _mod.getPlayer().getPos());
+                // Purge if we have too many blocks tracked at once.
+                currentCache().smartPurge(_mod, _mod.getPlayer().getPos());
+            }
         }
     }
 
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
     public boolean blockIsValid(BlockPos pos, Block ...blocks) {
-        // We can't reach it, don't even try.
-        if (currentCache().blockUnreachable(pos)) {
-            return false;
+        synchronized (_scanMutex) {
+            // We can't reach it, don't even try.
+            if (currentCache().blockUnreachable(pos)) {
+                return false;
+            }
         }
         // It might be OK to remove this. Will have to test.
         if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
@@ -260,11 +304,15 @@ public class BlockTracker extends Tracker {
     }
 
     public boolean unreachable(BlockPos pos) {
-        return currentCache().blockUnreachable(pos);
+        synchronized (_scanMutex) {
+            return currentCache().blockUnreachable(pos);
+        }
     }
 
     public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {
-        currentCache().blacklistBlockUnreachable(_mod, pos, allowedFailures);
+        synchronized (_scanMutex) {
+            currentCache().blacklistBlockUnreachable(_mod, pos, allowedFailures);
+        }
     }
 
     public void requestBlockUnreachable(BlockPos pos) {
