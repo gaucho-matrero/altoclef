@@ -42,8 +42,9 @@ import java.util.stream.Stream;
  */
 public class TerminatorTask extends Task {
 
-    private static final int FEAR_SEE_DISTANCE = 50;
-    private static final int RUN_AWAY_DISTANCE = 100;
+    private static final int FEAR_SEE_DISTANCE = 30;
+    private static final int FEAR_DISTANCE = 20;
+    private static final int RUN_AWAY_DISTANCE = 80;
 
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
@@ -106,7 +107,7 @@ public class TerminatorTask extends Task {
 
             if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
                 // If our last "scare" was too long ago or there are no more nearby players...
-                boolean noneRemote = (closest == null || !closest.isInRange(mod.getPlayer(), RUN_AWAY_DISTANCE));
+                boolean noneRemote = (closest == null || !closest.isInRange(mod.getPlayer(), FEAR_DISTANCE));
                 if (_runAwayExtraTime.elapsed() && noneRemote) {
                     Debug.logMessage("Stop running away, we're good.");
                     // Stop running away.
@@ -126,11 +127,11 @@ public class TerminatorTask extends Task {
                     return false;
                 } else {
                     // Too far away.
-                    if (!entityIgnoreMaybe.isInRange(mod.getPlayer(), RUN_AWAY_DISTANCE)) return true;
+                    if (!entityIgnoreMaybe.isInRange(mod.getPlayer(), FEAR_DISTANCE)) return true;
                     // We may be far and obstructed, check.
                     boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
 
-                    Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
+                    //Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
                     return !seesPlayer;
                 }
             }, PlayerEntity.class) != null) {
