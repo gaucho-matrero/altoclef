@@ -21,6 +21,7 @@ import java.util.List;
 public class KillAura {
 
     public enum Strategy {
+        OFF,
         FASTEST,
         SMART
     }
@@ -67,6 +68,7 @@ public class KillAura {
                     attack(mod, toHit);
                 }
                 break;
+            case OFF: break;
         }
     }
 
@@ -104,5 +106,4 @@ public class KillAura {
             }
         }
     }
-
 }
