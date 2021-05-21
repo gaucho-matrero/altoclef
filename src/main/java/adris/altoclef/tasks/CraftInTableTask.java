@@ -138,7 +138,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
         mod.getConfigState().pop();
-        mod.getPlayer().closeHandledScreen();
+        if (mod.inGame()) {
+            mod.getPlayer().closeHandledScreen();
+        }
     }
 
     @Override
