@@ -21,6 +21,12 @@ public class Settings {
     public static final String SETTINGS_PATH = "altoclef_settings.json";
 
     /**
+     * If true, text will appear on the top left showing the current
+     * task chain.
+     */
+    private boolean showTaskChains = true;
+
+    /**
      * Whenever we're moving, speed up our client by a multiple of this number.
      * Useful when traveling long distances, and only is enabled when we're moving and not mining.
      *
@@ -335,6 +341,8 @@ public class Settings {
         save(this);
         _dirty = false;
     }
+
+    public boolean shouldShowTaskChain() { return showTaskChains; }
 
     public void setSpeedHack(float value) {
         speedHack = value; markDirty();

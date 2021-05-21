@@ -116,7 +116,7 @@ public class AltoClef implements ModInitializer {
         _chunkTracker = new SimpleChunkTracker(this);
 
         // Renderers
-        _commandStatusOverlay = new CommandStatusOverlay(_taskRunner);
+        _commandStatusOverlay = new CommandStatusOverlay();
 
         // Misc managers
         _messageSender = new MessageSender();
@@ -151,7 +151,7 @@ public class AltoClef implements ModInitializer {
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
-        _commandStatusOverlay.render(matrixStack);
+        _commandStatusOverlay.render(this, matrixStack);
     }
 
     public void onChunkLoad(WorldChunk chunk) {

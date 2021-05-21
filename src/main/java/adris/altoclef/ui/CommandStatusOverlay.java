@@ -1,5 +1,7 @@
 package adris.altoclef.ui;
 
+import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import net.minecraft.client.MinecraftClient;
@@ -11,20 +13,16 @@ import java.util.List;
 
 public class CommandStatusOverlay {
 
-    private TaskRunner _runner;
+    public void render(AltoClef mod, MatrixStack matrixstack) {
+        if (mod.getModSettings().shouldShowTaskChain()) {
+            List<Task> tasks = Collections.emptyList();
+            if (mod.getTaskRunner().getCurrentTaskChain() != null) {
+                tasks = mod.getTaskRunner().getCurrentTaskChain().getTasks();
+            }
 
-    public CommandStatusOverlay(TaskRunner runner) {
-        _runner = runner;
-    }
-
-    public void render(MatrixStack matrixstack) {
-        List<Task> tasks = Collections.emptyList();
-        if (_runner.getCurrentTaskChain() != null) {
-            tasks = _runner.getCurrentTaskChain().getTasks();
+            int color = 0xFFFFFFFF;
+            drawTaskChain(MinecraftClient.getInstance().textRenderer, matrixstack, 0, 0, color, 10, tasks);
         }
-
-        int color = 0xFFFFFFFF;
-        drawTaskChain(MinecraftClient.getInstance().textRenderer, matrixstack, 0, 0, color, 10, tasks);
     }
 
     private void drawTaskChain(TextRenderer renderer, MatrixStack stack, float dx, float dy, int color, int maxLines, List<Task> tasks) {
