@@ -152,6 +152,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
+            if (mod.getBlockTracker().unreachable(blockPos)) return true; // I think there was a bug here? Doesn't hurt to include though.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.

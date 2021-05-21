@@ -303,6 +303,11 @@ public class ConstructNetherPortalBucketTask extends Task {
                     return null;
                 }
 
+                // Make sure we have water, juuust in case we have another creeper appear run end here
+                if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                    return TaskCatalogue.getItemTask("water_bucket", 1);
+                }
+
                 // Don't place lava at our position!
                 // Would lead to an embarrassing death.
                 BlockPos targetPos = _currentLavaTarget.add(-1, 1, 0);
