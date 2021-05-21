@@ -152,15 +152,6 @@ public class AltoClefCommands extends CommandList {
                 //mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(472, 24, -324)));
                 break;
             }
-            case "deadmeme":
-                File file = new File("test.txt");
-                try {
-                    FileReader reader = new FileReader(file);
-                    mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
             case "stacked":
                 // It should only need:
                 // 24 (armor) + 3*3 (pick) + 2 = 35 diamonds
