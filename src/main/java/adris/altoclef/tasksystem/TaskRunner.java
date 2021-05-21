@@ -60,9 +60,6 @@ public class TaskRunner {
         }
         _active = false;
 
-        // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
-        _mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
-
         Debug.logMessage("Stopped");
     }
 
