@@ -6,20 +6,16 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
 import net.minecraft.util.math.BlockPos;
 
+
 public class GetToXZTask extends CustomBaritoneGoalTask {
-
+    
     private final int _x, _z;
-
+    
     public GetToXZTask(int x, int z) {
         _x = x;
         _z = z;
     }
-
-    @Override
-    protected Goal newGoal(AltoClef mod) {
-        return new GoalXZ(_x, _z);
-    }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToXZTask) {
@@ -28,15 +24,20 @@ public class GetToXZTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-
+    
+    @Override
+    protected String toDebugString() {
+        return "Getting to (" + _x + "," + _z + ")";
+    }
+    
     @Override
     public boolean isFinished(AltoClef mod) {
         BlockPos cur = mod.getPlayer().getBlockPos();
         return (cur.getX() == _x && cur.getZ() == _z);
     }
-
+    
     @Override
-    protected String toDebugString() {
-        return "Getting to (" + _x + "," + _z + ")";
+    protected Goal newGoal(AltoClef mod) {
+        return new GoalXZ(_x, _z);
     }
 }

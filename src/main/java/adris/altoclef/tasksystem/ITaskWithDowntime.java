@@ -2,6 +2,7 @@ package adris.altoclef.tasksystem;
 
 import adris.altoclef.AltoClef;
 
+
 /***
  * Some tasks have periods of "Downtime" where the task is essentially waiting.
  * This interface lets somebody know when this task is waiting, as well as

@@ -13,7 +13,6 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,54 +20,58 @@ import java.util.List;
 
 
 public class CraftInTableTask extends ResourceTask {
-
+    
     private final RecipeTarget[] _targets;
-
+    
     private final DoCraftInTableTask _craftTask;
-
+    
     public CraftInTableTask(RecipeTarget[] targets) {
         super(extractItemTargets(targets));
         _targets = targets;
         _craftTask = new DoCraftInTableTask(_targets);
     }
+    
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
-        _targets = new RecipeTarget[] {new RecipeTarget(target, recipe)};
+        _targets = new RecipeTarget[]{ new RecipeTarget(target, recipe) };
         _craftTask = new DoCraftInTableTask(_targets, collect, ignoreUncataloguedSlots);
     }
+    
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
         this(target, recipe, true, false);
     }
+    
     public CraftInTableTask(Item[] items, int count, CraftingRecipe recipe) {
         this(new ItemTarget(items, count), recipe);
     }
+    
     public CraftInTableTask(Item item, int count, CraftingRecipe recipe) {
         this(new ItemTarget(item, count), recipe);
     }
-
+    
     private static ItemTarget[] extractItemTargets(RecipeTarget[] recipeTargets) {
         List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
-        for(RecipeTarget target : recipeTargets) {
+        for (RecipeTarget target : recipeTargets) {
             result.add(target.getItem());
         }
         return Util.toArray(ItemTarget.class, result);
     }
-
+    
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-
+    
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     protected Task onResourceTick(AltoClef mod) {
         return _craftTask;
     }
-
+    
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
@@ -77,7 +80,7 @@ public class CraftInTableTask extends ResourceTask {
         }
         //mod.getControllerExtras().closeCurrentContainer();
     }
-
+    
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CraftInTableTask) {
@@ -86,12 +89,12 @@ public class CraftInTableTask extends ResourceTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugStringName() {
         return _craftTask.toDebugString();
     }
-
+    
     public RecipeTarget[] getRecipeTargets() {
         return _targets;
     }
@@ -99,28 +102,27 @@ public class CraftInTableTask extends ResourceTask {
 
 
 class DoCraftInTableTask extends DoStuffInContainerTask {
-
+    
     private final RecipeTarget[] _targets;
-
+    
     private final boolean _collect;
-
+    
     private final CollectRecipeCataloguedResourcesTask _collectTask;
-
+    private final Timer _craftResetTimer = new Timer(10);
     private boolean _fullCheckFailed = false;
     private int _craftCount;
-
-    private final Timer _craftResetTimer = new Timer(10);
-
+    
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         _collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
         _targets = targets;
         _collect = collect;
     }
+    
     public DoCraftInTableTask(RecipeTarget[] targets) {
         this(targets, true, false);
     }
-
+    
     @Override
     protected void onStart(AltoClef mod) {
         super.onStart(mod);
@@ -129,23 +131,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(getMaterialsArray());
         _fullCheckFailed = false;
-
+        
         // Reset our "finished" value in the collect recipe thing.
         _collectTask.reset();
     }
-
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        super.onStop(mod, interruptTask);
-        mod.getConfigState().pop();
-        if (mod.inGame()) {
-            mod.getPlayer().closeHandledScreen();
-        }
-    }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         // TODO: This shouldn't be here.
         // This is duct tape for the following scenario:
         //
@@ -159,7 +152,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         if (_collect) {
             if (!_collectTask.isFinished(mod)) {
-
+                
                 if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_targets)) {
                     setDebugState("craft does NOT have RECIPE MATERIALS: " + Util.arrayToString(_targets));
                     return _collectTask;
@@ -175,33 +168,42 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
         }
          */
-
+        
         if (!isContainerOpen(mod)) {
             _craftResetTimer.reset();
         }
-
+        
         return super.onTick(mod);
     }
-
+    
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        super.onStop(mod, interruptTask);
+        mod.getConfigState().pop();
+        if (mod.inGame()) {
+            mod.getPlayer().closeHandledScreen();
+        }
+    }
+    
     @Override
     protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
         if (obj instanceof DoCraftInTableTask) {
             DoCraftInTableTask other = (DoCraftInTableTask) obj;
-
+            
             return Util.arraysEqual(other._targets, _targets);
         }
         return false;
     }
-
+    
     @Override
     protected boolean isContainerOpen(AltoClef mod) {
         return (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
     }
-
+    
     @Override
     protected Task containerSubTask(AltoClef mod) {
         //Debug.logMessage("GOT TO TABLE. Crafting...");
-
+        
         // Already handled above...
         /*
         if (_collect) {
@@ -214,16 +216,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
         }
          */
-
+        
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getPlayer().closeHandledScreen();
             return null;
         }
-
-
+        
+        
         for (RecipeTarget target : _targets) {
-
+            
             if (!mod.getInventoryTracker().targetMet(target.getItem())) {
                 // Free up inventory
                 if (mod.getInventoryTracker().isInventoryFull()) {
@@ -239,21 +241,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                         _fullCheckFailed = true;
                     }
                 }
-
+                
                 //Debug.logMessage("Crafting: " + target.getRecipe());
                 return new CraftGenericTask(target.getRecipe());
                 //craftInstant(mod, target.getRecipe());
             }
         }
-
+        
         return null;
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return _craftCount >= _targets.length;//_crafted;
-    }
-
+    
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // TODO: If we have an axe, lower the cost.
@@ -264,7 +261,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // TODO: If cached and the closest log is really far away, strike the price UP
         return 300;
     }
-
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return _craftCount >= _targets.length;//_crafted;
+    }
+    
     private Item[] getMaterialsArray() {
         List<Item> result = new ArrayList<>();
         for (RecipeTarget target : _targets) {
@@ -278,5 +280,5 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         result.toArray(returnthing);
         return returnthing;
     }
-
+    
 }

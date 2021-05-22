@@ -9,17 +9,16 @@ import net.minecraft.tag.BlockTags;
 
 import java.util.List;
 
+
 //@Deprecated
 public class PlaceBlockSchematic extends AbstractSchematic {
-
+    
     private static final int RANGE = 1;
-
-    private boolean _done;
     private final Block[] _blockToPlace;
-    private BlockState _targetPlace;
-
     private final boolean _skipIfAlreadyThere;
-
+    private final boolean _done;
+    private BlockState _targetPlace;
+    
     public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
         _blockToPlace = blocksToPlace;
@@ -27,12 +26,13 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         _targetPlace = null;
         _skipIfAlreadyThere = skipIfAlreadyThere;
     }
+    
     public PlaceBlockSchematic(Block[] blocksToPlace) {
         this(blocksToPlace, true);
     }
-
+    
     public PlaceBlockSchematic(Block blockToPlace) {
-        this(new Block[] {blockToPlace});
+        this(new Block[]{ blockToPlace });
     }
 
     /*
@@ -40,17 +40,17 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         _targetPlace = null;
     }
      */
-
+    
     public boolean foundSpot() {
         return _targetPlace != null;
     }
-
+    
     // No restrictions.
     //@Override
     //public boolean inSchematic(int x, int y, int z, BlockState currentState) {
     //    return true;
     //}
-
+    
     @Override
     public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> list) {
         // Only place at the origin.
@@ -69,7 +69,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         //System.out.print("oof: [");
         for (BlockState possible : list) {
             if (possible == null) {
-                if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock()) ) {
+                if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock())) {
                     // Sheering items/flowers results in this issue, but it works fine!
                 } else {
                     Debug.logWarning("Weird issue, given possible state is null. Will ignore.");
@@ -86,8 +86,8 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         //System.out.println("] ( :(((((( )");
         return blockState;
     }
-
-
+    
+    
     private boolean blockIsTarget(Block block) {
         for (Block check : _blockToPlace) {
             if (check.is(block)) return true;

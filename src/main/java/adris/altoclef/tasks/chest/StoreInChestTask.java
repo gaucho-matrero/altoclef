@@ -2,7 +2,6 @@ package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
@@ -16,25 +15,26 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public class StoreInChestTask extends AbstractDoInChestTask {
 
+public class StoreInChestTask extends AbstractDoInChestTask {
+    
     private final ItemTarget[] _targets;
     private final Timer _actionTimer = new Timer(0);
-
+    
     private final BlockPos _targetChest;
-
-    public StoreInChestTask(BlockPos targetChest, ItemTarget ...targets) {
+    
+    public StoreInChestTask(BlockPos targetChest, ItemTarget... targets) {
         super(targetChest);
         _targets = targets;
         _targetChest = targetChest;
     }
-
+    
     @Override
     protected Task doToOpenChestTask(AltoClef mod, GenericContainerScreenHandler handler) {
         _actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
         if (_actionTimer.elapsed()) {
             _actionTimer.reset();
-
+            
             ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_targetChest);
             if (data == null) {
                 Debug.logWarning("Failed to find valid chest at " + _targetChest + ", hopefully this is handled up the chain!!!");
@@ -87,7 +87,7 @@ public class StoreInChestTask extends AbstractDoInChestTask {
         }
         return null;
     }
-
+    
     @Override
     protected boolean isSubEqual(AbstractDoInChestTask obj) {
         if (obj instanceof StoreInChestTask) {
@@ -96,7 +96,7 @@ public class StoreInChestTask extends AbstractDoInChestTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Storing in chest: " + Util.arrayToString(_targets);

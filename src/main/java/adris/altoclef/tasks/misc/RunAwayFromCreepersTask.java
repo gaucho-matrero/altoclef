@@ -4,10 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.util.math.Vec3d;
@@ -15,14 +13,15 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
-
+    
     private final double _distanceToRun;
-
+    
     public RunAwayFromCreepersTask(double distance) {
         _distanceToRun = distance;
     }
-
+    
     @SuppressWarnings("RedundantIfStatement")
     @Override
     protected boolean isEqual(Task obj) {
@@ -34,30 +33,30 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Run " + _distanceToRun + " blocks away from creepers";
     }
-
+    
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromCreepers(mod, _distanceToRun);
     }
-
+    
     private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
-
+        
         public GoalRunAwayFromCreepers(AltoClef mod, double distance) {
             super(mod, distance, false, 10);
         }
-
+        
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
             return new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
         }
-
+        
         @Override
         protected double getCostOfEntity(Entity entity, int x, int y, int z) {
             if (entity instanceof CreeperEntity) {

@@ -6,57 +6,56 @@ import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.screen.ConnectScreen;
+import net.minecraft.client.gui.screen.DeathScreen;
+import net.minecraft.client.gui.screen.DisconnectedScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
 
-import java.lang.reflect.Type;
 
 public class DeathMenuChain extends TaskChain {
-
-    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
-    private boolean shouldAutoReconnect(AltoClef mod) {
-        return mod.getModSettings().isAutoReconnect();
-    }
-
+    
+    // Sometimes we fuck up, so we might want to retry considering the death screen.
+    private final Timer _deathRetryTimer = new Timer(8);
+    ServerInfo _prevServerEntry = null;
+    private boolean _reconnecting = false;
+    private final Timer _reconnectTimer = new Timer(1);
+    private int _deathCount = 0;
+    private Class _prevScreen = null;
+    
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
-
-    private boolean _reconnecting = false;
-
-    ServerInfo _prevServerEntry = null;
-
-    private Timer _reconnectTimer = new Timer(1);
-
-    private int _deathCount = 0;
-
-    private Class _prevScreen = null;
-
-    // Sometimes we fuck up, so we might want to retry considering the death screen.
-    private final Timer _deathRetryTimer = new Timer(8);
-
+    
+    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
+    
+    private boolean shouldAutoReconnect(AltoClef mod) {
+        return mod.getModSettings().isAutoReconnect();
+    }
+    
     @Override
     protected void onStop(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
-
+    
     }
-
+    
     @Override
     protected void onTick(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     public float getPriority(AltoClef mod) {
         //MinecraftClient.getInstance().getCurrentServerEntry().address;
-//        MinecraftClient.getInstance().
+        //        MinecraftClient.getInstance().
         Screen screen = MinecraftClient.getInstance().currentScreen;
-
+        
         // This might fix Weird fail to respawn that happened only once
         if (_prevScreen == DeathScreen.class) {
             if (_deathRetryTimer.elapsed()) {
@@ -67,14 +66,14 @@ public class DeathMenuChain extends TaskChain {
         } else {
             _deathRetryTimer.reset();
         }
-
+        
         if (screen != null && screen.getClass() != _prevScreen) {
-
+            
             // Keep track of the last server we were on so we can re-connect.
             if (mod.inGame()) {
                 _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
             }
-
+            
             if (screen instanceof DeathScreen) {
                 if (shouldAutoRespawn(mod)) {
                     _deathCount++;
@@ -99,7 +98,7 @@ public class DeathMenuChain extends TaskChain {
                 _reconnectTimer.reset();
                 Debug.logMessage("RECONNECTING: Going ");
                 _reconnecting = false;
-
+                
                 if (_prevServerEntry == null) {
                     Debug.logWarning("Failed to re-connect to server, no server entry cached.");
                 } else {
@@ -111,12 +110,12 @@ public class DeathMenuChain extends TaskChain {
         }
         return Float.NEGATIVE_INFINITY;
     }
-
+    
     @Override
     public boolean isActive() {
         return true;
     }
-
+    
     @Override
     public String getName() {
         return "Death Menu Respawn Handling";

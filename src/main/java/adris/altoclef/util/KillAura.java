@@ -15,35 +15,29 @@ import net.minecraft.item.ToolItem;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Controls and applies killaura
  */
 public class KillAura {
-
-    public enum Strategy {
-        OFF,
-        FASTEST,
-        SMART
-    }
-
-    private double _forceFieldRange = Double.POSITIVE_INFINITY;
-
+    
     // Smart aura data
     private final List<Entity> _targets = new ArrayList<>();
     private final Timer _hitDelay = new Timer(0.2);
+    private double _forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity _forceHit = null;
 
     public void tickStart(AltoClef mod) {
         _targets.clear();
         _forceHit = null;
     }
-
+    
     public void applyAura(AltoClef mod, Entity entity) {
         _targets.add(entity);
         // Always hit ghast balls.
         if (entity instanceof FireballEntity) _forceHit = entity;
     }
-
+    
     public void tickEnd(AltoClef mod) {
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
@@ -63,22 +57,23 @@ public class KillAura {
                     _hitDelay.reset();
                     Entity toHit = Util.minItem(_targets, (left, right) -> {
                         double distComp = right.squaredDistanceTo(mod.getPlayer()) - left.squaredDistanceTo(mod.getPlayer());
-                        return (int)Math.signum(distComp);
+                        return (int) Math.signum(distComp);
                     });
                     attack(mod, toHit);
                 }
                 break;
-            case OFF: break;
+            case OFF:
+                break;
         }
     }
-
+    
     public void setRange(double range) {
         _forceFieldRange = range;
     }
-
+    
     private boolean attack(AltoClef mod, Entity entity) {
         if (entity == null) return false;
-        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
+        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange) {
             // Equip non-tool
             deequipTool(mod);
             mod.getControllerExtras().attack(entity);
@@ -86,7 +81,7 @@ public class KillAura {
         }
         return false;
     }
-
+    
     private void deequipTool(AltoClef mod) {
         boolean toolEquipped = false;
         Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
@@ -105,5 +100,11 @@ public class KillAura {
                 mod.getInventoryTracker().equipItem(Items.AIR);
             }
         }
+    }
+    
+    public enum Strategy {
+        OFF,
+        FASTEST,
+        SMART
     }
 }

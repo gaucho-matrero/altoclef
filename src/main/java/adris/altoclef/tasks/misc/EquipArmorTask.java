@@ -11,27 +11,40 @@ import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
-
 import org.apache.commons.lang3.ArrayUtils;
 
+
 public class EquipArmorTask extends Task {
-
+    
     private final String[] _toEquip;
-
+    
     private final Timer _moveTimer = new Timer(0.5f);
-
-    public EquipArmorTask(String ...toEquip) {
+    
+    public EquipArmorTask(String... toEquip) {
         _toEquip = toEquip;
     }
-
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        for (String armor : _toEquip) {
+            ArmorItem item = (ArmorItem) TaskCatalogue.getItemMatches(armor)[0];
+            if (item == null) {
+                Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
+            } else {
+                if (!mod.getInventoryTracker().isArmorEquipped(item)) return false;
+            }
+        }
+        return true;
+    }
+    
     @Override
     protected void onStart(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         ItemTarget[] targets = new ItemTarget[_toEquip.length];
         int i = 0;
         boolean armorMet = true;
@@ -47,11 +60,11 @@ public class EquipArmorTask extends Task {
             setDebugState("Obtaining armor");
             return new CataloguedResourceTask(targets);
         }
-
+        
         setDebugState("Equipping armor");
-
+        
         // Now equip
-
+        
         if (_moveTimer.elapsed()) {
             _moveTimer.reset();
             for (String armor : _toEquip) {
@@ -72,25 +85,12 @@ public class EquipArmorTask extends Task {
         }
         return null;
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        for (String armor : _toEquip) {
-            ArmorItem item = (ArmorItem) TaskCatalogue.getItemMatches(armor)[0];
-            if (item == null) {
-                Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
-            } else {
-                if (!mod.getInventoryTracker().isArmorEquipped(item)) return false;
-            }
-        }
-        return true;
-    }
-
+    
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-
+    
     }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof EquipArmorTask) {
@@ -99,7 +99,7 @@ public class EquipArmorTask extends Task {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Equipping armor " + ArrayUtils.toString(_toEquip);

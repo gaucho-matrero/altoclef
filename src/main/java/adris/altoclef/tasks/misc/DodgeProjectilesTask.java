@@ -3,20 +3,20 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalDodgeProjectiles;
 import baritone.api.pathing.goals.Goal;
 
-public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
 
+public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
+    
     private final double _distanceHorizontal;
     private final double _distanceVertical;
-
+    
     public DodgeProjectilesTask(double distanceHorizontal, double distanceVertical) {
         _distanceHorizontal = distanceHorizontal;
         _distanceVertical = distanceVertical;
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
         if (_cachedGoal != null) {
@@ -27,7 +27,12 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
         }
         return super.onTick(mod);
     }
-
+    
+    @Override
+    protected Goal newGoal(AltoClef mod) {
+        return new GoalDodgeProjectiles(mod, _distanceHorizontal, _distanceVertical);
+    }
+    
     @SuppressWarnings("RedundantIfStatement")
     @Override
     protected boolean isEqual(Task obj) {
@@ -40,14 +45,9 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Dodge arrows at " + _distanceHorizontal + " blocks away";
-    }
-
-    @Override
-    protected Goal newGoal(AltoClef mod) {
-        return new GoalDodgeProjectiles(mod, _distanceHorizontal, _distanceVertical);
     }
 }

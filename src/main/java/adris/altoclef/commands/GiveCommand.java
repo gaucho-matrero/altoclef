@@ -12,11 +12,13 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.ItemStack;
 
+
 public class GiveCommand extends Command {
     public GiveCommand() throws CommandException {
-        super("give", "Collects an item and gives it to you or someone else", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
+        super("give", "Collects an item and gives it to you or someone else", new Arg(String.class, "username", null, 2),
+              new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
     }
-
+    
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String username = parser.Get(String.class);
@@ -40,7 +42,7 @@ public class GiveCommand extends Command {
             for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
                 ItemStack stack = mod.getPlayer().inventory.getStack(i);
                 if (!stack.isEmpty()) {
-                    String name =  Util.stripItemName(stack.getItem());
+                    String name = Util.stripItemName(stack.getItem());
                     if (name.equals(item)) {
                         target = new ItemTarget(stack.getItem(), count);
                         break;
@@ -56,5 +58,5 @@ public class GiveCommand extends Command {
             finish();
         }
     }
-
+    
 }

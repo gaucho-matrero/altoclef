@@ -8,31 +8,31 @@ import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
-public class PickupFromChestTask extends AbstractDoInChestTask {
 
+public class PickupFromChestTask extends AbstractDoInChestTask {
+    
     private final ItemTarget[] _targets;
     private final Timer _actionTimer = new Timer(0);
-
+    
     private final BlockPos _targetChest;
-
-    public PickupFromChestTask(BlockPos targetChest, ItemTarget ...targets) {
+    
+    public PickupFromChestTask(BlockPos targetChest, ItemTarget... targets) {
         super(targetChest);
         _targets = targets;
         _targetChest = targetChest;
     }
-
+    
     @Override
     protected Task doToOpenChestTask(AltoClef mod, GenericContainerScreenHandler handler) {
         _actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
         if (_actionTimer.elapsed()) {
             _actionTimer.reset();
-
+            
             ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_targetChest);
             if (data == null) {
                 Debug.logWarning("Failed to find valid chest at " + _targetChest + ", hopefully this is handled up the chain!!!");
@@ -58,7 +58,7 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
         }
         return null;
     }
-
+    
     @Override
     protected boolean isSubEqual(AbstractDoInChestTask obj) {
         if (obj instanceof PickupFromChestTask) {
@@ -67,7 +67,7 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Picking up from chest: " + Util.arrayToString(_targets);

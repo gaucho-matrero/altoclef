@@ -5,17 +5,18 @@ import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.ui.MessagePriority;
 
-public class HelpCommand extends Command {
 
+public class HelpCommand extends Command {
+    
     public HelpCommand() {
         super("help", "Lists all commands");
     }
-
+    
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         mod.log("########## HELP: ##########", MessagePriority.OPTIONAL);
         int padSize = 10;
-        for(Command c : mod.getCommandExecutor().AllCommands()) {
+        for (Command c : mod.getCommandExecutor().AllCommands()) {
             StringBuilder line = new StringBuilder();
             //line.append("");
             line.append(c.getName()).append(": ");

@@ -8,34 +8,15 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
+
 public class ClearLiquidTask extends Task {
-
+    
     private final BlockPos _liquidPos;
-
+    
     public ClearLiquidTask(BlockPos liquidPos) {
         this._liquidPos = liquidPos;
     }
-
-    @Override
-    protected void onStart(AltoClef mod) {
-
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-        if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
-            mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-            return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), _liquidPos, false);
-        }
-
-        return new PlaceStructureBlockTask(_liquidPos);
-    }
-
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-
-    }
-
+    
     @Override
     public boolean isFinished(AltoClef mod) {
         if (mod.getChunkTracker().isChunkLoaded(_liquidPos)) {
@@ -43,7 +24,27 @@ public class ClearLiquidTask extends Task {
         }
         return false;
     }
-
+    
+    @Override
+    protected void onStart(AltoClef mod) {
+    
+    }
+    
+    @Override
+    protected Task onTick(AltoClef mod) {
+        if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
+            mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
+            return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), _liquidPos, false);
+        }
+        
+        return new PlaceStructureBlockTask(_liquidPos);
+    }
+    
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+    
+    }
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ClearLiquidTask) {
@@ -52,7 +53,7 @@ public class ClearLiquidTask extends Task {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Clear liquid at " + _liquidPos;

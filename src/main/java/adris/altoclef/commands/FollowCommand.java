@@ -7,11 +7,12 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.tasks.FollowPlayerTask;
 
+
 public class FollowCommand extends Command {
     public FollowCommand() throws CommandException {
         super("follow", "Follows you or someone else", new Arg(String.class, "username", null, 0));
     }
-
+    
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String username = parser.Get(String.class);

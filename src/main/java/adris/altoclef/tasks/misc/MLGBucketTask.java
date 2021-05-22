@@ -2,8 +2,6 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.resources.CollectBucketLiquidTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import baritone.api.utils.IPlayerContext;
@@ -15,7 +13,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -24,12 +21,26 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
+
 public class MLGBucketTask extends Task {
-
+    
     private boolean _clicked;
-
+    
     private BlockPos _placedPos;
-
+    
+    private RaycastContext test(Entity player, Vec3d offset) {
+        Vec3d pos = player.getPos();
+        return new RaycastContext(pos, pos.add(0, -5.33, 0).add(offset), RaycastContext.ShapeType.COLLIDER,
+                                  RaycastContext.FluidHandling.NONE, player);
+    }
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        if (mod.getCurrentDimension() == Dimension.NETHER) return true;
+        return !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() ||
+               mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
+    }
+    
     @Override
     protected void onStart(AltoClef mod) {
         _clicked = false;
@@ -39,17 +50,13 @@ public class MLGBucketTask extends Task {
         // Look down at first, usually does the trick.
         mod.getPlayer().pitch = 90;
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
         // We may crop the edge of a block or wall.
-        Vec3d[] offsets = new Vec3d[] {
-                new Vec3d(0, 0,0),
-                new Vec3d(-0.5, 0, 0),
-                new Vec3d(0.5, 0, 0),
-                new Vec3d(0, 0, -0.5),
-                new Vec3d(0, 0, 0.5)
+        Vec3d[] offsets = new Vec3d[]{
+                new Vec3d(0, 0, 0), new Vec3d(-0.5, 0, 0), new Vec3d(0.5, 0, 0), new Vec3d(0, 0, -0.5), new Vec3d(0, 0, 0.5)
         };
         BlockHitResult result = null;
         for (Vec3d offset : offsets) {
@@ -59,10 +66,10 @@ public class MLGBucketTask extends Task {
                 break;
             }
         }
-
+        
         if (result.getType() == HitResult.Type.BLOCK) {
             BlockPos toPlaceOn = result.getBlockPos();
-
+            
             BlockPos willLandIn = toPlaceOn.up();
             // If we're water, we're ok. Do nothing.
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
@@ -74,12 +81,12 @@ public class MLGBucketTask extends Task {
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
                 return null;
             }
-
+            
             if (!mod.getInventoryTracker().equipItem(Items.WATER_BUCKET)) {
                 Debug.logWarning("Failed to equip bucket for mlg. Oh shit.");
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
             }
-
+            
             IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
             Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), toPlaceOn, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
@@ -103,45 +110,34 @@ public class MLGBucketTask extends Task {
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
                 mod.getPlayer().pitch = 90;
             }
-                //player.rotationPitch = 90f
+            //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
         } else {
             setDebugState("Wait for it...");
         }
         return null;
     }
-
-    private RaycastContext test(Entity player, Vec3d offset) {
-        Vec3d pos = player.getPos();
-        return new RaycastContext(pos, pos.add(0, -5.33, 0).add(offset), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, player);
-    }
-
+    
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
         MinecraftClient.getInstance().options.keyUse.setPressed(false);
         //MinecraftClient.getInstance().options.keySneak.setPressed(false);
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        if (mod.getCurrentDimension() == Dimension.NETHER) return true;
-        return !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
-    }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof MLGBucketTask;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Epic gaemer moment";
     }
-
-
+    
+    
     public BlockPos getWaterPlacedPos() {
         return _placedPos;
     }
-
+    
 }

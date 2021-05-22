@@ -7,11 +7,12 @@ import adris.altoclef.tasksystem.Task;
 
 import java.util.List;
 
+
 public class StatusCommand extends Command {
     public StatusCommand() {
         super("status", "Get status of currently executing command");
     }
-
+    
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         List<Task> tasks = mod.getUserTaskChain().getTasks();

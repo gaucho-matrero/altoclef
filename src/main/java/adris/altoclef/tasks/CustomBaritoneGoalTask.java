@@ -8,30 +8,36 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 
+
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
-
-    protected Goal _cachedGoal = null;
-
+    
     private final boolean _wander;
     private final Task _wanderTask = new TimeoutWanderTask(10);
+    protected Goal _cachedGoal = null;
     protected MovementProgressChecker _checker = new MovementProgressChecker();
-
+    
     public CustomBaritoneGoalTask(boolean wander) {
         _wander = wander;
     }
+    
     public CustomBaritoneGoalTask() {
         this(true);
     }
-
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return _cachedGoal != null && _cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
+    }
+    
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         _checker.reset();
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         if (_wander) {
             if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
                 setDebugState("Wandering...");
@@ -43,7 +49,7 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
                 return _wanderTask;
             }
         }
-
+        
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
             _cachedGoal = newGoal(mod);
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(_cachedGoal);
@@ -51,16 +57,11 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
         setDebugState("Completing goal.");
         return null;
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return _cachedGoal != null && _cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
-    }
-
+    
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
-
+    
     protected abstract Goal newGoal(AltoClef mod);
 }

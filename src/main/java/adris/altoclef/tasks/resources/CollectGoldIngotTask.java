@@ -6,31 +6,35 @@ import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.SmeltInFurnaceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.*;
+import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.SmeltTarget;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
+
 public class CollectGoldIngotTask extends ResourceTask {
-
+    
     private final int _count;
-
+    
     public CollectGoldIngotTask(int count) {
         super(Items.GOLD_INGOT, count);
         _count = count;
     }
-
+    
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-
+    
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.OVERWORLD) {
@@ -47,21 +51,22 @@ public class CollectGoldIngotTask extends ResourceTask {
                 return new CraftInTableTask(Items.GOLD_INGOT, _count, recipe);
             }
             // Mine nuggets
-            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count*9), new Block[] {Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
+            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count * 9), new Block[]{ Blocks.NETHER_GOLD_ORE },
+                                          MiningRequirement.WOOD);
         }
         return null;
     }
-
+    
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+    
     }
-
+    
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj)._count == _count;
     }
-
+    
     @Override
     protected String toDebugStringName() {
         return "Collecting " + _count + " gold.";

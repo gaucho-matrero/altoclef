@@ -1,6 +1,5 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -15,25 +14,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+
 @Mixin(Block.class)
 public class BlockModifiedByPlayerMixin {
-
-    @Inject(
-            method = "onBreak",
-            at = @At("HEAD")
-    )
+    
+    @Inject(method = "onBreak", at = @At("HEAD"))
     public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
         StaticMixinHookups.onBlockBroken(world, pos, state, player);
     }
-
-    @Inject(
-            method = "onPlaced",
-            at = @At("HEAD")
-    )
-    public void onBlockPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack, CallbackInfo ci) {
+    
+    @Inject(method = "onPlaced", at = @At("HEAD"))
+    public void onBlockPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack,
+                              CallbackInfo ci) {
         // This one is weirdly unreliable.
         //Debug.logInternal("[TEMP] global place");
         //StaticMixinHookups.onBlockPlaced(world, pos, state, placer, itemStack);
     }
-
+    
 }

@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.Vec3d;
@@ -9,63 +8,66 @@ import net.minecraft.util.math.Vec3d;
 import java.util.HashMap;
 import java.util.Optional;
 
+
 /**
  * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- *
+ * <p>
  * Use this whenever you want to travel to a target position that may change.
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
-
-    private T _currentlyPursuing = null;
-
+    
     private final HashMap<T, Double> _heuristicMap = new HashMap<>();
-
-    protected abstract Vec3d getPos(AltoClef mod, T obj);
-    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
-    protected abstract Vec3d getOriginPos(AltoClef mod);
-    protected abstract Task getGoalTask(T obj);
-    protected abstract boolean isValid(AltoClef mod, T obj);
-
+    private T _currentlyPursuing = null;
     private boolean _wasWandering;
-
+    private Task _goalTask = null;
+    
+    protected abstract Vec3d getPos(AltoClef mod, T obj);
+    
+    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
+    
+    protected abstract Vec3d getOriginPos(AltoClef mod);
+    
+    protected abstract Task getGoalTask(T obj);
+    
+    protected abstract boolean isValid(AltoClef mod, T obj);
+    
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
     }
-
-    private Task _goalTask = null;
-
+    
     public void resetSearch() {
         _currentlyPursuing = null;
         _heuristicMap.clear();
         _goalTask = null;
     }
+    
     public boolean wasWandering() {return _wasWandering;}
-
+    
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();
         return ticksRemainingOp.orElse(Double.POSITIVE_INFINITY);
     }
-
+    
     private boolean isMovingToClosestPos(AltoClef mod) {
         return _goalTask != null;// && _goalTask.isActive() && !_goalTask.isFinished(mod);
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         _wasWandering = false;
-
+        
         // Reset our pursuit if our pursuing object no longer is pursuable.
         if (_currentlyPursuing != null && !isValid(mod, _currentlyPursuing)) {
             _currentlyPursuing = null;
             // This is probably a good idea, no?
             _heuristicMap.remove(_currentlyPursuing);
         }
-
+        
         // Get closest object
         T newClosest = getClosestTo(mod, getOriginPos(mod));
-
+        
         // Receive closest object and position
         if (newClosest != null && !newClosest.equals(_currentlyPursuing)) {
             // Different closest object
@@ -96,25 +98,25 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                 }
             }
         }
-
+        
         if (_currentlyPursuing != null) {
             _goalTask = getGoalTask(_currentlyPursuing);
             return _goalTask;
         } else {
             _goalTask = null;
         }
-
+        
         //noinspection ConstantConditions
         if (newClosest == null && _currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
             _wasWandering = true;
             return getWanderTask(mod);
         }
-
+        
         setDebugState("Waiting for calculations I think (NOT wandering)");
         return null;
     }
-
+    
     // Interface DRAFT:
     /*
      * MAKE THIS AN ABSTRACT TASK

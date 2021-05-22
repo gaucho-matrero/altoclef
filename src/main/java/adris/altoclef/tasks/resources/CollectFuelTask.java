@@ -6,23 +6,30 @@ import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 
-// TODO: Make this collect more than just coal. It should smartly pick alternative sources if coal is too far away or if we simply cannot get a wooden pick.
+
+// TODO: Make this collect more than just coal. It should smartly pick alternative sources if coal is too far away or if we simply cannot
+//  get a wooden pick.
 public class CollectFuelTask extends Task {
-
+    
     private final double _targetFuel;
-
+    
     public CollectFuelTask(double targetFuel) {
         _targetFuel = targetFuel;
     }
-
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getInventoryTracker().getTotalFuelNormal() >= _targetFuel;
+    }
+    
     @Override
     protected void onStart(AltoClef mod) {
         // Nothing
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         switch (mod.getCurrentDimension()) {
             case OVERWORLD:
                 // Just collect coal for now.
@@ -33,17 +40,17 @@ public class CollectFuelTask extends Task {
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             case NETHER:
                 setDebugState("Collecting nether wood.");
-                return TaskCatalogue.getItemTask("planks", (int)Math.ceil(_targetFuel));
+                return TaskCatalogue.getItemTask("planks", (int) Math.ceil(_targetFuel));
         }
         setDebugState("INVALID DIMENSION: " + mod.getCurrentDimension());
         return null;
     }
-
+    
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Nothing
     }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectFuelTask) {
@@ -52,12 +59,7 @@ public class CollectFuelTask extends Task {
         }
         return false;
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().getTotalFuelNormal() >= _targetFuel;
-    }
-
+    
     @Override
     protected String toDebugString() {
         return "Collect Fuel: x" + _targetFuel;

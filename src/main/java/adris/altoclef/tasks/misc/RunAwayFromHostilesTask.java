@@ -14,27 +14,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
+public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
+    
     private final double _distanceToRun;
     private final boolean _includeSkeletons;
-
+    
     public RunAwayFromHostilesTask(double distance, boolean includeSkeletons) {
         _distanceToRun = distance;
         _includeSkeletons = includeSkeletons;
     }
+    
     public RunAwayFromHostilesTask(double distance) {
         this(distance, false);
     }
-
-
+    
+    
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, _distanceToRun);
     }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof RunAwayFromHostilesTask) {
@@ -43,18 +45,18 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "NIGERUNDAYOO, SUMOOKEYY!";
     }
-
+    
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
-
+        
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
             super(mod, distance, false, 0.8);
         }
-
+        
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
             List<Entity> result;

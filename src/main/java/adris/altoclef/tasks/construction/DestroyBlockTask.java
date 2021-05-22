@@ -13,29 +13,33 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
-
+    
     private final BlockPos _pos;
-
-    private boolean _failedFirstTry;
-
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
-
-
+    private boolean _failedFirstTry;
+    
+    
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
     }
-
+    
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return WorldUtil.isAir(mod, _pos);//;
+    }
+    
     @Override
     protected void onStart(AltoClef mod) {
         startBreakBuild(mod);
         _wanderTask.resetWander();
     }
-
+    
     @Override
     protected Task onTick(AltoClef mod) {
-
+        
         // Wander and check
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             _moveChecker.reset();
@@ -53,7 +57,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                 Debug.logMessage("Switching methods of breaking, may work better.");
             }
         }
-
+        
         if (_failedFirstTry) {
             if (mod.getClientBaritone().getBuilderProcess().isActive()) {
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
@@ -65,12 +69,12 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             Debug.logMessage("Break Block: Restarting builder process");
             startBreakBuild(mod);
         }
-
+        
         setDebugState("Breaking block via baritone...");
-
+        
         return null;
     }
-
+    
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         if (!mod.inGame()) return;
@@ -79,12 +83,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         // Can lead to trouble, for example, if lava is right above the NEXT block.
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
     }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return WorldUtil.isAir(mod, _pos);//;
-    }
-
+    
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof DestroyBlockTask) {
@@ -93,12 +92,12 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         }
         return false;
     }
-
+    
     @Override
     protected String toDebugString() {
         return "Destroy block at " + _pos.toShortString();
     }
-
+    
     private void startBreakBuild(AltoClef mod) {
         mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
     }

@@ -4,18 +4,19 @@ import adris.altoclef.AltoClef;
 
 import java.util.ArrayList;
 
+
 public class TrackerManager {
-
-    private ArrayList<Tracker> _trackers = new ArrayList<>();
-
-    private AltoClef _mod;
-
+    
+    private final ArrayList<Tracker> _trackers = new ArrayList<>();
+    
+    private final AltoClef _mod;
+    
     private boolean _wasInGame = false;
-
+    
     public TrackerManager(AltoClef mod) {
         _mod = mod;
     }
-
+    
     public void tick() {
         boolean inGame = _mod.inGame();
         if (!inGame && _wasInGame) {
@@ -27,14 +28,14 @@ public class TrackerManager {
             _mod.getChunkTracker().reset(_mod);
         }
         _wasInGame = inGame;
-
-        for(Tracker tracker : _trackers) {
+        
+        for (Tracker tracker : _trackers) {
             tracker.setDirty();
         }
     }
-
+    
     public void addTracker(Tracker tracker) {
-        tracker._mod =_mod;
+        tracker._mod = _mod;
         _trackers.add(tracker);
     }
 }

@@ -10,24 +10,25 @@ import adris.altoclef.util.ItemTarget;
 import net.minecraft.entity.mob.MagmaCubeEntity;
 import net.minecraft.item.Items;
 
+
 public class CollectMagmaCreamTask extends ResourceTask {
     private final int _count;
-
+    
     public CollectMagmaCreamTask(int count) {
         super(Items.MAGMA_CREAM, count);
         _count = count;
     }
-
+    
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-
+    
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+    
     }
-
+    
     @Override
     protected Task onResourceTick(AltoClef mod) {
         /*
@@ -48,7 +49,8 @@ public class CollectMagmaCreamTask extends ResourceTask {
                     setDebugState("Killing Magma cube");
                     return new KillAndLootTask(MagmaCubeEntity.class, new ItemTarget(Items.MAGMA_CREAM));
                 }
-                int currentBlazePowderPotential = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
+                int currentBlazePowderPotential = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) +
+                                                  mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
                 if (neededCream > currentBlazePowderPotential) {
                     // Kill blazes as no magma cube was found.
                     setDebugState("Getting blaze powder");
@@ -68,21 +70,21 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 setDebugState("Going to overworld, no magma cream materials exist here.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-
+        
         setDebugState("INVALID DIMENSION??: " + mod.getCurrentDimension());
         return null;
     }
-
+    
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+    
     }
-
+    
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectMagmaCreamTask;
     }
-
+    
     @Override
     protected String toDebugStringName() {
         return "Collecting " + _count + " Magma cream.";

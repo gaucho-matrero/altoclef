@@ -3,26 +3,25 @@ package adris.altoclef.util;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.csharpisbetter.Util;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class ItemTarget {
-    private Item[] _itemMatches;
+    public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
     public int targetCount;
-
+    private Item[] _itemMatches;
     private String _catalogueName = null;
-
     private boolean _infinite = false;
-
+    
     public ItemTarget(Item[] items, int targetCount) {
         _itemMatches = items;
         this.targetCount = targetCount;
     }
-
+    
     public ItemTarget(String catalogueName, int targetCount) {
         if (catalogueName == null) return;
         _catalogueName = catalogueName;
@@ -32,36 +31,46 @@ public class ItemTarget {
             Debug.logError("Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!");
         }
     }
-
+    
     public ItemTarget(String catalogueName) {
-        this(catalogueName, 99999999); _infinite = true;
+        this(catalogueName, 99999999);
+        _infinite = true;
     }
-
+    
     public ItemTarget(Item item, int targetCount) {
-        this(new Item[] {item}, targetCount);
+        this(new Item[]{ item }, targetCount);
     }
-
+    
     public ItemTarget(Item[] items) {
         this(items, 9999999);
         _infinite = true;
     }
+    
     public ItemTarget(Item item) {
         this(item, 9999999);
         _infinite = true;
     }
-
+    
     public ItemTarget(ItemTarget toCopy) {
         _itemMatches = new Item[toCopy._itemMatches.length];
-        System.arraycopy(toCopy._itemMatches, 0, _itemMatches,  0, toCopy._itemMatches.length);
+        System.arraycopy(toCopy._itemMatches, 0, _itemMatches, 0, toCopy._itemMatches.length);
         _catalogueName = toCopy._catalogueName;
         targetCount = toCopy.targetCount;
         _infinite = toCopy._infinite;
     }
-
+    
+    public static Item[] getMatches(ItemTarget... targets) {
+        Set<Item> result = new HashSet<>();
+        for (ItemTarget target : targets) {
+            result.addAll(Arrays.asList(target.getMatches()));
+        }
+        return Util.toArray(Item.class, result);
+    }
+    
     public Item[] getMatches() {
         return _itemMatches;
     }
-
+    
     public boolean matches(Item item) {
         for (Item match : _itemMatches) {
             if (match == null) continue;
@@ -69,14 +78,15 @@ public class ItemTarget {
         }
         return false;
     }
-
+    
     public boolean isCatalogueItem() {
         return _catalogueName != null;
     }
+    
     public String getCatalogueName() {
         return _catalogueName;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ItemTarget) {
@@ -102,14 +112,10 @@ public class ItemTarget {
         }
         return false;
     }
-
-    public boolean isEmpty() {
-        return _itemMatches == null || _itemMatches.length == 0;
-    }
-
+    
     @Override
     public String toString() {
-
+        
         StringBuilder result = new StringBuilder();
         if (isEmpty()) {
             result.append("(empty)");
@@ -133,19 +139,13 @@ public class ItemTarget {
         if (!_infinite && !isEmpty()) {
             result.append(" x ").append(targetCount);
         }
-
+        
         return result.toString();
     }
-
-    public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
-
-    public static Item[] getMatches(ItemTarget... targets) {
-        Set<Item> result = new HashSet<>();
-        for (ItemTarget target : targets) {
-            result.addAll(Arrays.asList(target.getMatches()));
-        }
-        return Util.toArray(Item.class, result);
+    
+    public boolean isEmpty() {
+        return _itemMatches == null || _itemMatches.length == 0;
     }
-
-
+    
+    
 }

@@ -1,33 +1,26 @@
 package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
 
+
 public class WorldSurvivalChain extends SingleTaskChain {
-
-    private boolean _wasAvoidingDrowning;
+    
     private final Timer _wasInLavaTimer = new Timer(1);
-
+    private boolean _wasAvoidingDrowning;
+    
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);
     }
-
-    @Override
-    protected void onTaskFinish(AltoClef mod) {
-
-    }
-
+    
     @Override
     public float getPriority(AltoClef mod) {
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
-
+        
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {
             mod.getConfigState().allowWalkThroughLava(true);
@@ -37,7 +30,12 @@ public class WorldSurvivalChain extends SingleTaskChain {
         mod.getConfigState().allowWalkThroughLava(false);
         return Float.NEGATIVE_INFINITY;
     }
-
+    
+    @Override
+    public String getName() {
+        return "Misc World Survival Chain";
+    }
+    
     private void handleDrowning(AltoClef mod) {
         // Swim
         boolean avoidedDrowning = false;
@@ -59,7 +57,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
     }
-
+    
     private boolean isInLavaOhShit(AltoClef mod) {
         if (mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             _wasInLavaTimer.reset();
@@ -67,15 +65,15 @@ public class WorldSurvivalChain extends SingleTaskChain {
         }
         return mod.getPlayer().isOnFire() && !_wasInLavaTimer.elapsed();
     }
-
-    @Override
-    public String getName() {
-        return "Misc World Survival Chain";
-    }
-
+    
     @Override
     public boolean isActive() {
         // Always check for survival.
         return true;
+    }
+    
+    @Override
+    protected void onTaskFinish(AltoClef mod) {
+    
     }
 }

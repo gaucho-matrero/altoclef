@@ -5,5 +5,4 @@ package adris.altoclef.tasksystem;
  * For instance, if we're doing some parkour and a baritone task is stopped,
  * the player will fall to whatever is below them, perhaps their death.
  */
-public interface ITaskRequiresGrounded {
-}
+public interface ITaskRequiresGrounded { }

@@ -2,59 +2,48 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.misc.MLGBucketTask;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
-import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
 import adris.altoclef.util.csharpisbetter.Timer;
-import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.utils.Rotation;
-import javafx.scene.transform.Rotate;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.sql.Time;
 import java.util.Optional;
 
-public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
+public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
+    
     private final Timer _tryCollectWaterTimer = new Timer(4);
+    private final Timer _pickupRepeatTimer = new Timer(1);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
-    private final Timer _pickupRepeatTimer = new Timer(1);
-
+    
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
     }
-
-    @Override
-    protected void onTaskFinish(AltoClef mod) {
-        //_lastMLG = null;
-    }
-
+    
     @Override
     public float getPriority(AltoClef mod) {
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
         // Won't work in the nether, duh
         if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
-
+        
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
-            _lastMLG = (MLGBucketTask)_mainTask;
+            _lastMLG = (MLGBucketTask) _mainTask;
             return 100;
         } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-
+                
                 if (_lastMLG != null) {
                     BlockPos placed = _lastMLG.getWaterPlacedPos();
                     //Debug.logInternal("PLACED: " + placed);
@@ -94,18 +83,23 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         }
         return Float.NEGATIVE_INFINITY;
     }
-
+    
     @Override
     public String getName() {
         return "MLG Water Bucket Fall Chain";
     }
-
+    
     @Override
     public boolean isActive() {
         // We're always checking for mlg.
         return true;
     }
-
+    
+    @Override
+    protected void onTaskFinish(AltoClef mod) {
+        //_lastMLG = null;
+    }
+    
     public boolean isFallingOhNo(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
@@ -114,9 +108,11 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             // No bucket, no point.
             return false;
         }
-        if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
+        if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() ||
+            mod.getPlayer().isClimbing()) {
             // We're grounded.
-            //Debug.logMessage(mod.getPlayer().isSwimming() + ", " + mod.getPlayer().isSubmergedInWater() + ", " + mod.getPlayer().isOnGround() + ", " + mod.getPlayer().isClimbing());
+            //Debug.logMessage(mod.getPlayer().isSwimming() + ", " + mod.getPlayer().isSubmergedInWater() + ", " + mod.getPlayer()
+            // .isOnGround() + ", " + mod.getPlayer().isClimbing());
             return false;
         }
         double ySpeed = mod.getPlayer().getVelocity().y;
