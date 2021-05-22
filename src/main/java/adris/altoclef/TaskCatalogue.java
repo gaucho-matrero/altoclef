@@ -415,7 +415,8 @@ public class TaskCatalogue {
             {
                 String g = "gold_nugget";
                 shapedRecipe3x3("golden_carrot", Items.GOLDEN_CARROT, 1, g,g,g, g,"carrot",g, g,g,g);
-                shapedRecipe3x3("golden_apple", Items.GOLDEN_APPLE, 1, g,g,g, g,"apple",g, g,g,g);
+                String i = "gold_ingot";
+                shapedRecipe3x3("golden_apple", Items.GOLDEN_APPLE, 1, i,i,i, i,"apple",i, i,i,i);
             }
             shapedRecipe3x3("rabbit_stew", Items.RABBIT_STEW, 1, o,"cooked_rabbit",o, "carrot", "baked_potato", "mushroom", o,"bowl",o);
             {
