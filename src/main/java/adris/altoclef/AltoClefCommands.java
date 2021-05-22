@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
-@SuppressWarnings({"rawtypes"})
 public class AltoClefCommands extends CommandList {
 
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
@@ -345,6 +344,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());
+                break;
+            case "badtimetofail":
+                mod.runUserTask(new FillStrongholdPortalTask(false));
                 break;
         }
     }
