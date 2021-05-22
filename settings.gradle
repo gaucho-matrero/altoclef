@@ -1,10 +1,17 @@
 pluginManagement {
     repositories {
         jcenter()
+        mavenCentral()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
         gradlePluginPortal()
+    }
+}
+
+sourceControl {
+    gitRepository("https://gitlab.com/adrisj7/fabritone.git") {
+        producesModule("baritone:baritone")
     }
 }
