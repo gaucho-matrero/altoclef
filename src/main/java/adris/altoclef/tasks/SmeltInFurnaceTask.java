@@ -77,7 +77,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close furnace screen
-        mod.getPlayer().closeHandledScreen();
+        if (mod.inGame()) {
+            mod.getPlayer().closeHandledScreen();
+        }
     }
 
     @Override
