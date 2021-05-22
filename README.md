@@ -5,7 +5,7 @@ Powered by Baritone.
 
 A client side bot that can accomplish any Minecraft task that is relatively simple and can be split into smaller tasks. "Relatively Simple" is a vague term, so check the list of current capabilities to see examples.
 
-Video demo of automatic diamond armor collection from fresh survival world here: https://drive.google.com/file/d/1GHhY9-SYLi4S1pMNBzIZ8wmGAziMLj_v/view?usp=sharing
+Video explaining how this bot can be used to beat Minecraft: https://www.youtube.com/watch?v=q5OmcinQ2ck
 
 Butler system demo here: https://drive.google.com/file/d/1axVYYMJ5VjmVHaWlCifFHTwiXlFssOUc/view?usp=sharing
 
