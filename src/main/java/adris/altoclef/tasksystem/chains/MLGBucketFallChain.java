@@ -15,7 +15,6 @@ import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.utils.Rotation;
-import javafx.scene.transform.Rotate;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
