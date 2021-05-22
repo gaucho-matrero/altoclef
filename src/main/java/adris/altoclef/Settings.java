@@ -125,6 +125,7 @@ public class Settings {
      * <p>
      * FASTEST: All hostiles are attacked at every possible moment, every frame.
      * SMART: Closest hostile is attacked at max every 0.2 seconds.
+     * OFF: Off
      */
     private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
     

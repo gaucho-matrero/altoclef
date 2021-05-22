@@ -4,9 +4,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Items;
@@ -17,6 +19,9 @@ import net.minecraft.util.math.Direction;
 public class FillStrongholdPortalTask extends Task {
     
     private final boolean _destroySilverfishSpawner;
+    
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(3);
     
     public FillStrongholdPortalTask(boolean destroySilverfishSpawner) {
         _destroySilverfishSpawner = destroySilverfishSpawner;
@@ -40,6 +45,15 @@ public class FillStrongholdPortalTask extends Task {
     
     @Override
     protected Task onTick(AltoClef mod) {
+        
+        // If we encounter that weird back+forth bug, this might fix.
+        // Overkill, but it would REALLY suck if the run stopped here.
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _progressChecker.reset();
+            setDebugState("Wandering");
+            return _wanderTask;
+        }
+        
         if (_destroySilverfishSpawner) {
             BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
                                                                                   test -> !(WorldUtil.getSpawnerEntity(mod,
@@ -50,7 +64,12 @@ public class FillStrongholdPortalTask extends Task {
                 return new DestroyBlockTask(silverfishSpawner);
             }
         }
-        // Delay each portal so that we don't accidentally throw the eye like a dumbass
+        
+        setDebugState("Filling in Portal");
+        if (!_progressChecker.check(mod)) {
+            _progressChecker.reset();
+            return _wanderTask;
+        }
         return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
                                         pos -> new InteractItemWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
                                         pos -> mod.getBlockTracker()

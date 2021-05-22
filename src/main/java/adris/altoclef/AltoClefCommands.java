@@ -69,7 +69,6 @@ import java.util.List;
 
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
-@SuppressWarnings({ "rawtypes" })
 public class AltoClefCommands extends CommandList {
     
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
@@ -387,6 +386,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());
+                break;
+            case "badtimetofail":
+                mod.runUserTask(new FillStrongholdPortalTask(false));
                 break;
         }
     }
