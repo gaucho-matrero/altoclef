@@ -328,6 +328,12 @@ public class EntityTracker extends Tracker {
         if (isTradingPiglin(hostile)) {
             return false;
         }
+        if (hostile instanceof SpiderEntity) {
+            SpiderEntity sp = (SpiderEntity) hostile;
+            float b = sp.getBrightnessAtEyes();
+            // Will not consider spiders that stop attacking!
+            return (b < 0.5f);
+        }
         return true;
     }
 
