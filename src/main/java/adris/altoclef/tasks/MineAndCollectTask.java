@@ -226,7 +226,7 @@ public class MineAndCollectTask extends ResourceTask {
         protected Task onTick(AltoClef mod) {
             _mod = mod;
             if (_miningPos != null && !_progressChecker.check(mod)) {
-                Debug.logMessage("Failed to mine block at " + _miningPos + ". Suggesting it may be unreachable.");
+                Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
                 mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);
                 _miningPos = null;

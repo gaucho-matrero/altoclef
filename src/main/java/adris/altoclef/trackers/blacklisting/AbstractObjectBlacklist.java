@@ -37,7 +37,7 @@ public abstract class AbstractObjectBlacklist<T> {
         }
         entry.numberOfFailures ++;
         entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
-        //Debug.logMessage("TEMP: " + item.toString() +" FAIL: " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
+        Debug.logMessage("Blacklist: " + item.toString() + ": Try " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
     }
 
     protected abstract Vec3d getPos(T item);

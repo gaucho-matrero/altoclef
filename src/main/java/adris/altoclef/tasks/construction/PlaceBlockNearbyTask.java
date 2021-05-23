@@ -21,6 +21,8 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.function.Predicate;
+
 public class PlaceBlockNearbyTask extends Task {
 
     private final Block[] _toPlace;
@@ -33,8 +35,14 @@ public class PlaceBlockNearbyTask extends Task {
     private BlockPos _justPlaced; // Where we JUST placed a block.
     private BlockPos _tryPlace;   // Where we should TRY placing a block.
 
-    public PlaceBlockNearbyTask(Block ...toPlace) {
+    private final Predicate<BlockPos> _cantPlaceHere;
+
+    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block ...toPlace) {
         _toPlace = toPlace;
+        _cantPlaceHere = cantPlaceHere;
+    }
+    public PlaceBlockNearbyTask(Block ...toPlace) {
+        this(blockPos -> false, toPlace);
     }
 
     // Oof, necesarry for the onBlockPlaced action.
@@ -208,6 +216,10 @@ public class PlaceBlockNearbyTask extends Task {
             boolean inside = WorldUtil.isInsidePlayer(mod, blockPos);
             // We can't break this block.
             if ( solid && !WorldUtil.canBreak(mod, blockPos)) {
+                continue;
+            }
+            // We can't place here as defined by user.
+            if (!_cantPlaceHere.test(blockPos)) {
                 continue;
             }
             // We can't place here.
