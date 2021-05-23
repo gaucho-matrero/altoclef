@@ -155,7 +155,6 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             }
 
-
             List<Entity> toDealWith = new ArrayList<>();
 
             // TODO: I don't think this lock is necessary at all.
@@ -402,7 +401,7 @@ public class MobDefenseChain extends SingleTaskChain {
         if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             double range = SAFE_KEEP_DISTANCE - 2;
-            if (entity.squaredDistanceTo(mod.getPlayer()) < range*range) {
+            if (entity.squaredDistanceTo(mod.getPlayer()) < range*range && EntityTracker.isHostileToPlayer(mod, (HostileEntity)entity)) {
                 return entity;
             }
         }
@@ -412,7 +411,7 @@ public class MobDefenseChain extends SingleTaskChain {
             if (mod.getPlayer().getHealth() < 5) {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
                 double range = SAFE_KEEP_DISTANCE - 1;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range*range) {
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range*range && EntityTracker.isHostileToPlayer(mod, (HostileEntity)entity)) {
                     return entity;
                 }
             }
@@ -430,7 +429,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 for(HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
                         return true;
                     }
                 }

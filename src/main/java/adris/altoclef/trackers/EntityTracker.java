@@ -1,5 +1,6 @@
 package adris.altoclef.trackers;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
@@ -248,12 +249,13 @@ public class EntityTracker extends Tracker {
                         // Only run away if the hostile can see us.
                         HostileEntity hostile = (HostileEntity) entity;
 
-                        if (hostile.canSee(_mod.getPlayer())) {
+                        if (isHostileToPlayer(_mod, hostile)) {
+
                             // Check if the mob is facing us or is close enough
                             boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 26);
 
                             //Debug.logInternal("TARGET: " + hostile.is);
-                            if (closeEnough && isAngryAtPlayer(hostile)) {
+                            if (closeEnough) {
                                 _hostiles.add(hostile);
                             }
                         }
@@ -291,6 +293,11 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
+    }
+
+
+    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
+        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
     }
 
     /**
