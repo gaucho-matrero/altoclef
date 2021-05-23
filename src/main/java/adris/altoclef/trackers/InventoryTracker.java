@@ -202,6 +202,22 @@ public class InventoryTracker extends Tracker {
                     total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
+
+            // Add fuel from crafting table/output
+            ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
+            if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
+                boolean bigCrafting = (screen instanceof CraftingScreenHandler);
+                for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                    Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                    ItemStack stack = getItemStackInSlot(craftSlot);
+                    total += getFuelAmount(stack.getItem()) * stack.getCount();
+                }
+                // Also check output slot
+                Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+                ItemStack stack = getItemStackInSlot(outputSlot);
+                total += getFuelAmount(stack.getItem()) * stack.getCount();
+            }
+
             return total;
         }
     }

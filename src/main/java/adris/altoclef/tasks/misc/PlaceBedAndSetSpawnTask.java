@@ -11,21 +11,24 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SleepingChatScreen;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
@@ -149,6 +152,21 @@ public class PlaceBedAndSetSpawnTask extends Task {
             setDebugState("Going to bed to sleep...");
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), toSleepIn -> {
                 boolean closeEnough = toSleepIn.isWithinDistance(mod.getPlayer().getPos(), 3);
+                if (closeEnough) {
+                    // why 0.2? I'm tired.
+                    Vec3d centerBed = new Vec3d(toSleepIn.getX() + 0.5, toSleepIn.getY() + 0.2, toSleepIn.getZ() + 0.5);
+                    BlockHitResult hit = LookUtil.raycast(mod.getPlayer(), centerBed, 6);
+                    // TODO: Kinda ugly, but I'm tired and fixing for the 2nd attempt speedrun so I will fix this block later
+                    closeEnough = false;
+                    if (hit.getType() != HitResult.Type.MISS) {
+                        // At this point, if we miss, we probably are close enough.
+                        BlockPos p = hit.getBlockPos();
+                        if (Util.arrayContains(Util.itemsToBlocks(ItemUtil.BED), mod.getWorld().getBlockState(p).getBlock())) {
+                            // We have a bed!
+                            closeEnough = true;
+                        }
+                    }
+                }
                 BlockPos targetMove = toSleepIn;
                 if (!closeEnough) {
                     try {
