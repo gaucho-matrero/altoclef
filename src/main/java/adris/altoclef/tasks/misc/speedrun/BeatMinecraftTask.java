@@ -119,7 +119,7 @@ public class BeatMinecraftTask extends Task {
         // Don't break blocks around our bed, can lead to problems.
         mod.getConfigState().avoidBlockBreaking(pos -> {
             if (_endBedSpawnPos != null) {
-                return _endBedSpawnPos.isWithinDistance(pos, 4);
+                return _endBedSpawnPos.isWithinDistance(pos, 2);
             }
             return false;
         });
@@ -436,9 +436,39 @@ public class BeatMinecraftTask extends Task {
 
     // Kinda jank ngl
     private final Task _collectBuildMaterialsTask = PlaceBlockTask.getMaterialTask(100);
+
+    // Code duplication below, kinda bad but I'm in a hurry lol
+    private boolean needToGetMaterialsBeforeEnd(AltoClef mod) {
+        return !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) || !mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET);
+    }
+    private Task getMaterialsBeforeEndTask(AltoClef mod) {
+        List<ItemTarget> toGet = new ArrayList<>();
+        if (!mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD)) {
+            toGet.add(new ItemTarget("iron_sword", 1));
+        }
+        if (!mod.getInventoryTracker().hasItem(Items.BUCKET, Items.WATER_BUCKET)) {
+            toGet.add(new ItemTarget("bucket", 1));
+        }
+        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON)) {
+            toGet.add(new ItemTarget("iron_pickaxe", 1));
+        }
+        if (toGet.size() != 0) {
+            return TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, toGet));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
+        }
+        // Collect water if we don't have it.
+        if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            return TaskCatalogue.getItemTask("water_bucket", 1);
+        }
+        return null;
+    }
+
     private Task foundPortalGetToEndTask(AltoClef mod) {
 
-        // PLACE SPAWNPOINT if we don't have one.
+        // Make sure we have some TOOLS for navigation in end.
+        if (needToGetMaterialsBeforeEnd(mod)) {
+            setDebugState("Getting supplies before going to end");
+            return getMaterialsBeforeEndTask(mod);
+        }
 
         if (_endBedSpawnPos != null) {
             if (mod.getChunkTracker().isChunkLoaded(_endBedSpawnPos)) {
@@ -472,29 +502,6 @@ public class BeatMinecraftTask extends Task {
                 return _placeBedSpawnTask;
             }
         } else {
-
-            // Make sure we have an IRON pick at least.
-            if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) || !mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(Items.BUCKET, Items.WATER_BUCKET)) {
-                setDebugState("Getting supplies before going to end");
-                List<ItemTarget> toGet = new ArrayList<>();
-                if (!mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD)) {
-                    toGet.add(new ItemTarget("iron_sword", 1));
-                }
-                if (!mod.getInventoryTracker().hasItem(Items.BUCKET, Items.WATER_BUCKET)) {
-                    toGet.add(new ItemTarget("bucket", 1));
-                }
-                if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON)) {
-                    toGet.add(new ItemTarget("iron_pickaxe", 1));
-                }
-                if (toGet.size() != 0) {
-                    return TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, toGet));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
-                }
-            }
-            // Collect water if we don't have it.
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
-            }
-
             // Make sure we have BUILDING supplies.
             int MINIMUM_BUILDING_BLOCKS = 32;
             if (mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK) < MINIMUM_BUILDING_BLOCKS && _collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod)) {
@@ -529,12 +536,14 @@ public class BeatMinecraftTask extends Task {
 
     public static boolean diamondArmorEquipped(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
+            //noinspection ConstantConditions
             if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
         }
         return true;
     }
     public static boolean hasDiamondArmor(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
+            //noinspection ConstantConditions
             Item item = TaskCatalogue.getItemMatches(armor)[0];
             if (mod.getInventoryTracker().isArmorEquipped(item)) continue;
             if (!mod.getInventoryTracker().hasItem(item)) return false;

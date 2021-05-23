@@ -2,13 +2,17 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.misc.EquipArmorTask;
+import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.utils.Rotation;
@@ -16,6 +20,7 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -24,11 +29,15 @@ import net.minecraft.entity.boss.dragon.phase.Phase;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Here we go
@@ -48,6 +57,8 @@ public class KillEnderDragonTask extends Task {
 
     private BlockPos _exitPortalTop;
 
+    private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
@@ -64,6 +75,37 @@ public class KillEnderDragonTask extends Task {
             _exitPortalTop = locateExitPortalTop(mod);
         }
 
+        // Collect the following if dropped:
+        // - Diamond Sword
+        // - Diamond Armor
+        // - Food (List)
+
+        List<Item> toPickUp = new ArrayList<>(Arrays.asList(Items.DIAMOND_SWORD, Items.DIAMOND_BOOTS, Items.DIAMOND_LEGGINGS, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_HELMET));
+        if (mod.getInventoryTracker().totalFoodScore() < 10) {
+            toPickUp.addAll(Arrays.asList(
+                    Items.BREAD, Items.COOKED_BEEF, Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_RABBIT, Items.COOKED_PORKCHOP
+            ));
+        }
+
+        Task pickupDrops = getPickupTaskIfAny(mod, Util.toArray(Item.class, toPickUp));
+        if (pickupDrops != null) {
+            setDebugState("Picking up drops in end.");
+            return pickupDrops;
+        }
+
+        // If not equipped diamond armor and we have any, equip it.
+        for (String armor : DIAMOND_ARMORS) {
+            try {
+                if (mod.getInventoryTracker().hasItem(armor) && !mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) {
+                    setDebugState("Equipping " + armor);
+                    return new EquipArmorTask(armor);
+                }
+            } catch (NullPointerException e) {
+                // Should never happen.
+                Debug.logError("NullpointerException that Should never happen.");
+                e.printStackTrace();
+            }
+        }
 
         if (!isRailingOnDragon() && _lookDownTimer.elapsed()) {
             if (mod.getPlayer().isOnGround()) {
@@ -162,6 +204,7 @@ public class KillEnderDragonTask extends Task {
         private final Timer _hitHoldTimer = new Timer(0.1);
         private final Timer _hitResetTimer = new Timer(2);
 
+        private final Timer _randomWanderChangeTimeout = new Timer(20);
         /*
         private final Timer _dragonPerchChecker = new Timer(3);
         private static final double DRAGON_PERCH_ORBIT_RADIUS = 10;
@@ -195,8 +238,11 @@ public class KillEnderDragonTask extends Task {
                     _wasReleased = true;
                 }
             }
-            if (_hitResetTimer.elapsed() || mod.getPlayer().getAttackCooldownProgress(0) > 0.99) {
+            if (_wasHitting && _hitResetTimer.elapsed() || mod.getPlayer().getAttackCooldownProgress(0) > 0.99) {
                 _wasHitting = false;
+                // Code duplication maybe?
+                mod.getControllerExtras().mouseClickOverride(0, false);
+                mod.getExtraBaritoneSettings().setInteractionPaused(false);
             }
         }
         private void stopHitting(AltoClef mod) {
@@ -260,6 +306,7 @@ public class KillEnderDragonTask extends Task {
                         Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
                         mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
                         // Also look towards da dragon
+                        MinecraftClient.getInstance().options.autoJump = false;
                         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                         hit(mod);
                     } else {
@@ -305,8 +352,13 @@ public class KillEnderDragonTask extends Task {
                     if (_randomWanderPos != null && mod.getPlayer().getBlockPos().isWithinDistance(_randomWanderPos, 2)) {
                         _randomWanderPos = null;
                     }
+                    if (_randomWanderPos != null && _randomWanderChangeTimeout.elapsed()) {
+                        _randomWanderPos = null;
+                        Debug.logMessage("Reset wander pos after timeout, oof");
+                    }
                     if (_randomWanderPos == null) {
                         _randomWanderPos = getRandomWanderPos(mod);
+                        _randomWanderChangeTimeout.reset();
                         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                     }
                     if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
@@ -325,6 +377,7 @@ public class KillEnderDragonTask extends Task {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
             mod.getControllerExtras().mouseClickOverride(0, false);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
 
         @Override
@@ -338,7 +391,7 @@ public class KillEnderDragonTask extends Task {
         }
 
         private BlockPos getRandomWanderPos(AltoClef mod) {
-            double RADIUS_RANGE = 60;
+            double RADIUS_RANGE = 45;
             double MIN_RADIUS = 7;
             BlockPos pos = null;
             int allowed = 5000;
@@ -398,5 +451,14 @@ public class KillEnderDragonTask extends Task {
                 return _breathCostMap.getOrDefault(pos, 0.0);
             }
         }
+    }
+
+    private static Task getPickupTaskIfAny(AltoClef mod, Item...itemsToPickup) {
+        for (Item check : itemsToPickup) {
+            if (mod.getEntityTracker().itemDropped(check)) {
+                return new PickupDroppedItemTask(new ItemTarget(check), true);
+            }
+        }
+        return null;
     }
 }

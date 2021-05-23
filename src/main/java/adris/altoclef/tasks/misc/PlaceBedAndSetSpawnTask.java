@@ -151,9 +151,13 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 boolean closeEnough = toSleepIn.isWithinDistance(mod.getPlayer().getPos(), 3);
                 BlockPos targetMove = toSleepIn;
                 if (!closeEnough) {
-                    Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
-                    Direction side = face.rotateYClockwise();
-                    targetMove = toSleepIn.offset(side);
+                    try {
+                        Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
+                        Direction side = face.rotateYClockwise();
+                        targetMove = toSleepIn.offset(side);
+                    } catch (IllegalArgumentException e) {
+                        // If bed is not loaded, this will happen. In that case just get to the bed first.
+                    }
                 } else {
                     _inBedTimer.reset();
                 }

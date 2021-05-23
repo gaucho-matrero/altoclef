@@ -275,7 +275,7 @@ public class TaskCatalogue {
 
 
             // FURNITURE
-            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p);
+            shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p).dontMineIfPresent();
             simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
             woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate, (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));
             shapedRecipe2x2("wooden_button", ItemUtil.WOOD_BUTTON, 1, p, o, o, o);
