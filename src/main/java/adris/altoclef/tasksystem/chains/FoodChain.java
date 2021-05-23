@@ -177,6 +177,10 @@ public class FoodChain extends SingleTaskChain {
                 }
                 int fill = f.getHunger();
                 int diff = Math.abs(fill - foodToFill);
+                if (stack.getItem() == Items.ROTTEN_FLESH) {
+                    // Eat rotten flesh only if it's the only thing we have.
+                    diff = 99999; // hmm feels kinda bad but it should work
+                }
                 if (diff < bestDifference) {
                     bestDifference = diff;
                     bestItem = stack.getItem();
