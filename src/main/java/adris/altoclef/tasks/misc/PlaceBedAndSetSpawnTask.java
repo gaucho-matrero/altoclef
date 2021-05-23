@@ -17,6 +17,7 @@ import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -57,6 +58,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     private final Timer _inBedTimer = new Timer(1);
 
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+
     @Override
     protected void onStart(AltoClef mod) {
         _currentBedRegion = null;
@@ -80,7 +84,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                     if (base.equals(pos)) return true;
                 }
             }
-            // Don't ever break beds.
+            // Don't ever break beds. If one exists, we will sleep in it.
             if (mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock) return true;
             return false;
         });
@@ -118,6 +122,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
 
         if (mod.getPlayer().isSleeping()) {
+            _progressChecker.reset();
             setDebugState("Sleeping...");
             // Click "leave bed" immediately.
 
@@ -155,6 +160,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 // Keep track of where our spawn point is
                 _bedForSpawnPoint = WorldUtil.getBedHead(mod, toSleepIn);
                 //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
+                _progressChecker.reset();
                 return new GetToBlockTask(targetMove, closeEnough);
             }, pos -> mod.getBlockTracker().getNearestTracking(pos, BEDS), BEDS);
         }
@@ -226,9 +232,16 @@ public class PlaceBedAndSetSpawnTask extends Task {
         BlockPos toPlace = _currentBedRegion.add(BED_PLACE_POS);
         if (mod.getWorld().getBlockState(toPlace.offset(BED_PLACE_DIRECTION)).getBlock() instanceof BedBlock) {
             setDebugState("Waiting to rescan + find bed that we just placed. Should be almost instant.");
+            _progressChecker.reset();
             return null;
         }
         setDebugState("Placing bed...");
+
+        setDebugState("Filling in Portal");
+        if (!_progressChecker.check(mod)) {
+            _progressChecker.reset();
+            return _wanderTask;
+        }
         return new InteractItemWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 
@@ -278,7 +291,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private final ActionListener<String> onOverlayMessage = new ActionListener<String>() {
         @Override
         public void invoke(String value) {
-            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night"};
+            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
             for (String checkMessage : NEUTRAL_MESSAGES) {
                 if (value.contains(checkMessage)) {
                     if (!_sleepAttemptMade) {
