@@ -1,39 +1,41 @@
 package adris.altoclef.util.progresscheck;
 
+
 /**
  * A progress checker that can fail a few times before it "actually" fails.
  */
 public class ProgressCheckerRetry<T> implements IProgressChecker<T> {
     
-    private final IProgressChecker<T> _subChecker;
-    private final int _allowedAttempts;
+    private final IProgressChecker<T> delegate;
+    private final int allowedAttempts;
     
-    private int _failCount;
+    private int failCount;
     
-    public ProgressCheckerRetry(IProgressChecker<T> subChecker, int allowedAttempts) {
-        _subChecker = subChecker;
-        _allowedAttempts = allowedAttempts;
+    @SuppressWarnings("BoundedWildcard")
+    public ProgressCheckerRetry(IProgressChecker<T> delegate, int allowedAttempts) {
+        this.delegate = delegate;
+        this.allowedAttempts = allowedAttempts;
     }
     
     @Override
     public void setProgress(T progress) {
-        _subChecker.setProgress(progress);
+        delegate.setProgress(progress);
         
-        // If our subchecker fails, retry with an updated fail counter.
-        if (_subChecker.failed()) {
-            _failCount++;
-            _subChecker.reset();
+        // If our delegate checker fails, retry with an updated fail counter.
+        if (delegate.failed()) {
+            failCount++;
+            delegate.reset();
         }
     }
     
     @Override
     public boolean failed() {
-        return _failCount >= _allowedAttempts;
+        return failCount >= allowedAttempts;
     }
     
     @Override
     public void reset() {
-        _subChecker.reset();
-        _failCount = 0;
+        delegate.reset();
+        failCount = 0;
     }
 }

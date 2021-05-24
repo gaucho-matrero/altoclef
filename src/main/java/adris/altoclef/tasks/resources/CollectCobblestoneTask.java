@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
@@ -10,12 +11,11 @@ import net.minecraft.item.Items;
 
 
 public class CollectCobblestoneTask extends ResourceTask {
-    
-    private final int _count;
+    private final int count;
     
     public CollectCobblestoneTask(int targetCount) {
         super(Items.COBBLESTONE, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
     
     @Override
@@ -44,7 +44,7 @@ public class CollectCobblestoneTask extends ResourceTask {
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CollectCobblestoneTask) {
             CollectCobblestoneTask other = (CollectCobblestoneTask) obj;
-            return other._count == _count;
+            return other.count == count;
         }
         return false;
     }

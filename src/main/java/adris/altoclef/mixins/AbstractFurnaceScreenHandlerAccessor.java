@@ -1,5 +1,6 @@
 package adris.altoclef.mixins;
 
+
 import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.PropertyDelegate;
 import org.spongepowered.asm.mixin.Mixin;

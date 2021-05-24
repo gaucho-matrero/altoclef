@@ -1,5 +1,6 @@
 package adris.altoclef.butler;
 
+
 import adris.altoclef.Debug;
 
 import java.io.File;
@@ -12,8 +13,7 @@ import java.util.Scanner;
 
 
 public class UserListFile {
-    
-    private final HashSet<String> _users = new HashSet<>();
+    private final HashSet<String> users = new HashSet<>();
     
     public static UserListFile load(String path) {
         UserListFile result = new UserListFile();
@@ -32,7 +32,7 @@ public class UserListFile {
             while (sc.hasNextLine()) {
                 String line = trimComment(sc.nextLine()).trim();
                 if (line.length() == 0) continue;
-                result._users.add(line);
+                result.users.add(line);
             }
             sc.close();
         } catch (IOException e) {
@@ -71,6 +71,6 @@ public class UserListFile {
     }
     
     public boolean containsUser(String username) {
-        return _users.contains(username);
+        return users.contains(username);
     }
 }

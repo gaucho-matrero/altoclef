@@ -1,5 +1,6 @@
 package adris.altoclef.ui;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
@@ -25,7 +26,7 @@ public class CommandStatusOverlay {
     }
     
     private void drawTaskChain(TextRenderer renderer, MatrixStack stack, float dx, float dy, int color, int maxLines, List<Task> tasks) {
-        if (tasks.size() == 0) {
+        if (tasks.isEmpty()) {
             renderer.draw(stack, " (no task running) ", dx, dy, color);
         } else {
             float fontHeight = renderer.fontHeight;

@@ -1,11 +1,12 @@
 package adris.altoclef.tasksystem.chains;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.Input;
+import adris.altoclef.util.InputUtil;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.Stopwatch;
 import org.lwjgl.glfw.GLFW;
@@ -17,10 +18,9 @@ import java.util.function.Consumer;
 // This basically replaces our old Task Runner.
 @SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
-    
     public final Action<String> onTaskFinish = new Action<>();
-    private final Stopwatch _taskStopwatch = new Stopwatch();
-    private Consumer _currentOnFinish = null;
+    private final Stopwatch taskStopwatch = new Stopwatch();
+    private Consumer currentOnFinish = null;
     
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -66,22 +66,22 @@ public class UserTaskChain extends SingleTaskChain {
             // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
-        double seconds = _taskStopwatch.time();
+        double seconds = taskStopwatch.time();
         Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
-        if (_currentOnFinish != null) {
+        if (currentOnFinish != null) {
             //noinspection unchecked
-            _currentOnFinish.accept(null);
+            currentOnFinish.accept(null);
         }
-        _currentOnFinish = null;
-        onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
-        _mainTask = null;
+        currentOnFinish = null;
+        onTaskFinish.invoke(String.format("Took %.2f seconds", taskStopwatch.time()));
+        mainTask = null;
         if (shouldIdle) {
             mod.runUserTask(new IdleTask());
         }
     }
     
     public void cancel(AltoClef mod) {
-        if (_mainTask != null && _mainTask.isActive()) {
+        if (mainTask != null && mainTask.isActive()) {
             stop(mod);
             onTaskFinish(mod);
         }
@@ -90,10 +90,10 @@ public class UserTaskChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
         // Stop shortcut
-        if (_mainTask != null && _mainTask.isActive() && Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && Input.isKeyPressed(
+        if (mainTask != null && mainTask.isActive() && InputUtil.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputUtil.isKeyPressed(
                 GLFW.GLFW_KEY_K)) {
             // Ignore if we're idling as a background task.
-            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
+            if (mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
                 return 50;
             }
             Debug.logMessage("(stop shortcut sent)");
@@ -108,10 +108,10 @@ public class UserTaskChain extends SingleTaskChain {
     }
     
     public void runTask(AltoClef mod, Task task, Consumer onFinish) {
-        _currentOnFinish = onFinish;
+        currentOnFinish = onFinish;
         Debug.logMessage("User Task Set: " + task.toString());
         mod.getTaskRunner().enable();
-        _taskStopwatch.begin();
+        taskStopwatch.begin();
         setTask(task);
     }
 }

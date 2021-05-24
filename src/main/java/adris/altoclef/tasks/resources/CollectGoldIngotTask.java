@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -17,12 +18,11 @@ import net.minecraft.item.Items;
 
 
 public class CollectGoldIngotTask extends ResourceTask {
-    
-    private final int _count;
+    private final int count;
     
     public CollectGoldIngotTask(int count) {
         super(Items.GOLD_INGOT, count);
-        _count = count;
+        this.count = count;
     }
     
     @Override
@@ -38,20 +38,20 @@ public class CollectGoldIngotTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.OVERWORLD) {
-            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, _count), new ItemTarget("gold_ore", _count)));
+            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, count), new ItemTarget("gold_ore", count)));
         } else if (mod.getCurrentDimension() == Dimension.NETHER) {
             // If we have enough nuggets, craft them.
             int nuggs = mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_NUGGET);
-            int nuggs_needed = _count * 9 - mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_INGOT) * 9;
+            int nuggs_needed = count * 9 - mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_INGOT) * 9;
             if (nuggs >= nuggs_needed) {
                 ItemTarget n = new ItemTarget(Items.GOLD_NUGGET);
                 CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("gold_ingot", new ItemTarget[]{
                         n, n, n, n, n, n, n, n, n
                 }, 1);
-                return new CraftInTableTask(Items.GOLD_INGOT, _count, recipe);
+                return new CraftInTableTask(Items.GOLD_INGOT, count, recipe);
             }
             // Mine nuggets
-            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count * 9), new Block[]{ Blocks.NETHER_GOLD_ORE },
+            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, count * 9), new Block[]{ Blocks.NETHER_GOLD_ORE },
                                           MiningRequirement.WOOD);
         }
         return null;
@@ -64,11 +64,11 @@ public class CollectGoldIngotTask extends ResourceTask {
     
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj)._count == _count;
+        return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj).count == count;
     }
     
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " gold.";
+        return "Collecting " + count + " gold.";
     }
 }

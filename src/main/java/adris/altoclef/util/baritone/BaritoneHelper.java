@@ -1,12 +1,16 @@
 package adris.altoclef.util.baritone;
 
+
 import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.util.math.Vec3d;
 
 
-public class BaritoneHelper {
+public final class BaritoneHelper {
     
     public static final Object MINECRAFT_LOCK = new Object();
+    
+    private BaritoneHelper() {
+    }
     
     public static double calculateGenericHeuristic(Vec3d start, Vec3d target) {
         return calculateGenericHeuristic(start.x, start.y, start.z, target.x, target.y, target.z);

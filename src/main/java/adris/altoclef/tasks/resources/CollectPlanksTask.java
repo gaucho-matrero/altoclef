@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -15,12 +16,11 @@ import java.util.ArrayList;
 
 
 public class CollectPlanksTask extends CraftInInventoryTask {
-    
-    private final Item[] _logs;
+    private final Item[] logs;
     
     public CollectPlanksTask(Item[] planks, Item[] logs, int count) {
         super(new ItemTarget(planks, count), generatePlankRecipe(logs));
-        _logs = logs;
+        this.logs = logs;
     }
     
     public CollectPlanksTask(int count) {
@@ -45,7 +45,7 @@ public class CollectPlanksTask extends CraftInInventoryTask {
     protected Task collectRecipeSubTask(AltoClef mod) {
         // Collect planks and logs
         ArrayList<ItemTarget> blocksTomine = new ArrayList<>(2);
-        blocksTomine.add(new ItemTarget(_logs));
+        blocksTomine.add(new ItemTarget(logs));
         // Ignore planks if we're told to.
         if (!mod.getConfigState().exclusivelyMineLogs()) {
             //blocksTomine.add(new ItemTarget(ItemUtil.PLANKS));

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.chest;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.ResourceTask;
@@ -15,30 +16,28 @@ import net.minecraft.util.math.BlockPos;
 
 
 public class PickupFromChestTask extends AbstractDoInChestTask {
-    
-    private final ItemTarget[] _targets;
-    private final Timer _actionTimer = new Timer(0);
-    
-    private final BlockPos _targetChest;
+    private final ItemTarget[] targets;
+    private final Timer actionTimer = new Timer(0);
+    private final BlockPos targetChest;
     
     public PickupFromChestTask(BlockPos targetChest, ItemTarget... targets) {
         super(targetChest);
-        _targets = targets;
-        _targetChest = targetChest;
+        this.targets = targets;
+        this.targetChest = targetChest;
     }
     
     @Override
     protected Task doToOpenChestTask(AltoClef mod, GenericContainerScreenHandler handler) {
-        _actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
-        if (_actionTimer.elapsed()) {
-            _actionTimer.reset();
+        actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
+        if (actionTimer.elapsed()) {
+            actionTimer.reset();
             
-            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_targetChest);
+            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(targetChest);
             if (data == null) {
-                Debug.logWarning("Failed to find valid chest at " + _targetChest + ", hopefully this is handled up the chain!!!");
+                Debug.logWarning("Failed to find valid chest at " + targetChest + ", hopefully this is handled up the chain!!!");
                 return null;
             }
-            for (ItemTarget target : _targets) {
+            for (ItemTarget target : targets) {
                 if (!mod.getInventoryTracker().targetMet(target)) {
                     for (Item mightMove : target.getMatches()) {
                         // Pick up all items that might fit our criteria.
@@ -63,13 +62,13 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
     protected boolean isSubEqual(AbstractDoInChestTask obj) {
         if (obj instanceof PickupFromChestTask) {
             PickupFromChestTask task = (PickupFromChestTask) obj;
-            return Util.arraysEqual(task._targets, _targets);
+            return Util.arraysEqual(task.targets, targets);
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Picking up from chest: " + Util.arrayToString(_targets);
+        return "Picking up from chest: " + Util.arrayToString(targets);
     }
 }

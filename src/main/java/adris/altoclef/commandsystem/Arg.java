@@ -1,34 +1,35 @@
 package adris.altoclef.commandsystem;
 
+
 import java.util.HashMap;
 
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class Arg<T> extends ArgBase {
-    public T Default;
-    private final Class<T> _tType;
-    private boolean _isArray = false;
-    private HashMap<String, T> _enumValues = null;
-    private String _name = "";
-    private boolean _showDefault;
+    private final Class<T> tType;
+    public T defaultValue;
+    private boolean isArray;
+    private HashMap<String, T> enumValues;
+    private String name = "";
+    private boolean showDefault;
     
     // Regular Constructor
     public Arg(Class<T> type, String name) throws CommandException {
-        _name = name;
+        this.name = name;
         // I really hate java
-        _tType = type;
+        tType = type;
         
-        _showDefault = true;
-        _hasDefault = false;
+        showDefault = true;
+        hasDefault = false;
         // If enum, take action.
-        if (_tType.isEnum()) {
-            _enumValues = new HashMap<String, T>();
-            for (T v : _tType.getEnumConstants()) {
-                _enumValues.put(v.toString().toLowerCase(), v);
+        if (tType.isEnum()) {
+            enumValues = new HashMap<String, T>();
+            for (T v : tType.getEnumConstants()) {
+                enumValues.put(v.toString().toLowerCase(), v);
             }
         } else {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!IsInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
+            if (!IsInstancesOf(tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
                 throw new CommandException(
                         "Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented " +
                         "intentionally or by accident somehow.");
@@ -39,21 +40,23 @@ public class Arg<T> extends ArgBase {
     // Constructor with default value
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
         this(type, name);
-        _hasDefault = true;
-        Default = defaultValue;
-        _minArgCountToUseDefault = minArgCountToUseDefault;
-        _showDefault = showDefault;
+        hasDefault = true;
+        this.defaultValue = defaultValue;
+        this.minArgCountToUseDefault = minArgCountToUseDefault;
+        this.showDefault = showDefault;
     }
     
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
         this(type, name, defaultValue, minArgCountToUseDefault, true);
     }
     
-    private boolean isEnum() { return _enumValues != null; }
+    private boolean isEnum() {
+        return enumValues != null;
+    }
     
     // Horrendous chain syntax that I'm only using here.
     public Arg<T> AsArray() {
-        _isArray = true;
+        isArray = true;
         return this;
     }
     
@@ -81,16 +84,16 @@ public class Arg<T> extends ArgBase {
         // If enum, check from our cached enum dictionary.
         if (isEnum()) {
             unit = unit.toLowerCase();
-            if (!_enumValues.containsKey(unit)) {
+            if (!enumValues.containsKey(unit)) {
                 StringBuilder res = new StringBuilder();
-                for (String type : _enumValues.keySet()) {
+                for (String type : enumValues.keySet()) {
                     res.append(type);
                     res.append("|");
                 }
                 res.delete(res.length() - 1, res.length()); // Remove the last "|"
                 throw new CommandException("Invalid argument found: {unit}. Accepted values are: {res}");
             }
-            return GetConverted(vType, _enumValues.get(unit));
+            return GetConverted(vType, enumValues.get(unit));
         }
         
         // Do number parsing.
@@ -182,13 +185,13 @@ public class Arg<T> extends ArgBase {
     
     @Override
     public Object ParseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
-        return ParseUnitUtil(_tType, unit, unitPlusRemainder);
+        return ParseUnitUtil(tType, unit, unitPlusRemainder);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     public <V> V GetDefault(Class<V> vType) {
-        return GetConverted(vType, Default);
+        return GetConverted(vType, defaultValue);
     }
     
     /// <summary>
@@ -200,18 +203,18 @@ public class Arg<T> extends ArgBase {
     @Override
     public String GetHelpRepresentation() {
         if (hasDefault()) {
-            if (_showDefault) {
-                return "<" + _name + "=" + Default + ">";
+            if (showDefault) {
+                return "<" + name + "=" + defaultValue + ">";
             }
-            return "<" + _name + ">";
+            return "<" + name + ">";
         }
-        return "[" + _name + "]";
+        return "[" + name + "]";
     }
     
     // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
     @Override
     public boolean isArray() {
-        return _isArray;
+        return isArray;
     }
     
     public boolean CheckValidUnit(String arg, StringBuilder errorMsg) {

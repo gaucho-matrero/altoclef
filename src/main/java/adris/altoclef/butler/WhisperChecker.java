@@ -1,5 +1,6 @@
 package adris.altoclef.butler;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.csharpisbetter.Timer;
@@ -15,10 +16,8 @@ import java.util.regex.Pattern;
 
 
 public class WhisperChecker {
-    
-    private static final Timer _repeatTimer = new Timer(0.1);
-    
-    private static final String _lastMessage = null;
+    private static final Timer REPEAT_TIMER = new Timer(0.1);
+    private static final String LAST_MESSAGE = null;
 
     /*
     public WhisperChecker() {
@@ -92,9 +91,9 @@ public class WhisperChecker {
         String foundMiddlePart = "";
         int index = -1;
         
-        boolean duplicate = (msg.equals(_lastMessage));
-        if (duplicate && !_repeatTimer.elapsed()) {
-            _repeatTimer.reset();
+        boolean duplicate = (msg.equals(LAST_MESSAGE));
+        if (duplicate && !REPEAT_TIMER.elapsed()) {
+            REPEAT_TIMER.reset();
             // It's probably an actual duplicate. IDK why we get those but yeah.
             return null;
         }
@@ -113,7 +112,7 @@ public class WhisperChecker {
         return null;
     }
     
-
+    
     public static class MessageResult {
         public String from;
         public String message;

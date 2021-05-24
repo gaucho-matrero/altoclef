@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
@@ -10,17 +11,16 @@ import adris.altoclef.util.slots.Slot;
 
 
 public class CraftInInventoryTask extends ResourceTask {
-    
-    private final CraftingRecipe _recipe;
-    private final boolean _collect;
-    private final boolean _ignoreUncataloguedSlots;
-    private boolean _fullCheckFailed = false;
+    private final CraftingRecipe recipe;
+    private final boolean collect;
+    private final boolean ignoreUncataloguedSlots;
+    private boolean fullCheckSucceeded = true;
     
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
-        _recipe = recipe;
-        _collect = collect;
-        _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
+        this.recipe = recipe;
+        this.collect = collect;
+        this.ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
     
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
@@ -34,13 +34,13 @@ public class CraftInInventoryTask extends ResourceTask {
     
     @Override
     protected void onResourceStart(AltoClef mod) {
-        _fullCheckFailed = false;
+        fullCheckSucceeded = true;
     }
     
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        ItemTarget toGet = _itemTargets[0];
-        if (_collect && !mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe))) {
+        ItemTarget toGet = itemTargets[0];
+        if (collect && !mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, recipe))) {
             // Collect recipe materials
             setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
@@ -54,15 +54,15 @@ public class CraftInInventoryTask extends ResourceTask {
                 // Equip then throw
                 mod.getInventoryTracker().throwSlot(toThrow);
             } else {
-                if (!_fullCheckFailed) {
+                if (fullCheckSucceeded) {
                     Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
                 }
-                _fullCheckFailed = true;
+                fullCheckSucceeded = false;
             }
         }
         
         setDebugState("Crafting in inventory... for " + toGet);
-        return new CraftGenericTask(_recipe);
+        return new CraftGenericTask(recipe);
         //craftInstant(mod, _recipe);
     }
     
@@ -75,7 +75,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CraftInInventoryTask) {
             CraftInInventoryTask t = (CraftInInventoryTask) other;
-            if (!t._recipe.equals(_recipe)) return false;
+            if (!t.recipe.equals(recipe)) return false;
             return isCraftingEqual(t);
         }
         return false;
@@ -83,12 +83,12 @@ public class CraftInInventoryTask extends ResourceTask {
     
     @Override
     protected String toDebugStringName() {
-        return toCraftingDebugStringName() + " " + _recipe;
+        return toCraftingDebugStringName() + " " + recipe;
     }
     
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-        return new CollectRecipeCataloguedResourcesTask(_ignoreUncataloguedSlots, new RecipeTarget(_itemTargets[0], _recipe));
+        return new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, new RecipeTarget(itemTargets[0], recipe));
     }
     
     protected String toCraftingDebugStringName() {

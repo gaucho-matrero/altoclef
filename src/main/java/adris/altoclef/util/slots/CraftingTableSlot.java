@@ -1,5 +1,6 @@
 package adris.altoclef.util.slots;
 
+
 public class CraftingTableSlot extends Slot {
     public static final CraftingTableSlot OUTPUT_SLOT = new CraftingTableSlot(0);
     
@@ -16,6 +17,7 @@ public class CraftingTableSlot extends Slot {
     }
     
     public static CraftingTableSlot getInputSlot(int index, boolean big) {
+        //noinspection AssignmentToMethodParameter
         index += 1;
         if (big) {
             // Default

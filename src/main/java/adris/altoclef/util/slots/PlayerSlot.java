@@ -1,7 +1,10 @@
 package adris.altoclef.util.slots;
 
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
+
+import java.util.Objects;
 
 
 public class PlayerSlot extends Slot {
@@ -11,7 +14,7 @@ public class PlayerSlot extends Slot {
     public static final PlayerSlot ARMOR_CHESTPLATE_SLOT = new PlayerSlot(6);
     public static final PlayerSlot ARMOR_LEGGINGS_SLOT = new PlayerSlot(7);
     public static final PlayerSlot ARMOR_BOOTS_SLOT = new PlayerSlot(8);
-    public static final PlayerSlot[] ARMOR_SLOTS = new PlayerSlot[]{
+    public static final PlayerSlot[] ARMOR_SLOTS = {
             ARMOR_HELMET_SLOT, ARMOR_CHESTPLATE_SLOT, ARMOR_LEGGINGS_SLOT, ARMOR_BOOTS_SLOT
     };
     public static final PlayerSlot OFFHAND_SLOT = new PlayerSlot(45);
@@ -23,21 +26,19 @@ public class PlayerSlot extends Slot {
     protected PlayerSlot(int slot, boolean inventory) {
         super(slot, inventory);
     }
-
+    
     public static PlayerSlot getCraftInputSlot(int x, int y) {
-        return getCraftInputSlot(y * 2 + x);
+        return getCraftInputSlot((y << 1) + x);
     }
-
+    
     public static PlayerSlot getCraftInputSlot(int index) {
-        index += 1;
-        return new PlayerSlot(index);
+        return new PlayerSlot(index + 1);
     }
-
+    
     public static Slot getEquipSlot(EquipmentSlot equipSlot) {
         switch (equipSlot) {
             case MAINHAND:
-                assert MinecraftClient.getInstance().player != null;
-                return Slot.getFromInventory(MinecraftClient.getInstance().player.inventory.selectedSlot);
+                return Slot.getFromInventory(Objects.requireNonNull(MinecraftClient.getInstance().player).inventory.selectedSlot);
             case OFFHAND:
                 return OFFHAND_SLOT;
             case FEET:
@@ -51,7 +52,7 @@ public class PlayerSlot extends Slot {
         }
         return null;
     }
-
+    
     @Override
     public void ensureWindowOpened() {
         //Debug.logMessage("PLAYER INVENTORY OPENED");

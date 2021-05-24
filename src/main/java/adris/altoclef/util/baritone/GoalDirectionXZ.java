@@ -1,5 +1,6 @@
 package adris.altoclef.util.baritone;
 
+
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
@@ -7,26 +8,27 @@ import net.minecraft.util.math.Vec3d;
 
 
 public class GoalDirectionXZ implements Goal {
-    public final double originx;
+    // TODO: 2021-05-22 why public...
+    public final double originX;
     //public final double y;
-    public final double originz;
-    public final double dirx;
-    public final double dirz;
+    public final double originZ;
+    public final double dirX;
+    public final double dirZ;
     
-    private final double _sidePenalty;
+    private final double sidePenalty;
     
     public GoalDirectionXZ(Vec3d origin, Vec3d offset, double sidePenalty) {
-        this.originx = origin.getX();
+        this.originX = origin.getX();
         //this.y = origin.getY();
-        this.originz = origin.getZ();
+        this.originZ = origin.getZ();
         offset = offset.multiply(1, 0, 1);
         offset = offset.normalize();
-        this.dirx = offset.x;
-        this.dirz = offset.z;
-        if (this.dirx == 0 && this.dirz == 0) {
-            throw new IllegalArgumentException(offset + "");
+        this.dirX = offset.x;
+        this.dirZ = offset.z;
+        if (this.dirX == 0 && this.dirZ == 0) {
+            throw new IllegalArgumentException(String.valueOf(offset));
         }
-        this._sidePenalty = sidePenalty;
+        this.sidePenalty = sidePenalty;
     }
     
     public GoalDirectionXZ(Vec3d origin, Vec3d offset) {
@@ -42,9 +44,9 @@ public class GoalDirectionXZ implements Goal {
     }
     
     public double heuristic(int x, int y, int z) {
-        double dx = (x - this.originx), dz = (z - this.originz);
-        double correctDistance = dx * this.dirx + dz * this.dirz;
-        double px = dirx * correctDistance, pz = dirz * correctDistance;
+        double dx = (x - this.originX), dz = (z - this.originZ);
+        double correctDistance = dx * this.dirX + dz * this.dirZ;
+        double px = dirX * correctDistance, pz = dirZ * correctDistance;
         double perpendicularDistance = ((dx - px) * (dx - px)) + ((dz - pz) * (dz - pz));
 
         /*
@@ -54,11 +56,11 @@ public class GoalDirectionXZ implements Goal {
         heuristic += (double)(distanceFromStartInIncorrectDirection * _sidePenalty);
          */
         
-        return -correctDistance * BaritoneAPI.getSettings().costHeuristic.value + perpendicularDistance * _sidePenalty;
+        return -correctDistance * BaritoneAPI.getSettings().costHeuristic.value + perpendicularDistance * sidePenalty;
     }
     
     public String toString() {
-        return String.format("GoalDirection{x=%s, z=%s, dx=%s, dz=%s}", maybeCensor(this.originx), maybeCensor(this.originz),
-                             maybeCensor(this.dirx), maybeCensor(this.dirz));
+        return String.format("GoalDirection{x=%s, z=%s, dx=%s, dz=%s}", maybeCensor(this.originX), maybeCensor(this.originZ),
+                             maybeCensor(this.dirX), maybeCensor(this.dirZ));
     }
 }

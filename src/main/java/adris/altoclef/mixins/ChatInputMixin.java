@@ -1,5 +1,6 @@
 package adris.altoclef.mixins;
 
+
 import adris.altoclef.StaticMixinHookups;
 import baritone.api.event.events.ChatEvent;
 import net.minecraft.client.network.ClientPlayerEntity;

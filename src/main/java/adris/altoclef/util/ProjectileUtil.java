@@ -1,14 +1,17 @@
 package adris.altoclef.util;
 
+
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
 
-public class ProjectileUtil {
+public final class ProjectileUtil {
+    public static final double GRAVITY_ACCEL = 0.05000000074505806D; // TODO: 2021-05-22 magic constant?
     
-    public static final double GRAVITY_ACCEL = 0.05000000074505806D;
+    private ProjectileUtil() {
+    }
     
     public static boolean hasGravity(ProjectileEntity entity) {
         if (entity instanceof ExplosiveProjectileEntity) return false;
@@ -37,9 +40,8 @@ public class ProjectileUtil {
     }
     
     /**
-     * Calculates where we think an arrow will "hit" us, or at least where it will be at its closest.
-     * Does so by figuring out the closest X-Z coordinate of the arrow's trajectory and then using the height
-     * of the arrow when it reaches that point as the result's Y value.
+     * Calculates where we think an arrow will "hit" us, or at least where it will be at its closest. Does so by figuring out the closest
+     * X-Z coordinate of the arrow's trajectory and then using the height of the arrow when it reaches that point as the result's Y value.
      */
     public static Vec3d calculateArrowClosestApproach(Vec3d shootOrigin, Vec3d shootVelocity, double yGravity, Vec3d playerOrigin) {
         Vec3d flatEncounter = getClosestPointOnFlatLine(shootOrigin.x, shootOrigin.z, shootVelocity.x, shootVelocity.z, playerOrigin.x,
@@ -64,19 +66,16 @@ public class ProjectileUtil {
     }
     
     // Unable to figure out how to extract multiple roots, this is too complicated for engineering major like me.
-    @SuppressWarnings("UnnecessaryLocalVariable")
     @Deprecated
     private static double getNearestTimeOfShotProjectile(Vec3d shootOrigin, Vec3d shootVelocity, double yGravity, Vec3d playerOrigin) {
         // Formatted for equations and ease of writing. This is why I'm not minoring in math.
         Vec3d D = playerOrigin.subtract(shootOrigin);
-        Vec3d V = shootVelocity;
-        double g = yGravity;
         
         // Cubic terms
-        double a = (g * g) / 2.0;
-        double b = -(3.0 * g * V.y) / 2.0;
-        double c = V.lengthSquared() + (g * V.y);
-        double d = -1 * V.dotProduct(D);
+        double a = (yGravity * yGravity) / 2.0;
+        double b = -(3.0 * yGravity * shootVelocity.y) / 2.0;
+        double c = shootVelocity.lengthSquared() + (yGravity * shootVelocity.y);
+        double d = -1 * shootVelocity.dotProduct(D);
         
         
         // Now that we have our cubic equation for SQUARED distance, find the "zero" points.
@@ -91,7 +90,8 @@ public class ProjectileUtil {
         
         // Theoretically there could exist imaginary roots that will cancel themselves out, but that ought to be rare.
         // We will get an imaginary root somewhere so ignore it.
-        if (rootInner < 0) return -1;
+        if (rootInner < 0)
+            return -1;
         
         rootInner = Math.sqrt(rootInner);
         

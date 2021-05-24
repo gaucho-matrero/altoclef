@@ -1,5 +1,6 @@
 package adris.altoclef.util.baritone;
 
+
 import adris.altoclef.Debug;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.utils.ToolSet;
@@ -14,17 +15,17 @@ import java.util.List;
 public class PlaceBlockSchematic extends AbstractSchematic {
     
     private static final int RANGE = 1;
-    private final Block[] _blockToPlace;
-    private final boolean _skipIfAlreadyThere;
-    private final boolean _done;
-    private BlockState _targetPlace;
+    private final Block[] blockToPlace;
+    private final boolean skipIfAlreadyThere;
+    private final boolean isDone;
+    private BlockState targetPlace;
     
     public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
-        _blockToPlace = blocksToPlace;
-        _done = false;
-        _targetPlace = null;
-        _skipIfAlreadyThere = skipIfAlreadyThere;
+        blockToPlace = blocksToPlace;
+        isDone = false;
+        targetPlace = null;
+        this.skipIfAlreadyThere = skipIfAlreadyThere;
     }
     
     public PlaceBlockSchematic(Block[] blocksToPlace) {
@@ -42,7 +43,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
      */
     
     public boolean foundSpot() {
-        return _targetPlace != null;
+        return targetPlace != null;
     }
     
     // No restrictions.
@@ -58,13 +59,13 @@ public class PlaceBlockSchematic extends AbstractSchematic {
             return blockState;
         }
         // If a block already exists there, place it.
-        if (_skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
+        if (skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
             //System.out.println("PlaceBlockNearbySchematic (already exists)");
-            _targetPlace = blockState;
+            targetPlace = blockState;
         }
-        boolean isDone = (_targetPlace != null);
+        boolean isDone = (targetPlace != null);
         if (isDone) {
-            return _targetPlace;
+            return targetPlace;
         }
         //System.out.print("oof: [");
         for (BlockState possible : list) {
@@ -79,7 +80,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
             //System.out.print(possible.getBlock().getTranslationKey() + " ");
             if (blockIsTarget(possible.getBlock())) {
                 //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
-                _targetPlace = possible;
+                targetPlace = possible;
                 return possible;
             }
         }
@@ -89,7 +90,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
     
     
     private boolean blockIsTarget(Block block) {
-        for (Block check : _blockToPlace) {
+        for (Block check : blockToPlace) {
             if (check.is(block)) return true;
         }
         return false;

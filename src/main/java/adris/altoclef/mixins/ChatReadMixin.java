@@ -1,5 +1,6 @@
 package adris.altoclef.mixins;
 
+
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.hud.ChatHudListener;
 import net.minecraft.network.MessageType;

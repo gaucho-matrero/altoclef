@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
@@ -16,13 +17,12 @@ import java.util.stream.Stream;
 
 
 public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
+    private final double distanceToRun;
+    private final boolean excludeSkeletons;
     
-    private final double _distanceToRun;
-    private final boolean _includeSkeletons;
-    
-    public RunAwayFromHostilesTask(double distance, boolean includeSkeletons) {
-        _distanceToRun = distance;
-        _includeSkeletons = includeSkeletons;
+    public RunAwayFromHostilesTask(double distance, boolean excludeSkeletons) {
+        distanceToRun = distance;
+        this.excludeSkeletons = !excludeSkeletons;
     }
     
     public RunAwayFromHostilesTask(double distance) {
@@ -34,14 +34,14 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
-        return new GoalRunAwayFromHostiles(mod, _distanceToRun);
+        return new GoalRunAwayFromHostiles(mod, distanceToRun);
     }
     
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof RunAwayFromHostilesTask) {
             RunAwayFromHostilesTask other = (RunAwayFromHostilesTask) obj;
-            return Math.abs(other._distanceToRun - _distanceToRun) < 1;
+            return Math.abs(other.distanceToRun - distanceToRun) < 1;
         }
         return false;
     }
@@ -51,7 +51,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         return "NIGERUNDAYOO, SUMOOKEYY!";
     }
     
-    private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
+    public class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
         
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
             super(mod, distance, false, 0.8);
@@ -62,7 +62,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
             List<Entity> result;
             Stream<HostileEntity> stream = mod.getEntityTracker().getHostiles().stream();
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                if (!_includeSkeletons) {
+                if (excludeSkeletons) {
                     stream = stream.filter(hostile -> !(hostile instanceof SkeletonEntity));
                 }
                 return stream.collect(Collectors.toList());

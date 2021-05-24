@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
@@ -10,19 +11,17 @@ import java.util.function.Supplier;
 
 
 public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
-    
-    private final Supplier<List<Entity>> _runAwaySupplier;
-    
-    private final double _distanceToRun;
-    private final boolean _xz;
+    private final Supplier<List<Entity>> runAwaySupplier;
+    private final double distanceToRun;
+    private final boolean xz;
     // See GoalrunAwayFromEntities penalty value
-    private final double _penalty;
+    private final double penalty;
     
     public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, boolean xz, double penalty) {
-        _runAwaySupplier = toRunAwayFrom;
-        _distanceToRun = distanceToRun;
-        _xz = xz;
-        _penalty = penalty;
+        runAwaySupplier = toRunAwayFrom;
+        this.distanceToRun = distanceToRun;
+        this.xz = xz;
+        this.penalty = penalty;
     }
     
     public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, double penalty) {
@@ -32,19 +31,19 @@ public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
     
     @Override
     protected Goal newGoal(AltoClef mod) {
-        return new GoalRunAwayStuff(mod, _distanceToRun, _xz);
+        return new GoalRunAwayStuff(mod, distanceToRun, xz);
     }
     
     
     private class GoalRunAwayStuff extends GoalRunAwayFromEntities {
         
         public GoalRunAwayStuff(AltoClef mod, double distance, boolean xz) {
-            super(mod, distance, xz, _penalty);
+            super(mod, distance, xz, penalty);
         }
         
         @Override
         protected List<net.minecraft.entity.Entity> getEntities(AltoClef mod) {
-            return _runAwaySupplier.get();
+            return runAwaySupplier.get();
         }
     }
 }

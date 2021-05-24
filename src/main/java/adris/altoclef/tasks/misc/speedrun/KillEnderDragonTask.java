@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc.speedrun;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.AbstractKillEntityTask;
@@ -36,23 +37,17 @@ import java.util.HashMap;
 
 
 /**
- * Here we go
- * the final stretch
+ * Here we go the final stretch
  * <p>
- * Until something inevitably fucks up and I gotta go back here to fix it
- * in which case this'll be pretty ironic.
+ * Until something inevitably fucks up and I gotta go back here to fix it in which case this'll be pretty ironic.
  */
 public class KillEnderDragonTask extends Task {
-    
     // Don't accidentally anger endermen lol
-    private final Timer _lookDownTimer = new Timer(0.5);
-    
-    private final Task _collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100),
-                                                                           new Block[]{ Blocks.END_STONE }, MiningRequirement.WOOD);
-    
-    private final PunkEnderDragonTask _punkTask = new PunkEnderDragonTask();
-    
-    private BlockPos _exitPortalTop;
+    private final Timer lookDownTimer = new Timer(0.5);
+    private final Task collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100),
+                                                                          new Block[]{ Blocks.END_STONE }, MiningRequirement.WOOD);
+    private final PunkEnderDragonTask punkTask = new PunkEnderDragonTask();
+    private BlockPos exitPortalTop;
     
     @Override
     protected void onStart(AltoClef mod) {
@@ -67,14 +62,14 @@ public class KillEnderDragonTask extends Task {
     
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_exitPortalTop == null) {
-            _exitPortalTop = locateExitPortalTop(mod);
+        if (exitPortalTop == null) {
+            exitPortalTop = locateExitPortalTop(mod);
         }
         
         
-        if (!isRailingOnDragon() && _lookDownTimer.elapsed()) {
+        if (!isRailingOnDragon() && lookDownTimer.elapsed()) {
             if (mod.getPlayer().isOnGround()) {
-                _lookDownTimer.reset();
+                lookDownTimer.reset();
                 mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, -90f), true);
             }
         }
@@ -95,11 +90,11 @@ public class KillEnderDragonTask extends Task {
                                                                                                                  Items.NETHERRACK,
                                                                                                                  Items.END_STONE) <
                                                                           MINIMUM_BUILDING_BLOCKS ||
-            (_collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod))) {
+            (collectBuildMaterialsTask.isActive() && !collectBuildMaterialsTask.isFinished(mod))) {
             if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
                 mod.getConfigState().addProtectedItems(Items.END_STONE);
                 setDebugState("Collecting building blocks to pillar to crystals");
-                return _collectBuildMaterialsTask;
+                return collectBuildMaterialsTask;
             }
         } else {
             mod.getConfigState().removeProtectedItems(Items.END_STONE);
@@ -120,7 +115,7 @@ public class KillEnderDragonTask extends Task {
         // Punk dragon
         if (mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("Punking dragon");
-            return _punkTask;
+            return punkTask;
         }
         setDebugState("Couldn't find ender dragon... This can be very good or bad news.");
         return null;
@@ -145,7 +140,7 @@ public class KillEnderDragonTask extends Task {
     }
     
     private boolean isRailingOnDragon() {
-        return _punkTask.getMode() == Mode.RAILING;
+        return punkTask.getMode() == Mode.RAILING;
     }
     
     private BlockPos locateExitPortalTop(AltoClef mod) {
@@ -177,7 +172,7 @@ public class KillEnderDragonTask extends Task {
         
         private PunkEnderDragonTask() {
         }
-
+        
         public Mode getMode() {
             return _mode;
         }
@@ -274,7 +269,7 @@ public class KillEnderDragonTask extends Task {
                     }
                     if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                         // Set goal to closest block within the pillar that's by the head.
-                        if (_exitPortalTop != null) {
+                        if (exitPortalTop != null) {
                             int bottomYDelta = -3;
                             BlockPos closest = null;
                             double closestDist = Double.POSITIVE_INFINITY;
@@ -282,7 +277,7 @@ public class KillEnderDragonTask extends Task {
                                 for (int dz = -2; dz <= 2; ++dz) {
                                     // We have sort of a rounded circle here.
                                     if (Math.abs(dx) == 2 && Math.abs(dz) == 2) continue;
-                                    BlockPos toCheck = _exitPortalTop.add(dx, bottomYDelta, dz);
+                                    BlockPos toCheck = exitPortalTop.add(dx, bottomYDelta, dz);
                                     double distSq = toCheck.getSquaredDistance(head.getPos(), false);
                                     if (distSq < closestDist) {
                                         closest = toCheck;

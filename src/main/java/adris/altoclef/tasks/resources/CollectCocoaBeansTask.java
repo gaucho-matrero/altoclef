@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.ResourceTask;
@@ -18,12 +19,12 @@ import java.util.function.Predicate;
 
 
 public class CollectCocoaBeansTask extends ResourceTask {
-    private final int _count;
-    private final HashSet<BlockPos> _wasFullyGrown = new HashSet<>();
+    private final int count;
+    private final HashSet<BlockPos> wasFullyGrown = new HashSet<>();
     
     public CollectCocoaBeansTask(int targetCount) {
         super(Items.COCOA_BEANS, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
     
     @Override
@@ -41,15 +42,15 @@ public class CollectCocoaBeansTask extends ResourceTask {
         
         Predicate<BlockPos> invalidCocoaCheck = (blockPos) -> {
             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                return !_wasFullyGrown.contains(blockPos);
+                return !wasFullyGrown.contains(blockPos);
             }
             
             BlockState s = mod.getWorld().getBlockState(blockPos);
             boolean mature = s.get(CocoaBlock.AGE) == 2;
-            if (_wasFullyGrown.contains(blockPos)) {
-                if (!mature) _wasFullyGrown.remove(blockPos);
+            if (wasFullyGrown.contains(blockPos)) {
+                if (!mature) wasFullyGrown.remove(blockPos);
             } else {
-                if (mature) _wasFullyGrown.add(blockPos);
+                if (mature) wasFullyGrown.add(blockPos);
             }
             return !mature;
         };
@@ -83,6 +84,6 @@ public class CollectCocoaBeansTask extends ResourceTask {
     
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " cocoa beans.";
+        return "Collecting " + count + " cocoa beans.";
     }
 }

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
@@ -10,14 +11,13 @@ import baritone.api.pathing.goals.Goal;
 
 
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
-    
-    private final boolean _wander;
-    private final Task _wanderTask = new TimeoutWanderTask(10);
-    protected Goal _cachedGoal = null;
-    protected MovementProgressChecker _checker = new MovementProgressChecker();
+    private final boolean wander;
+    private final Task wanderTask = new TimeoutWanderTask(10);
+    protected Goal cachedGoal;
+    protected MovementProgressChecker checker = new MovementProgressChecker();
     
     public CustomBaritoneGoalTask(boolean wander) {
-        _wander = wander;
+        this.wander = wander;
     }
     
     public CustomBaritoneGoalTask() {
@@ -26,33 +26,33 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _cachedGoal != null && _cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
+        return cachedGoal != null && cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
     }
     
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-        _checker.reset();
+        checker.reset();
     }
     
     @Override
     protected Task onTick(AltoClef mod) {
         
-        if (_wander) {
-            if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+        if (wander) {
+            if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
                 setDebugState("Wandering...");
-                _checker.reset();
-                return _wanderTask;
+                checker.reset();
+                return wanderTask;
             }
-            if (!_checker.check(mod)) {
+            if (!checker.check(mod)) {
                 Debug.logMessage("Failed to make progress on goal, wandering.");
-                return _wanderTask;
+                return wanderTask;
             }
         }
         
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            _cachedGoal = newGoal(mod);
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(_cachedGoal);
+            cachedGoal = newGoal(mod);
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(cachedGoal);
         }
         setDebugState("Completing goal.");
         return null;

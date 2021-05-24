@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.CraftInInventoryTask;
@@ -12,12 +13,11 @@ import net.minecraft.item.Item;
 
 
 public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask {
-    
-    private final ItemTarget _visualTarget;
+    private final ItemTarget visualTarget;
     
     public CraftWithMatchingPlanksTask(Item[] validTargets, CraftingRecipe recipe, boolean[] sameMask, int count) {
         super(new ItemTarget(validTargets, count), recipe, sameMask);
-        _visualTarget = new ItemTarget(validTargets, count);
+        visualTarget = new ItemTarget(validTargets, count);
     }
     
     // This part is already handled by "getExpectedTotalCountOfSameItem" and "getSpecificSameResourceTask".
@@ -60,14 +60,14 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CraftWithMatchingPlanksTask) {
             CraftWithMatchingPlanksTask task = (CraftWithMatchingPlanksTask) obj;
-            return task._visualTarget.equals(_visualTarget);
+            return task.visualTarget.equals(visualTarget);
         }
         return false;
     }
     
     @Override
     protected String toDebugStringName() {
-        return "Crafting: " + _visualTarget;
+        return "Crafting: " + visualTarget;
     }
     
 }

@@ -1,6 +1,7 @@
 package adris.altoclef.util;
 
-public enum WoodType {
+
+public enum WoodType { // TODO: 2021-05-22 oh god, not a wood enum
     ACACIA,
     BIRCH,
     CRIMSON,

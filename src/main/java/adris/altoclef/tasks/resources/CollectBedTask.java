@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -15,16 +16,14 @@ import net.minecraft.item.Item;
 
 
 public class CollectBedTask extends CraftWithMatchingWoolTask {
-    
     public static final Block[] BEDS = Util.itemsToBlocks(ItemUtil.BED);
-    
-    private final ItemTarget _visualBedTarget;
+    private final ItemTarget visualBedTarget;
     
     public CollectBedTask(Item[] beds, ItemTarget wool, int count) {
         // Top 3 are wool, must be the same.
         super(new ItemTarget(beds, count), createBedRecipe(wool),
               new boolean[]{ true, true, true, false, false, false, false, false, false });
-        _visualBedTarget = new ItemTarget(beds, count);
+        visualBedTarget = new ItemTarget(beds, count);
     }
     
     public CollectBedTask(Item bed, String woolCatalogueName, int count) {
@@ -50,14 +49,14 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CollectBedTask) {
             CollectBedTask task = (CollectBedTask) obj;
-            return task._visualBedTarget.equals(_visualBedTarget);
+            return task.visualBedTarget.equals(visualBedTarget);
         }
         return false;
     }
     
     @Override
     protected String toDebugStringName() {
-        return "Crafting bed: " + _visualBedTarget;
+        return "Crafting bed: " + visualBedTarget;
     }
     
     @Override

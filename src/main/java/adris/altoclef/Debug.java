@@ -1,10 +1,12 @@
 package adris.altoclef;
 
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
 
 public class Debug {
+    // TODO: 2021-05-22 please use a logger
     
     public static void logInternal(String message) {
         System.out.println("ALTO CLEF: " + message);

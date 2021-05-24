@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -33,20 +34,16 @@ import java.util.Set;
 
 
 public class MineAndCollectTask extends ResourceTask {
-    
-    private final Block[] _blocksToMine;
-    
-    private final MiningRequirement _requirement;
-    
-    private final Timer _cursorStackTimer = new Timer(3);
-    
-    private final MineOrCollectTask _subtask;
+    private final Block[] blocksToMine;
+    private final MiningRequirement requirement;
+    private final Timer cursorStackTimer = new Timer(3);
+    private final MineOrCollectTask subtask;
     
     public MineAndCollectTask(ItemTarget[] itemTargets, Block[] blocksToMine, MiningRequirement requirement) {
         super(itemTargets);
-        _requirement = requirement;
-        _blocksToMine = blocksToMine;
-        _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
+        this.requirement = requirement;
+        this.blocksToMine = blocksToMine;
+        subtask = new MineOrCollectTask(this.blocksToMine, this.itemTargets);
     }
     
     public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
@@ -80,37 +77,37 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getConfigState().push();
-        mod.getBlockTracker().trackBlock(_blocksToMine);
+        mod.getBlockTracker().trackBlock(blocksToMine);
         
         // We're mining, so don't throw away pickaxes.
         mod.getConfigState().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE,
                                                Items.NETHERITE_PICKAXE);
         
-        _subtask.resetSearch();
+        subtask.resetSearch();
     }
     
     @Override
     protected Task onResourceTick(AltoClef mod) {
         
-        if (!mod.getInventoryTracker().miningRequirementMet(_requirement)) {
-            return new SatisfyMiningRequirementTask(_requirement);
+        if (!mod.getInventoryTracker().miningRequirementMet(requirement)) {
+            return new SatisfyMiningRequirementTask(requirement);
         }
         
-        if (_subtask.isMining()) {
+        if (subtask.isMining()) {
             makeSureToolIsEquipped(mod);
         }
         
         // Wrong dimension check.
-        if (_subtask.wasWandering() && isInWrongDimension(mod)) {
+        if (subtask.wasWandering() && isInWrongDimension(mod)) {
             return getToCorrectDimensionTask(mod);
         }
         
-        return _subtask;
+        return subtask;
     }
     
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_blocksToMine);
+        mod.getBlockTracker().stopTracking(blocksToMine);
         mod.getConfigState().pop();
     }
     
@@ -118,7 +115,7 @@ public class MineAndCollectTask extends ResourceTask {
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof MineAndCollectTask) {
             MineAndCollectTask task = (MineAndCollectTask) other;
-            return Util.arraysEqual(task._blocksToMine, _blocksToMine);
+            return Util.arraysEqual(task.blocksToMine, blocksToMine);
         }
         return false;
     }
@@ -129,13 +126,13 @@ public class MineAndCollectTask extends ResourceTask {
     }
     
     private void makeSureToolIsEquipped(AltoClef mod) {
-        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().isTryingToEat()) {
+        if (cursorStackTimer.elapsed() && !mod.getFoodTaskChain().isTryingToEat()) {
             assert MinecraftClient.getInstance().player != null;
             ItemStack cursorStack = MinecraftClient.getInstance().player.inventory.getCursorStack();
             if (cursorStack != null && !cursorStack.isEmpty()) {
                 // We have something in our cursor stack
                 Item item = cursorStack.getItem();
-                if (item.isEffectiveOn(mod.getWorld().getBlockState(_subtask.miningPos()))) {
+                if (item.isEffectiveOn(mod.getWorld().getBlockState(subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
                     Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(
                             PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
@@ -154,7 +151,7 @@ public class MineAndCollectTask extends ResourceTask {
                     }
                 }
             }
-            _cursorStackTimer.reset();
+            cursorStackTimer.reset();
         }
     }
     
@@ -228,7 +225,7 @@ public class MineAndCollectTask extends ResourceTask {
         protected Task getGoalTask(Object obj) {
             if (obj instanceof BlockPos) {
                 BlockPos newPos = (BlockPos) obj;
-                if (_miningPos == null || !_miningPos.equals(newPos)) {
+                if (!newPos.equals(_miningPos)) {
                     _progressChecker.reset();
                 }
                 _miningPos = newPos;

@@ -1,5 +1,6 @@
 package adris.altoclef.util.slots;
 
+
 import adris.altoclef.Debug;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -15,27 +16,27 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 // Player Inventory Slots (used to grab inventory items only):
 //      https://minecraft.gamepedia.com/Inventory
 public abstract class Slot {
-    private final int _inventorySlot;
-    private final int _windowSlot;
+    private final int inventorySlot;
+    private final int windowSlot;
     
-    private final boolean _isInventory;
+    private final boolean isInventory;
     
     
     public Slot(int slot, boolean inventory) {
-        _isInventory = inventory;
+        isInventory = inventory;
         if (inventory) {
-            _inventorySlot = slot;
-            _windowSlot = -1;
+            inventorySlot = slot;
+            windowSlot = -1;
             //_windowSlot = inventorySlotToWindowSlot(slot);
         } else {
             //_inventorySlot = windowSlotToInventorySlot(slot);
-            _inventorySlot = -1;
-            _windowSlot = slot;
+            inventorySlot = -1;
+            windowSlot = slot;
         }
     }
     
     public static Slot getFromInventory(int inventorySlot) {
-        // -1 means cursor.
+        // -1 means cursor. // specify this somewhere, please
         if (inventorySlot == -1) {
             return new CursorInventorySlot();
         }
@@ -77,20 +78,21 @@ public abstract class Slot {
     }
     
     public int getInventorySlot() {
-        if (!_isInventory) {
-            return windowSlotToInventorySlot(_windowSlot);
+        if (!isInventory) {
+            return windowSlotToInventorySlot(windowSlot);
         }
-        return _inventorySlot;
+        return inventorySlot;
     }
     
     public int getWindowSlot() {
-        if (_isInventory) {
-            return inventorySlotToWindowSlot(_inventorySlot);
+        if (isInventory) {
+            return inventorySlotToWindowSlot(inventorySlot);
         }
-        return _windowSlot;
+        return windowSlot;
     }
     
-    public void ensureWindowOpened() {}
+    public void ensureWindowOpened() {
+    }
     
     protected abstract int inventorySlotToWindowSlot(int inventorySlot);
     
@@ -100,7 +102,7 @@ public abstract class Slot {
     
     @Override
     public String toString() {
-        return getName() + (_isInventory ? "InventorySlot" : "Slot") + "{" + "inventory slot = " + getInventorySlot() + ", window slot = " +
+        return getName() + (isInventory ? "InventorySlot" : "Slot") + "{" + "inventory slot = " + getInventorySlot() + ", window slot = " +
                getWindowSlot() + '}';
     }
     

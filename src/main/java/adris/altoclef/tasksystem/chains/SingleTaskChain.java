@@ -1,5 +1,6 @@
 package adris.altoclef.tasksystem.chains;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
@@ -9,19 +10,18 @@ import adris.altoclef.util.csharpisbetter.Stopwatch;
 
 
 public abstract class SingleTaskChain extends TaskChain {
+    private final Stopwatch taskStopwatch = new Stopwatch();
+    protected Task mainTask;
+    private boolean interrupted;
     
-    private final Stopwatch _taskStopwatch = new Stopwatch();
-    protected Task _mainTask = null;
-    private boolean _interrupted = false;
-    
-    public SingleTaskChain(TaskRunner runner) {
+    protected SingleTaskChain(TaskRunner runner) {
         super(runner);
     }
     
     protected void onStop(AltoClef mod) {
-        if (isActive() && _mainTask != null) {
-            _mainTask.stop(mod);
-            _mainTask = null;
+        if (isActive() && mainTask != null) {
+            mainTask.stop(mod);
+            mainTask = null;
         }
     }
     
@@ -29,9 +29,9 @@ public abstract class SingleTaskChain extends TaskChain {
     public void onInterrupt(AltoClef mod, TaskChain other) {
         Debug.logInternal("Chain Interrupted: " + this + " by " + other.toString());
         // Stop our task. When we're started up again, let our task know we need to run.
-        _interrupted = true;
-        if (_mainTask != null && _mainTask.isActive()) {
-            _mainTask.stop(mod);
+        interrupted = true;
+        if (mainTask != null && mainTask.isActive()) {
+            mainTask.stop(mod);
         }
     }
     
@@ -39,30 +39,30 @@ public abstract class SingleTaskChain extends TaskChain {
     protected void onTick(AltoClef mod) {
         if (!isActive()) return;
         
-        if (_interrupted) {
-            _interrupted = false;
-            if (_mainTask != null) {
-                _mainTask.reset();
+        if (interrupted) {
+            interrupted = false;
+            if (mainTask != null) {
+                mainTask.reset();
             }
         }
         
-        if (_mainTask != null) {
-            if ((_mainTask.isFinished(mod)) || _mainTask.stopped()) {
+        if (mainTask != null) {
+            if ((mainTask.isFinished(mod)) || mainTask.stopped()) {
                 onTaskFinish(mod);
             } else {
-                _mainTask.tick(mod, this);
+                mainTask.tick(mod, this);
             }
         }
     }
     
     @Override
     public boolean isActive() {
-        return _mainTask != null;
+        return mainTask != null;
     }
     
     public void setTask(Task task) {
-        if (_mainTask == null || !_mainTask.equals(task)) {
-            _mainTask = task;
+        if (mainTask == null || !mainTask.equals(task)) {
+            mainTask = task;
             if (task != null) task.reset();
         }
     }
@@ -70,6 +70,6 @@ public abstract class SingleTaskChain extends TaskChain {
     protected abstract void onTaskFinish(AltoClef mod);
     
     public Task getCurrentTask() {
-        return _mainTask;
+        return mainTask;
     }
 }

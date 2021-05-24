@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+
 import adris.altoclef.AltoClef;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
@@ -20,7 +21,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
 
-public class LookUtil {
+public final class LookUtil {
+    
+    private LookUtil() {
+    }
     
     public static EntityHitResult raycast(Entity from, Entity to, double reachDistance) {
         Vec3d fromPos = from.getCameraPosVec(1f), toPos = to.getCameraPosVec(1f);

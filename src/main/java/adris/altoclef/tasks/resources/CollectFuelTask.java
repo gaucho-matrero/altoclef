@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
@@ -10,16 +11,15 @@ import adris.altoclef.util.Dimension;
 // TODO: Make this collect more than just coal. It should smartly pick alternative sources if coal is too far away or if we simply cannot
 //  get a wooden pick.
 public class CollectFuelTask extends Task {
-    
-    private final double _targetFuel;
+    private final double targetFuel;
     
     public CollectFuelTask(double targetFuel) {
-        _targetFuel = targetFuel;
+        this.targetFuel = targetFuel;
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().getTotalFuelNormal() >= _targetFuel;
+        return mod.getInventoryTracker().getTotalFuelNormal() >= targetFuel;
     }
     
     @Override
@@ -34,13 +34,13 @@ public class CollectFuelTask extends Task {
             case OVERWORLD:
                 // Just collect coal for now.
                 setDebugState("Collecting coal.");
-                return TaskCatalogue.getItemTask("coal", (int) Math.ceil(_targetFuel / 8));
+                return TaskCatalogue.getItemTask("coal", (int) Math.ceil(targetFuel / 8));
             case END:
                 setDebugState("Going to overworld, since, well, no more fuel can be found here.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             case NETHER:
                 setDebugState("Collecting nether wood.");
-                return TaskCatalogue.getItemTask("planks", (int) Math.ceil(_targetFuel));
+                return TaskCatalogue.getItemTask("planks", (int) Math.ceil(targetFuel));
         }
         setDebugState("INVALID DIMENSION: " + mod.getCurrentDimension());
         return null;
@@ -55,13 +55,13 @@ public class CollectFuelTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectFuelTask) {
             CollectFuelTask other = (CollectFuelTask) obj;
-            return Math.abs(other._targetFuel - _targetFuel) < 0.01;
+            return Math.abs(other.targetFuel - targetFuel) < 0.01;
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Collect Fuel: x" + _targetFuel;
+        return "Collect Fuel: x" + targetFuel;
     }
 }

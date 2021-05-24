@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -15,30 +16,29 @@ import java.util.HashMap;
 
 // Collects everything that's catalogued for a recipe.
 public class CollectRecipeCataloguedResourcesTask extends Task {
-    
-    private final RecipeTarget[] _targets;
-    private final boolean _ignoreUncataloguedSlots;
-    private boolean _finished = false;
+    private final RecipeTarget[] targets;
+    private final boolean ignoreUncataloguedSlots;
+    private boolean finished;
     
     public CollectRecipeCataloguedResourcesTask(boolean ignoreUncataloguedSlots, RecipeTarget... targets) {
-        _targets = targets;
-        _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
+        this.targets = targets;
+        this.ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (_finished) {
-            if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(this._targets)) {
-                _finished = false;
+        if (finished) {
+            if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(this.targets)) {
+                finished = false;
                 Debug.logMessage("Invalid collect recipe \"finished\" state, resetting.");
             }
         }
-        return _finished;
+        return finished;
     }
     
     @Override
     protected void onStart(AltoClef mod) {
-        _finished = false;
+        finished = false;
     }
     
     @Override
@@ -47,14 +47,14 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
         
         HashMap<String, Integer> catalogueCount = new HashMap<>();
         
-        for (RecipeTarget target : _targets) {
+        for (RecipeTarget target : targets) {
             // Ignore this recipe if we have its item.
             //if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
             
             // null = empty which is always met.
             if (target == null) continue;
             
-            int weNeed = target.getItem().targetCount - mod.getInventoryTracker().getItemCount(target.getItem());
+            int weNeed = target.getTargetItem().targetCount - mod.getInventoryTracker().getItemCount(target.getTargetItem());
             
             if (weNeed > 0) {
                 CraftingRecipe recipe = target.getRecipe();
@@ -63,7 +63,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                     ItemTarget slot = recipe.getSlot(i);
                     if (slot == null || slot.isEmpty()) continue;
                     if (!slot.isCatalogueItem()) {
-                        if (!_ignoreUncataloguedSlots) {
+                        if (!ignoreUncataloguedSlots) {
                             Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i +
                                              " is not catalogued. Please define an explicit" +
                                              " collectRecipeSubTask() function for this task.");
@@ -94,7 +94,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                 }
             }
         }
-        _finished = true;
+        finished = true;
         
         return null;
     }
@@ -108,13 +108,13 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectRecipeCataloguedResourcesTask) {
             CollectRecipeCataloguedResourcesTask other = (CollectRecipeCataloguedResourcesTask) obj;
-            return Util.arraysEqual(other._targets, _targets);
+            return Util.arraysEqual(other.targets, targets);
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Collect Recipe Resources: " + ArrayUtils.toString(_targets);
+        return "Collect Recipe Resources: " + ArrayUtils.toString(targets);
     }
 }

@@ -18,6 +18,7 @@ public class GoalGetToPosition implements Goal, IGoalRenderPos {
     public final double x;
     public final double y;
     public final double z;
+    // TODO: 2021-05-22 use vector instead
     
     public GoalGetToPosition(Vec3d pos) {
         this(pos.getX(), pos.getY(), pos.getZ());

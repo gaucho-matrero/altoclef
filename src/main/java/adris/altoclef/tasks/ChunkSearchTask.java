@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
@@ -18,21 +19,18 @@ import java.util.Set;
 /**
  * Use to walk through and search interconnected structures or biomes.
  * <p>
- * Example use cases:
- * - Search a dark forest for a woodland mansion and avoid going to different biomes
- * - Search a nether fortress for blaze spawners
- * - Search a stronghold for the portal
+ * Example use cases: - Search a dark forest for a woodland mansion and avoid going to different biomes - Search a nether fortress for blaze
+ * spawners - Search a stronghold for the portal
  */
 public abstract class ChunkSearchTask extends Task {
-    
-    private final BlockPos _startPoint;
-    private final Object _searchMutex = new Object();
+    private final BlockPos startPoint;
+    private final Object searchMutex = new Object();
     // We're either searched or will be searched later.
-    private final Set<ChunkPos> _consideredAlready = new HashSet<>();
+    private final Set<ChunkPos> consideredAlready = new HashSet<>();
     // We definitely were searched before.
-    private final Set<ChunkPos> _searchedAlready = new HashSet<>();
-    private final ArrayList<ChunkPos> _searchLater = new ArrayList<>();
-    private final ArrayList<ChunkPos> _justLoaded = new ArrayList<>();
+    private final Set<ChunkPos> searchedAlready = new HashSet<>();
+    private final ArrayList<ChunkPos> searchLater = new ArrayList<>();
+    private final ArrayList<ChunkPos> justLoaded = new ArrayList<>();
     private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
         @Override
         public void invoke(WorldChunk value) {
@@ -40,21 +38,23 @@ public abstract class ChunkSearchTask extends Task {
         }
     };
     private boolean _first = true;
-    private boolean _finished = false;
+    private boolean _finished;
     
-    public ChunkSearchTask(BlockPos startPoint) {
-        _startPoint = startPoint;
+    protected ChunkSearchTask(BlockPos startPoint) {
+        this.startPoint = startPoint;
     }
     
-    public ChunkSearchTask(ChunkPos chunkPos) {
+    protected ChunkSearchTask(ChunkPos chunkPos) {
         this(chunkPos.getStartPos().add(1, 1, 1));
     }
     
     public Set<ChunkPos> getSearchedChunks() {
-        return _searchedAlready;
+        return searchedAlready;
     }
     
-    public boolean finished() {return _finished;}
+    public boolean finished() {
+        return _finished;
+    }
     
     // Virtual
     protected ChunkPos getBestChunk(AltoClef mod, List<ChunkPos> chunks) {
@@ -64,7 +64,7 @@ public abstract class ChunkSearchTask extends Task {
             double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
             double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
             double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
-            double distanceToCenterSq = new Vec3d(_startPoint.getX() - cx, 0, _startPoint.getZ() - cz).lengthSquared();
+            double distanceToCenterSq = new Vec3d(startPoint.getX() - cx, 0, startPoint.getZ() - cz).lengthSquared();
             double score = distanceSq + distanceToCenterSq * 0.8;
             if (score < lowestScore) {
                 lowestScore = score;
@@ -76,7 +76,7 @@ public abstract class ChunkSearchTask extends Task {
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _searchLater.size() == 0;
+        return searchLater.isEmpty();
     }
     
     @Override
@@ -90,8 +90,8 @@ public abstract class ChunkSearchTask extends Task {
         if (_first) {
             _finished = false;
             _first = false;
-            ChunkPos startPos = mod.getWorld().getChunk(_startPoint).getPos();
-            synchronized (_searchMutex) {
+            ChunkPos startPos = mod.getWorld().getChunk(startPoint).getPos();
+            synchronized (searchMutex) {
                 searchChunkOrQueueSearch(mod, startPos);
             }
         }
@@ -106,21 +106,21 @@ public abstract class ChunkSearchTask extends Task {
         // Backup in case if chunk search fails?
         //onChunkLoad((WorldChunk) mod.getWorld().getChunk(mod.getPlayer().getBlockPos()));
         
-        synchronized (_searchMutex) {
+        synchronized (searchMutex) {
             // Search all items from _justLoaded that we ought to search.
-            for (ChunkPos justLoaded : _justLoaded) {
-                if (_searchLater.contains(justLoaded)) {
+            for (ChunkPos justLoaded : justLoaded) {
+                if (searchLater.contains(justLoaded)) {
                     // Search this one. If we succeed, we no longer need to search.
                     if (trySearchChunk(mod, justLoaded)) {
-                        _searchLater.remove(justLoaded);
+                        searchLater.remove(justLoaded);
                     }
                 }
             }
-            _justLoaded.clear();
+            justLoaded.clear();
         }
         
         // Now that we have an updated map, go to the nearest
-        ChunkPos closest = getBestChunk(mod, _searchLater);
+        ChunkPos closest = getBestChunk(mod, searchLater);
         
         if (closest == null) {
             _finished = true;
@@ -141,7 +141,7 @@ public abstract class ChunkSearchTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof ChunkSearchTask) {
             ChunkSearchTask task = (ChunkSearchTask) obj;
-            if (!task._startPoint.equals(_startPoint)) return false;
+            if (!task.startPoint.equals(startPoint)) return false;
             return isChunkSearchEqual(task);
         }
         return false;
@@ -149,15 +149,15 @@ public abstract class ChunkSearchTask extends Task {
     
     private void searchChunkOrQueueSearch(AltoClef mod, ChunkPos pos) {
         // Don't search/consider this chunk again.
-        if (_consideredAlready.contains(pos)) {
+        if (consideredAlready.contains(pos)) {
             return;
         }
-        _consideredAlready.add(pos);
+        consideredAlready.add(pos);
         
         if (!trySearchChunk(mod, pos)) {
             // We'll check it later if we haven't searched it.
-            if (!_searchedAlready.contains(pos)) {
-                _searchLater.add(pos);
+            if (!searchedAlready.contains(pos)) {
+                searchLater.add(pos);
             }
         }
     }
@@ -167,16 +167,15 @@ public abstract class ChunkSearchTask extends Task {
      *
      * @param pos chunk to search
      *
-     * @return true if we're DONE searching this chunk
-     *         false if we need to SEARCH IT IN PERSON
+     * @return true if we're DONE searching this chunk false if we need to SEARCH IT IN PERSON
      */
     private boolean trySearchChunk(AltoClef mod, ChunkPos pos) {
         // Do NOT search later.
-        if (_searchedAlready.contains(pos)) {
+        if (searchedAlready.contains(pos)) {
             return true;
         }
         if (mod.getChunkTracker().isChunkLoaded(pos)) {
-            _searchedAlready.add(pos);
+            searchedAlready.add(pos);
             if (isChunkPartOfSearchSpace(mod, pos)) {
                 // This chunk may lead to more, so either search or enqueue its neighbors.
                 searchChunkOrQueueSearch(mod, new ChunkPos(pos.x + 1, pos.z));
@@ -191,9 +190,9 @@ public abstract class ChunkSearchTask extends Task {
     
     private void onChunkLoad(WorldChunk chunk) {
         if (chunk == null) return;
-        synchronized (_searchMutex) {
-            if (!_searchedAlready.contains(chunk.getPos())) {
-                _justLoaded.add(chunk.getPos());
+        synchronized (searchMutex) {
+            if (!searchedAlready.contains(chunk.getPos())) {
+                justLoaded.add(chunk.getPos());
             }
         }
     }

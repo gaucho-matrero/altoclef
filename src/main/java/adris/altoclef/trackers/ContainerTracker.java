@@ -1,5 +1,6 @@
 package adris.altoclef.trackers;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,54 +33,51 @@ import java.util.List;
  */
 
 public class ContainerTracker extends Tracker {
-    
-    private final ChestMap _chestMap;
-    private final FurnaceMap _furnaceMap;
-    
-    private final Timer _updateTimer = new Timer(10);
-    
+    private final ChestMap chestMap;
+    private final FurnaceMap furnaceMap;
+    private final Timer updateTimer = new Timer(10);
     // We can't get the contents of the screen until the server ticks once.
-    private Screen _awaitingScreen = null;
+    private Screen awaitingScreen;
     
     public ContainerTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
-        _chestMap = new ChestMap(mod);
-        _furnaceMap = new FurnaceMap(mod);
+        chestMap = new ChestMap(mod);
+        furnaceMap = new FurnaceMap(mod);
     }
     
     @Override
     protected void updateState() {
-        if (_updateTimer.elapsed()) {
-            _updateTimer.reset();
-            _chestMap.updateBlocks();
-            _furnaceMap.updateBlocks();
+        if (updateTimer.elapsed()) {
+            updateTimer.reset();
+            chestMap.updateBlocks();
+            furnaceMap.updateBlocks();
         }
     }
     
     @Override
     protected void reset() {
-        _chestMap.clear();
-        _furnaceMap.clear();
+        chestMap.clear();
+        furnaceMap.clear();
     }
     
     public void onBlockInteract(BlockPos pos, Block block) {
         if (block.is(Blocks.CHEST) || block.is(Blocks.TRAPPED_CHEST)) {
-            _chestMap.setInteractBlock(pos);
+            chestMap.setInteractBlock(pos);
         } else if (block.is(Blocks.FURNACE)) {
-            _furnaceMap.setInteractBlock(pos);
+            furnaceMap.setInteractBlock(pos);
         }
     }
     
     public void onScreenOpenFirstTick(Screen screen) {
-        _awaitingScreen = screen;
+        awaitingScreen = screen;
     }
     
     public void onServerTick() {
-        if (_awaitingScreen != null) {
-            if (_awaitingScreen instanceof FurnaceScreen) {
-                onFurnaceScreenOpen(((FurnaceScreen) _awaitingScreen).getScreenHandler());
-            } else if (_awaitingScreen instanceof GenericContainerScreen) {
-                onChestScreenOpen(((GenericContainerScreen) _awaitingScreen).getScreenHandler());
+        if (awaitingScreen != null) {
+            if (awaitingScreen instanceof FurnaceScreen) {
+                onFurnaceScreenOpen(((FurnaceScreen) awaitingScreen).getScreenHandler());
+            } else if (awaitingScreen instanceof GenericContainerScreen) {
+                onChestScreenOpen(((GenericContainerScreen) awaitingScreen).getScreenHandler());
             }
             //_awaitingScreen = null;
         }
@@ -86,38 +85,40 @@ public class ContainerTracker extends Tracker {
     }
     
     public void onScreenClose() {
-        _chestMap.onScreenClose();
-        _furnaceMap.onScreenClose();
-        _awaitingScreen = null;
+        chestMap.onScreenClose();
+        furnaceMap.onScreenClose();
+        awaitingScreen = null;
     }
     
     public void onFurnaceScreenOpen(FurnaceScreenHandler screenHandler) {
-        if (_furnaceMap.getBlockPos() != null) {
-            onFurnaceOpen(_furnaceMap.getBlockPos(), screenHandler);
+        if (furnaceMap.getBlockPos() != null) {
+            onFurnaceOpen(furnaceMap.getBlockPos(), screenHandler);
         }
     }
     
     public void onChestScreenOpen(GenericContainerScreenHandler screenHandler) {
-        if (_chestMap.getBlockPos() != null) {
-            onChestOpen(_chestMap.getBlockPos(), screenHandler);
+        if (chestMap.getBlockPos() != null) {
+            onChestOpen(chestMap.getBlockPos(), screenHandler);
         }
     }
     
     public void onFurnaceOpen(BlockPos pos, FurnaceScreenHandler screenHandler) {
-        _furnaceMap.setInteractBlock(pos);
-        _furnaceMap.openContainer(screenHandler);
+        furnaceMap.setInteractBlock(pos);
+        furnaceMap.openContainer(screenHandler);
     }
     
     public void onChestOpen(BlockPos pos, GenericContainerScreenHandler screenHandler) {
-        _chestMap.setInteractBlock(pos);
-        _chestMap.openContainer(screenHandler);
+        chestMap.setInteractBlock(pos);
+        chestMap.openContainer(screenHandler);
     }
     
     public FurnaceMap getFurnaceMap() {
-        return _furnaceMap;
+        return furnaceMap;
     }
     
-    public ChestMap getChestMap() { return _chestMap; }
+    public ChestMap getChestMap() {
+        return chestMap;
+    }
     
     abstract static class ContainerMap<T extends ScreenHandler> {
         
@@ -197,12 +198,13 @@ public class ContainerTracker extends Tracker {
         @Override
         public void updateBlocks() {
             // Check for deleted blocks and delete if they no longer exist
-            for (BlockPos blockToCheck : _blockData.keySet()) {
+            for (final Map.Entry<BlockPos, ChestData> entry : _blockData.entrySet()) {
+                BlockPos blockToCheck = entry.getKey();
                 if (!_mod.getBlockTracker().blockIsValid(blockToCheck, Blocks.CHEST)) {
                     deleteBlock(blockToCheck);
                 }
                 if (_mod.getChunkTracker().isChunkLoaded(blockToCheck)) {
-                    ChestData data = _blockData.get(blockToCheck);
+                    ChestData data = entry.getValue();
                     if (data._big && !WorldUtil.isChestBig(_mod, blockToCheck)) {
                         Debug.logMessage(
                                 "Cached chest size at " + blockToCheck.toShortString() + " reduced, will delete chest info/uncache.");
@@ -256,16 +258,16 @@ public class ContainerTracker extends Tracker {
             return getBlocksWithItem(targets, false);
         }
         
-        public List<BlockPos> getBlocksWithItem(Item... items) { return getBlocksWithItem(new ItemTarget(items));}
+        public List<BlockPos> getBlocksWithItem(Item... items) {
+            return getBlocksWithItem(new ItemTarget(items));
+        }
     }
     
     
     public static class ChestData {
-        public Instant _lastOpened;
-        
         private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
         private final HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
-        
+        public Instant _lastOpened;
         private boolean _big;
         
         private int _occupiedSlots;
@@ -325,9 +327,13 @@ public class ContainerTracker extends Tracker {
             _itemSlots.get(item).add(new ChestSlot(slotIndex, _big));
         }
         
-        public int getOccupiedSlots() {return _occupiedSlots;}
+        public int getOccupiedSlots() {
+            return _occupiedSlots;
+        }
         
-        public void setOccupiedSlots(int slotCount) { _occupiedSlots = slotCount; }
+        public void setOccupiedSlots(int slotCount) {
+            _occupiedSlots = slotCount;
+        }
         
         public boolean isFull() {
             return _occupiedSlots >= (_big ? 9 * 3 * 2 : 9 * 3);
@@ -349,7 +355,9 @@ public class ContainerTracker extends Tracker {
             return _blockData.containsKey(pos);
         }
         
-        public FurnaceData getFurnaceData(BlockPos pos) { return _blockData.get(pos); }
+        public FurnaceData getFurnaceData(BlockPos pos) {
+            return _blockData.get(pos);
+        }
         
         public List<BlockPos> getFurnacesWithMaterial(Item item) {
             if (_materialMap.containsKey(item)) {
@@ -384,7 +392,7 @@ public class ContainerTracker extends Tracker {
             // Get when we expect the furnace to finish cooking.
             
             int remaining = materials.getCount();
-            int remainingTicks = (int) ((double) remaining - InventoryTracker.getFurnaceCookPercent(screenHandler)) * 200;
+            int remainingTicks = (int) (remaining - InventoryTracker.getFurnaceCookPercent(screenHandler)) * 200;
             
             
             int currentTicks = _mod.getTicks();

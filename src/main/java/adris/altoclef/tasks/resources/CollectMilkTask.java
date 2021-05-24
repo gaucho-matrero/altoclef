@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -13,12 +14,11 @@ import net.minecraft.util.Hand;
 
 
 public class CollectMilkTask extends ResourceTask {
-    
-    private final int _count;
+    private final int count;
     
     public CollectMilkTask(int targetCount) {
         super(Items.MILK_BUCKET, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
     
     @Override
@@ -55,7 +55,7 @@ public class CollectMilkTask extends ResourceTask {
     
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " milk buckets.";
+        return "Collecting " + count + " milk buckets.";
     }
     
     static class MilkCowTask extends AbstractDoToEntityTask {

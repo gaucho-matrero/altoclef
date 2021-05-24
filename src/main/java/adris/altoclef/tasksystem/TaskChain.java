@@ -1,5 +1,6 @@
 package adris.altoclef.tasksystem;
 
+
 import adris.altoclef.AltoClef;
 
 import java.util.ArrayList;
@@ -7,20 +8,19 @@ import java.util.List;
 
 
 public abstract class TaskChain {
-    
-    private final List<Task> _cachedTaskChain = new ArrayList<>();
+    private final List<Task> cachedTaskChain = new ArrayList<>();
     
     public TaskChain(TaskRunner runner) {
         runner.addTaskChain(this);
     }
     
     public void tick(AltoClef mod) {
-        _cachedTaskChain.clear();
+        cachedTaskChain.clear();
         onTick(mod);
     }
     
     public void stop(AltoClef mod) {
-        _cachedTaskChain.clear();
+        cachedTaskChain.clear();
         onStop(mod);
     }
     
@@ -37,11 +37,11 @@ public abstract class TaskChain {
     public abstract String getName();
     
     public List<Task> getTasks() {
-        return _cachedTaskChain;
+        return cachedTaskChain;
     }
     
     void addTaskToChain(Task task) {
-        _cachedTaskChain.add(task);
+        cachedTaskChain.add(task);
     }
     
     public String toString() {

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -34,27 +35,25 @@ import java.util.function.Function;
 
 
 public class CollectBucketLiquidTask extends ResourceTask {
-    
-    private final HashSet<BlockPos> _blacklist = new HashSet<>();
-    private final Timer _reachTimer = new Timer(2);
-    private final Timer _tryImmediatePickupTimer = new Timer(3);
-    private final Timer _pickedUpTimer = new Timer(0.5);
-    
+    private final HashSet<BlockPos> blacklist = new HashSet<>();
+    private final Timer reachTimer = new Timer(2);
+    private final Timer tryImmediatePickupTimer = new Timer(3);
+    private final Timer pickedUpTimer = new Timer(0.5);
     //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
-    private final int _count;
-    private final Item _target;
-    private final Block _toCollect;
-    private final String _liquidName;
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
-    private BlockPos _targetLiquid;
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final int count;
+    private final Item target;
+    private final Block toCollect;
+    private final String liquidName;
+    private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(15f);
+    private final MovementProgressChecker progressChecker = new MovementProgressChecker();
+    private BlockPos targetLiquid;
     
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
-        _liquidName = liquidName;
-        _target = filledBucket;
-        _count = targetCount;
-        _toCollect = toCollect;
+        this.liquidName = liquidName;
+        target = filledBucket;
+        count = targetCount;
+        this.toCollect = toCollect;
     }
     
     @Override
@@ -69,18 +68,18 @@ public class CollectBucketLiquidTask extends ResourceTask {
         mod.getConfigState().push();
         mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
         mod.getConfigState().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
-        mod.getBlockTracker().trackBlock(_toCollect);
+        mod.getBlockTracker().trackBlock(toCollect);
         
         // Avoid breaking / placing blocks at our liquid
-        mod.getConfigState().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
-        mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
+        mod.getConfigState().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == toCollect);
+        mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == toCollect);
         
         //_blacklist.clear();
         
-        _wanderTask.resetWander();
+        wanderTask.resetWander();
         
-        _progressChecker.reset();
-        _reachTimer.reset();
+        progressChecker.reset();
+        reachTimer.reset();
     }
     
     
@@ -88,54 +87,54 @@ public class CollectBucketLiquidTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         
         // Run one update to prevent the false fail bug?
-        _progressChecker.check(mod);
+        progressChecker.check(mod);
         
         // If we're standing inside a liquid, go pick it up.
-        if (_tryImmediatePickupTimer.elapsed()) {
+        if (tryImmediatePickupTimer.elapsed()) {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
-            if (standingInside == _toCollect) {
+            if (standingInside == toCollect) {
                 mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
                 //Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
-                _tryImmediatePickupTimer.reset();
+                tryImmediatePickupTimer.reset();
                 if (!mod.getInventoryTracker().equipItem(Items.BUCKET)) {
                     Debug.logWarning("Failed to equip bucket.");
                 } else {
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                     MinecraftClient.getInstance().options.keyUse.setPressed(true);
                     mod.getExtraBaritoneSettings().setInteractionPaused(true);
-                    _pickedUpTimer.reset();
-                    _progressChecker.reset();
+                    pickedUpTimer.reset();
+                    progressChecker.reset();
                     return null;
                 }
             }
         }
         
-        if (!_pickedUpTimer.elapsed()) {
+        if (!pickedUpTimer.elapsed()) {
             MinecraftClient.getInstance().options.keyUse.setPressed(false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
-            _progressChecker.reset();
+            progressChecker.reset();
             // Wait for force pickup
             return null;
         }
         
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+        if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
-            _reachTimer.reset();
-            _progressChecker.reset();
-            return _wanderTask;
+            reachTimer.reset();
+            progressChecker.reset();
+            return wanderTask;
         }
         
         // Get buckets if we need em
-        int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
+        int bucketsNeeded = count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
-            _reachTimer.reset();
+            reachTimer.reset();
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
         
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
                                                                                                       (blockPos -> {
-                                                                                                          if (_blacklist.contains(
+                                                                                                          if (blacklist.contains(
                                                                                                                   blockPos)) {
                                                                                                               return true;
                                                                                                           }
@@ -150,7 +149,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             
                                                                                                           // Lava, we break the block
                                                                                                           // above. If it's bedrock, ignore.
-                                                                                                          if (_toCollect == Blocks.LAVA &&
+                                                                                                          if (toCollect == Blocks.LAVA &&
                                                                                                               mod.getWorld()
                                                                                                                  .getBlockState(
                                                                                                                          blockPos.up())
@@ -161,11 +160,11 @@ public class CollectBucketLiquidTask extends ResourceTask {
             
                                                                                                           return !WorldUtil.isSourceBlock(
                                                                                                                   mod, blockPos, false);
-                                                                                                      }), _toCollect);
+                                                                                                      }), toCollect);
         
         // Find nearest water and right click it
         BlockPos nearestLiquid = getNearestLiquid.apply(mod.getPlayer().getPos());
-        _targetLiquid = nearestLiquid;
+        targetLiquid = nearestLiquid;
         if (nearestLiquid != null) {
             // We want to MINIMIZE this distance to liquid.
             setDebugState("Trying to collect...");
@@ -175,57 +174,57 @@ public class CollectBucketLiquidTask extends ResourceTask {
             if (mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive()) {
                 Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getCurrentReach();
                 if (reach.isPresent()) {
-                    if (_reachTimer.elapsed()) {
-                        _reachTimer.reset();
+                    if (reachTimer.elapsed()) {
+                        reachTimer.reset();
                         Debug.logMessage("Failed to collect liquid at " + nearestLiquid +
                                          ", probably an invalid source block. blacklisting and trying another one.");
-                        _blacklist.add(nearestLiquid);
+                        blacklist.add(nearestLiquid);
                         mod.getBlockTracker().requestBlockUnreachable(nearestLiquid);
                         // Try again.
                         return null;
                     }
                 } else {
-                    _reachTimer.reset();
+                    reachTimer.reset();
                 }
             } else {
-                _reachTimer.reset();
+                reachTimer.reset();
             }
             
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
                 
                 // Clear above if lava because we can't enter.
-                if (_toCollect == Blocks.LAVA) {
+                if (toCollect == Blocks.LAVA) {
                     if (WorldUtil.isSolid(mod, blockpos.up())) {
-                        if (!_progressChecker.check(mod)) {
+                        if (!progressChecker.check(mod)) {
                             Debug.logMessage("Failed to break, blacklisting & wandering");
                             mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                            _blacklist.add(blockpos);
-                            return _wanderTask;
+                            blacklist.add(blockpos);
+                            return wanderTask;
                         }
                         return new DestroyBlockTask(blockpos.up());
                     }
                 }
                 
                 InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos,
-                                                                               _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
+                                                                               toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 // noinspection rawtypes
-                task.TimedOut.addListener(new ActionListener() {
+                task.timedOut.addListener(new ActionListener() {
                     @Override
                     public void invoke(Object value) {
-                        Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(_blacklist.toArray()));
+                        Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(blacklist.toArray()));
                         Debug.logMessage("Blacklisted " + blockpos);
                         mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                        _blacklist.add(blockpos);
+                        blacklist.add(blockpos);
                         
                     }
                 });
                 return task;
-            }, getNearestLiquid, _toCollect);
+            }, getNearestLiquid, toCollect);
             //return task;
         }
         
         // Dimension
-        if (_toCollect == Blocks.WATER && mod.getCurrentDimension() == Dimension.NETHER) {
+        if (toCollect == Blocks.WATER && mod.getCurrentDimension() == Dimension.NETHER) {
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
         
@@ -237,7 +236,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
     
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_toCollect);
+        mod.getBlockTracker().stopTracking(toCollect);
         mod.getConfigState().pop();
         //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
         MinecraftClient.getInstance().options.keyUse.setPressed(false);
@@ -248,15 +247,15 @@ public class CollectBucketLiquidTask extends ResourceTask {
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CollectBucketLiquidTask) {
             CollectBucketLiquidTask task = (CollectBucketLiquidTask) obj;
-            if (task._count != _count) return false;
-            return task._toCollect == _toCollect;
+            if (task.count != count) return false;
+            return task.toCollect == toCollect;
         }
         return false;
     }
     
     @Override
     protected String toDebugStringName() {
-        return "Collect " + _count + " " + _liquidName + " buckets";
+        return "Collect " + count + " " + liquidName + " buckets";
     }
     
     public static class CollectWaterBucketTask extends CollectBucketLiquidTask {

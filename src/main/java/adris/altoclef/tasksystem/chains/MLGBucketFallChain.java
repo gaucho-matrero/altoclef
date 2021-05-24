@@ -1,5 +1,6 @@
 package adris.altoclef.tasksystem.chains;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.MLGBucketTask;
@@ -19,11 +20,10 @@ import java.util.Optional;
 
 
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
-    
-    private final Timer _tryCollectWaterTimer = new Timer(4);
-    private final Timer _pickupRepeatTimer = new Timer(1);
-    private MLGBucketTask _lastMLG = null;
-    private boolean _wasPickingUp = false;
+    private final Timer tryCollectWaterTimer = new Timer(4);
+    private final Timer pickupRepeatTimer = new Timer(1);
+    private MLGBucketTask lastMLG;
+    private boolean wasPickingUp;
     
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -36,16 +36,16 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
         
         if (isFallingOhNo(mod)) {
-            _tryCollectWaterTimer.reset();
+            tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
-            _lastMLG = (MLGBucketTask) _mainTask;
+            lastMLG = (MLGBucketTask) mainTask;
             return 100;
-        } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
+        } else if (!tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 
-                if (_lastMLG != null) {
-                    BlockPos placed = _lastMLG.getWaterPlacedPos();
+                if (lastMLG != null) {
+                    BlockPos placed = lastMLG.getWaterPlacedPos();
                     //Debug.logInternal("PLACED: " + placed);
                     if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5)) {
                         BlockPos toInteract = placed.down();
@@ -53,20 +53,20 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
-                                if (!mod.getInventoryTracker().equipItem(new ItemTarget(Items.BUCKET, 1))) {
-                                    Debug.logWarning("Failed to equip bucket to pick up water post MLG.");
-                                } else {
-                                    if (_pickupRepeatTimer.elapsed()) {
+                                if (mod.getInventoryTracker().equipItem(new ItemTarget(Items.BUCKET, 1))) {
+                                    if (pickupRepeatTimer.elapsed()) {
                                         // Pick up
                                         //Debug.logMessage("PICK");
-                                        _pickupRepeatTimer.reset();
+                                        pickupRepeatTimer.reset();
                                         MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                                        _wasPickingUp = true;
-                                    } else if (_wasPickingUp) {
+                                        wasPickingUp = true;
+                                    } else if (wasPickingUp) {
                                         // Stop picking up, wait and try again.
-                                        _wasPickingUp = false;
+                                        wasPickingUp = false;
                                         MinecraftClient.getInstance().options.keyUse.setPressed(false);
                                     }
+                                } else {
+                                    Debug.logWarning("Failed to equip bucket to pick up water post MLG.");
                                 }
                             }
                         }
@@ -76,10 +76,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                 }
             }
         }
-        if (_wasPickingUp) {
+        if (wasPickingUp) {
             MinecraftClient.getInstance().options.keyUse.setPressed(false);
-            _wasPickingUp = false;
-            _lastMLG = null;
+            wasPickingUp = false;
+            lastMLG = null;
         }
         return Float.NEGATIVE_INFINITY;
     }

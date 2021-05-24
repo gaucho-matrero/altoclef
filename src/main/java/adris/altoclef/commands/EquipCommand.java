@@ -1,5 +1,6 @@
 package adris.altoclef.commands;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -13,6 +14,7 @@ import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 
 import java.util.List;
+import java.util.Objects;
 
 
 public class EquipCommand extends Command {
@@ -40,7 +42,7 @@ public class EquipCommand extends Command {
                         // Deequip armor
                         //Debug.logInternal("DE-EQUIPPING ARMOR");
                         List<Integer> emptyInv = mod.getInventoryTracker().getEmptyInventorySlots();
-                        if (emptyInv.size() == 0) {
+                        if (emptyInv.isEmpty()) {
                             mod.logWarning("Can't de-equip armor because inventory is full.");
                             finish();
                             return;
@@ -51,8 +53,7 @@ public class EquipCommand extends Command {
                                 found = true;
                                 // armorSlot contains our armor.
                                 // targetEmpty contains an empty spot.
-                                assert targetEmpty != null;
-                                mod.getInventoryTracker().moveItems(armorSlot, targetEmpty, 1);
+                                mod.getInventoryTracker().moveItems(armorSlot, Objects.requireNonNull(targetEmpty), 1);
                             }
                         }
                         //mod.getInventoryTracker().moveToNonEquippedHotbar(armor, 0);

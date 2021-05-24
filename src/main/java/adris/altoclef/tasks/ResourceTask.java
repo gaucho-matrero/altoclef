@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.chest.PickupFromChestTask;
 import adris.altoclef.tasksystem.Task;
@@ -20,22 +21,18 @@ import java.util.List;
 
 
 public abstract class ResourceTask extends Task {
-    
-    protected final ItemTarget[] _itemTargets;
-    
-    private final PickupDroppedItemTask _pickupTask;
-    private BlockPos _currentChest;
-    
+    protected final ItemTarget[] itemTargets;
+    private final PickupDroppedItemTask pickupTask;
+    private BlockPos currentChest;
     // Extra resource parameters
-    private Block[] _mineIfPresent = null;
-    private boolean _forceDimension = false;
-    private Dimension _targetDimension;
-    
-    private BlockPos _mineLastClosest = null;
+    private Block[] mineIfPresent;
+    private boolean forceDimension;
+    private Dimension targetDimension;
+    private BlockPos mineLastClosest;
     
     public ResourceTask(ItemTarget[] itemTargets) {
-        _itemTargets = itemTargets;
-        _pickupTask = new PickupDroppedItemTask(_itemTargets, true);
+        this.itemTargets = itemTargets;
+        pickupTask = new PickupDroppedItemTask(this.itemTargets, true);
     }
     
     public ResourceTask(ItemTarget target) {
@@ -66,15 +63,15 @@ public abstract class ResourceTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
-        return mod.getInventoryTracker().targetMet(_itemTargets);
+        return mod.getInventoryTracker().targetMet(itemTargets);
     }
     
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
-        if (_mineIfPresent != null) {
-            mod.getBlockTracker().trackBlock(_mineIfPresent);
+        mod.getConfigState().addProtectedItems(ItemTarget.getMatches(itemTargets));//removeThrowawayItems(_itemTargets);
+        if (mineIfPresent != null) {
+            mod.getBlockTracker().trackBlock(mineIfPresent);
         }
         onResourceStart(mod);
     }
@@ -84,70 +81,70 @@ public abstract class ResourceTask extends Task {
         
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
-            if (mod.getEntityTracker().itemDropped(_itemTargets)) {
+            if (mod.getEntityTracker().itemDropped(itemTargets)) {
                 
                 // If we're picking up a pickaxe (we can't go far underground or mine much)
                 if (PickupDroppedItemTask.isIsGettingPickaxeFirst(mod)) {
-                    if (_pickupTask.isCollectingPickaxeForThis()) {
+                    if (pickupTask.isCollectingPickaxeForThis()) {
                         // Our pickup task is the one collecting the pickaxe, keep it going.
-                        return _pickupTask;
+                        return pickupTask;
                     }
                     // Only get items that are CLOSE to us.
-                    ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+                    ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemTargets);
                     if (!closest.isInRange(mod.getPlayer(), 10)) {
                         return onResourceTick(mod);
                     }
                 }
                 
                 double range = mod.getModSettings().getResourcePickupRange();
-                ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
-                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
-                    return _pickupTask;
+                ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemTargets);
+                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (pickupTask.isActive() && !pickupTask.isFinished(mod))) {
+                    return pickupTask;
                 }
             }
         }
         
         // Check for chests and grab resources from them.
-        if (_currentChest != null) {
-            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_currentChest);
+        if (currentChest != null) {
+            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(currentChest);
             if (data == null) {
-                _currentChest = null;
+                currentChest = null;
             } else {
-                if (!data.hasItem(_itemTargets)) {
-                    _currentChest = null;
+                if (!data.hasItem(itemTargets)) {
+                    currentChest = null;
                 } else {
                     // We have a current chest, grab from it.
-                    return new PickupFromChestTask(_currentChest, _itemTargets);
+                    return new PickupFromChestTask(currentChest, itemTargets);
                 }
             }
         }
-        List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(_itemTargets);
+        List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(itemTargets);
         if (!chestsWithItem.isEmpty()) {
             BlockPos closest = Util.minItem(chestsWithItem, (left, right) -> (int) (right.getSquaredDistance(mod.getPlayer().getPos(),
                                                                                                              false) -
                                                                                     left.getSquaredDistance(mod.getPlayer().getPos(),
                                                                                                             false)));
             if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentChest = closest;
-                return new PickupFromChestTask(_currentChest, _itemTargets);
+                currentChest = closest;
+                return new PickupFromChestTask(currentChest, itemTargets);
             }
         }
         
         // We may just mine if a block is found.
-        if (_mineIfPresent != null) {
-            ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
+        if (mineIfPresent != null) {
+            ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(mineIfPresent));
             satisfiedReqs.removeIf(
                     block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
             if (!satisfiedReqs.isEmpty()) {
                 if (mod.getBlockTracker().anyFound(Util.toArray(Block.class, satisfiedReqs))) {
-                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), mineIfPresent);
                     if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
-                        _mineLastClosest = closest;
+                        mineLastClosest = closest;
                     }
-                    if (_mineLastClosest != null) {
-                        if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(),
-                                                              mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
-                            return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                    if (mineLastClosest != null) {
+                        if (mineLastClosest.isWithinDistance(mod.getPlayer().getPos(),
+                                                             mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
+                            return new MineAndCollectTask(itemTargets, mineIfPresent, MiningRequirement.HAND);
                         }
                     }
                 }
@@ -160,8 +157,8 @@ public abstract class ResourceTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getConfigState().pop();
-        if (_mineIfPresent != null) {
-            mod.getBlockTracker().stopTracking(_mineIfPresent);
+        if (mineIfPresent != null) {
+            mod.getBlockTracker().stopTracking(mineIfPresent);
         }
         onResourceStop(mod, interruptTask);
     }
@@ -172,7 +169,7 @@ public abstract class ResourceTask extends Task {
         if (other instanceof ResourceTask) {
             ResourceTask t = (ResourceTask) other;
             if (!isEqualResource(t)) return false;
-            return Util.arraysEqual(t._itemTargets, _itemTargets);
+            return Util.arraysEqual(t.itemTargets, itemTargets);
         }
         return false;
     }
@@ -182,9 +179,9 @@ public abstract class ResourceTask extends Task {
         StringBuilder result = new StringBuilder();
         result.append(toDebugStringName()).append(": [");
         int c = 0;
-        for (ItemTarget target : _itemTargets) {
+        for (ItemTarget target : itemTargets) {
             result.append(target.toString());
-            if (++c != _itemTargets.length) {
+            if (++c != itemTargets.length) {
                 result.append(", ");
             }
         }
@@ -193,24 +190,24 @@ public abstract class ResourceTask extends Task {
     }
     
     protected boolean isInWrongDimension(AltoClef mod) {
-        if (_forceDimension) {
-            return mod.getCurrentDimension() != _targetDimension;
+        if (forceDimension) {
+            return mod.getCurrentDimension() != targetDimension;
         }
         return false;
     }
     
     protected Task getToCorrectDimensionTask(AltoClef mod) {
-        return new DefaultGoToDimensionTask(_targetDimension);
+        return new DefaultGoToDimensionTask(targetDimension);
     }
     
     public ResourceTask mineIfPresent(Block[] toMine) {
-        _mineIfPresent = toMine;
+        mineIfPresent = toMine;
         return this;
     }
     
     public ResourceTask forceDimension(Dimension dimension) {
-        _forceDimension = true;
-        _targetDimension = dimension;
+        forceDimension = true;
+        targetDimension = dimension;
         return this;
     }
     

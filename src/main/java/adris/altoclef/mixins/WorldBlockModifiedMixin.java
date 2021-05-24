@@ -1,5 +1,6 @@
 package adris.altoclef.mixins;
 
+
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;

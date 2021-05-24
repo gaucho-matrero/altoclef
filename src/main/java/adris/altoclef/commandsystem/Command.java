@@ -1,5 +1,6 @@
 package adris.altoclef.commandsystem;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
@@ -8,38 +9,36 @@ import java.util.function.Consumer;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class Command {
-    
-    private AltoClef _mod;
-    
     private final ArgParser parser;
-    
-    private final String _name;
-    private final String _description;
-    
-    private Consumer _onFinish = null;
+    private final String name;
+    private final String description;
+    private AltoClef mod;
+    private Consumer onFinish;
     
     public Command(String name, String description, ArgBase... args) {
-        _name = name;
-        _description = description;
+        this.name = name;
+        this.description = description;
         parser = new ArgParser(args);
     }
     
     public void Run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
-        _onFinish = onFinish;
-        _mod = mod;
+        this.onFinish = onFinish;
+        this.mod = mod;
         parser.LoadArgs(line);
         Call(mod, parser);
     }
     
     protected void finish() {
-        if (_onFinish != null)
+        if (onFinish != null)
         //noinspection unchecked
-        { _onFinish.accept(null); }
-        _onFinish = null;
+        {
+            onFinish.accept(null);
+        }
+        onFinish = null;
     }
     
     public String GetHelpRepresentation() {
-        StringBuilder sb = new StringBuilder(_name);
+        StringBuilder sb = new StringBuilder(name);
         for (ArgBase arg : parser.getArgs()) {
             sb.append(" ");
             sb.append(arg.GetHelpRepresentation());
@@ -58,8 +57,10 @@ public abstract class Command {
     protected abstract void Call(AltoClef mod, ArgParser parser) throws CommandException;
     
     public String getName() {
-        return _name;
+        return name;
     }
     
-    public String getDescription() { return _description; }
+    public String getDescription() {
+        return description;
+    }
 }

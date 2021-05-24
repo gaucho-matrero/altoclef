@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -19,15 +20,13 @@ import net.minecraft.util.math.Direction;
 
 
 public class PlaceSignTask extends Task {
-    
-    private final BlockPos _target;
-    private final String _message;
-    
-    private boolean _finished;
+    private final BlockPos target;
+    private final String message;
+    private boolean finished;
     
     public PlaceSignTask(BlockPos pos, String message) {
-        _target = pos;
-        _message = message;
+        target = pos;
+        this.message = message;
     }
     
     public PlaceSignTask(String message) {
@@ -51,7 +50,7 @@ public class PlaceSignTask extends Task {
         
         final int SIGN_TEXT_MAX_WIDTH = 90;
         
-        for (char c : _message.toCharArray()) {
+        for (char c : message.toCharArray()) {
             currentLine.append(c);
             
             if (c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(currentLine.toString()) > SIGN_TEXT_MAX_WIDTH) {
@@ -75,19 +74,19 @@ public class PlaceSignTask extends Task {
             //screen.keyPressed(keyCode, -1, )
         }
         screen.onClose();
-        _finished = true;
+        finished = true;
         
         return null;
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _finished;
+        return finished;
     }
     
     @Override
     protected void onStart(AltoClef mod) {
-        _finished = false;
+        finished = false;
     }
     
     @Override
@@ -108,13 +107,13 @@ public class PlaceSignTask extends Task {
         } else {
             
             assert MinecraftClient.getInstance().world != null;
-            BlockState b = MinecraftClient.getInstance().world.getBlockState(_target);
+            BlockState b = MinecraftClient.getInstance().world.getBlockState(target);
             
             if (!isSign(b.getBlock()) && !b.isAir() && b.getBlock() != Blocks.WATER && b.getBlock() != Blocks.LAVA) {
-                return new DestroyBlockTask(_target);
+                return new DestroyBlockTask(target);
             }
             
-            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down(), true);
+            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, target.down(), true);
         }
     }
     
@@ -127,10 +126,10 @@ public class PlaceSignTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceSignTask) {
             PlaceSignTask task = (PlaceSignTask) obj;
-            if (!task._message.equals(_message)) return false;
-            if ((task._target == null) != (_target == null)) return false;
-            if (task._target != null) {
-                return task._target.equals(_target);
+            if (!task.message.equals(message)) return false;
+            if ((task.target == null) != (target == null)) return false;
+            if (task.target != null) {
+                return task.target.equals(target);
             }
             return true;
         }
@@ -142,11 +141,11 @@ public class PlaceSignTask extends Task {
         if (placeAnywhere()) {
             return "Place Sign Anywhere";
         }
-        return "Place Sign at " + _target.toShortString();
+        return "Place Sign at " + target.toShortString();
     }
     
     private boolean placeAnywhere() {
-        return _target == null;
+        return target == null;
     }
     
     private boolean editingSign() {

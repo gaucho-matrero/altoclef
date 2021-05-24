@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.DoToClosestEntityTask;
@@ -12,18 +13,15 @@ import net.minecraft.item.Items;
 
 
 public class CollectEggsTask extends ResourceTask {
-    
-    private final int _count;
-    
-    private final DoToClosestEntityTask _waitNearChickens;
-    
-    private AltoClef _mod;
+    private final int count;
+    private final DoToClosestEntityTask waitNearChickens;
+    private AltoClef mod;
     
     public CollectEggsTask(int targetCount) {
         super(Items.EGG, targetCount);
-        _count = targetCount;
-        _waitNearChickens = new DoToClosestEntityTask(() -> _mod.getPlayer().getPos(), chicken -> new GetToEntityTask(chicken, 5),
-                                                      ChickenEntity.class);
+        count = targetCount;
+        waitNearChickens = new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), chicken -> new GetToEntityTask(chicken, 5),
+                                                     ChickenEntity.class);
     }
     
     @Override
@@ -33,19 +31,19 @@ public class CollectEggsTask extends ResourceTask {
     
     @Override
     protected void onResourceStart(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
     }
     
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Wrong dimension check.
-        if (_waitNearChickens.wasWandering() && mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (waitNearChickens.wasWandering() && mod.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to right dimension.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
         // Just wait around chickens.
         setDebugState("Waiting around chickens. Yes.");
-        return _waitNearChickens;
+        return waitNearChickens;
     }
     
     @Override
@@ -60,6 +58,6 @@ public class CollectEggsTask extends ResourceTask {
     
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " eggs.";
+        return "Collecting " + count + " eggs.";
     }
 }

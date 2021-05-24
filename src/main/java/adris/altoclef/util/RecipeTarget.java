@@ -1,41 +1,46 @@
 package adris.altoclef.util;
 
+
 import java.util.Objects;
 
 
 public class RecipeTarget {
+    private final CraftingRecipe recipe;
+    private final ItemTarget targetItem;
     
-    private final CraftingRecipe _recipe;
-    private final ItemTarget _item;
-    
-    public RecipeTarget(ItemTarget item, CraftingRecipe recipe) {
-        _item = item;
-        _recipe = recipe;
+    public RecipeTarget(ItemTarget targetItem, CraftingRecipe recipe) {
+        this.targetItem = targetItem;
+        this.recipe = recipe;
     }
     
     public CraftingRecipe getRecipe() {
-        return _recipe;
+        return recipe;
     }
     
-    public ItemTarget getItem() {
-        return _item;
+    public ItemTarget getTargetItem() {
+        return targetItem;
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(_recipe, _item);
+        int result = recipe != null ? recipe.hashCode() : 0;
+        result = 31 * result + (targetItem != null ? targetItem.hashCode() : 0);
+        return result;
     }
     
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RecipeTarget that = (RecipeTarget) o;
-        return _recipe.equals(that._recipe) && (_item == null) == (that._item == null) && (_item == null || _item.equals(that._item));
+        
+        RecipeTarget recipeTarget = (RecipeTarget) o;
+        
+        return Objects.equals(recipe, recipeTarget.recipe) &&
+               Objects.equals(targetItem, recipeTarget.targetItem);
     }
     
     @Override
     public String toString() {
-        return "RecipeTarget{" + "_recipe=" + _recipe + ", _item=" + _item + '}';
+        return "RecipeTarget{" + "_recipe=" + recipe + ", _item=" + targetItem + '}';
     }
 }

@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import adris.altoclef.mixins.MinecraftMouseInputAccessor;
@@ -14,34 +15,35 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
+import java.util.Objects;
+
 
 public class PlayerExtraController {
-    
     private static final double INTERACT_RANGE = 6;
     public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
     public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
-    private final AltoClef _mod;
-    private ClientPlayNetworkHandler _networkHandler;
-    private BlockPos _blockBreakPos;
-    private double _blockBreakProgress;
+    private final AltoClef mod;
+    private ClientPlayNetworkHandler networkHandler;
+    private BlockPos blockBreakPos;
+    private double blockBreakProgress;
     
     
     public PlayerExtraController(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
     }
     
     public void onBlockBreak(BlockPos pos, double progress) {
-        _blockBreakPos = pos;
-        _blockBreakProgress = progress;
+        blockBreakPos = pos;
+        blockBreakProgress = progress;
     }
     
     public void onBlockStopBreaking() {
-        _blockBreakPos = null;
-        _blockBreakProgress = 0;
+        blockBreakPos = null;
+        blockBreakProgress = 0;
     }
     
     public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        if (world == _mod.getWorld()) {
+        if (world == mod.getWorld()) {
             BlockBrokenEvent evt = new BlockBrokenEvent();
             evt.blockPos = pos;
             evt.blockState = state;
@@ -58,48 +60,49 @@ public class PlayerExtraController {
     }
     
     public BlockPos getBreakingBlockPos() {
-        return _blockBreakPos;
+        return blockBreakPos;
     }
     
     public boolean isBreakingBlock() {
-        return _blockBreakPos != null;
+        return blockBreakPos != null;
     }
     
     public double getBreakingBlockProgress() {
-        return _blockBreakProgress;
+        return blockBreakProgress;
     }
     
     public boolean inRange(Entity entity) {
-        return _mod.getPlayer().isInRange(entity, INTERACT_RANGE);
+        return mod.getPlayer().isInRange(entity, INTERACT_RANGE);
     }
     
     public void attack(Entity entity) {
         if (inRange(entity)) {
-            _mod.getController().attackEntity(_mod.getPlayer(), entity);
+            mod.getController().attackEntity(mod.getPlayer(), entity);
         }
     }
     
+    @SuppressWarnings("CastToIncompatibleInterface")
     public void dropCurrentStack(boolean single) {
-        assert MinecraftClient.getInstance().interactionManager != null;
-        ((ClientPlayerInteractionAccessor) MinecraftClient.getInstance().interactionManager).doSendPlayerAction(
+        ((ClientPlayerInteractionAccessor) Objects.requireNonNull(MinecraftClient.getInstance().interactionManager)).doSendPlayerAction(
                 single ? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS, new BlockPos(0, 0, 0),
                 Direction.fromRotation(0));
-        _mod.getInventoryTracker().setDirty();
+        mod.getInventoryTracker().setDirty();
     }
     
+    @SuppressWarnings("CastToIncompatibleInterface")
     public void mouseClickOverride(int button, boolean down) {
         MinecraftMouseInputAccessor mouse = (MinecraftMouseInputAccessor) MinecraftClient.getInstance().mouse;
         mouse.mouseClick(MinecraftClient.getInstance().getWindow().getHandle(), button, down ? 1 : 0, 0);
     }
     
-
+    
     public static class BlockBrokenEvent {
         public BlockPos blockPos;
         public BlockState blockState;
         public PlayerEntity player;
     }
     
-
+    
     public static class BlockPlaceEvent {
         public BlockPos blockPos;
         public BlockState blockState;

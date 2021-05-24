@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.stupid;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.AbstractKillEntityTask;
 import adris.altoclef.tasks.DoToClosestEntityTask;
@@ -19,17 +20,15 @@ import java.util.HashMap;
  * <p>
  * Works well but isn't perfect, since turning around quickly results in movement delay.
  * <p>
- * Potential fix:
- * - Have a "last velocity" of the change of a player's closeness. If the velocity is high in one direction, stop early.
+ * Potential fix: - Have a "last velocity" of the change of a player's closeness. If the velocity is high in one direction, stop early.
  */
 public class SCP173Task extends Task {
-    
     private static final double MAX_RANGE = 300;
     private static final double LOOK_CLOSENESS_THRESHOLD = 0.2;
     private static final double HIT_RANGE = 2.5;
     private static final double WALK_THRESHOLD = 0.1;
     private final HashMap<PlayerEntity, Double> _lastLookCloseness = new HashMap<>();
-    private PlayerEntity _lastTarget = null;
+    private PlayerEntity _lastTarget;
     private Vec3d _lastWalkVelocity = Vec3d.ZERO;
     
     @Override

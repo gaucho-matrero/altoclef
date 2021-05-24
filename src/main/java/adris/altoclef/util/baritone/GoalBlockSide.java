@@ -10,14 +10,14 @@ import net.minecraft.util.math.Vec3i;
 
 public class GoalBlockSide implements Goal {
     
-    private final BlockPos _block;
-    private final Direction _direction;
-    private final double _buffer;
+    private final BlockPos block;
+    private final Direction direction;
+    private final double buffer;
     
     public GoalBlockSide(BlockPos block, Direction direction, double bufferDistance) {
-        this._block = block;
-        this._direction = direction;
-        this._buffer = bufferDistance;
+        this.block = block;
+        this.direction = direction;
+        this.buffer = bufferDistance;
     }
     
     public GoalBlockSide(BlockPos block, Direction direction) {
@@ -37,11 +37,11 @@ public class GoalBlockSide implements Goal {
     }
     
     private double getDistanceInRightDirection(int x, int y, int z) {
-        Vec3d delta = new Vec3d(x, y, z).subtract(_block.getX(), _block.getY(), _block.getZ());
-        Vec3i dir = _direction.getVector();
+        Vec3d delta = new Vec3d(x, y, z).subtract(block.getX(), block.getY(), block.getZ());
+        Vec3i dir = direction.getVector();
         double dot = new Vec3d(dir.getX(), dir.getY(), dir.getZ()).dotProduct(delta);
         // WE ASSUME THAT dir IS NORMALIZED
         double distCorrect = dot;
-        return distCorrect - this._buffer;
+        return distCorrect - this.buffer;
     }
 }

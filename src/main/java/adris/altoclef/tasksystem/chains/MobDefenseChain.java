@@ -1,5 +1,6 @@
 package adris.altoclef.tasksystem.chains;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.KillEntitiesTask;
@@ -58,25 +59,24 @@ import java.util.Optional;
 
 public class MobDefenseChain extends SingleTaskChain {
     
-    private static final double CREEPER_KEEP_DISTANCE = 10;
-    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
-    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
-    
-    private static final double DANGER_KEEP_DISTANCE = 15;
-    
-    private static final double SAFE_KEEP_DISTANCE = 8;
     // Kind of a silly solution
-    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[]{
+    @SuppressWarnings("rawtypes")
+    public static final Class[] HOSTILE_ANNOYING_CLASSES = {
             SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class,
             PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class,
             PillagerEntity.class, DrownedEntity.class
     };
+    private static final double CREEPER_KEEP_DISTANCE = 10; // TODO: 2021-05-22 move these to a config
+    private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
+    private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
+    private static final double DANGER_KEEP_DISTANCE = 15;
+    private static final double SAFE_KEEP_DISTANCE = 8;
     private final KillAura _killAura = new KillAura();
     private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
-    private Entity _targetEntity;
-    private boolean _doingFunkyStuff = false;
-    private boolean _wasPuttingOutFire = false;
-    private Task _runAwayTask;
+    private Entity targetEntity;
+    private boolean doingFunkyStuff;
+    private boolean wasPuttingOutFire;
+    private Task runAwayTask;
     
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -112,10 +112,10 @@ public class MobDefenseChain extends SingleTaskChain {
         BlockPos fireBlock = isInsideFireAndOnFire(mod);
         if (fireBlock != null) {
             putOutFire(mod, fireBlock);
-        } else if (_wasPuttingOutFire) {
+        } else if (wasPuttingOutFire) {
             // Stop putting stuff out if we no longer need to put out a fire.
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
-            _wasPuttingOutFire = false;
+            wasPuttingOutFire = false;
         }
         
         if (prioritizeEating(mod)) {
@@ -133,25 +133,25 @@ public class MobDefenseChain extends SingleTaskChain {
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
         if (universallyDangerous != null) {
-            _runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
-            setTask(_runAwayTask);
+            runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
+            setTask(runAwayTask);
             return 70;
         }
         
-        _doingFunkyStuff = false;
+        doingFunkyStuff = false;
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
-            _doingFunkyStuff = true;
+            doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
-            _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
-            setTask(_runAwayTask);
+            runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
+            setTask(runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
         
         // Dodge projectiles
-        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
-            _doingFunkyStuff = true;
+        if (!mod.getFoodTaskChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+            doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
@@ -159,10 +159,10 @@ public class MobDefenseChain extends SingleTaskChain {
         
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod)) {
-            _doingFunkyStuff = true;
-            if (_targetEntity == null) {
-                _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
-                setTask(_runAwayTask);
+            doingFunkyStuff = true;
+            if (targetEntity == null) {
+                runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
+                setTask(runAwayTask);
                 return 70;
             }
         }
@@ -176,7 +176,7 @@ public class MobDefenseChain extends SingleTaskChain {
             }
             
             ToolItem bestSword = null;
-            Item[] SWORDS = new Item[]{
+            Item[] SWORDS = {
                     Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD
             };
             for (Item item : SWORDS) {
@@ -260,8 +260,8 @@ public class MobDefenseChain extends SingleTaskChain {
                         return 65;
                     } else {
                         // We can't deal with it
-                        _runAwayTask = new RunAwayFromHostilesTask(30, true);
-                        setTask(_runAwayTask);
+                        runAwayTask = new RunAwayFromHostilesTask(30, true);
+                        setTask(runAwayTask);
                         return 80;
                     }
                 }
@@ -270,8 +270,8 @@ public class MobDefenseChain extends SingleTaskChain {
         
         
         // By default if we aren't "immediately" in danger but were running away, keep running away until we're good.
-        if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
-            setTask(_runAwayTask);
+        if (runAwayTask != null && runAwayTask.isActive() && !runAwayTask.isFinished(mod)) {
+            setTask(runAwayTask);
             return 60;
         }
         
@@ -287,7 +287,7 @@ public class MobDefenseChain extends SingleTaskChain {
         boolean onFire = mod.getPlayer().isOnFire();
         if (!onFire) return null;
         BlockPos p = mod.getPlayer().getBlockPos();
-        BlockPos[] toCheck = new BlockPos[]{
+        BlockPos[] toCheck = {
                 p, p.add(1, 0, 0), p.add(1, 0, 1), p.add(1, 0, -1), p.add(0, 0, 1), p.add(0, 0, -1), p.add(-1, 0, 1), p.add(-1, 0, -1)
         };
         for (BlockPos check : toCheck) {
@@ -308,14 +308,14 @@ public class MobDefenseChain extends SingleTaskChain {
         if (reachable.isPresent()) {
             b.getLookBehavior().updateTarget(reachable.get(), true);
             if (ctx.isLookingAt(pos)) {
-                _wasPuttingOutFire = true;
+                wasPuttingOutFire = true;
                 b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
         }
     }
     
     private boolean prioritizeEating(AltoClef mod) {
-        return mod.getFoodChain().needsToEatCritical(mod);
+        return mod.getFoodTaskChain().needsToEatCritical(mod);
     }
     
     private void doForceField(AltoClef mod) {
@@ -358,7 +358,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
     
     private void applyForceField(AltoClef mod, Entity entity) {
-        if (_targetEntity != null && _targetEntity.equals(entity)) return;
+        if (targetEntity != null && targetEntity.equals(entity)) return;
         _killAura.applyAura(mod, entity);
     }
     
@@ -481,7 +481,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
     
     public void setTargetEntity(Entity entity) {
-        _targetEntity = entity;
+        targetEntity = entity;
     }
     
     public void setForceFieldRange(double range) {
@@ -493,7 +493,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
     
     public boolean isDoingAcrobatics() {
-        return _doingFunkyStuff;
+        return doingFunkyStuff;
     }
     
     @Override

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -18,22 +19,21 @@ import net.minecraft.util.math.Vec3d;
  */
 
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
-    
-    private final float _distanceToWander;
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final boolean _increaseRange;
+    private final float distanceToWander;
+    private final MovementProgressChecker progressChecker = new MovementProgressChecker();
+    private final boolean increaseRange;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
-    private Vec3d _origin;
-    private boolean _executingPlanB = false;
-    private boolean _forceExplore;
-    private Task _unstuckTask = null;
-    private int _failCounter;
-    private double _wanderDistanceExtension;
+    private Vec3d origin;
+    private boolean executingPlanB;
+    private boolean forceExplore;
+    private Task unstuckTask;
+    private int failCounter;
+    private double wanderDistanceExtension;
     
     public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
-        _distanceToWander = distanceToWander;
-        _increaseRange = increaseRange;
-        _forceExplore = false;
+        this.distanceToWander = distanceToWander;
+        this.increaseRange = increaseRange;
+        forceExplore = false;
     }
     
     public TimeoutWanderTask(float distanceToWander) {
@@ -46,7 +46,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     
     public TimeoutWanderTask(boolean forceExplore) {
         this();
-        _forceExplore = forceExplore;
+        this.forceExplore = forceExplore;
     }
     
     private static BlockPos[] generateSides(BlockPos pos) {
@@ -56,29 +56,29 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     }
     
     public void resetWander() {
-        _executingPlanB = false;
-        _wanderDistanceExtension = 0;
+        executingPlanB = false;
+        wanderDistanceExtension = 0;
     }
     
     private Goal getRandomDirectionGoal(AltoClef mod) {
-        double distance = Float.isInfinite(_distanceToWander) ? _distanceToWander : _distanceToWander + _wanderDistanceExtension;
+        double distance = Float.isInfinite(distanceToWander) ? distanceToWander : distanceToWander + wanderDistanceExtension;
         return new GoalRunAway(distance, mod.getPlayer().getBlockPos());
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (_origin == null) return true;
+        if (origin == null) return true;
         
-        if (Float.isInfinite(_distanceToWander)) return false;
+        if (Float.isInfinite(distanceToWander)) return false;
         
         // If we fail 10 times or more, we may as well try the previous task again.
-        if (_failCounter > 10) {
+        if (failCounter > 10) {
             return true;
         }
         
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
-            double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
-            double toWander = _distanceToWander + _wanderDistanceExtension;
+            double sqDist = mod.getPlayer().getPos().squaredDistanceTo(origin);
+            double toWander = distanceToWander + wanderDistanceExtension;
             return sqDist > toWander * toWander;
         } else {
             return false;
@@ -87,20 +87,20 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     
     @Override
     protected void onStart(AltoClef mod) {
-        _origin = mod.getPlayer().getPos();
-        _progressChecker.reset();
-        _failCounter = 0;
+        origin = mod.getPlayer().getPos();
+        progressChecker.reset();
+        failCounter = 0;
     }
     
     @Override
     protected Task onTick(AltoClef mod) {
         
-        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInFence(mod) != null) {
+        if (unstuckTask != null && unstuckTask.isActive() && !unstuckTask.isFinished(mod) && stuckInFence(mod) != null) {
             setDebugState("Getting unstuck from fence. Yes this happens.");
-            return _unstuckTask;
+            return unstuckTask;
         }
         
-        if (_executingPlanB) {
+        if (executingPlanB) {
             setDebugState("Plan B: Random direction.");
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
@@ -108,33 +108,33 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
+                mod.getClientBaritone().getExploreProcess().explore((int) origin.getX(), (int) origin.getZ());
             }
         }
         
         //_distanceProgressChecker.setProgress(mod.getPlayer().getPos());
         //if (_distanceProgressChecker.failed()) {
-        if (!_progressChecker.check(mod)) {
+        if (!progressChecker.check(mod)) {
             // We failed at exploring.
             //_distanceProgressChecker.reset();
-            _progressChecker.reset();
+            progressChecker.reset();
             
             BlockPos fenceStuck = stuckInFence(mod);
             if (fenceStuck != null) {
-                _failCounter++;
+                failCounter++;
                 Debug.logMessage("Failed exploring, found fence nearby.");
-                _unstuckTask = getFenceUnstuckTask(mod, fenceStuck);
-                return _unstuckTask;
+                unstuckTask = getFenceUnstuckTask(mod, fenceStuck);
+                return unstuckTask;
             }
             
-            if (!_forceExplore) {
-                _failCounter++;
+            if (!forceExplore) {
+                failCounter++;
                 Debug.logMessage("Failed exploring.");
-                if (_executingPlanB) {
+                if (executingPlanB) {
                     // Cancel current plan B
                     mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 }
-                _executingPlanB = true;
+                executingPlanB = true;
             }
         }
         
@@ -146,8 +146,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritone().getExploreProcess().onLostControl();
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         if (isFinished(mod)) {
-            if (_increaseRange) {
-                _wanderDistanceExtension += _distanceToWander;
+            if (increaseRange) {
+                wanderDistanceExtension += distanceToWander;
                 Debug.logMessage("Increased wander range");
             }
         }
@@ -157,17 +157,17 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     protected boolean isEqual(Task obj) {
         if (obj instanceof TimeoutWanderTask) {
             TimeoutWanderTask other = (TimeoutWanderTask) obj;
-            if (Float.isInfinite(other._distanceToWander) || Float.isInfinite(_distanceToWander)) {
-                return Float.isInfinite(other._distanceToWander) == Float.isInfinite(_distanceToWander);
+            if (Float.isInfinite(other.distanceToWander) || Float.isInfinite(distanceToWander)) {
+                return Float.isInfinite(other.distanceToWander) == Float.isInfinite(distanceToWander);
             }
-            return Math.abs(other._distanceToWander - _distanceToWander) < 0.5f;
+            return Math.abs(other.distanceToWander - distanceToWander) < 0.5f;
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Wander for " + (_distanceToWander + _wanderDistanceExtension) + " blocks";
+        return "Wander for " + (distanceToWander + wanderDistanceExtension) + " blocks";
     }
     
     // This happens all the time in mineshafts.

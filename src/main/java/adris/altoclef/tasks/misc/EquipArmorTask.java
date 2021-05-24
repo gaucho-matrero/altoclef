@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -13,21 +14,21 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.Objects;
+
 
 public class EquipArmorTask extends Task {
-    
-    private final String[] _toEquip;
-    
-    private final Timer _moveTimer = new Timer(0.5f);
+    private final String[] toEquip;
+    private final Timer moveTimer = new Timer(0.5f);
     
     public EquipArmorTask(String... toEquip) {
-        _toEquip = toEquip;
+        this.toEquip = toEquip;
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        for (String armor : _toEquip) {
-            ArmorItem item = (ArmorItem) TaskCatalogue.getItemMatches(armor)[0];
+        for (String armor : toEquip) {
+            ArmorItem item = (ArmorItem) Objects.requireNonNull(TaskCatalogue.getItemMatches(armor))[0];
             if (item == null) {
                 Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
             } else {
@@ -45,10 +46,10 @@ public class EquipArmorTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         
-        ItemTarget[] targets = new ItemTarget[_toEquip.length];
+        ItemTarget[] targets = new ItemTarget[toEquip.length];
         int i = 0;
         boolean armorMet = true;
-        for (String armor : _toEquip) {
+        for (String armor : toEquip) {
             ItemTarget target = new ItemTarget(armor, 1);
             targets[i] = target;
             if (!mod.getInventoryTracker().targetMet(target)) {
@@ -65,9 +66,9 @@ public class EquipArmorTask extends Task {
         
         // Now equip
         
-        if (_moveTimer.elapsed()) {
-            _moveTimer.reset();
-            for (String armor : _toEquip) {
+        if (moveTimer.elapsed()) {
+            moveTimer.reset();
+            for (String armor : toEquip) {
                 ArmorItem item = (ArmorItem) TaskCatalogue.getItemMatches(armor)[0];
                 if (item == null) {
                     Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
@@ -95,13 +96,13 @@ public class EquipArmorTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof EquipArmorTask) {
             EquipArmorTask other = (EquipArmorTask) obj;
-            return Util.arraysEqual(other._toEquip, _toEquip);
+            return Util.arraysEqual(other.toEquip, toEquip);
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Equipping armor " + ArrayUtils.toString(_toEquip);
+        return "Equipping armor " + ArrayUtils.toString(toEquip);
     }
 }

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
@@ -23,10 +24,8 @@ import java.util.Optional;
 
 
 public class MLGBucketTask extends Task {
-    
-    private boolean _clicked;
-    
-    private BlockPos _placedPos;
+    private boolean clicked;
+    private BlockPos placedPos;
     
     private RaycastContext test(Entity player, Vec3d offset) {
         Vec3d pos = player.getPos();
@@ -43,8 +42,8 @@ public class MLGBucketTask extends Task {
     
     @Override
     protected void onStart(AltoClef mod) {
-        _clicked = false;
-        _placedPos = null;
+        clicked = false;
+        placedPos = null;
         // hold shift while falling.
         //MinecraftClient.getInstance().options.keySneak.setPressed(true);
         // Look down at first, usually does the trick.
@@ -55,7 +54,7 @@ public class MLGBucketTask extends Task {
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
         // We may crop the edge of a block or wall.
-        Vec3d[] offsets = new Vec3d[]{
+        Vec3d[] offsets = {
                 new Vec3d(0, 0, 0), new Vec3d(-0.5, 0, 0), new Vec3d(0.5, 0, 0), new Vec3d(0, 0, -0.5), new Vec3d(0, 0, 0.5)
         };
         BlockHitResult result = null;
@@ -75,7 +74,7 @@ public class MLGBucketTask extends Task {
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
             if (willLandInState.getBlock() == Blocks.WATER) {
                 Debug.logMessage("(HIT SET): " + willLandIn);
-                _placedPos = willLandIn;
+                placedPos = willLandIn;
                 // We good.
                 setDebugState("Waiting to fall into water");
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
@@ -94,14 +93,14 @@ public class MLGBucketTask extends Task {
                 mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
                     Debug.logMessage("HIT: " + willLandIn);
-                    _placedPos = willLandIn;
-                    if (!_clicked) {
+                    placedPos = willLandIn;
+                    if (!clicked) {
                         MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                        _clicked = true;
+                        clicked = true;
                     } else {
                         MinecraftClient.getInstance().options.keyUse.setPressed(false);
                     }
-                    _clicked = false;
+                    clicked = false;
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             } else {
@@ -137,7 +136,7 @@ public class MLGBucketTask extends Task {
     
     
     public BlockPos getWaterPlacedPos() {
-        return _placedPos;
+        return placedPos;
     }
     
 }

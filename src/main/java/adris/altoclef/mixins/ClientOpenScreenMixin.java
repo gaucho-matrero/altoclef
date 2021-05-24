@@ -1,5 +1,6 @@
 package adris.altoclef.mixins;
 
+
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;

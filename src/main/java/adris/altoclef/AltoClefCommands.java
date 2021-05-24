@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+
 import adris.altoclef.commands.CoordsCommand;
 import adris.altoclef.commands.EquipCommand;
 import adris.altoclef.commands.FollowCommand;
@@ -34,6 +35,7 @@ import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalBucketTask;
+import adris.altoclef.tasks.misc.speedrun.FillStrongholdPortalTask;
 import adris.altoclef.tasks.misc.speedrun.KillEnderDragonTask;
 import adris.altoclef.tasks.misc.speedrun.LocateStrongholdTask;
 import adris.altoclef.tasks.misc.speedrun.TradeWithPiglinsTask;
@@ -74,14 +76,28 @@ public class AltoClefCommands extends CommandList {
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
         super(executor,
               // List commands here
-              new HelpCommand(), new GetCommand(), new FollowCommand(), new GiveCommand(), new EquipCommand(), new GotoCommand(),
-              new CoordsCommand(), new StatusCommand(), new InventoryCommand(), new LocateStructureCommand(), new StopCommand(),
-              new TestCommand(), new FoodCommand(), new ReloadSettingsCommand(), new GamerCommand(), new PunkCommand()
+              new HelpCommand(),
+              new GetCommand(),
+              new FollowCommand(),
+              new GiveCommand(),
+              new EquipCommand(),
+              new GotoCommand(),
+              new CoordsCommand(),
+              new StatusCommand(),
+              new InventoryCommand(),
+              new LocateStructureCommand(),
+              new StopCommand(),
+              new TestCommand(),
+              new FoodCommand(),
+              new ReloadSettingsCommand(),
+              new GamerCommand(),
+              new PunkCommand()
               //new TestMoveInventoryCommand(),
               //    new TestSwapInventoryCommand()
              );
     }
     
+    // TODO: 2021-05-22 move to unit tests
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
         // Test code here
         
@@ -153,15 +169,25 @@ public class AltoClefCommands extends CommandList {
         */
         //mod.runUserTask(new PickupDroppedItemTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
         //mod.runUserTask(new MineAndCollectTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
-        ItemTarget B = new ItemTarget("planks");
-        ItemTarget s = new ItemTarget("stick");
-        ItemTarget o = null;
-        CraftingRecipe testRecipe = CraftingRecipe.newShapedRecipe("wooden_pickaxe", new ItemTarget[]{ B, B, B, o, s, o, o, s, o }, 1);
-        ItemTarget targetItem = new ItemTarget(Items.WOODEN_PICKAXE, 1);
-        CraftingRecipe testRecipe2 = CraftingRecipe.newShapedRecipe("wooden_sword", new ItemTarget[]{ o, B, o, o, B, o, o, s, o }, 1);
-        ItemTarget targetItem2 = new ItemTarget(Items.WOODEN_SWORD, 1);
         
-        switch (arg) {
+        
+        // what is this?
+        ItemTarget plank = new ItemTarget("planks");
+        ItemTarget stick = new ItemTarget("stick");
+        CraftingRecipe woodenPickaxeRecipe = CraftingRecipe.newShapedRecipe("wooden_pickaxe", new ItemTarget[]{
+                plank, plank, plank, //
+                null, stick, null,   //
+                null, stick, null,   //
+        }, 1);
+        ItemTarget woodenPickaxeItem = new ItemTarget(Items.WOODEN_PICKAXE, 1);
+        CraftingRecipe woodenSwordRecipe = CraftingRecipe.newShapedRecipe("wooden_sword", new ItemTarget[]{
+                null, plank, null, //
+                null, plank, null, //
+                null, stick, null, //
+        }, 1);
+        ItemTarget woodenSwordItem = new ItemTarget(Items.WOODEN_SWORD, 1);
+        
+        switch (arg) { // TODO: 2021-05-22 ew, a switch case
             case "":
                 // Idle
                 mod.runUserTask(new IdleTask());
@@ -197,7 +223,7 @@ public class AltoClefCommands extends CommandList {
             case "deadmeme":
                 File file = new File("test.txt");
                 try {
-                    FileReader reader = new FileReader(file);
+                    FileReader reader = new FileReader(file); // 🐝
                     mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -208,11 +234,13 @@ public class AltoClefCommands extends CommandList {
                 // 24 (armor) + 3*3 (pick) + 2 = 35 diamonds
                 // 2*3 (pick) + 1 = 7 sticks
                 // 4 planks
-                mod.runUserTask(
-                        TaskCatalogue.getSquashedItemTask(new ItemTarget("diamond_chestplate", 1), new ItemTarget("diamond_leggings", 1),
-                                                          new ItemTarget("diamond_helmet", 1), new ItemTarget("diamond_boots", 1),
-                                                          new ItemTarget("diamond_pickaxe", 3), new ItemTarget("diamond_sword", 1),
-                                                          new ItemTarget("crafting_table", 1)));
+                mod.runUserTask(TaskCatalogue.getSquashedItemTask(new ItemTarget("diamond_chestplate", 1),
+                                                                  new ItemTarget("diamond_leggings", 1),
+                                                                  new ItemTarget("diamond_helmet", 1),
+                                                                  new ItemTarget("diamond_boots", 1),
+                                                                  new ItemTarget("diamond_pickaxe", 3),
+                                                                  new ItemTarget("diamond_sword", 1),
+                                                                  new ItemTarget("crafting_table", 1)));
                 //mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
                 break;
             case "smelt":
@@ -222,37 +250,41 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "avoid":
                 // Test block break predicate
-                mod.getConfigState().avoidBlockBreaking(
-                        (BlockPos b) -> (-1000 < b.getX() && b.getX() < 1000) && (-1000 < b.getY() && b.getY() < 1000) &&
-                                        (-1000 < b.getZ() && b.getZ() < 1000));
+                mod.getConfigState()
+                   .avoidBlockBreaking(pos -> (-1000 < pos.getX() && pos.getX() < 1000) &&
+                                              (-1000 < pos.getY() && pos.getY() < 1000) &&
+                                              (-1000 < pos.getZ() && pos.getZ() < 1000));
                 Debug.logMessage("Testing avoid from -1000, -1000, -1000 to 1000, 1000, 1000");
                 break;
             case "portal":
                 mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER));
                 break;
             case "kill":
-                List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
-                if (zombs.size() == 0) {
-                    Debug.logWarning("No zombs found.");
+                List<ZombieEntity> zombies = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
+                if (zombies.isEmpty()) {
+                    Debug.logWarning("No zombies found.");
                 } else {
-                    LivingEntity entity = zombs.get(0);
+                    LivingEntity entity = zombies.get(0);
                     mod.runUserTask(new KillEntityTask(entity));
                 }
                 break;
             case "craft":
                 // Test de-equip
-                new Thread() {
+                new Thread() { // I just *love* creating new threads like this
                     @Override
                     public void run() {
                         for (int i = 3; i > 0; --i) {
                             Debug.logMessage(i + "...");
-                            sleepSec(1);
+                            sleepSec(1.0);
                         }
                         
-                        Item[] c = new Item[]{ Items.COBBLESTONE };
-                        Item[] s = new Item[]{ Items.STICK };
-                        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe",
-                                                                               new Item[][]{ c, c, c, null, s, null, null, s, null }, 1);
+                        Item[] cobb = { Items.COBBLESTONE };
+                        Item[] stic = { Items.STICK };
+                        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{
+                                cobb, cobb, cobb, //
+                                null, stic, null, //
+                                null, stic, null, //
+                        }, 1);
                         
                         mod.runUserTask(new CraftGenericTask(recipe));
                         /*
@@ -281,11 +313,11 @@ public class AltoClefCommands extends CommandList {
                         mod.getInventoryTracker().clickSlot(slot1);
                         
                         Debug.logMessage("MOVE 1...");
-                        sleepSec(1);
+                        sleepSec(1.0);
                         // Pick up slot2
                         ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
                         Debug.logMessage("MOVE 2...");
-                        sleepSec(1);
+                        sleepSec(1.0);
                         
                         // slot 1 is now in slot 2
                         // slot 2 is now in cursor
@@ -303,13 +335,13 @@ public class AltoClefCommands extends CommandList {
                 new Thread(() -> {
                     for (int i = 3; i > 0; --i) {
                         Debug.logMessage(i + "...");
-                        sleepSec(1);
+                        sleepSec(1.0);
                     }
                     mod.getControllerExtras().dropCurrentStack(true);
                 }).start();
                 break;
             case "food":
-                mod.runUserTask(new CollectFoodTask(20));
+                mod.runUserTask(new CollectFoodTask(20.0));
                 break;
             case "temple":
                 mod.runUserTask(new LocateDesertTempleTask());
@@ -365,13 +397,13 @@ public class AltoClefCommands extends CommandList {
                 mod.runUserTask(new LocateStrongholdTask(12));
                 break;
             case "terminate":
-                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 900));
+                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 900.0));
                 break;
             case "replace":
                 // Creates a mini valley of crafting tables.
                 BlockPos from = mod.getPlayer().getBlockPos().add(new Vec3i(-100, -20, -100));
                 BlockPos to = mod.getPlayer().getBlockPos().add(new Vec3i(100, 255, 100));
-                Block[] toFind = new Block[]{ Blocks.GRASS_BLOCK };// Blocks.COBBLESTONE};
+                Block[] toFind = { Blocks.GRASS_BLOCK };// Blocks.COBBLESTONE};
                 ItemTarget toReplace = new ItemTarget("crafting_table");//"stone");
                 mod.runUserTask(new ReplaceBlocksTask(toReplace, from, to, toFind));
                 break;
@@ -395,7 +427,7 @@ public class AltoClefCommands extends CommandList {
     
     private static void sleepSec(double seconds) {
         try {
-            Thread.sleep((int) (1000 * seconds));
+            Thread.sleep((long) (1000.0 * seconds));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

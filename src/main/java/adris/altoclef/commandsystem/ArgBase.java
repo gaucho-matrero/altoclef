@@ -1,12 +1,13 @@
 package adris.altoclef.commandsystem;
 
+
 import java.lang.reflect.ParameterizedType;
 
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class ArgBase {
-    protected int _minArgCountToUseDefault;
-    protected boolean _hasDefault;
+    protected int minArgCountToUseDefault;
+    protected boolean hasDefault;
     
     protected <V> V GetConverted(Class<V> vType, Object ob) {
         try {
@@ -35,11 +36,11 @@ public abstract class ArgBase {
     public abstract String GetHelpRepresentation();
     
     public int getMinArgCountToUseDefault() {
-        return _minArgCountToUseDefault;
+        return minArgCountToUseDefault;
     }
     
     public boolean hasDefault() {
-        return _hasDefault;
+        return hasDefault;
     }
     
     public boolean isArray() {

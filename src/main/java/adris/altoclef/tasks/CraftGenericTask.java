@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
@@ -19,12 +20,11 @@ import java.util.List;
 
 
 public class CraftGenericTask extends Task {
-    
-    private final CraftingRecipe _recipe;
-    private Timer _invTimer;
+    private final CraftingRecipe recipe;
+    private Timer invTimer;
     
     public CraftGenericTask(CraftingRecipe recipe) {
-        _recipe = recipe;
+        this.recipe = recipe;
     }
     
     @Override
@@ -34,19 +34,19 @@ public class CraftGenericTask extends Task {
     
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_invTimer == null) {
-            _invTimer = new Timer(mod.getModSettings().getContainerItemMoveDelay());
+        if (invTimer == null) {
+            invTimer = new Timer(mod.getModSettings().getContainerItemMoveDelay());
         } else {
-            _invTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
+            invTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
         }
-        boolean delayedCraft = (_invTimer.getDuration() > 0);
+        boolean delayedCraft = (invTimer.getDuration() > 0);
         
-        if (!_invTimer.elapsed()) {
+        if (!invTimer.elapsed()) {
             // Each "tick" past here is one operation.
             // Wait until timer comes back.
             return null;
         } else {
-            _invTimer.reset();
+            invTimer.reset();
         }
         
         boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
@@ -62,12 +62,12 @@ public class CraftGenericTask extends Task {
         }
         
         // For each slot in table
-        for (int craftSlot = 0; craftSlot < _recipe.getSlotCount(); ++craftSlot) {
-            ItemTarget toFill = _recipe.getSlot(craftSlot);
+        for (int craftSlot = 0; craftSlot < recipe.getSlotCount(); ++craftSlot) {
+            ItemTarget toFill = recipe.getSlot(craftSlot);
             Slot currentCraftSlot;
             if (bigCrafting) {
                 // Craft in table
-                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, _recipe.isBig());
+                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, recipe.isBig());
             } else {
                 // Craft in window
                 currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
@@ -128,13 +128,13 @@ public class CraftGenericTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CraftGenericTask) {
-            return ((CraftGenericTask) obj)._recipe.equals(_recipe);
+            return ((CraftGenericTask) obj).recipe.equals(recipe);
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Crafting " + _recipe.toString();
+        return "Crafting " + recipe.toString();
     }
 }

@@ -1,5 +1,6 @@
 package adris.altoclef.tasksystem.chains;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.ResourceTask;
@@ -20,12 +21,11 @@ import java.util.List;
 
 
 public class PlayerInteractionFixChain extends TaskChain {
-    
-    private final Timer _stackHeldTimeout = new Timer(8);
-    private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
-    private final Timer _shiftDepressTimeout = new Timer(10);
-    private final Timer _betterToolTimer = new Timer(0.5);
-    private ItemStack _lastHandStack = null;
+    private final Timer stackHeldTimeout = new Timer(8);
+    private final Timer generalDuctTapeSwapTimeout = new Timer(30);
+    private final Timer shiftDepressTimeout = new Timer(10);
+    private final Timer betterToolTimer = new Timer(0.5);
+    private ItemStack lastHandStack;
     
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
@@ -50,9 +50,9 @@ public class PlayerInteractionFixChain extends TaskChain {
         
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
         
-        if (_betterToolTimer.elapsed()) {
+        if (betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
-            _betterToolTimer.reset();
+            betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
                 Slot bestToolSlot = null;
@@ -87,20 +87,20 @@ public class PlayerInteractionFixChain extends TaskChain {
         
         // Unpress shift (it gets stuck for some reason???)
         if (MinecraftClient.getInstance().options.keySneak.isPressed()) {
-            if (_shiftDepressTimeout.elapsed()) {
+            if (shiftDepressTimeout.elapsed()) {
                 Debug.logMessage("Unpressing shift/sneak");
                 MinecraftClient.getInstance().options.keySneak.setPressed(false);
             }
         } else {
-            _shiftDepressTimeout.reset();
+            shiftDepressTimeout.reset();
         }
         
         // Refresh inventory
-        if (_generalDuctTapeSwapTimeout.elapsed()) {
+        if (generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getControllerExtras().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");
                 mod.getInventoryTracker().refreshInventory();
-                _generalDuctTapeSwapTimeout.reset();
+                generalDuctTapeSwapTimeout.reset();
                 return Float.NEGATIVE_INFINITY;
             }
         }
@@ -109,17 +109,17 @@ public class PlayerInteractionFixChain extends TaskChain {
         
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck
-            if (_lastHandStack == null || !ItemStack.areEqual(currentStack, _lastHandStack)) {
+            if (lastHandStack == null || !ItemStack.areEqual(currentStack, lastHandStack)) {
                 // We're holding a new item in our stack!
-                _stackHeldTimeout.reset();
-                _lastHandStack = currentStack;
+                stackHeldTimeout.reset();
+                lastHandStack = currentStack;
             }
         } else {
-            _lastHandStack = null;
+            lastHandStack = null;
         }
         
         // If we have something in our hand for a period of time...
-        if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
+        if (lastHandStack != null && stackHeldTimeout.elapsed()) {
             Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
             if (mod.getInventoryTracker().isInventoryFull()) {
                 if (!ResourceTask.ensureInventoryFree(mod)) {

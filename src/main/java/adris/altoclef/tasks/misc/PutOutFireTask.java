@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasksystem.Task;
@@ -14,16 +15,15 @@ import net.minecraft.util.math.Direction;
  * Given a block position with fire in it, extinguish the fire at that position
  */
 public class PutOutFireTask extends Task {
-    
-    private final BlockPos _firePosition;
+    private final BlockPos firePosition;
     
     public PutOutFireTask(BlockPos firePosition) {
-        _firePosition = firePosition;
+        this.firePosition = firePosition;
     }
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        BlockState s = mod.getWorld().getBlockState(_firePosition);
+        BlockState s = mod.getWorld().getBlockState(firePosition);
         return (s.getBlock() != Blocks.FIRE && s.getBlock() != Blocks.SOUL_FIRE);
     }
     
@@ -34,7 +34,7 @@ public class PutOutFireTask extends Task {
     
     @Override
     protected Task onTick(AltoClef mod) {
-        return new InteractItemWithBlockTask(null, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false, false);
+        return new InteractItemWithBlockTask(null, Direction.UP, firePosition.down(), Input.CLICK_LEFT, false, false);
     }
     
     @Override
@@ -46,13 +46,13 @@ public class PutOutFireTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof PutOutFireTask) {
             PutOutFireTask task = (PutOutFireTask) obj;
-            return (task._firePosition.equals(_firePosition));
+            return (task.firePosition.equals(firePosition));
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Putting out fire at " + _firePosition;
+        return "Putting out fire at " + firePosition;
     }
 }

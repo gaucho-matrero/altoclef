@@ -1,35 +1,41 @@
 package adris.altoclef.util;
 
+
 import java.util.Objects;
 
 
 public class SmeltTarget {
+    private final ItemTarget sourceItem;
+    private final ItemTarget targetItem;
     
-    private final ItemTarget _material;
-    private final ItemTarget _item;
-    
-    public SmeltTarget(ItemTarget item, ItemTarget material) {
-        _item = item;
-        _material = material;
-        _material.targetCount = _item.targetCount;
+    public SmeltTarget(ItemTarget sourceItem, ItemTarget targetItem) {
+        this.sourceItem = sourceItem;
+        this.targetItem = targetItem;
+        this.targetItem.targetCount = this.sourceItem.targetCount;
     }
     
-    public ItemTarget getItem() {
-        return _item;
+    public ItemTarget getSourceItem() {
+        return sourceItem;
     }
     
-    public ItemTarget getMaterial() { return _material; }
+    public ItemTarget getTargetItem() {
+        return targetItem;
+    }
     
     @Override
     public int hashCode() {
-        return Objects.hash(_material, _item);
+        int result = sourceItem != null ? sourceItem.hashCode() : 0;
+        result = 31 * result + (targetItem != null ? targetItem.hashCode() : 0);
+        return result;
     }
     
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SmeltTarget that = (SmeltTarget) o;
-        return Objects.equals(_material, that._material) && Objects.equals(_item, that._item);
+        
+        SmeltTarget smeltTarget = (SmeltTarget) o;
+        return Objects.equals(sourceItem, smeltTarget.sourceItem) &&
+               Objects.equals(targetItem, smeltTarget.targetItem);
     }
 }

@@ -1,5 +1,6 @@
 package adris.altoclef.util.progresscheck;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.WorldUtil;
 import net.minecraft.util.math.BlockPos;
@@ -8,14 +9,14 @@ import net.minecraft.util.math.Vec3d;
 
 public class MovementProgressChecker {
     
-    private final IProgressChecker<Vec3d> _distanceChecker;
-    private final IProgressChecker<Double> _mineChecker;
+    private final IProgressChecker<Vec3d> distanceChecker;
+    private final IProgressChecker<Double> mineChecker;
     
-    private BlockPos _lastBreakingBlock = null;
+    private BlockPos lastBreakingBlock;
     
     public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress, int attempts) {
-        _distanceChecker = new ProgressCheckerRetry<>(new DistanceProgressChecker(distanceTimeout, minDistance), attempts);
-        _mineChecker = new LinearProgressChecker(mineTimeout, minMineProgress);
+        distanceChecker = new ProgressCheckerRetry<>(new DistanceProgressChecker(distanceTimeout, minDistance), attempts);
+        mineChecker = new LinearProgressChecker(mineTimeout, minMineProgress);
     }
     
     public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress) {
@@ -33,9 +34,9 @@ public class MovementProgressChecker {
     public boolean check(AltoClef mod) {
         
         // Allow pause on eat
-        if (mod.getFoodChain().isTryingToEat()) {
-            _distanceChecker.reset();
-            _mineChecker.reset();
+        if (mod.getFoodTaskChain().isTryingToEat()) {
+            distanceChecker.reset();
+            mineChecker.reset();
         }
         
         if (mod.getControllerExtras().isBreakingBlock()) {
@@ -43,23 +44,23 @@ public class MovementProgressChecker {
             // If we broke a block, we made progress.
             // We must also delay reseting the distance checker UNTIL we break a block.
             // Because otherwise we risk not failing if we keep retrtying to mine and don't succeed.
-            if (_lastBreakingBlock != null && WorldUtil.isAir(mod, _lastBreakingBlock)) {
-                _distanceChecker.reset();
-                _mineChecker.reset();
+            if (lastBreakingBlock != null && WorldUtil.isAir(mod, lastBreakingBlock)) {
+                distanceChecker.reset();
+                mineChecker.reset();
             }
-            _lastBreakingBlock = breakBlock;
-            _mineChecker.setProgress(mod.getControllerExtras().getBreakingBlockProgress());
-            return !_mineChecker.failed();
+            lastBreakingBlock = breakBlock;
+            mineChecker.setProgress(mod.getControllerExtras().getBreakingBlockProgress());
+            return !mineChecker.failed();
         } else {
-            _mineChecker.reset();
-            _distanceChecker.setProgress(mod.getPlayer().getPos());
-            return !_distanceChecker.failed();
+            mineChecker.reset();
+            distanceChecker.setProgress(mod.getPlayer().getPos());
+            return !distanceChecker.failed();
         }
     }
     
     public void reset() {
-        _distanceChecker.reset();
-        _mineChecker.reset();
+        distanceChecker.reset();
+        mineChecker.reset();
     }
     
 }

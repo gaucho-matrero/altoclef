@@ -2,6 +2,7 @@ package adris.altoclef.util.baritone;//
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
 //
+// ... bruh
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -31,21 +32,21 @@ import java.util.Optional;
 
 
 public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
-    // How close we are expected to travel to get to the block. Increases as we fail.
-    public int reachCounter = 0;
-    //private boolean _rightClickOnArrival;
-    private BlockPos _target = null;
-    private boolean _walkInto;
-    private boolean _blockOnTopMustBeRemoved;
-    private boolean _cancelRightClick;
-    private Direction _interactSide;
-    private Vec3i _interactOffset;
-    private int arrivalTickCount = 0;
-    private ItemTarget _equipTarget = null;
     private final AltoClef _mod;
-    private boolean _failed;
-    private Input _interactInput = Input.CLICK_RIGHT;
-    private boolean _shiftClick;
+    // How close we are expected to travel to get to the block. Increases as we fail.
+    public int reachCounter;
+    //private boolean rightClickOnArrival;
+    private BlockPos target;
+    private boolean walkInto;
+    private boolean blockOnTopMustBeRemoved;
+    private boolean cancelRightClick;
+    private Direction interactSide;
+    private Vec3i interactOffset;
+    private int arrivalTickCount;
+    private ItemTarget equipTarget;
+    private boolean failed;
+    private Input interactInput = Input.CLICK_RIGHT;
+    private boolean shiftClick;
     
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone);
@@ -87,21 +88,21 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto,
                            Vec3i interactOffset, boolean shiftClick) {
         this.onLostControl();
-        _target = target;
-        _interactSide = interactSide;
-        _interactInput = interactInput;
-        _blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
-        _walkInto = walkInto;
-        _interactOffset = interactOffset;
-        _shiftClick = shiftClick;
+        this.target = target;
+        this.interactSide = interactSide;
+        this.interactInput = interactInput;
+        this.blockOnTopMustBeRemoved = blockOnTopMustBeRemoved;
+        this.walkInto = walkInto;
+        this.interactOffset = interactOffset;
+        this.shiftClick = shiftClick;
         
-        _cancelRightClick = false;
+        cancelRightClick = false;
         
-        _failed = false;
+        failed = false;
         
         this.arrivalTickCount = 0;
         
-        this._equipTarget = null;
+        this.equipTarget = null;
         
         reachCounter = 0;
     }
@@ -115,7 +116,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
     
     public boolean isActive() {
-        return _target != null;
+        return target != null;
     }
     
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
@@ -125,12 +126,12 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             reachCounter++;
         }
         
-        Goal goal = createGoal(_target, reachCounter);
+        Goal goal = createGoal(target, reachCounter);
         
-        //if (_rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart
+        //if (rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart
         // ()) && isSafeToCancel)) {
-        if (_interactInput == null) {
-            if (_shiftClick) {
+        if (interactInput == null) {
+            if (shiftClick) {
                 MinecraftClient.getInstance().options.keySneak.setPressed(false);
             }
             if (goal.isInGoal(this.ctx.player().getBlockPos())) {
@@ -156,32 +157,32 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     }
     
     public synchronized void onLostControl() {
-        _target = null;
+        target = null;
         this.baritone.getInputOverrideHandler().clearAllKeys();
         // ?? Might help? Kinda redundant though.
-        this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, false);
-        if (_shiftClick) {
+        this.baritone.getInputOverrideHandler().setInputForceState(interactInput, false);
+        if (shiftClick) {
             MinecraftClient.getInstance().options.keySneak.setPressed(false);
         }
     }
     
     public String displayName0() {
-        return "Get To " + _target;
+        return "Get To " + target;
     }
     
     public boolean failed() {
-        return _failed;
+        return failed;
     }
     
     public synchronized void setInteractEquipItem(ItemTarget item) {
-        _equipTarget = item;
+        equipTarget = item;
     }
     
     private Goal createGoal(BlockPos pos, int reachDistance) {
         
         boolean sideMatters = !sideDoesntMatter();
         if (sideMatters) {
-            Vec3i offs = _interactSide.getVector();
+            Vec3i offs = interactSide.getVector();
             if (offs.getY() == -1) {
                 // If we're below, place ourselves two blocks below.
                 offs = offs.down();
@@ -189,7 +190,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             pos = pos.add(offs);
         }
         
-        if (_walkInto) {
+        if (walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
             if (sideMatters) {
@@ -204,11 +205,11 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 } else {
                     sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
                 }*/
-                Goal sideGoal = new GoalBlockSide(_target, _interactSide, 1);
-                return new GoalAnd(sideGoal, new GoalNear(pos.add(_interactOffset), reachDistance));
+                Goal sideGoal = new GoalBlockSide(target, interactSide, 1);
+                return new GoalAnd(sideGoal, new GoalNear(pos.add(interactOffset), reachDistance));
             } else {
                 // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
-                return new GoalNear(pos.add(_interactOffset), reachDistance);
+                return new GoalNear(pos.add(interactOffset), reachDistance);
             }
         }
     }
@@ -222,38 +223,38 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         if (reachable.isPresent()) {
             //Debug.logMessage("Reachable: UPDATE");
             this.baritone.getLookBehavior().updateTarget(reachable.get(), true);
-            if (this.baritone.getPlayerContext().isLookingAt(_target)) {
-                if (_equipTarget != null) {
-                    if (!_mod.getInventoryTracker().equipItem(_equipTarget)) {
-                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(_equipTarget.getMatches()));
+            if (this.baritone.getPlayerContext().isLookingAt(target)) {
+                if (equipTarget != null) {
+                    if (!_mod.getInventoryTracker().equipItem(equipTarget)) {
+                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(equipTarget.getMatches()));
                     }
                 }
-                this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
-                if (_shiftClick) {
+                this.baritone.getInputOverrideHandler().setInputForceState(interactInput, true);
+                if (shiftClick) {
                     MinecraftClient.getInstance().options.keySneak.setPressed(true);
                 }
                 //System.out.println(this.ctx.player().playerScreenHandler);
                 
-                if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
-                    _failed = true;
+                if (this.arrivalTickCount++ > 20 || cancelRightClick) {
+                    failed = true;
                     this.logDirect("Right click timed out/cancelled");
                     return ClickResponse.CLICK_ATTEMPTED;
                 }
             }
             return ClickResponse.WAIT_FOR_CLICK;
         }
-        if (_shiftClick) {
+        if (shiftClick) {
             MinecraftClient.getInstance().options.keySneak.setPressed(false);
         }
         return ClickResponse.CANT_REACH;
     }
     
     private boolean sideDoesntMatter() {
-        return _interactSide == null;
+        return interactSide == null;
     }
     
     public Optional<Rotation> getCurrentReach() {
-        return getReach(_target, _interactSide);
+        return getReach(target, interactSide);
     }
     
     private enum ClickResponse {

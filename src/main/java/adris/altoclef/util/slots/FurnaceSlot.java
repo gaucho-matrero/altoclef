@@ -1,5 +1,6 @@
 package adris.altoclef.util.slots;
 
+
 public class FurnaceSlot extends Slot {
     public static final FurnaceSlot INPUT_SLOT_FUEL = new FurnaceSlot(1);
     public static final FurnaceSlot INPUT_SLOT_MATERIALS = new FurnaceSlot(0);
@@ -20,7 +21,7 @@ public class FurnaceSlot extends Slot {
         }
         return inventorySlot - 6;
     }
-
+    
     @Override
     protected int windowSlotToInventorySlot(int windowSlot) {
         if (windowSlot >= 30) {
@@ -28,7 +29,7 @@ public class FurnaceSlot extends Slot {
         }
         return windowSlot + 6;
     }
-
+    
     @Override
     protected String getName() {
         return "Furnace";

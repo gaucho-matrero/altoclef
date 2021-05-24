@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.stupid;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -46,7 +47,7 @@ public class TerminatorTask extends Task {
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
     
-    private static final String[] DIAMOND_ARMORS = new String[]{
+    private static final String[] DIAMOND_ARMORS = {
             "diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"
     };
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("diamond_chestplate", 1),
@@ -59,7 +60,7 @@ public class TerminatorTask extends Task {
     private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("iron_pickaxe", 3));
     private final Task _foodTask = new CollectFoodTask(100);
     private final Timer _runAwayExtraTime = new Timer(10);
-    private final Predicate<PlayerEntity> _ignoreTerminate;
+    private final Predicate<? super PlayerEntity> _ignoreTerminate;
     private final ScanChunksInRadius _scanTask;
     private final Timer _funnyMessageTimer = new Timer(10);
     private Vec3d _closestPlayerLastPos;
@@ -67,7 +68,7 @@ public class TerminatorTask extends Task {
     private Task _runAwayTask;
     private String _currentVisibleTarget;
     
-    public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> ignorePredicate) {
+    public TerminatorTask(BlockPos center, double scanRadius, Predicate<? super PlayerEntity> ignorePredicate) {
         _ignoreTerminate = ignorePredicate;
         _scanTask = new ScanChunksInRadius(center, scanRadius);
     }
@@ -94,7 +95,43 @@ public class TerminatorTask extends Task {
             _closestPlayerLastObservePos = mod.getPlayer().getPos();
         }
         
-        if (!isReadyToPunk(mod)) {
+        if (isReadyToPunk(mod)) {
+            // We can totally punk
+            if (_runAwayTask != null) {
+                _runAwayTask = null;
+                Debug.logMessage("Stopped running away because we can now punk.");
+            }
+            // Get building materials if we don't have them.
+            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
+                setDebugState("Collecting building materials");
+                return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
+            }
+            
+            // Get water to MLG if we are pushed off
+            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask("water_bucket", 1);
+            }
+            // Get some food so we can last a little longer.
+            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) &&
+                mod.getInventoryTracker().totalFoodScore() <= 0) {
+                return _foodTask;
+            }
+            
+            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
+                                                        entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe),
+                                                        PlayerEntity.class) != null) {
+                setDebugState("Punking.");
+                return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), entity -> {
+                    if (entity instanceof PlayerEntity) {
+                        tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
+                        return new KillPlayerTask(entity.getName().getString());
+                    }
+                    // Should never happen.
+                    Debug.logWarning("This should never happen.");
+                    return _scanTask;
+                }, ignore -> !shouldPunk(mod, (PlayerEntity) ignore), PlayerEntity.class);
+            }
+        } else {
             
             if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
                 // If our last "scare" was too long ago or there are no more nearby players...
@@ -150,42 +187,6 @@ public class TerminatorTask extends Task {
                 }
                 setDebugState("Running away from players.");
                 return _runAwayTask;
-            }
-        } else {
-            // We can totally punk
-            if (_runAwayTask != null) {
-                _runAwayTask = null;
-                Debug.logMessage("Stopped running away because we can now punk.");
-            }
-            // Get building materials if we don't have them.
-            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
-                setDebugState("Collecting building materials");
-                return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
-            }
-            
-            // Get water to MLG if we are pushed off
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
-            }
-            // Get some food so we can last a little longer.
-            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) &&
-                mod.getInventoryTracker().totalFoodScore() <= 0) {
-                return _foodTask;
-            }
-            
-            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                                                        entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe),
-                                                        PlayerEntity.class) != null) {
-                setDebugState("Punking.");
-                return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), entity -> {
-                    if (entity instanceof PlayerEntity) {
-                        tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
-                        return new KillPlayerTask(entity.getName().getString());
-                    }
-                    // Should never happen.
-                    Debug.logWarning("This should never happen.");
-                    return _scanTask;
-                }, ignore -> !shouldPunk(mod, (PlayerEntity) ignore), PlayerEntity.class);
             }
         }
         
@@ -271,7 +272,7 @@ public class TerminatorTask extends Task {
         return "Prepare to get punked, kid";
     }
     
-    private class ScanChunksInRadius extends SearchChunksExploreTask {
+    public class ScanChunksInRadius extends SearchChunksExploreTask {
         
         private final BlockPos _center;
         private final double _radius;
@@ -339,7 +340,7 @@ public class TerminatorTask extends Task {
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
             super(toRunAwayFrom, distanceToRun, true, 0.1);
             // More lenient progress checker
-            _checker = new MovementProgressChecker(2);
+            checker = new MovementProgressChecker(2);
         }
         
         @Override

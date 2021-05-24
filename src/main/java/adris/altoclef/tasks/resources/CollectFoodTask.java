@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInInventoryTask;
@@ -42,36 +43,36 @@ import java.util.function.Predicate;
 
 
 public class CollectFoodTask extends Task {
-    
     // Actually screw fish baritone does NOT play nice underwater.
     // Fish kinda suck to harvest so heavily penalize them.
     private static final double FISH_PENALTY = 0 * 0.03;
     
     // Represents order of preferred mobs to least preferred
-    private static final CookableFoodTarget[] COOKABLE_FOODS = new CookableFoodTarget[]{
+    private static final CookableFoodTarget[] COOKABLE_FOODS = {
             new CookableFoodTarget("beef", CowEntity.class), new CookableFoodTarget("porkchop", PigEntity.class), new CookableFoodTarget(
             "mutton", SheepEntity.class), new CookableFoodTargetFish("salmon", SalmonEntity.class), new CookableFoodTarget("chicken",
                                                                                                                            ChickenEntity.class),
             new CookableFoodTargetFish("cod", CodEntity.class), new CookableFoodTarget("rabbit", RabbitEntity.class)
     };
     
-    private static final Item[] ITEMS_TO_PICK_UP = new Item[]{
+    private static final Item[] ITEMS_TO_PICK_UP = {
             Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, Items.GOLDEN_CARROT, Items.BREAD, Items.BAKED_POTATO
     };
     
-    private static final CropTarget[] CROPS = new CropTarget[]{
-            new CropTarget(Items.WHEAT, Blocks.WHEAT), new CropTarget(Items.CARROT, Blocks.CARROTS), new CropTarget(Items.POTATO,
-                                                                                                                    Blocks.POTATOES),
+    private static final CropTarget[] CROPS = {
+            new CropTarget(Items.WHEAT, Blocks.WHEAT),
+            new CropTarget(Items.CARROT, Blocks.CARROTS),
+            new CropTarget(Items.POTATO, Blocks.POTATOES),
             new CropTarget(Items.BEETROOT, Blocks.BEETROOTS)
     };
     
-    private final double _unitsNeeded;
-    private final Timer _checkNewOptionsTimer = new Timer(3);
-    private SmeltInFurnaceTask _smeltTask = null;
-    private Task _currentResourceTask = null;
+    private final double unitsNeeded;
+    private final Timer checkNewOptionsTimer = new Timer(3);
+    private SmeltInFurnaceTask smeltTask;
+    private Task currentResourceTask;
     
     public CollectFoodTask(double unitsNeeded) {
-        _unitsNeeded = unitsNeeded;
+        this.unitsNeeded = unitsNeeded;
     }
     
     // Gets the units of food if we were to convert all of our raw resources to food.
@@ -83,8 +84,7 @@ public class CollectFoodTask extends Task {
             boolean cookedFound = false;
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 if (food.getItem() == cookable.getRaw()) {
-                    assert cookable.getCooked().getFoodComponent() != null;
-                    potentialFood += count * cookable.getCooked().getFoodComponent().getHunger();
+                    potentialFood += count * Objects.requireNonNull(cookable.getCooked().getFoodComponent()).getHunger();
                     cookedFound = true;
                     break;
                 }
@@ -92,8 +92,7 @@ public class CollectFoodTask extends Task {
             if (cookedFound) continue;
             // We're just an ordinary item.
             if (food.getItem().isFood()) {
-                assert food.getItem().getFoodComponent() != null;
-                potentialFood += count * food.getItem().getFoodComponent().getHunger();
+                potentialFood += count * Objects.requireNonNull(food.getItem().getFoodComponent()).getHunger();
             }
         }
         int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCount(
@@ -104,7 +103,7 @@ public class CollectFoodTask extends Task {
     
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().totalFoodScore() >= _unitsNeeded;
+        return mod.getInventoryTracker().totalFoodScore() >= unitsNeeded;
     }
     
     @Override
@@ -122,28 +121,27 @@ public class CollectFoodTask extends Task {
     
     @Override
     protected Task onTick(AltoClef mod) {
-        
         // If we were previously smelting, keep on smelting.
-        if (_smeltTask != null && _smeltTask.isActive() && !_smeltTask.isFinished(mod)) {
+        if (smeltTask != null && smeltTask.isActive() && !smeltTask.isFinished(mod)) {
             // TODO: If we don't have cooking materials, cancel.
             setDebugState("Cooking...");
-            return _smeltTask;
+            return smeltTask;
         }
         
-        if (_checkNewOptionsTimer.elapsed()) {
+        if (checkNewOptionsTimer.elapsed()) {
             // Try a new resource task
-            _checkNewOptionsTimer.reset();
-            _currentResourceTask = null;
+            checkNewOptionsTimer.reset();
+            currentResourceTask = null;
         }
         
-        if (_currentResourceTask != null && _currentResourceTask.isActive() && !_currentResourceTask.isFinished(mod) &&
-            !_currentResourceTask.thisOrChildAreTimedOut()) {
-            return _currentResourceTask;
+        if (currentResourceTask != null && currentResourceTask.isActive() && !currentResourceTask.isFinished(mod) &&
+            !currentResourceTask.thisOrChildAreTimedOut()) {
+            return currentResourceTask;
         }
         
         // Calculate potential
         double potentialFood = calculateFoodPotential(mod);
-        if (potentialFood >= _unitsNeeded) {
+        if (potentialFood >= unitsNeeded) {
             // Convert our raw foods
             // PLAN:
             // - If we have hay/wheat, make it into bread
@@ -152,29 +150,29 @@ public class CollectFoodTask extends Task {
             // Convert Hay+Wheat -> Bread
             if (mod.getInventoryTracker().getItemCount(Items.WHEAT) > 3) {
                 setDebugState("Crafting Bread");
-                Item[] w = new Item[]{ Items.WHEAT };
+                Item[] w = { Items.WHEAT };
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread",
-                                                                                                                        new Item[][]{
-                                                                                                                                w, w, w, o,
-                                                                                                                                o, o, o, o,
-                                                                                                                                o
-                                                                                                                        }, 1), false,
-                                                            false);
-                return _currentResourceTask;
+                currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread",
+                                                                                                                       new Item[][]{
+                                                                                                                               w, w, w, o,
+                                                                                                                               o, o, o, o,
+                                                                                                                               o
+                                                                                                                       }, 1), false,
+                                                           false);
+                return currentResourceTask;
             }
             if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat",
-                                                                                                                            new Item[][]{
-                                                                                                                                    new Item[]{
-                                                                                                                                            Items.HAY_BLOCK
-                                                                                                                                    }, o, o,
-                                                                                                                                    o
-                                                                                                                            }, 9), false,
-                                                                false);
-                return _currentResourceTask;
+                currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat",
+                                                                                                                           new Item[][]{
+                                                                                                                                   new Item[]{
+                                                                                                                                           Items.HAY_BLOCK
+                                                                                                                                   }, o, o,
+                                                                                                                                   o
+                                                                                                                           }, 9), false,
+                                                               false);
+                return currentResourceTask;
             }
             // Convert raw foods -> cooked foods
             
@@ -183,10 +181,10 @@ public class CollectFoodTask extends Task {
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getInventoryTracker().getItemCount(cookable.getCooked());
-                    _smeltTask = new SmeltInFurnaceTask(
+                    smeltTask = new SmeltInFurnaceTask(
                             new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
-                    _smeltTask.ignoreMaterials();
-                    return _smeltTask;
+                    smeltTask.ignoreMaterials();
+                    return smeltTask;
                 }
             }
         } else {
@@ -195,8 +193,8 @@ public class CollectFoodTask extends Task {
                 Task t = this.pickupTaskOrNull(mod, item);
                 if (t != null) {
                     setDebugState("Picking up Food: " + item.getTranslationKey());
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Pick up raw/cooked foods on ground
@@ -205,16 +203,16 @@ public class CollectFoodTask extends Task {
                 if (t == null) t = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
                 if (t != null) {
                     setDebugState("Picking up Cookable food");
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Hay
             Task hayTask = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK, 300);
             if (hayTask != null) {
                 setDebugState("Collecting Hay");
-                _currentResourceTask = hayTask;
-                return _currentResourceTask;
+                currentResourceTask = hayTask;
+                return currentResourceTask;
             }
             // Crops
             for (CropTarget target : CROPS) {
@@ -241,8 +239,8 @@ public class CollectFoodTask extends Task {
                 }), 100);
                 if (t != null) {
                     setDebugState("Harvesting " + target.cropItem.getTranslationKey());
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Cooked foods
@@ -271,16 +269,16 @@ public class CollectFoodTask extends Task {
             }
             if (bestEntity != null) {
                 setDebugState("Killing " + bestEntity.getEntityName());
-                _currentResourceTask = killTaskOrNull(mod, bestEntity, bestRawFood);
-                return _currentResourceTask;
+                currentResourceTask = killTaskOrNull(mod, bestEntity, bestRawFood);
+                return currentResourceTask;
             }
             
             // Sweet berries (separate from crops because they should have a lower priority than everything else cause they suck)
             Task berryPickup = pickupBlockTaskOrNull(mod, Blocks.SWEET_BERRY_BUSH, Items.SWEET_BERRIES, 100);
             if (berryPickup != null) {
                 setDebugState("Getting sweet berries (no better foods are present)");
-                _currentResourceTask = berryPickup;
-                return _currentResourceTask;
+                currentResourceTask = berryPickup;
+                return currentResourceTask;
             }
         }
         
@@ -300,21 +298,21 @@ public class CollectFoodTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectFoodTask) {
             CollectFoodTask task = (CollectFoodTask) obj;
-            return task._unitsNeeded == _unitsNeeded;
+            return task.unitsNeeded == unitsNeeded;
         }
         return false;
     }
     
     @Override
     protected String toDebugString() {
-        return "Collect " + _unitsNeeded + " units of food.";
+        return "Collect " + unitsNeeded + " units of food.";
     }
     
     /**
-     * Returns a task that mines a block and picks up its output.
-     * Returns null if task cannot reasonably run.
+     * Returns a task that mines a block and picks up its output. Returns null if task cannot reasonably run.
      */
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<? super BlockPos> reject,
+                                       double maxRange) {
         Predicate<BlockPos> rejectPlus = (blockPos) -> {
             if (!WorldUtil.canBreak(mod, blockPos)) return true;
             return reject.test(blockPos);
@@ -360,8 +358,7 @@ public class CollectFoodTask extends Task {
     }
     
     /**
-     * Returns a task that picks up a dropped item.
-     * Returns null if task cannot reasonably run.
+     * Returns a task that picks up a dropped item. Returns null if task cannot reasonably run.
      */
     private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {
         ItemEntity nearestDrop = null;
@@ -381,32 +378,31 @@ public class CollectFoodTask extends Task {
         return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
     }
     
-    private static class CookableFoodTarget {
+    public static class CookableFoodTarget {
         public String rawFood;
         public String cookedFood;
         public Class mobToKill;
         
-        public CookableFoodTarget(String rawFood, String cookedFood, Class mobToKill) {
+        CookableFoodTarget(String rawFood, String cookedFood, Class mobToKill) {
             this.rawFood = rawFood;
             this.cookedFood = cookedFood;
             this.mobToKill = mobToKill;
         }
         
-        public CookableFoodTarget(String rawFood, Class mobToKill) {
+        CookableFoodTarget(String rawFood, Class mobToKill) {
             this(rawFood, "cooked_" + rawFood, mobToKill);
         }
         
         private Item getRaw() {
-            return TaskCatalogue.getItemMatches(rawFood)[0];
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0];
         }
         
         private Item getCooked() {
-            return TaskCatalogue.getItemMatches(cookedFood)[0];
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(cookedFood))[0];
         }
         
         public int getCookedUnits() {
-            assert getCooked().getFoodComponent() != null;
-            return getCooked().getFoodComponent().getHunger();
+            return Objects.requireNonNull(getCooked().getFoodComponent()).getHunger();
         }
         
         public boolean isFish() {
@@ -415,13 +411,13 @@ public class CollectFoodTask extends Task {
     }
     
     
-    private static class CookableFoodTargetFish extends CookableFoodTarget {
+    public static class CookableFoodTargetFish extends CookableFoodTarget {
         
-        public CookableFoodTargetFish(String rawFood, String cookedFood, Class mobToKill) {
+        CookableFoodTargetFish(String rawFood, String cookedFood, Class mobToKill) {
             super(rawFood, cookedFood, mobToKill);
         }
         
-        public CookableFoodTargetFish(String rawFood, Class mobToKill) {
+        CookableFoodTargetFish(String rawFood, Class mobToKill) {
             super(rawFood, mobToKill);
         }
         
@@ -432,11 +428,11 @@ public class CollectFoodTask extends Task {
     }
     
     
-    private static class CropTarget {
+    public static class CropTarget {
         public Item cropItem;
         public Block cropBlock;
         
-        public CropTarget(Item cropItem, Block cropBlock) {
+        CropTarget(Item cropItem, Block cropBlock) {
             this.cropItem = cropItem;
             this.cropBlock = cropBlock;
         }
