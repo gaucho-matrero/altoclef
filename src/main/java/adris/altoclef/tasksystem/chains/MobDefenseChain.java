@@ -400,9 +400,11 @@ public class MobDefenseChain extends SingleTaskChain {
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
         if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (entity.squaredDistanceTo(mod.getPlayer()) < range*range && EntityTracker.isHostileToPlayer(mod, (HostileEntity)entity)) {
-                return entity;
+            if (entity != null) {
+                double range = SAFE_KEEP_DISTANCE - 2;
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                    return entity;
+                }
             }
         }
         // Hoglins are dangerous because we can't push them with the force field.
@@ -410,9 +412,11 @@ public class MobDefenseChain extends SingleTaskChain {
         if (mod.getEntityTracker().entityFound(HoglinEntity.class, ZoglinEntity.class)) {
             if (mod.getPlayer().getHealth() < 5) {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
-                double range = SAFE_KEEP_DISTANCE - 1;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range*range && EntityTracker.isHostileToPlayer(mod, (HostileEntity)entity)) {
-                    return entity;
+                if (entity != null) {
+                    double range = SAFE_KEEP_DISTANCE - 1;
+                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                        return entity;
+                    }
                 }
             }
         }

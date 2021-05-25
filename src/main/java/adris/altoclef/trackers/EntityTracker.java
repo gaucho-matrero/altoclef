@@ -220,6 +220,9 @@ public class EntityTracker extends Tracker {
 
                 Class type = entity.getClass();
                 type = squashType(type);
+
+                if (entity == null || !entity.isAlive()) continue;
+
                 // Don't catalogue our own player.
                 if (type == PlayerEntity.class && entity.equals(_mod.getPlayer())) continue;
                 if (!_entityMap.containsKey(type)) {
