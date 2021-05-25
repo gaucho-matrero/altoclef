@@ -8,7 +8,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
-import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.PathingCommand;
@@ -197,6 +196,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                     if (!_mod.getInventoryTracker().equipItem(_equipTarget)) {
                         Debug.logWarning("Failed to equip item: " + Util.arrayToString(_equipTarget.getMatches()));
                     }
+                } else {
+                    _mod.getInventoryTracker().deequipRightClickableItem();
                 }
                 this.baritone.getInputOverrideHandler().setInputForceState(_interactInput, true);
                 if (_shiftClick) {

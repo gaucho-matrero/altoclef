@@ -23,6 +23,7 @@ import net.minecraft.util.Pair;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class InventoryTracker extends Tracker {
 
@@ -728,6 +729,64 @@ public class InventoryTracker extends Tracker {
 
         Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
         return false;
+    }
+
+    public void deequipHitTool() {
+        deequip(item -> item instanceof ToolItem, true);
+    }
+
+    public void deequipRightClickableItem() {
+        deequip(item ->
+                item instanceof BucketItem // water,lava,milk,fishes
+                        || item instanceof EnderEyeItem
+                        || item == Items.BOW
+                        || item == Items.CROSSBOW
+                        || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
+                        || item == Items.ENDER_PEARL
+                        || item instanceof FireworkItem
+                        || item instanceof SpawnEggItem
+                        || item == Items.END_CRYSTAL
+                        || item == Items.EXPERIENCE_BOTTLE
+                        || item instanceof PotionItem // also includes splash/lingering
+                        || item == Items.TRIDENT
+                        || item == Items.WRITABLE_BOOK
+                        || item == Items.WRITTEN_BOOK
+                        || item instanceof FishingRodItem
+                        || item instanceof OnAStickItem
+                        || item == Items.COMPASS
+                        || item instanceof EmptyMapItem
+                        || item instanceof Wearable
+                        || item == Items.SHIELD
+                        || item == Items.LEAD
+                ,
+                true
+        );
+    }
+
+    /**
+     * Tries to de-equip any item that we don't want equipped.
+     * @param isBad: Whether an item is bad/shouldn't be equipped
+     * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
+     */
+    public boolean deequip(Predicate<Item> isBad, boolean preferEmpty) {
+        boolean toolEquipped = false;
+        Item equip = getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+        if (isBad.test(equip)) {
+            // Pick non tool item or air
+            if (!preferEmpty || getEmptySlotCount() == 0) {
+                for (int i = 0; i < 35; ++i) {
+                    Slot s = Slot.getFromInventory(i);
+                    if (!isBad.test(getItemStackInSlot(s).getItem())) {
+                        equipSlot(s);
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                equipItem(Items.AIR);
+            }
+        }
+        return true;
     }
 
     public void equipSlot(Slot slot) {
