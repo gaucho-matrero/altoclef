@@ -30,6 +30,9 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
     public GetToBlockTask(BlockPos position, boolean rightClickOnArrival) {
         this(position, rightClickOnArrival, false);
     }
+    public GetToBlockTask(BlockPos position) {
+        this(position, false);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
