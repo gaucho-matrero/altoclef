@@ -391,17 +391,14 @@ public class BeatMinecraftTask extends Task {
                                                     }, 2));
                 }
                 // Craft
-                return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, targetEyes), CraftingRecipe.newShapedRecipe("ender_eye",
-                                                                                                                            new ItemTarget[]{
-                                                                                                                                    new ItemTarget(
-                                                                                                                                            Items.ENDER_PEARL,
-                                                                                                                                            1),
-                                                                                                                                    new ItemTarget(
-                                                                                                                                            Items.BLAZE_POWDER,
-                                                                                                                                            1),
-                                                                                                                                    null,
-                                                                                                                                    null
-                                                                                                                            }, 1));
+                return new CraftInInventoryTask(new ItemTarget(Items.ENDER_EYE, targetEyes),
+                                                CraftingRecipe.newShapedRecipe("ender_eye",
+                                                                               new ItemTarget[]{
+                                                                                       new ItemTarget(Items.ENDER_PEARL, 1),
+                                                                                       new ItemTarget(Items.BLAZE_POWDER, 1),
+                                                                                       null,
+                                                                                       null
+                                                                               }, 1));
             }
         }
         // The end portal is opened. Ummmmm... We shouldn't be here.
