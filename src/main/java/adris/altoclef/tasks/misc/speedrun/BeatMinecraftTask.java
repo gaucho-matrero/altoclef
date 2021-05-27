@@ -170,7 +170,7 @@ public class BeatMinecraftTask extends Task {
     private Task overworldTick(AltoClef mod) {
 
         int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
-        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - (eyes / 2);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + eyes) / 2;
         int rodsInPosession = getBlazeRodsInPosession(mod);
 
         //int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
