@@ -8,6 +8,7 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
@@ -31,11 +32,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class AltoClefCommands extends CommandList {
@@ -347,6 +344,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "badtimetofail":
                 mod.runUserTask(new FillStrongholdPortalTask(false));
+                break;
+            case "example":
+                mod.runUserTask(new ExampleTask2());
                 break;
         }
     }
