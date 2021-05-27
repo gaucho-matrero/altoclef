@@ -28,6 +28,7 @@ import adris.altoclef.tasks.SmeltInFurnaceTask;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.IdleTask;
 import adris.altoclef.tasks.misc.LocateDesertTempleTask;
@@ -421,6 +422,9 @@ public class AltoClefCommands extends CommandList {
                 break;
             case "badtimetofail":
                 mod.runUserTask(new FillStrongholdPortalTask(false));
+                break;
+            case "example":
+                mod.runUserTask(new ExampleTask2());
                 break;
         }
     }

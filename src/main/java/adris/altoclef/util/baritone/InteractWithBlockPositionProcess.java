@@ -228,6 +228,8 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                     if (!_mod.getInventoryTracker().equipItem(equipTarget)) {
                         Debug.logWarning("Failed to equip item: " + Util.arrayToString(equipTarget.getMatches()));
                     }
+                } else {
+                    _mod.getInventoryTracker().deequipRightClickableItem();
                 }
                 this.baritone.getInputOverrideHandler().setInputForceState(interactInput, true);
                 if (shiftClick) {

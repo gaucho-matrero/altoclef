@@ -1,6 +1,7 @@
 package adris.altoclef.trackers;
 
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
@@ -74,7 +75,17 @@ public class EntityTracker extends Tracker {
             // Will ALWAYS be false.
             return zombie.hasAngerTime() && zombie.isAngryAt(player);
         }
-        return !isTradingPiglin(hostile);
+        if (isTradingPiglin(hostile)) {
+            return false;
+        }
+        /*
+        if (hostile instanceof SpiderEntity) {
+            SpiderEntity sp = (SpiderEntity) hostile;
+            float b = sp.getBrightnessAtEyes();
+            // Will not consider spiders that stop attacking!
+            return (b < 0.5f);
+        }*/
+        return true;
     }
 
     public static boolean isTradingPiglin(Entity entity) {
@@ -267,6 +278,9 @@ public class EntityTracker extends Tracker {
 
                 Class type = entity.getClass();
                 type = squashType(type);
+
+                if (entity == null || !entity.isAlive()) continue;
+
                 // Don't catalogue our own player.
                 if (type == PlayerEntity.class && entity.equals(mod.getPlayer())) continue;
                 if (!entityMap.containsKey(type)) {
@@ -296,12 +310,12 @@ public class EntityTracker extends Tracker {
                         // Only run away if the hostile can see us.
                         HostileEntity hostile = (HostileEntity) entity;
 
-                        if (hostile.canSee(mod.getPlayer())) {
+                        if (isHostileToPlayer(mod, hostile)) {
                             // Check if the mob is facing us or is close enough
                             boolean closeEnough = hostile.isInRange(mod.getPlayer(), 26);
 
                             //Debug.logInternal("TARGET: " + hostile.is);
-                            if (closeEnough && isAngryAtPlayer(hostile)) {
+                            if (closeEnough) {
                                 hostiles.add(hostile);
                             }
                         }
@@ -340,6 +354,11 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
+    }
+
+
+    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
+        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
     }
 
     @Override

@@ -341,7 +341,7 @@ public class TaskCatalogue {
         armor("iron", "iron_ingot", IRON_HELMET, IRON_CHESTPLATE, IRON_LEGGINGS, IRON_BOOTS);
         armor("golden", "gold_ingot", GOLDEN_HELMET, GOLDEN_CHESTPLATE, GOLDEN_LEGGINGS, GOLDEN_BOOTS);
         armor("diamond", "diamond", DIAMOND_HELMET, DIAMOND_CHESTPLATE, DIAMOND_LEGGINGS, DIAMOND_BOOTS);
-        shapedRecipe3x3("bow", BOW, 1, stic, null, null, null, stic, null, stic, null, null);
+            shapedRecipe3x3("bow", Items.BOW, 1, "string", stic, null, "string", null, stic, "string", stic, null);
         shapedRecipe3x3("arrow", ARROW, 4, "flint", null, null, stic, null, null, "feather", null, null);
         {
             String i = "iron_ingot";
@@ -374,7 +374,7 @@ public class TaskCatalogue {
 
 
         // FURNITURE
-        shapedRecipe2x2("crafting_table", CRAFTING_TABLE, 1, plan, plan, plan, plan);
+        shapedRecipe2x2("crafting_table", CRAFTING_TABLE, 1, plan, plan, plan, plan).dontMineIfPresent();
         simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
         woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate,
                   (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));

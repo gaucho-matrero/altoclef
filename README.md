@@ -87,11 +87,11 @@ Currently no builds exist as many things are still in development. If you wish t
 
 1) Clone project + import I'd suggest using JetBrain's IntelliJ to import the project.
 
-2) Read libs/LIBS.txt. (You will have to install my fork of fabritone, build and then drag+drop the compiled dev jar into libs.)
+2) Read `libs/LIBS.txt`. (You will have to install [my fork of fabritone](https://gitlab.com/adrisj7/fabritone), build and then drag+drop the compiled dev jar into libs.)
 
 3) run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
 
-4) for building a jar to use as a fabric mod, run altoclef/Tasks/build/jar I think. Haven't tested this yet since I'm still developing the
+4) for building a jar to use as a fabric mod, run `altoclef/Tasks/build/jar` I think. Haven't tested this yet since I'm still developing the
    thing.
 
 I'm aware these instructions are vague in some parts, so don't hesitate to contact me for questions/make a github issue, bug me all you want

@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 
 public class InventoryTracker extends Tracker {
@@ -278,14 +279,31 @@ public class InventoryTracker extends Tracker {
     public double getTotalFuel(boolean includeThrowawayProtected, boolean includeNormalFuel) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            AtomicReference<Double> total = new AtomicReference<>((double) 0);
-            itemCounts.forEach((item, count) -> {
+            double total = 0;
+            for (final Map.Entry<Item, Integer> entry : itemCounts.entrySet()) {
+                Item item = entry.getKey();
                 boolean normalGood = (includeNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
                 if (normalGood || includeThrowawayProtected || !mod.getConfigState().isProtected(item)) {
-                    total.updateAndGet((d) -> d + getFuelAmount(item) * count);
+                    total += getFuelAmount(item) * entry.getValue();
                 }
-            });
-            return total.get();
+            }
+
+            // Add fuel from crafting table/output
+            ScreenHandler screen = mod.getPlayer().currentScreenHandler;
+            if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
+                boolean bigCrafting = (screen instanceof CraftingScreenHandler);
+                for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
+                    Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                    ItemStack stack = getItemStackInSlot(craftSlot);
+                    total += getFuelAmount(stack.getItem()) * stack.getCount();
+                }
+                // Also check output slot
+                Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+                ItemStack stack = getItemStackInSlot(outputSlot);
+                total += getFuelAmount(stack.getItem()) * stack.getCount();
+            }
+
+            return total;
         }
     }
 
@@ -790,6 +808,64 @@ public class InventoryTracker extends Tracker {
 
         Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
         return false;
+    }
+
+    public void deequipHitTool() {
+        deequip(item -> item instanceof ToolItem, true);
+    }
+
+    public void deequipRightClickableItem() {
+        deequip(item ->
+                item instanceof BucketItem // water,lava,milk,fishes
+                        || item instanceof EnderEyeItem
+                        || item == Items.BOW
+                        || item == Items.CROSSBOW
+                        || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
+                        || item == Items.ENDER_PEARL
+                        || item instanceof FireworkItem
+                        || item instanceof SpawnEggItem
+                        || item == Items.END_CRYSTAL
+                        || item == Items.EXPERIENCE_BOTTLE
+                        || item instanceof PotionItem // also includes splash/lingering
+                        || item == Items.TRIDENT
+                        || item == Items.WRITABLE_BOOK
+                        || item == Items.WRITTEN_BOOK
+                        || item instanceof FishingRodItem
+                        || item instanceof OnAStickItem
+                        || item == Items.COMPASS
+                        || item instanceof EmptyMapItem
+                        || item instanceof Wearable
+                        || item == Items.SHIELD
+                        || item == Items.LEAD
+                ,
+                true
+        );
+    }
+
+    /**
+     * Tries to de-equip any item that we don't want equipped.
+     * @param isBad: Whether an item is bad/shouldn't be equipped
+     * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
+     */
+    public boolean deequip(Predicate<Item> isBad, boolean preferEmpty) {
+        boolean toolEquipped = false;
+        Item equip = getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+        if (isBad.test(equip)) {
+            // Pick non tool item or air
+            if (!preferEmpty || getEmptySlotCount() == 0) {
+                for (int i = 0; i < 35; ++i) {
+                    Slot s = Slot.getFromInventory(i);
+                    if (!isBad.test(getItemStackInSlot(s).getItem())) {
+                        equipSlot(s);
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                equipItem(Items.AIR);
+            }
+        }
+        return true;
     }
 
     public void equipSlot(Slot slot) {

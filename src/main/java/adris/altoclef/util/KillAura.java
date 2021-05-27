@@ -4,14 +4,8 @@ package adris.altoclef.util;
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.slots.PlayerInventorySlot;
-import adris.altoclef.util.slots.Slot;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,32 +71,13 @@ public class KillAura {
             return false;
         if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange) {
             // Equip non-tool
-            deequipTool(mod);
+            mod.getInventoryTracker().deequipHitTool();
             mod.getControllerExtras().attack(entity);
             return true;
         }
         return false;
     }
 
-    private void deequipTool(AltoClef mod) {
-        boolean toolEquipped = false;
-        Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
-        if (equip instanceof ToolItem) {
-            // Pick non tool item or air
-            if (mod.getInventoryTracker().getEmptySlotCount() == 0) {
-                for (int i = 0; i < 35; ++i) {
-                    Slot s = Slot.getFromInventory(i);
-                    Item item = mod.getInventoryTracker().getItemStackInSlot(s).getItem();
-                    if (!(item instanceof ToolItem)) {
-                        mod.getInventoryTracker().equipSlot(s);
-                        break;
-                    }
-                }
-            } else {
-                mod.getInventoryTracker().equipItem(Items.AIR);
-            }
-        }
-    }
 
     public enum Strategy {
         OFF,

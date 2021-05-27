@@ -27,7 +27,8 @@ public final class LookUtil {
     }
 
     public static EntityHitResult raycast(Entity from, Entity to, double reachDistance) {
-        Vec3d fromPos = from.getCameraPosVec(1f), toPos = to.getCameraPosVec(1f);
+        Vec3d fromPos = getCameraPos(from);
+        Vec3d toPos = getCameraPos(to);
         Vec3d direction = (toPos.subtract(fromPos).normalize().multiply(reachDistance));
         Box box = to.getBoundingBox();
         return ProjectileUtil.raycast(from, fromPos, fromPos.add(direction), box, entity -> entity.equals(to), 0);
@@ -40,6 +41,27 @@ public final class LookUtil {
 
     public static boolean seesPlayer(Entity entity, Entity player, double maxRange) {
         return seesPlayer(entity, player, maxRange, Vec3d.ZERO, Vec3d.ZERO);
+    }
+
+    public static boolean cleanLineOfSight(Entity entity, Vec3d start, Vec3d end, double maxRange) {
+        return raycast(entity, start, end, maxRange).getType() == HitResult.Type.MISS;
+    }
+
+    public static boolean cleanLineOfSight(Entity entity, Vec3d end, double maxRange) {
+        Vec3d start = getCameraPos(entity);
+        return cleanLineOfSight(entity, start, end, maxRange);
+    }
+
+    public static BlockHitResult raycast(Entity entity, Vec3d start, Vec3d end, double maxRange) {
+        Vec3d delta = end.subtract(start);
+        if (delta.lengthSquared() > maxRange*maxRange) {
+            end = start.add(delta.normalize().multiply(maxRange));
+        }
+        return entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+    }
+    public static BlockHitResult raycast(Entity entity, Vec3d end, double maxRange) {
+        Vec3d start = getCameraPos(entity);
+        return raycast(entity, start, end, maxRange);
     }
 
     public static Vec3d getCameraPos(Entity entity) {
@@ -71,15 +93,9 @@ public final class LookUtil {
     }
 
     private static boolean seesPlayerOffset(Entity entity, Entity player, double maxRange, Vec3d offsetEntity, Vec3d offsetPlayer) {
-        Vec3d start = entity.getCameraPosVec(1f).add(offsetEntity);
-        Vec3d end = player.getCameraPosVec(1f).add(offsetPlayer);
-        Vec3d delta = end.subtract(start);
-        if (delta.lengthSquared() > maxRange * maxRange) {
-            end = start.add(delta.normalize().multiply(maxRange));
-        }
-        BlockHitResult b = entity.world.raycast(
-                new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
-        return b.getType() == HitResult.Type.MISS;
+        Vec3d start = getCameraPos(entity).add(offsetEntity);
+        Vec3d end = getCameraPos(player).add(offsetPlayer);
+        return cleanLineOfSight(entity, start, end, maxRange);
     }
 
     private static boolean isCollidingContainer(AltoClef mod) {

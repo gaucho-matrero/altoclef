@@ -100,7 +100,7 @@ public class LocateStrongholdTask extends Task {
         }
 
         // If we found our portal frame, we're good.
-        if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL_FRAME)) {
+        if (mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).size() >= 12) {
             Debug.logMessage("FOUND PORTAL AT: " + mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).get(0));
             cachedPortalFrame.clear();
             cachedPortalFrame.addAll(mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME));
