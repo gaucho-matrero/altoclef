@@ -341,7 +341,7 @@ public class TaskCatalogue {
         armor("iron", "iron_ingot", IRON_HELMET, IRON_CHESTPLATE, IRON_LEGGINGS, IRON_BOOTS);
         armor("golden", "gold_ingot", GOLDEN_HELMET, GOLDEN_CHESTPLATE, GOLDEN_LEGGINGS, GOLDEN_BOOTS);
         armor("diamond", "diamond", DIAMOND_HELMET, DIAMOND_CHESTPLATE, DIAMOND_LEGGINGS, DIAMOND_BOOTS);
-            shapedRecipe3x3("bow", Items.BOW, 1, "string", stic, null, "string", null, stic, "string", stic, null);
+        shapedRecipe3x3("bow", BOW, 1, "string", stic, null, "string", null, stic, "string", stic, null);
         shapedRecipe3x3("arrow", ARROW, 4, "flint", null, null, stic, null, null, "feather", null, null);
         {
             String i = "iron_ingot";

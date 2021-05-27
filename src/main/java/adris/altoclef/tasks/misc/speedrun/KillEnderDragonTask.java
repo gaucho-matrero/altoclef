@@ -51,7 +51,7 @@ import java.util.List;
  * Until something inevitably fucks up and I gotta go back here to fix it in which case this'll be pretty ironic.
  */
 public class KillEnderDragonTask extends Task {
-    private static final String[] DIAMOND_ARMORS = new String[]{
+    private static final String[] DIAMOND_ARMORS = {
             "diamond_chestplate",
             "diamond_leggings",
             "diamond_helmet",

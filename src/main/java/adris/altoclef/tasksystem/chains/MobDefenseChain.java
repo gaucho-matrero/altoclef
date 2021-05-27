@@ -432,7 +432,8 @@ public class MobDefenseChain extends SingleTaskChain {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity != null) {
                 double range = SAFE_KEEP_DISTANCE - 2;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range &&
+                    EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
                     return entity;
                 }
             }
@@ -444,7 +445,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
                 if (entity != null) {
                     double range = SAFE_KEEP_DISTANCE - 1;
-                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range &&
+                        EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
                         return entity;
                     }
                 }
@@ -463,7 +465,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 for (HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) &&
+                        EntityTracker.isHostileToPlayer(mod, entity)) {
                         return true;
                     }
                 }

@@ -80,19 +80,19 @@ public class BeatMinecraftTask extends Task {
     private final PlaceBedAndSetSpawnTask placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
     // Kinda jank ngl
     private final Task collectBuildMaterialsTask = PlaceBlockTask.getMaterialTask(100);
-    private List<BlockPos> endPortalFrame = null;
+    private List<BlockPos> endPortalFrame;
     private BlockPos safetyBlazeRodChestPos;
     // A flag to determine whether we should continue doing something.
     // TODO: I handled this poorly. Either LEAN INTO it hard or throw this out completely.
     private ForceState forceState = ForceState.NONE;
     private BlockPos cachedPortalInNether;
-    private int cachedEndPearlsInFrame = 0;
+    private int cachedEndPearlsInFrame;
     private BlockPos netherPortalPos;
     // End game stuff
-    private BlockPos endBedSpawnPos = null;
+    private BlockPos endBedSpawnPos;
     // If true, we were near the end portal, don't do traveling.
     private boolean wasNearEndPortal;
-    private BlockPos cachedEndPortal = null;
+    private BlockPos cachedEndPortal;
     private Dimension prevDimension = Dimension.OVERWORLD;
 
     public static boolean diamondArmorEquipped(AltoClef mod) {
@@ -240,8 +240,8 @@ public class BeatMinecraftTask extends Task {
             }
             // Get diamond armor + gear first
             if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) ||
-                    !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) ||
-                    (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.LOG) <= 0)) {
+                !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) ||
+                (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.LOG) <= 0)) {
                 // Get two iron pickaxes first.
                 double ironDurability = 0;
                 if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
@@ -468,7 +468,9 @@ public class BeatMinecraftTask extends Task {
 
     // Code duplication below, kinda bad but I'm in a hurry lol
     private boolean needToGetMaterialsBeforeEnd(AltoClef mod) {
-        return !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) || !mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET);
+        return !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) ||
+               !mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD) ||
+               !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET);
     }
 
     private Task getMaterialsBeforeEndTask(AltoClef mod) {
@@ -483,7 +485,8 @@ public class BeatMinecraftTask extends Task {
             toGet.add(new ItemTarget("iron_pickaxe", 1));
         }
         if (toGet.size() != 0) {
-            return TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, toGet));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
+            return TaskCatalogue.getSquashedItemTask(
+                    Util.toArray(ItemTarget.class, toGet));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
         }
         // Collect water if we don't have it.
         if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {

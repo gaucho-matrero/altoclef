@@ -75,9 +75,7 @@ public class EntityTracker extends Tracker {
             // Will ALWAYS be false.
             return zombie.hasAngerTime() && zombie.isAngryAt(player);
         }
-        if (isTradingPiglin(hostile)) {
-            return false;
-        }
+        return !isTradingPiglin(hostile);
         /*
         if (hostile instanceof SpiderEntity) {
             SpiderEntity sp = (SpiderEntity) hostile;
@@ -85,7 +83,6 @@ public class EntityTracker extends Tracker {
             // Will not consider spiders that stop attacking!
             return (b < 0.5f);
         }*/
-        return true;
     }
 
     public static boolean isTradingPiglin(Entity entity) {
@@ -99,6 +96,10 @@ public class EntityTracker extends Tracker {
             }
         }
         return false;
+    }
+
+    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
+        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
     }
 
     public ItemEntity getClosestItemDrop(Vec3d position, Item... items) {
@@ -354,11 +355,6 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
-    }
-
-
-    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
-        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
     }
 
     @Override

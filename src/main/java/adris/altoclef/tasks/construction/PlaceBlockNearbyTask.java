@@ -30,6 +30,7 @@ public class PlaceBlockNearbyTask extends Task {
     private final MovementProgressChecker progressChecker = new MovementProgressChecker();
     private final TimeoutWanderTask wander = new TimeoutWanderTask(2);
     private final Timer randomlookTimer = new Timer(0.25);
+    private final Predicate<BlockPos> _cantPlaceHere;
     private BlockPos justPlaced; // Where we JUST placed a block.
     private BlockPos tryPlace;   // Where we should TRY placing a block.
     // Oof, necesarry for the onBlockPlaced action.
@@ -44,13 +45,12 @@ public class PlaceBlockNearbyTask extends Task {
         }
     };
 
-    private final Predicate<BlockPos> _cantPlaceHere;
-
     public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block... toPlace) {
         this.toPlace = toPlace;
         _cantPlaceHere = cantPlaceHere;
     }
-    public PlaceBlockNearbyTask(Block ...toPlace) {
+
+    public PlaceBlockNearbyTask(Block... toPlace) {
         this(blockPos -> false, toPlace);
     }
 

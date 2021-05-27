@@ -12,12 +12,15 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.*;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -29,7 +32,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import org.apache.commons.lang3.ArrayUtils;
 
 
 public class PlaceBedAndSetSpawnTask extends Task {
@@ -46,10 +48,11 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private final Timer regionScanTimer = new Timer(9);
     private final Timer bedInteractTimeout = new Timer(5);
     private final Timer inBedTimer = new Timer(1);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
     private BlockPos currentBedRegion;
     private BlockPos currentStructure, _currentBreak;
     private boolean spawnSet;
-    private boolean _sleepAttemptMade;
     private final ActionListener<String> onCheckGameMessage = new ActionListener<String>() {
         @Override
         public void invoke(String value) {
@@ -59,10 +62,15 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }
         }
     };
+    private boolean _sleepAttemptMade;
     private final ActionListener<String> onOverlayMessage = new ActionListener<String>() {
         @Override
         public void invoke(String value) {
-            final String[] NEUTRAL_MESSAGES = { "You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
+            final String[] NEUTRAL_MESSAGES = {
+                    "You can sleep only at night",
+                    "You can only sleep at night",
+                    "You may not rest now; there are monsters nearby"
+            };
             for (String checkMessage : NEUTRAL_MESSAGES) {
                 if (value.contains(checkMessage)) {
                     if (!_sleepAttemptMade) {
@@ -90,9 +98,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
         return spawnSet && !mod.getPlayer().isSleeping() && inBedTimer.elapsed();
     }
-
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
 
     @Override
     protected void onStart(AltoClef mod) {

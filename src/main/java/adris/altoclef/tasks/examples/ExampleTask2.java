@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.examples;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
@@ -8,9 +9,18 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+
 public class ExampleTask2 extends Task {
 
-    private BlockPos _target = null;
+    private BlockPos _target;
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        if (_target != null) {
+            return mod.getPlayer().getBlockPos().equals(_target);
+        }
+        return super.isFinished(mod);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -44,7 +54,7 @@ public class ExampleTask2 extends Task {
             // Figure out leaves
             BlockPos check = new BlockPos(nearest);
             while (mod.getWorld().getBlockState(check).getBlock() == Blocks.OAK_LOG ||
-                    mod.getWorld().getBlockState(check).getBlock() == Blocks.OAK_LEAVES) {
+                   mod.getWorld().getBlockState(check).getBlock() == Blocks.OAK_LEAVES) {
                 check = check.up();
             }
             _target = check;
@@ -63,14 +73,6 @@ public class ExampleTask2 extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof ExampleTask2;
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        if (_target != null) {
-            return mod.getPlayer().getBlockPos().equals(_target);
-        }
-        return super.isFinished(mod);
     }
 
     @Override

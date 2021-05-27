@@ -5,7 +5,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -32,7 +31,7 @@ public class CollectCobblestoneTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        return new MineAndCollectTask(Items.COBBLESTONE, 1, new Block[]{Blocks.STONE, Blocks.COBBLESTONE}, MiningRequirement.WOOD);
+        return new MineAndCollectTask(Items.COBBLESTONE, 1, new Block[]{ Blocks.STONE, Blocks.COBBLESTONE }, MiningRequirement.WOOD);
     }
 
     @Override

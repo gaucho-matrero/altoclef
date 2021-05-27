@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.examples;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
@@ -9,6 +10,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+
 public class ExampleTask extends Task {
 
     private final int _numberOfStonePickaxesToGrab;
@@ -17,6 +19,12 @@ public class ExampleTask extends Task {
     public ExampleTask(int numberOfStonePickaxesToGrab, BlockPos whereToPlaceCobblestone) {
         _numberOfStonePickaxesToGrab = numberOfStonePickaxesToGrab;
         _whereToPlaceCobblestone = whereToPlaceCobblestone;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getInventoryTracker().getItemCount(Items.STONE_PICKAXE) >= _numberOfStonePickaxesToGrab &&
+               mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() == Blocks.COBBLESTONE;
     }
 
     @Override
@@ -44,7 +52,8 @@ public class ExampleTask extends Task {
 
         if (mod.getChunkTracker().isChunkLoaded(_whereToPlaceCobblestone)) {
             if (mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() != Blocks.COBBLESTONE) {
-                return new PlaceBlockTask(_whereToPlaceCobblestone, Blocks.COBBLESTONE); ///new PlaceStructureBlockTask(_whereToPlaceCobblestone);
+                return new PlaceBlockTask(_whereToPlaceCobblestone,
+                                          Blocks.COBBLESTONE); ///new PlaceStructureBlockTask(_whereToPlaceCobblestone);
             }
             return null;
         } else {
@@ -58,17 +67,11 @@ public class ExampleTask extends Task {
     }
 
     @Override
-    public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.STONE_PICKAXE) >= _numberOfStonePickaxesToGrab &&
-                mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() == Blocks.COBBLESTONE;
-    }
-
-    @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ExampleTask) {
             ExampleTask task = (ExampleTask) obj;
             return task._numberOfStonePickaxesToGrab == _numberOfStonePickaxesToGrab
-                    && task._whereToPlaceCobblestone.equals(_whereToPlaceCobblestone);
+                   && task._whereToPlaceCobblestone.equals(_whereToPlaceCobblestone);
         }
         return false;
     }

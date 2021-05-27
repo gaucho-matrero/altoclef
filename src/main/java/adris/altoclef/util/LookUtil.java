@@ -54,11 +54,13 @@ public final class LookUtil {
 
     public static BlockHitResult raycast(Entity entity, Vec3d start, Vec3d end, double maxRange) {
         Vec3d delta = end.subtract(start);
-        if (delta.lengthSquared() > maxRange*maxRange) {
+        if (delta.lengthSquared() > maxRange * maxRange) {
             end = start.add(delta.normalize().multiply(maxRange));
         }
-        return entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+        return entity.world.raycast(
+                new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
     }
+
     public static BlockHitResult raycast(Entity entity, Vec3d end, double maxRange) {
         Vec3d start = getCameraPos(entity);
         return raycast(entity, start, end, maxRange);

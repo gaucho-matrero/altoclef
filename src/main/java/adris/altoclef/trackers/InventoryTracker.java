@@ -21,10 +21,19 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.BucketItem;
+import net.minecraft.item.EmptyMapItem;
+import net.minecraft.item.EnderEyeItem;
+import net.minecraft.item.FireworkItem;
+import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.OnAStickItem;
+import net.minecraft.item.PotionItem;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ToolItem;
+import net.minecraft.item.Wearable;
 import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -39,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 
@@ -293,7 +301,9 @@ public class InventoryTracker extends Tracker {
             if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
                 boolean bigCrafting = (screen instanceof CraftingScreenHandler);
                 for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
-                    Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
+                    Slot craftSlot = bigCrafting
+                                     ? CraftingTableSlot.getInputSlot(craftSlotIndex, true)
+                                     : PlayerSlot.getCraftInputSlot(craftSlotIndex);
                     ItemStack stack = getItemStackInSlot(craftSlot);
                     total += getFuelAmount(stack.getItem()) * stack.getCount();
                 }
@@ -816,7 +826,7 @@ public class InventoryTracker extends Tracker {
 
     public void deequipRightClickableItem() {
         deequip(item ->
-                item instanceof BucketItem // water,lava,milk,fishes
+                        item instanceof BucketItem // water,lava,milk,fishes
                         || item instanceof EnderEyeItem
                         || item == Items.BOW
                         || item == Items.CROSSBOW
@@ -837,14 +847,14 @@ public class InventoryTracker extends Tracker {
                         || item instanceof Wearable
                         || item == Items.SHIELD
                         || item == Items.LEAD
-                ,
-                true
-        );
+                , true);
     }
 
     /**
      * Tries to de-equip any item that we don't want equipped.
+     *
      * @param isBad: Whether an item is bad/shouldn't be equipped
+     *
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
     public boolean deequip(Predicate<Item> isBad, boolean preferEmpty) {

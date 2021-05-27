@@ -27,7 +27,7 @@ public class StoreInAnyChestTask extends Task {
     private final ItemTarget[] targets;
 
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
-    private BlockPos _currentChestTry = null;
+    private BlockPos _currentChestTry;
 
     public StoreInAnyChestTask(ItemTarget... targets) {
         this.targets = targets;
@@ -81,17 +81,17 @@ public class StoreInAnyChestTask extends Task {
             }
 
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
-                    blockPos -> {
-                        if (_currentChestTry != blockPos) {
-                            _progressChecker.reset();
-                        }
-                        _currentChestTry = blockPos;
-                        // If block above is solid, break it.
-                        if (WorldUtil.isSolid(mod, blockPos.up())) {
-                            return new DestroyBlockTask(blockPos.up());
-                        }
-                        return new StoreInChestTask(blockPos, targets);
-                    },
+                                            blockPos -> {
+                                                if (_currentChestTry != blockPos) {
+                                                    _progressChecker.reset();
+                                                }
+                                                _currentChestTry = blockPos;
+                                                // If block above is solid, break it.
+                                                if (WorldUtil.isSolid(mod, blockPos.up())) {
+                                                    return new DestroyBlockTask(blockPos.up());
+                                                }
+                                                return new StoreInChestTask(blockPos, targets);
+                                            },
                                             pos -> mod.getBlockTracker().getNearestTracking(pos, invalidChest, Blocks.CHEST), Blocks.CHEST);
         }
 
