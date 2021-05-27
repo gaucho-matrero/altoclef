@@ -12,12 +12,12 @@ public class TaskRunner {
     private final AltoClef mod;
     private boolean active;
     private TaskChain cachedCurrentTaskChain;
-    
+
     public TaskRunner(AltoClef mod) {
         this.mod = mod;
         active = false;
     }
-    
+
     public void tick() {
         if (!active) return;
         // Get highest priority chain and run
@@ -39,11 +39,11 @@ public class TaskRunner {
             maxChain.tick(mod);
         }
     }
-    
+
     public void addTaskChain(TaskChain chain) {
         chains.add(chain);
     }
-    
+
     public void enable() {
         if (!active) {
             mod.getConfigState().push();
@@ -51,7 +51,7 @@ public class TaskRunner {
         }
         active = true;
     }
-    
+
     public void disable() {
         if (active) {
             mod.getConfigState().pop();
@@ -60,12 +60,12 @@ public class TaskRunner {
             chain.stop(mod);
         }
         active = false;
-        
+
         Debug.logMessage("Stopped");
     }
-    
+
     public TaskChain getCurrentTaskChain() {
         return cachedCurrentTaskChain;
     }
-    
+
 }

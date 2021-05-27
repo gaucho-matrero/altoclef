@@ -58,7 +58,7 @@ import java.util.Optional;
 
 
 public class MobDefenseChain extends SingleTaskChain {
-    
+
     // Kind of a silly solution
     @SuppressWarnings("rawtypes")
     public static final Class[] HOSTILE_ANNOYING_CLASSES = {
@@ -77,37 +77,37 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean doingFunkyStuff;
     private boolean wasPuttingOutFire;
     private Task runAwayTask;
-    
+
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
         double distance = creeper.squaredDistanceTo(pos);
         float fuse = creeper.getClientFuseTime(1);
-        
+
         // Not fusing. We only get fusing crepers.
         if (fuse <= 0.001f) return 0;
         return distance * (1 - fuse * fuse);
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
-        
+
         if (!mod.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         if (!mod.getModSettings().isMobDefense()) {
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
         mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
-        
+
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
-        
+
         // Put out fire if we're standing on one like an idiot
         BlockPos fireBlock = isInsideFireAndOnFire(mod);
         if (fireBlock != null) {
@@ -117,19 +117,19 @@ public class MobDefenseChain extends SingleTaskChain {
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
             wasPuttingOutFire = false;
         }
-        
+
         if (prioritizeEating(mod)) {
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         // Force field
         doForceField(mod);
-        
-        
+
+
         // Tell baritone to avoid mobs if we're vulnurable.
         // Costly.
         //mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
-        
+
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
         if (universallyDangerous != null) {
@@ -137,7 +137,7 @@ public class MobDefenseChain extends SingleTaskChain {
             setTask(runAwayTask);
             return 70;
         }
-        
+
         doingFunkyStuff = false;
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
@@ -148,7 +148,7 @@ public class MobDefenseChain extends SingleTaskChain {
             setTask(runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
-        
+
         // Dodge projectiles
         if (!mod.getFoodTaskChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
             doingFunkyStuff = true;
@@ -156,7 +156,7 @@ public class MobDefenseChain extends SingleTaskChain {
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
         }
-        
+
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod)) {
             doingFunkyStuff = true;
@@ -166,7 +166,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 return 70;
             }
         }
-        
+
         if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // Deal with hostiles because they are annoying.
             List<HostileEntity> hostiles;
@@ -174,7 +174,7 @@ public class MobDefenseChain extends SingleTaskChain {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 hostiles = mod.getEntityTracker().getHostiles();//mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class;
             }
-            
+
             ToolItem bestSword = null;
             Item[] SWORDS = {
                     Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD
@@ -185,20 +185,20 @@ public class MobDefenseChain extends SingleTaskChain {
                     break;
                 }
             }
-            
-            
+
+
             List<Entity> toDealWith = new ArrayList<>();
-            
+
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity hostile : hostiles) {
                     int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity) ? 18 : 2;
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
-                    
+
                     if (isClose) {
                         isClose = LookUtil.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
                     }
-                    
+
                     // Give each hostile a timer, if they're close for too long deal with them.
                     if (isClose) {
                         if (!_closeAnnoyingEntities.containsKey(hostile)) {
@@ -212,7 +212,7 @@ public class MobDefenseChain extends SingleTaskChain {
                         _closeAnnoyingEntities.remove(hostile);
                     }
                 }
-                
+
                 // Clear dead/non existing hostiles
                 List<Entity> toRemove = new ArrayList<>();
                 for (Entity check : _closeAnnoyingEntities.keySet()) {
@@ -221,24 +221,24 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 }
                 for (Entity remove : toRemove) _closeAnnoyingEntities.remove(remove);
-                
+
                 int numberOfProblematicEntities = toDealWith.size();
-                
+
                 if (numberOfProblematicEntities > 0) {
-                    
+
                     // Depending on our weapons/armor, we may chose to straight up kill hostiles if we're not dodging their arrows.
-                    
+
                     // wood 0 : 1 skeleton
                     // stone 1 : 1 skeleton
                     // iron 2 : 2 hostiles
                     // diamond 3 : 3 hostiles
                     // netherite 4 : 4 hostiles
-                    
+
                     // Armor:
                     // leather: 1 skeleton
                     // iron: 2 hostiles
                     // diamond: 3 hostiles
-                    
+
                     // 7 is full set of leather
                     // 15 is full set of iron.
                     // 20 is full set of diamond.
@@ -247,13 +247,13 @@ public class MobDefenseChain extends SingleTaskChain {
                     // full netherite has 12 bonus toughness
                     int armor = mod.getPlayer().getArmor();
                     float damage = bestSword == null ? 0 : (1 + bestSword.getMaterial().getAttackDamage());
-                    
+
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
-                    
+
                     canDealWith += 1;
                     if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
-                        
+
                         setTask(new KillEntitiesTask(entity -> !toDealWith.contains(entity),
                                                      // Oof
                                                      HOSTILE_ANNOYING_CLASSES));
@@ -267,22 +267,22 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             }
         }
-        
-        
+
+
         // By default if we aren't "immediately" in danger but were running away, keep running away until we're good.
         if (runAwayTask != null && runAwayTask.isActive() && !runAwayTask.isFinished(mod)) {
             setTask(runAwayTask);
             return 60;
         }
-        
+
         return 0;
     }
-    
+
     @Override
     public String getName() {
         return "Mob Defense";
     }
-    
+
     private BlockPos isInsideFireAndOnFire(AltoClef mod) {
         boolean onFire = mod.getPlayer().isOnFire();
         if (!onFire) return null;
@@ -298,7 +298,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
         return null;
     }
-    
+
     private void putOutFire(AltoClef mod, BlockPos pos) {
         Baritone b = mod.getClientBaritone();
         IPlayerContext ctx = b.getPlayerContext();
@@ -313,15 +313,15 @@ public class MobDefenseChain extends SingleTaskChain {
             }
         }
     }
-    
+
     private boolean prioritizeEating(AltoClef mod) {
         return mod.getFoodTaskChain().needsToEatCritical(mod);
     }
-    
+
     private void doForceField(AltoClef mod) {
-        
+
         _killAura.tickStart(mod);
-        
+
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
         try {
@@ -353,25 +353,25 @@ public class MobDefenseChain extends SingleTaskChain {
         } catch (Exception e) {
             Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
         }
-        
+
         _killAura.tickEnd(mod);
     }
-    
+
     private void applyForceField(AltoClef mod, Entity entity) {
         if (targetEntity != null && targetEntity.equals(entity)) return;
         _killAura.applyAura(mod, entity);
     }
-    
+
     private CreeperEntity getClosestFusingCreeper(AltoClef mod) {
         double worstSafety = Float.POSITIVE_INFINITY;
         CreeperEntity target = null;
         try {
             List<CreeperEntity> creepers = mod.getEntityTracker().getTrackedEntities(CreeperEntity.class);
             for (CreeperEntity creeper : creepers) {
-                
+
                 if (creeper == null) continue;
                 if (creeper.getClientFuseTime(1) < 0.001) continue;
-                
+
                 // We want to pick the closest creeper, but FIRST pick creepers about to blow
                 // At max fuse, the cost goes to basically zero.
                 double safety = getCreeperSafety(mod.getPlayer().getPos(), creeper);
@@ -386,13 +386,13 @@ public class MobDefenseChain extends SingleTaskChain {
         }
         return target;
     }
-    
+
     private boolean isProjectileClose(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
-        
+
         try {
             for (CachedProjectile projectile : projectiles) {
-                
+
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
                     continue;
@@ -408,16 +408,16 @@ public class MobDefenseChain extends SingleTaskChain {
                     // Ignore dragon fireballs
                     continue;
                 }
-                
+
                 Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
-                
+
                 Vec3d delta = mod.getPlayer().getPos().subtract(expectedHit);
-                
+
                 //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
-                
+
                 double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
                 double verticalDistance = delta.y;
-                
+
                 if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) return true;
             }
         } catch (ConcurrentModificationException e) {
@@ -425,7 +425,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
         return false;
     }
-    
+
     private Entity getUniversallyDangerousMob(AltoClef mod) {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
@@ -449,9 +449,9 @@ public class MobDefenseChain extends SingleTaskChain {
         }
         return null;
     }
-    
+
     private boolean isInDanger(AltoClef mod) {
-        
+
         if (isVulnurable(mod)) {
             // If hostile mobs are nearby...
             try {
@@ -468,10 +468,10 @@ public class MobDefenseChain extends SingleTaskChain {
                 Debug.logWarning("Weird multithread exception. Will fix later.");
             }
         }
-        
+
         return false;
     }
-    
+
     private boolean isVulnurable(AltoClef mod) {
         int armor = mod.getPlayer().getArmor();
         float health = mod.getPlayer().getHealth();
@@ -479,29 +479,29 @@ public class MobDefenseChain extends SingleTaskChain {
         if (armor < 10 && health < 10) return true;
         return armor < 5 && health < 18;
     }
-    
+
     public void setTargetEntity(Entity entity) {
         targetEntity = entity;
     }
-    
+
     public void setForceFieldRange(double range) {
         _killAura.setRange(range);
     }
-    
+
     public void resetForceField() {
         _killAura.setRange(Double.POSITIVE_INFINITY);
     }
-    
+
     public boolean isDoingAcrobatics() {
         return doingFunkyStuff;
     }
-    
+
     @Override
     public boolean isActive() {
         // We're always checking for mobs
         return true;
     }
-    
+
     @Override
     protected void onTaskFinish(AltoClef mod) {
         // Task is done, so I guess we move on?

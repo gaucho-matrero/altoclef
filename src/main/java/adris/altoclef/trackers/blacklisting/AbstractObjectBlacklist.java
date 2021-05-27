@@ -15,7 +15,7 @@ import java.util.HashMap;
  */
 public abstract class AbstractObjectBlacklist<T> {
     private final HashMap<T, BlacklistEntry> entries = new HashMap<>();
-    
+
     public void blackListItem(AltoClef mod, T item, int numberOfFailuresAllowed) {
         if (!entries.containsKey(item)) {
             BlacklistEntry entry = new BlacklistEntry();
@@ -38,9 +38,9 @@ public abstract class AbstractObjectBlacklist<T> {
         entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
         //Debug.logMessage("TEMP: " + item.toString() +" FAIL: " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
     }
-    
+
     protected abstract Vec3d getPos(T item);
-    
+
     public boolean unreachable(T item) {
         if (entries.containsKey(item)) {
             BlacklistEntry entry = entries.get(item);
@@ -48,11 +48,11 @@ public abstract class AbstractObjectBlacklist<T> {
         }
         return false;
     }
-    
+
     public void clear() {
         entries.clear();
     }
-    
+
     // Key: BlockPos
     private static class BlacklistEntry {
         public int numberOfFailuresAllowed;

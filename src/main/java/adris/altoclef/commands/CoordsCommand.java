@@ -10,7 +10,7 @@ public class CoordsCommand extends Command {
     public CoordsCommand() {
         super("coords", "Get bot's current coordinates");
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         mod.log("CURRENT COORDINATES: " + mod.getPlayer().getBlockPos().toShortString() + " (Current dimension: " +

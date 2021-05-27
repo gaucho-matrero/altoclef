@@ -20,60 +20,60 @@ public final class ItemUtil {
             Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS, Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS,
             Items.SPRUCE_PLANKS, Items.WARPED_PLANKS
     };
-    
+
     public static final Item[] LEAVES = {
             Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES
     };
-    
+
     public static final Item[] WOOD_BUTTON = {
             Items.ACACIA_BUTTON, Items.BIRCH_BUTTON, Items.CRIMSON_BUTTON, Items.DARK_OAK_BUTTON, Items.OAK_BUTTON, Items.JUNGLE_BUTTON,
             Items.SPRUCE_BUTTON, Items.WARPED_BUTTON
     };
-    
+
     public static final Item[] WOOD_SIGN = {
             Items.ACACIA_SIGN, Items.BIRCH_SIGN, Items.CRIMSON_SIGN, Items.DARK_OAK_SIGN, Items.OAK_SIGN, Items.JUNGLE_SIGN,
             Items.SPRUCE_SIGN, Items.WARPED_SIGN
     };
-    
+
     public static final Item[] WOOD_PRESSURE_PLATE = {
             Items.ACACIA_PRESSURE_PLATE, Items.BIRCH_PRESSURE_PLATE, Items.CRIMSON_PRESSURE_PLATE, Items.DARK_OAK_PRESSURE_PLATE,
             Items.OAK_PRESSURE_PLATE, Items.JUNGLE_PRESSURE_PLATE, Items.SPRUCE_PRESSURE_PLATE, Items.WARPED_PRESSURE_PLATE
     };
-    
+
     public static final Item[] WOOD_FENCE = {
             Items.ACACIA_FENCE, Items.BIRCH_FENCE, Items.DARK_OAK_FENCE, Items.OAK_FENCE, Items.JUNGLE_FENCE, Items.SPRUCE_FENCE,
             Items.CRIMSON_FENCE, Items.WARPED_FENCE
     };
-    
+
     public static final Item[] WOOD_FENCE_GATE = {
             Items.ACACIA_FENCE_GATE, Items.BIRCH_FENCE_GATE, Items.DARK_OAK_FENCE_GATE, Items.OAK_FENCE_GATE, Items.JUNGLE_FENCE_GATE,
             Items.SPRUCE_FENCE_GATE, Items.CRIMSON_FENCE_GATE, Items.WARPED_FENCE_GATE
     };
-    
+
     public static final Item[] WOOD_BOAT = {
             Items.ACACIA_BOAT, Items.BIRCH_BOAT, Items.DARK_OAK_BOAT, Items.OAK_BOAT, Items.JUNGLE_BOAT, Items.SPRUCE_BOAT
     };
-    
+
     public static final Item[] WOOD_DOOR = {
             Items.ACACIA_DOOR, Items.BIRCH_DOOR, Items.CRIMSON_DOOR, Items.DARK_OAK_DOOR, Items.OAK_DOOR, Items.JUNGLE_DOOR,
             Items.SPRUCE_DOOR, Items.WARPED_DOOR
     };
-    
+
     public static final Item[] WOOD_SLAB = {
             Items.ACACIA_SLAB, Items.BIRCH_SLAB, Items.CRIMSON_SLAB, Items.DARK_OAK_SLAB, Items.OAK_SLAB, Items.JUNGLE_SLAB,
             Items.SPRUCE_SLAB, Items.WARPED_SLAB
     };
-    
+
     public static final Item[] WOOD_STAIRS = {
             Items.ACACIA_STAIRS, Items.BIRCH_STAIRS, Items.CRIMSON_STAIRS, Items.DARK_OAK_STAIRS, Items.OAK_STAIRS, Items.JUNGLE_STAIRS,
             Items.SPRUCE_STAIRS, Items.WARPED_STAIRS
     };
-    
+
     public static final Item[] WOOD_TRAPDOOR = {
             Items.ACACIA_TRAPDOOR, Items.BIRCH_TRAPDOOR, Items.CRIMSON_TRAPDOOR, Items.DARK_OAK_TRAPDOOR, Items.OAK_TRAPDOOR,
             Items.JUNGLE_TRAPDOOR, Items.SPRUCE_TRAPDOOR, Items.WARPED_TRAPDOOR
     };
-    
+
     public static final Item[] LOG = {
             Items.ACACIA_LOG, Items.BIRCH_LOG, Items.DARK_OAK_LOG, Items.OAK_LOG, Items.JUNGLE_LOG, Items.SPRUCE_LOG, Items.ACACIA_WOOD,
             Items.BIRCH_WOOD, Items.DARK_OAK_WOOD, Items.OAK_WOOD, Items.JUNGLE_WOOD, Items.SPRUCE_WOOD, Items.STRIPPED_ACACIA_LOG,
@@ -81,43 +81,43 @@ public final class ItemUtil {
             Items.STRIPPED_SPRUCE_LOG, Items.CRIMSON_STEM, Items.WARPED_STEM, Items.STRIPPED_CRIMSON_STEM, Items.STRIPPED_WARPED_STEM,
             Items.STRIPPED_CRIMSON_HYPHAE, Items.STRIPPED_WARPED_HYPHAE
     };
-    
+
     public static final Item[] DYE = {
             Items.WHITE_DYE, Items.BLACK_DYE, Items.BLUE_DYE, Items.BROWN_DYE, Items.CYAN_DYE, Items.GRAY_DYE, Items.GREEN_DYE,
             Items.LIGHT_BLUE_DYE, Items.LIGHT_GRAY_DYE, Items.LIME_DYE, Items.MAGENTA_DYE, Items.ORANGE_DYE, Items.PINK_DYE,
             Items.PURPLE_DYE, Items.RED_DYE, Items.YELLOW_DYE
     };
-    
+
     public static final Item[] WOOL = {
             Items.WHITE_WOOL, Items.BLACK_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.CYAN_WOOL, Items.GRAY_WOOL, Items.GREEN_WOOL,
             Items.LIGHT_BLUE_WOOL, Items.LIGHT_GRAY_WOOL, Items.LIME_WOOL, Items.MAGENTA_WOOL, Items.ORANGE_WOOL, Items.PINK_WOOL,
             Items.PURPLE_WOOL, Items.RED_WOOL, Items.YELLOW_WOOL
     };
-    
+
     public static final Item[] BED = {
             Items.WHITE_BED, Items.BLACK_BED, Items.BLUE_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.GREEN_BED,
             Items.LIGHT_BLUE_BED, Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED, Items.PINK_BED,
             Items.PURPLE_BED, Items.RED_BED, Items.YELLOW_BED
     };
-    
+
     public static final Item[] CARPET = {
             Items.WHITE_CARPET, Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET,
             Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET,
             Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET
     };
-    
+
     public static final Item[] FLOWER = {
             Items.ALLIUM, Items.AZURE_BLUET, Items.BLUE_ORCHID, Items.CORNFLOWER, Items.DANDELION, Items.LILAC, Items.LILY_OF_THE_VALLEY,
             Items.ORANGE_TULIP, Items.OXEYE_DAISY, Items.PINK_TULIP, Items.POPPY, Items.PEONY, Items.RED_TULIP, Items.ROSE_BUSH,
             Items.SUNFLOWER, Items.WHITE_TULIP
     };
-    
+
     public static final Block[] WOOD_SIGNS_ALL = {
             Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN,
             Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN,
             Blocks.SPRUCE_WALL_SIGN
     };
-    
+
     public static final Map<Item, Item> _logToPlanks = new HashMap<Item, Item>() {
         {
             put(Items.ACACIA_LOG, Items.ACACIA_PLANKS);
@@ -135,7 +135,7 @@ public final class ItemUtil {
             }
         }
     };
-    
+
     public static final Map<MaterialColor, ColorfulItems> colorMap
             = ImmutableMap.<MaterialColor, ColorfulItems>builder()
                           .put(MaterialColor.WHITE,
@@ -231,7 +231,7 @@ public final class ItemUtil {
                                                  Items.YELLOW_CONCRETE_POWDER, Items.YELLOW_BANNER, Items.YELLOW_SHULKER_BOX,
                                                  Blocks.YELLOW_WALL_BANNER))
                           .build();
-    
+
     public static final Map<WoodType, WoodItems> woodMap
             = ImmutableMap.<WoodType, WoodItems>builder()
                           .put(WoodType.ACACIA, new WoodItems("acacia", Items.ACACIA_PLANKS, Items.ACACIA_LOG, Items.STRIPPED_ACACIA_LOG,
@@ -284,7 +284,7 @@ public final class ItemUtil {
                                                               Items.WARPED_FUNGUS, Items.NETHER_WART_BLOCK, Items.WARPED_PRESSURE_PLATE,
                                                               Items.WARPED_TRAPDOOR))
                           .build();
-    
+
     private ItemUtil() {
     }
 
@@ -319,30 +319,30 @@ public final class ItemUtil {
         RED
         YELLOW
      */
-    
+
     public static Item logToPlanks(Item logItem) {
         if (_logToPlanks.containsKey(logItem)) {
             return _logToPlanks.get(logItem);
         }
         return null;
     }
-    
+
     public static Item planksToLog(Item plankItem) {
         return logToPlanks(plankItem);
     }
-    
+
     public static ColorfulItems getColorfulItems(MaterialColor color) {
         return colorMap.get(color);
     }
-    
+
     public static ColorfulItems getColorfulItems(DyeColor color) {
         return getColorfulItems(color.getMaterialColor());
     }
-    
+
     public static WoodItems getWoodItems(WoodType type) {
         return woodMap.get(type);
     }
-    
+
     public static String trimItemName(String name) {
         String trimmed = name;
         if (name.startsWith("block.minecraft.")) {
@@ -352,7 +352,7 @@ public final class ItemUtil {
         }
         return trimmed;
     }
-    
+
     public static Block[] itemsToBlocks(Item... items) {
         Block[] result = new Block[items.length];
         for (int i = 0; i < items.length; ++i) {
@@ -360,7 +360,7 @@ public final class ItemUtil {
         }
         return result;
     }
-    
+
     public static class ColorfulItems {
         public DyeColor color;
         public String colorName;
@@ -377,7 +377,7 @@ public final class ItemUtil {
         public Item banner;
         public Item shulker;
         public Block wallBanner;
-        
+
         public ColorfulItems(DyeColor color, String colorName, Item dye, Item wool, Item bed, Item carpet, Item stainedGlass,
                              Item stainedGlassPane, Item terracotta, Item glazedTerracotta, Item concrete, Item concretePowder, Item banner,
                              Item shulker, Block wallBanner) {
@@ -398,8 +398,8 @@ public final class ItemUtil {
             this.wallBanner = wallBanner;
         }
     }
-    
-    
+
+
     public static class WoodItems {
         public String prefix;
         public Item planks;
@@ -419,7 +419,7 @@ public final class ItemUtil {
         public Item leaves;
         public Item pressurePlate;
         public Item trapdoor;
-        
+
         public WoodItems(String prefix, Item planks, Item log, Item strippedLog, Item strippedWood, Item wood, Item sign, Item door,
                          Item button, Item stairs, Item slab, Item fence, Item fenceGate, Item boat, Item sapling, Item leaves,
                          Item pressurePlate, Item trapdoor) {
@@ -442,10 +442,10 @@ public final class ItemUtil {
             this.pressurePlate = pressurePlate;
             this.trapdoor = trapdoor;
         }
-        
+
         public boolean isNetherWood() {
             return planks == Items.CRIMSON_PLANKS || planks == Items.WARPED_PLANKS;
         }
     }
-    
+
 }

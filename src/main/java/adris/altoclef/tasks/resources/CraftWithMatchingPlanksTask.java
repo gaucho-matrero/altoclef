@@ -14,12 +14,12 @@ import net.minecraft.item.Item;
 
 public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask {
     private final ItemTarget visualTarget;
-    
+
     public CraftWithMatchingPlanksTask(Item[] validTargets, CraftingRecipe recipe, boolean[] sameMask, int count) {
         super(new ItemTarget(validTargets, count), recipe, sameMask);
         visualTarget = new ItemTarget(validTargets, count);
     }
-    
+
     // This part is already handled by "getExpectedTotalCountOfSameItem" and "getSpecificSameResourceTask".
     /*
     @Override
@@ -27,14 +27,14 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
         return super.getAllSameResourcesTask(mod);
     }
      */
-    
+
     @Override
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {
         // Include logs
         return mod.getInventoryTracker().getItemCountIncludingTable(sameItem) + mod.getInventoryTracker().getItemCountIncludingTable(
                 ItemUtil.planksToLog(sameItem)) * 4;
     }
-    
+
     @Override
     protected Task getSpecificSameResourceTask(AltoClef mod, Item[] toGet) {
         for (Item plankToGet : toGet) {
@@ -50,12 +50,12 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
         Debug.logError("CraftWithMatchingPlanks: Should never happen!");
         return null;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CraftWithMatchingPlanksTask) {
@@ -64,10 +64,10 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Crafting: " + visualTarget;
     }
-    
+
 }

@@ -12,17 +12,17 @@ import net.minecraft.util.math.BlockPos;
 public class RunAwayFromPositionTask extends CustomBaritoneGoalTask {
     private final BlockPos[] dangerBlocks;
     private final double distance;
-    
+
     public RunAwayFromPositionTask(double distance, BlockPos... toRunAwayFrom) {
         this.distance = distance;
         dangerBlocks = toRunAwayFrom;
     }
-    
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalRunAway(distance, dangerBlocks);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof RunAwayFromPositionTask) {
@@ -30,7 +30,7 @@ public class RunAwayFromPositionTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Running away from " + Util.arrayToString(dangerBlocks);

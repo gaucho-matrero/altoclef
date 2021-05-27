@@ -18,33 +18,33 @@ import net.minecraft.item.Item;
 public class CollectBedTask extends CraftWithMatchingWoolTask {
     public static final Block[] BEDS = Util.itemsToBlocks(ItemUtil.BED);
     private final ItemTarget visualBedTarget;
-    
+
     public CollectBedTask(Item[] beds, ItemTarget wool, int count) {
         // Top 3 are wool, must be the same.
         super(new ItemTarget(beds, count), createBedRecipe(wool),
               new boolean[]{ true, true, true, false, false, false, false, false, false });
         visualBedTarget = new ItemTarget(beds, count);
     }
-    
+
     public CollectBedTask(Item bed, String woolCatalogueName, int count) {
         this(new Item[]{ bed }, new ItemTarget(woolCatalogueName, 1), count);
     }
-    
+
     public CollectBedTask(int count) {
         this(ItemUtil.BED, TaskCatalogue.getItemTarget("wool", 1), count);
     }
-    
+
     private static CraftingRecipe createBedRecipe(ItemTarget wool) {
         ItemTarget w = wool;
         ItemTarget p = TaskCatalogue.getItemTarget("planks", 1);
         return CraftingRecipe.newShapedRecipe(new ItemTarget[]{ w, w, w, p, p, p, null, null, null }, 1);
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CollectBedTask) {
@@ -53,18 +53,18 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Crafting bed: " + visualBedTarget;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(BEDS);
         super.onResourceStart(mod);
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Break beds from the world if possible, that would be pretty fast.
@@ -74,7 +74,7 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         }
         return super.onResourceTick(mod);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(BEDS);

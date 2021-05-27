@@ -16,22 +16,22 @@ import net.minecraft.item.Items;
 
 public class CollectWheatTask extends ResourceTask {
     private final int count;
-    
+
     public CollectWheatTask(int targetCount) {
         super(Items.WHEAT, targetCount);
         count = targetCount;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // We may have enough hay blocks to meet our needs.
@@ -49,20 +49,20 @@ public class CollectWheatTask extends ResourceTask {
         // Collect wheat
         return new CollectCropTask(new ItemTarget(Items.WHEAT, count), new Block[]{ Blocks.WHEAT }, Items.WHEAT_SEEDS);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectWheatTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " wheat.";
     }
-    
+
 }

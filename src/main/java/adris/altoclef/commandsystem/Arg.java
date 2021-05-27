@@ -12,13 +12,13 @@ public class Arg<T> extends ArgBase {
     private HashMap<String, T> enumValues;
     private String name = "";
     private boolean showDefault;
-    
+
     // Regular Constructor
     public Arg(Class<T> type, String name) throws CommandException {
         this.name = name;
         // I really hate java
         tType = type;
-        
+
         showDefault = true;
         hasDefault = false;
         // If enum, take action.
@@ -36,7 +36,7 @@ public class Arg<T> extends ArgBase {
             }
         }
     }
-    
+
     // Constructor with default value
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
         this(type, name);
@@ -45,29 +45,29 @@ public class Arg<T> extends ArgBase {
         this.minArgCountToUseDefault = minArgCountToUseDefault;
         this.showDefault = showDefault;
     }
-    
+
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
         this(type, name, defaultValue, minArgCountToUseDefault, true);
     }
-    
+
     private boolean isEnum() {
         return enumValues != null;
     }
-    
+
     // Horrendous chain syntax that I'm only using here.
     public Arg<T> AsArray() {
         isArray = true;
         return this;
     }
-    
+
     @SuppressWarnings("unchecked")
     private <V> boolean IsInstanceOf(Class<V> vType, Class<?> t) {
         return vType == t || vType.isAssignableFrom(t);
     }
-    
+
     private <V> boolean IsInstancesOf(Class<V> vType, Class<?>... types) {
         // I really hate java
-        
+
         for (Class<?> t : types) {
             if (IsInstanceOf(vType, t)) {
                 return true;
@@ -75,11 +75,11 @@ public class Arg<T> extends ArgBase {
         }
         return false;
     }
-    
+
     private void ParseErrorCheck(boolean good, Object value, String type) throws CommandException {
         if (!good) throw new CommandException("Failed to parse the following argument into type " + type + ": " + value + ".");
     }
-    
+
     private <V> V ParseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
         // If enum, check from our cached enum dictionary.
         if (isEnum()) {
@@ -95,7 +95,7 @@ public class Arg<T> extends ArgBase {
             }
             return GetConverted(vType, enumValues.get(unit));
         }
-        
+
         // Do number parsing.
         if (IsInstanceOf(vType, Float.class)) {
             try {
@@ -125,7 +125,7 @@ public class Arg<T> extends ArgBase {
                 ParseErrorCheck(false, unit, "long");
             }
         }
-        
+
         // Now do String parsing.
         if (IsInstanceOf(vType, String.class)) {
             // Remove quotes
@@ -136,7 +136,7 @@ public class Arg<T> extends ArgBase {
             }
             return GetConverted(vType, unit);
         }
-        
+
         // TODO: Array
         /*
         // For arrays, parse them uh individually.
@@ -182,18 +182,18 @@ public class Arg<T> extends ArgBase {
                 "Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or " +
                 "by accident somehow.");
     }
-    
+
     @Override
     public Object ParseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
         return ParseUnitUtil(tType, unit, unitPlusRemainder);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public <V> V GetDefault(Class<V> vType) {
         return GetConverted(vType, defaultValue);
     }
-    
+
     /// <summary>
     ///     Return the "help" command representation of this argument.
     ///     For instance, in a "dialogue" command it looks like this:
@@ -210,13 +210,13 @@ public class Arg<T> extends ArgBase {
         }
         return "[" + name + "]";
     }
-    
+
     // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
     @Override
     public boolean isArray() {
         return isArray;
     }
-    
+
     public boolean CheckValidUnit(String arg, StringBuilder errorMsg) {
         errorMsg.delete(0, errorMsg.length());
         return true;

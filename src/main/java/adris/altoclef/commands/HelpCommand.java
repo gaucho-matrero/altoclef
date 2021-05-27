@@ -8,11 +8,11 @@ import adris.altoclef.ui.MessagePriority;
 
 
 public class HelpCommand extends Command {
-    
+
     public HelpCommand() {
         super("help", "Lists all commands");
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         mod.log("########## HELP: ##########", MessagePriority.OPTIONAL);

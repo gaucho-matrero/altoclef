@@ -21,7 +21,7 @@ public class EquipCommand extends Command {
     public EquipCommand() throws CommandException {
         super("equip", "Equip an item or toggle armor equip", new Arg(String.class, "item"));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String item = parser.Get(String.class);

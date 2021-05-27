@@ -30,29 +30,29 @@ public class SCP173Task extends Task {
     private final HashMap<PlayerEntity, Double> _lastLookCloseness = new HashMap<>();
     private PlayerEntity _lastTarget;
     private Vec3d _lastWalkVelocity = Vec3d.ZERO;
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         _lastLookCloseness.clear();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // FREEZE when nobody is looking.
         boolean seen = isSeenByPlayer(mod);
-        
+
         Vec3d currentVelocity = mod.getPlayer().getVelocity();
         if (currentVelocity.lengthSquared() > WALK_THRESHOLD * WALK_THRESHOLD) {
             _lastWalkVelocity = currentVelocity;
         }
-        
+
         if (seen) {
             setDebugState("Standing still and being menacing");
         } else {
             setDebugState("Scrape Scrape Scrape");
         }
-        
+
         if (seen) {
             // Stare at them, menacingly!!!
             if (_lastTarget != null) {
@@ -60,7 +60,7 @@ public class SCP173Task extends Task {
             }
             return null;
         }
-        
+
         // Manually attack, since we ONLY attack when we can SEE the player.
         if (_lastTarget != null && mod.getPlayer().isInRange(_lastTarget, HIT_RANGE)) {
             if (LookUtil.seesPlayer(mod.getPlayer(), _lastTarget, HIT_RANGE)) {
@@ -71,28 +71,28 @@ public class SCP173Task extends Task {
                 }
             }
         }
-        
+
         return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), target -> {
             _lastTarget = (PlayerEntity) target;
             return new GetToEntityTask(target);
         }, PlayerEntity.class);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof SCP173Task;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Acting like SCP 173";
     }
-    
+
     private boolean isSeenByPlayer(AltoClef mod) {
         if (mod.getEntityTracker().entityFound(PlayerEntity.class)) {
             for (PlayerEntity player : mod.getEntityTracker().getTrackedEntities(PlayerEntity.class)) {
@@ -100,13 +100,13 @@ public class SCP173Task extends Task {
                 if (entityIsLookingInOurGeneralDirection(mod, player) && entityHasLineOfSightToUs(mod, player)) {
                     return true;
                 }
-                
+
             }
             return false;
         }
         return false;
     }
-    
+
     // We consider if the player is looking in the general direction
     // but we ALSO consider when the player is ALMOST looking in the general direction and
     // is ROTATING TORWARDS US to try and mitigate the look delay.
@@ -118,7 +118,7 @@ public class SCP173Task extends Task {
         _lastLookCloseness.put(other, lookCloseness);
         return lookCloseness > LOOK_CLOSENESS_THRESHOLD || predicted > LOOK_CLOSENESS_THRESHOLD;
     }
-    
+
     private boolean entityHasLineOfSightToUs(AltoClef mod, PlayerEntity other) {
         if (LookUtil.seesPlayer(mod.getPlayer(), other, MAX_RANGE)) {
             return true;

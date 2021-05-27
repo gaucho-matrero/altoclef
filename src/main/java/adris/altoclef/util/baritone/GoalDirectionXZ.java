@@ -14,9 +14,9 @@ public class GoalDirectionXZ implements Goal {
     public final double originZ;
     public final double dirX;
     public final double dirZ;
-    
+
     private final double sidePenalty;
-    
+
     public GoalDirectionXZ(Vec3d origin, Vec3d offset, double sidePenalty) {
         this.originX = origin.getX();
         //this.y = origin.getY();
@@ -30,19 +30,19 @@ public class GoalDirectionXZ implements Goal {
         }
         this.sidePenalty = sidePenalty;
     }
-    
+
     public GoalDirectionXZ(Vec3d origin, Vec3d offset) {
         this(origin, offset, 1000);
     }
-    
+
     private static String maybeCensor(double value) {
         return Baritone.settings().censorCoordinates.value ? "<censored>" : Double.toString(value);
     }
-    
+
     public boolean isInGoal(int x, int y, int z) {
         return false;
     }
-    
+
     public double heuristic(int x, int y, int z) {
         double dx = (x - this.originX), dz = (z - this.originZ);
         double correctDistance = dx * this.dirX + dz * this.dirZ;
@@ -55,10 +55,10 @@ public class GoalDirectionXZ implements Goal {
         double heuristic = (double)(-distanceFromStartInDesiredDirection) * (Double) BaritoneAPI.getSettings().costHeuristic.value;
         heuristic += (double)(distanceFromStartInIncorrectDirection * _sidePenalty);
          */
-        
+
         return -correctDistance * BaritoneAPI.getSettings().costHeuristic.value + perpendicularDistance * sidePenalty;
     }
-    
+
     public String toString() {
         return String.format("GoalDirection{x=%s, z=%s, dx=%s, dz=%s}", maybeCensor(this.originX), maybeCensor(this.originZ),
                              maybeCensor(this.dirX), maybeCensor(this.dirZ));

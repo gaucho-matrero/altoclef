@@ -20,7 +20,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
     private final ItemTarget sameResourceTarget;
     private final int sameResourceRequiredCount;
     private final int sameResourcePerRecipe;
-    
+
     public CraftWithMatchingMaterialsTask(ItemTarget target, CraftingRecipe recipe, boolean[] sameMask) {
         super(target);
         this.target = target;
@@ -43,7 +43,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         sameResourcePerRecipe = sameResourceRequiredCount;
         this.sameResourceRequiredCount = sameResourceRequiredCount * craftsNeeded;
     }
-    
+
     private static CraftingRecipe generateSamedRecipe(CraftingRecipe diverseRecipe, Item sameItem, boolean[] sameMask) {
         ItemTarget[] result = new ItemTarget[diverseRecipe.getSlotCount()];
         for (int i = 0; i < result.length; ++i) {
@@ -55,15 +55,15 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         }
         return CraftingRecipe.newShapedRecipe(result, diverseRecipe.outputCount());
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        
+
         // TODO: Scenario of
         //      Command: Get 3 beds
         //
@@ -73,7 +73,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         //      The system should craft 1 red bed + 2 white beds
         //      BUT since it needs 9 of the --SAME WOOL-- it keeps going.
         //      You should MAP for each type how many can fit into --_sameResourcePerRecipe-- and grab from THAT list.
-        
+
         /*
          * 0) Figure out the "same resource" item target
          * 1) Get the "same resource" item matches array
@@ -82,7 +82,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
          * 4) If the most frequent occurrence is NOT met, return TaskCatalogue.getItemTask("same resource" item target)
          * 5) If the most frequent occurrence IS met, run CraftInTable with a custom recipe that only has the frequent material.`
          */
-        
+
         // For each "same" item: How many items can we craft with it?
         // For instance, if we have 7 red wool, we can craft 2 beds
         // sameFullCraftsPermitted[Items.RED_WOOL] = 2;
@@ -98,15 +98,15 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
                 majorityCraftItem = sameCheck;
             }
         }
-        
+
         // If we already have some of our target, we need less "same" materials.
         int currentTargetCount = mod.getInventoryTracker().getItemCount(target);
         int currentTargetsRequired = target.targetCount - currentTargetCount;
-        
+
         if (canCraftTotal >= currentTargetsRequired) {
             // We have enough of the same resource!!!
             // Handle crafting normally.
-            
+
             // We may need to convert our raw materials into our "matching" materials.
             int trueCanCraftTotal = 0;
             for (Item sameCheck : sameResourceTarget.getMatches()) {
@@ -117,7 +117,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             if (trueCanCraftTotal < currentTargetsRequired) {
                 return getSpecificSameResourceTask(mod, sameResourceTarget.getMatches());
             }
-            
+
             CraftingRecipe samedRecipe = generateSamedRecipe(recipe, majorityCraftItem, sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, target.targetCount);
@@ -128,12 +128,12 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     // Virtual
     protected Task getAllSameResourcesTask(AltoClef mod) {
         if (sameResourceTarget.isCatalogueItem()) {
@@ -143,12 +143,12 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         Debug.logWarning("ItemTarget for same resource is not catalogued: " + sameResourceTarget);
         return null;
     }
-    
+
     // Virtual
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {
         return mod.getInventoryTracker().getItemCountIncludingTable(sameItem);
     }
-    
+
     // Virtual
     protected Task getSpecificSameResourceTask(AltoClef mod, Item[] toGet) {
         Debug.logError("Uh oh!!! getSpecificSameResourceTask should be implemented!!!! Now we're stuck.");

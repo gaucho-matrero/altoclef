@@ -6,13 +6,13 @@ public enum MessagePriority {
     TIMELY(2),
     OPTIONAL(1),
     UNAUTHORIZED(0);
-    
+
     private final int importance;
-    
+
     MessagePriority(int importance) {
         this.importance = importance;
     }
-    
+
     public int getImportance() {
         return importance;
     }

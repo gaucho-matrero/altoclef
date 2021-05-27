@@ -18,39 +18,39 @@ public class EnterNetherPortalTask extends Task {
     private final Timer portalTimeout = new Timer(10);
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(3);
     private boolean leftPortal;
-    
+
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
         if (targetDimension == Dimension.END) throw new IllegalArgumentException("Can't build a nether portal to the end.");
         this.getPortalTask = getPortalTask;
         this.targetDimension = targetDimension;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return mod.getCurrentDimension() == targetDimension;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
         leftPortal = false;
         portalTimeout.reset();
-        
+
         wanderTask.resetWander();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             setDebugState("Exiting portal for a bit.");
             portalTimeout.reset();
             leftPortal = true;
             return wanderTask;
         }
-        
+
         if (mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock() == Blocks.NETHER_PORTAL) {
-            
+
             if (portalTimeout.elapsed() && !leftPortal) {
                 return wanderTask;
             }
@@ -59,7 +59,7 @@ public class EnterNetherPortalTask extends Task {
         } else {
             portalTimeout.reset();
         }
-        
+
         BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), block -> {
             // REQUIRE that there be solid ground beneath us.
             BlockPos below = block.down();
@@ -74,12 +74,12 @@ public class EnterNetherPortalTask extends Task {
         setDebugState("Getting our portal");
         return getPortalTask;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.NETHER_PORTAL);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof EnterNetherPortalTask) {
@@ -88,7 +88,7 @@ public class EnterNetherPortalTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Entering nether portal";

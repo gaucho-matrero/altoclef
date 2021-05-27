@@ -27,22 +27,22 @@ public class CollectWoolTask extends ResourceTask {
     private final int count;
     private final HashSet<DyeColor> colors;
     private final Item[] wools;
-    
+
     public CollectWoolTask(DyeColor[] colors, int count) {
         super(new ItemTarget(ItemUtil.WOOL, count));
         this.colors = new HashSet<>(Arrays.asList(colors));
         this.count = count;
         wools = getWoolColorItems(colors);
     }
-    
+
     public CollectWoolTask(DyeColor color, int count) {
         this(new DyeColor[]{ color }, count);
     }
-    
+
     public CollectWoolTask(int count) {
         this(DyeColor.values(), count);
     }
-    
+
     private static Item[] getWoolColorItems(DyeColor[] colors) {
         Item[] result = new Item[colors.length];
         for (int i = 0; i < result.length; ++i) {
@@ -50,43 +50,43 @@ public class CollectWoolTask extends ResourceTask {
         }
         return result;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Util.itemsToBlocks(wools));
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        
+
         // TODO: If we don't find good color wool blocks
         // and we DONT find good color sheep:
         // USE DYES + REGULAR WOOL TO CRAFT THE WOOL COLOR!!
-        
+
         // If we find a wool block, break it.
         Block[] woolBlocks = Util.itemsToBlocks(wools);
         if (mod.getBlockTracker().anyFound(woolBlocks)) {
             return new MineAndCollectTask(new ItemTarget(wools), woolBlocks, MiningRequirement.HAND);
         }
-        
+
         // If we have shears, right click nearest sheep
         // Otherwise, kill + loot wool.
-        
+
         // Dimension
         if (isInWrongDimension(mod) && !mod.getEntityTracker().entityFound(SheepEntity.class)) {
             return getToCorrectDimensionTask(mod);
         }
-        
+
         if (mod.getInventoryTracker().hasItem(Items.SHEARS)) {
             // Shear sheep.
             return new ShearSheepTask();
         }
-        
+
         // Only option left is to Kill la Kill.
         return new KillAndLootTask(SheepEntity.class, entity -> {
             if (entity instanceof SheepEntity) {
@@ -98,34 +98,34 @@ public class CollectWoolTask extends ResourceTask {
             return false;
         }, new ItemTarget(wools, count));
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Util.itemsToBlocks(wools));
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectWoolTask && ((CollectWoolTask) obj).count == count;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collect " + count + " wool.";
     }
-    
-    
+
+
     static class ShearSheepTask extends AbstractDoToEntityTask {
-        
+
         public ShearSheepTask() {
             super(0, -1, -1);
         }
-        
+
         @Override
         protected boolean isSubEqual(AbstractDoToEntityTask other) {
             return other instanceof ShearSheepTask;
         }
-        
+
         @Override
         protected Task onEntityInteract(AltoClef mod, Entity entity) {
             if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
@@ -137,11 +137,11 @@ public class CollectWoolTask extends ResourceTask {
             } else {
                 Debug.logWarning("Failed to equip shears for some reason.");
             }
-            
-            
+
+
             return null;
         }
-        
+
         @Override
         protected Entity getEntityTarget(AltoClef mod) {
             Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), (entity) -> {
@@ -149,12 +149,12 @@ public class CollectWoolTask extends ResourceTask {
                     SheepEntity sheep = (SheepEntity) entity;
                     return !sheep.isShearable() || sheep.isSheared();
                 }
-                
+
                 return true;
             }, SheepEntity.class);
             return found;
         }
-        
+
         @Override
         protected String toDebugString() {
             return "Shearing Sheep";

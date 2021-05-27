@@ -21,24 +21,24 @@ import java.util.List;
  * Controls and applies killaura
  */
 public class KillAura {
-    
+
     // Smart aura data
     private final List<Entity> targets = new ArrayList<>();
     private final Timer hitDelay = new Timer(0.2);
     private double forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity forceHit;
-    
+
     public void tickStart(AltoClef mod) {
         targets.clear();
         forceHit = null;
     }
-    
+
     public void applyAura(AltoClef mod, Entity entity) {
         targets.add(entity);
         // Always hit ghast balls.
         if (entity instanceof FireballEntity) forceHit = entity;
     }
-    
+
     public void tickEnd(AltoClef mod) {
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
@@ -67,11 +67,11 @@ public class KillAura {
                 break;
         }
     }
-    
+
     public void setRange(double range) {
         forceFieldRange = range;
     }
-    
+
     private boolean attack(AltoClef mod, Entity entity) {
         if (entity == null)
             return false;
@@ -83,7 +83,7 @@ public class KillAura {
         }
         return false;
     }
-    
+
     private void deequipTool(AltoClef mod) {
         boolean toolEquipped = false;
         Item equip = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
@@ -103,7 +103,7 @@ public class KillAura {
             }
         }
     }
-    
+
     public enum Strategy {
         OFF,
         FASTEST,

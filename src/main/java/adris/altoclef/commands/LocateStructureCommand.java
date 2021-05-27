@@ -11,11 +11,11 @@ import adris.altoclef.tasks.misc.speedrun.LocateStrongholdTask;
 
 
 public class LocateStructureCommand extends Command {
-    
+
     public LocateStructureCommand() throws CommandException {
         super("locate_structure", "Locate a world generated structure.", new Arg(Structure.class, "structure"));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         Structure structure = parser.Get(Structure.class);
@@ -28,7 +28,7 @@ public class LocateStructureCommand extends Command {
                 break;
         }
     }
-    
+
     public enum Structure {
         DESERT_TEMPLE,
         STRONGHOLD

@@ -13,22 +13,22 @@ import net.minecraft.item.Items;
 
 public class CollectWheatSeedsTask extends ResourceTask {
     private final int count;
-    
+
     public CollectWheatSeedsTask(int count) {
         super(Items.WHEAT_SEEDS, count);
         this.count = count;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.WHEAT);
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // If wheat block found, collect wheat but don't pick up the wheat.
@@ -38,17 +38,17 @@ public class CollectWheatSeedsTask extends ResourceTask {
         // Otherwise, break grass blocks.
         return new MineAndCollectTask(Items.WHEAT_SEEDS, count, new Block[]{ Blocks.GRASS, Blocks.TALL_GRASS }, MiningRequirement.HAND);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectWheatSeedsTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " wheat seeds.";

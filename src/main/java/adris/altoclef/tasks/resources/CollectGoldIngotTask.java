@@ -19,22 +19,22 @@ import net.minecraft.item.Items;
 
 public class CollectGoldIngotTask extends ResourceTask {
     private final int count;
-    
+
     public CollectGoldIngotTask(int count) {
         super(Items.GOLD_INGOT, count);
         this.count = count;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.OVERWORLD) {
@@ -56,17 +56,17 @@ public class CollectGoldIngotTask extends ResourceTask {
         }
         return null;
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj).count == count;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " gold.";

@@ -18,10 +18,10 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 public abstract class Slot {
     private final int inventorySlot;
     private final int windowSlot;
-    
+
     private final boolean isInventory;
-    
-    
+
+
     public Slot(int slot, boolean inventory) {
         isInventory = inventory;
         if (inventory) {
@@ -34,7 +34,7 @@ public abstract class Slot {
             windowSlot = slot;
         }
     }
-    
+
     public static Slot getFromInventory(int inventorySlot) {
         // -1 means cursor. // specify this somewhere, please
         if (inventorySlot == -1) {
@@ -55,12 +55,12 @@ public abstract class Slot {
         Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
         return null;
     }
-    
+
     //@SuppressWarnings("CopyConstructorMissesField")
     /*public Slot(Slot other) {
         this(other._inventorySlot, true);
     }*/
-    
+
     private static ContainerType getCurrentType() {
         Screen screen = MinecraftClient.getInstance().currentScreen;
         if (screen instanceof FurnaceScreen) {
@@ -76,36 +76,36 @@ public abstract class Slot {
         }
         return ContainerType.PLAYER;
     }
-    
+
     public int getInventorySlot() {
         if (!isInventory) {
             return windowSlotToInventorySlot(windowSlot);
         }
         return inventorySlot;
     }
-    
+
     public int getWindowSlot() {
         if (isInventory) {
             return inventorySlotToWindowSlot(inventorySlot);
         }
         return windowSlot;
     }
-    
+
     public void ensureWindowOpened() {
     }
-    
+
     protected abstract int inventorySlotToWindowSlot(int inventorySlot);
-    
+
     protected abstract int windowSlotToInventorySlot(int windowSlot);
-    
+
     protected abstract String getName();
-    
+
     @Override
     public String toString() {
         return getName() + (isInventory ? "InventorySlot" : "Slot") + "{" + "inventory slot = " + getInventorySlot() + ", window slot = " +
                getWindowSlot() + '}';
     }
-    
+
     enum ContainerType {
         PLAYER,
         CRAFTING_TABLE,

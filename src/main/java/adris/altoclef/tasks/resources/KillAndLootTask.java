@@ -15,29 +15,29 @@ import java.util.function.Predicate;
 public class KillAndLootTask extends ResourceTask {
     private final Class toKill;
     private final Task killTask;
-    
+
     public KillAndLootTask(Class toKill, Predicate<Entity> ignorePredicate, ItemTarget... itemTargets) {
         super(itemTargets.clone());
         this.toKill = toKill;
         killTask = new KillEntitiesTask(ignorePredicate, this.toKill);
     }
-    
+
     public KillAndLootTask(Class toKill, ItemTarget... itemTargets) {
         super(itemTargets.clone());
         this.toKill = toKill;
         killTask = new KillEntitiesTask(this.toKill);
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (!mod.getEntityTracker().entityFound(toKill)) {
@@ -51,12 +51,12 @@ public class KillAndLootTask extends ResourceTask {
         // We found the mob!
         return killTask;
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof KillAndLootTask) {
@@ -65,7 +65,7 @@ public class KillAndLootTask extends ResourceTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collect items from " + toKill.toGenericString();

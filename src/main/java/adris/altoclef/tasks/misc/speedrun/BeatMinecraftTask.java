@@ -46,19 +46,19 @@ import java.util.Objects;
  * This is the big kahoona. Plays the whole game.
  */
 public class BeatMinecraftTask extends Task {
-    
+
     /// TUNABLE PROPERTIES
     private static final String[] DIAMOND_ARMORS = {
             "diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"
     };
-    
+
     private static final boolean STORE_BLAZE_RODS_IN_CHEST = true; // If true, will store blaze rods in chest while collecting ender pearls.
-    
+
     private static final int PRE_NETHER_FOOD = 5 * 40;
     private static final int PRE_NETHER_FOOD_MIN = 5 * 20;
     private static final int PRE_END_FOOD = 5 * 20;
     private static final int PRE_END_FOOD_MIN = 5 * 3;
-    
+
     private static final int TARGET_BLAZE_RODS = 7;
     private static final int TARGET_ENDER_PEARLS = 14;
     private static final int TARGET_ENDER_EYES = 14;
@@ -94,14 +94,14 @@ public class BeatMinecraftTask extends Task {
     // If true, we were near the end portal, don't do traveling.
     private boolean wasNearEndPortal;
     private Dimension prevDimension = Dimension.OVERWORLD;
-    
+
     public static boolean diamondArmorEquipped(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             if (!mod.getInventoryTracker().isArmorEquipped(Objects.requireNonNull(TaskCatalogue.getItemMatches(armor))[0])) return false;
         }
         return true;
     }
-    
+
     public static boolean hasDiamondArmor(AltoClef mod) {
         for (String armor : DIAMOND_ARMORS) {
             Item item = Objects.requireNonNull(TaskCatalogue.getItemMatches(armor))[0];
@@ -110,7 +110,7 @@ public class BeatMinecraftTask extends Task {
         }
         return true;
     }
-    
+
     public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
         if (!mod.getChunkTracker().isChunkLoaded(pos)) return false;
         BlockState state = mod.getWorld().getBlockState(pos);
@@ -120,12 +120,12 @@ public class BeatMinecraftTask extends Task {
         }
         return state.get(EndPortalFrameBlock.EYE);
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return MinecraftClient.getInstance().currentScreen instanceof CreditsScreen;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         forceState = ForceState.NONE;
@@ -133,15 +133,15 @@ public class BeatMinecraftTask extends Task {
         // Add some protections so we don't throw these away at any point.
         mod.getConfigState().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
         mod.getConfigState().addProtectedItems(ItemUtil.BED);
-        
+
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Allow walking on end portal
         mod.getConfigState().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(
                 blockPos).getBlock() == Blocks.END_PORTAL);
-        
+
         // Dodge ALL projectiles in the end.
         mod.getConfigState().avoidDodgingProjectile(proj -> mod.getCurrentDimension() == Dimension.END);
-        
+
         // Don't break blocks around our bed, can lead to problems.
         mod.getConfigState().avoidBlockBreaking(pos -> {
             if (endBedSpawnPos != null) {
@@ -150,7 +150,7 @@ public class BeatMinecraftTask extends Task {
             return false;
         });
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         /*
@@ -165,14 +165,14 @@ public class BeatMinecraftTask extends Task {
          * 8) Destroy all crystals individually
          * 9) Punk dragon till defeat
          */
-        
+
         // do NOT diagonally ascend in the nether.
         Dimension currentDimension = mod.getCurrentDimension();
         if (currentDimension != prevDimension) {
             mod.getConfigState().setAllowDiagonalAscend(currentDimension != Dimension.NETHER);
             prevDimension = currentDimension;
         }
-        
+
         switch (currentDimension) {
             case OVERWORLD:
                 return overworldTick(mod);
@@ -183,7 +183,7 @@ public class BeatMinecraftTask extends Task {
         }
         throw new IllegalStateException("Shouldn't ever happen.");
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Most likely we have failed or cancelled at this point.
@@ -191,26 +191,26 @@ public class BeatMinecraftTask extends Task {
         mod.getConfigState().pop();
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof BeatMinecraftTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Beating the game";
     }
-    
+
     private Task overworldTick(AltoClef mod) {
         int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
         int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) / 2) - eyes;
         int rodsInPosession = getBlazeRodsInPosession(mod);
-        
+
         //int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
         boolean needsToGoToNether = rodsInPosession <
                                     rodsNeeded;// || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
-        
+
         if (STORE_BLAZE_RODS_IN_CHEST && !isEndPortalOpened(mod)) {
             // If we have a place with blaze rods, set our "safety" position to that chest.
             if (safetyBlazeRodChestPos == null) {
@@ -221,7 +221,7 @@ public class BeatMinecraftTask extends Task {
                 }
             }
         }
-        
+
         if (!endKamakazeeEngaged) {
             if (!isEndPortalOpened(mod)) {
                 /*
@@ -229,12 +229,12 @@ public class BeatMinecraftTask extends Task {
                     setDebugState("Getting equipment");
                     return _prepareEquipmentTask;
                 }*/
-                
+
                 if (prepareForDiamondCollectionTask.isActive() && !prepareForDiamondCollectionTask.isFinished(mod)) {
                     setDebugState("Collecting extra iron gear before getting diamonds.");
                     return prepareForDiamondCollectionTask;
                 }
-                
+
                 // Equip diamond armor asap
                 if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
                     return new EquipArmorTask(DIAMOND_ARMORS);
@@ -257,21 +257,21 @@ public class BeatMinecraftTask extends Task {
                     if (ironDurability < 0.5 && !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                         return prepareForDiamondCollectionTask;
                     }
-                    
+
                     setDebugState("Getting equipment");
                     return prepareEquipmentTask;
                 }
             }
         }
-        
+
         // Stronghold portal located.
         if (strongholdPortalFound() || isEndPortalOpened(mod)) {
-            
+
             // Reset close to end on death.
             if (MinecraftClient.getInstance().currentScreen instanceof DeathScreen) {
                 wasNearEndPortal = false;
             }
-            
+
             if (mod.getChunkTracker().isChunkLoaded(endPortalFrame.get(0)) || wasNearEndPortal) {
                 wasNearEndPortal = true;
                 int eyesNeeded = 12 - portalEyesInFrame(mod);
@@ -285,7 +285,7 @@ public class BeatMinecraftTask extends Task {
                 return new GetToBlockTask(endPortalFrame.get(0), false);
             }
         }
-        
+
         // Locate stronghold portal if we can.
         if (!strongholdPortalFound()) {
             if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) > 1 &&
@@ -302,8 +302,8 @@ public class BeatMinecraftTask extends Task {
                 return strongholdLocater;
             }
         }
-        
-        
+
+
         // Get food, less if we're going to the end.
         int preFood = needsToGoToNether ? PRE_NETHER_FOOD : PRE_END_FOOD, preFoodMin = needsToGoToNether
                                                                                        ? PRE_NETHER_FOOD_MIN
@@ -319,7 +319,7 @@ public class BeatMinecraftTask extends Task {
                 forceState = ForceState.NONE;
             }
         }
-        
+
         if (!isEndPortalOpened(mod)) {
             // Get blaze rods by going to nether
             if (needsToGoToNether) {
@@ -351,7 +351,7 @@ public class BeatMinecraftTask extends Task {
                         }
                     }
                 }
-                
+
                 setDebugState("Build nether portal + go to nether");
                 return new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER);
             } else {
@@ -410,23 +410,23 @@ public class BeatMinecraftTask extends Task {
         Debug.logError("THIS SHOULDN'T HAPPEN OH NO");
         return null;
     }
-    
+
     private Task netherTick(AltoClef mod) {
-        
+
         // Keep track of our portal so we may return to it.
         if (cachedPortalInNether == null) {
             cachedPortalInNether = mod.getPlayer().getBlockPos();
         }
-        
+
         // Collect tools while we're here
-        
+
         if (netherPrepareTaskWood.isActive()) {
             netherPrepareTaskWood.isFinished(mod);
         }//return _netherPrepareTaskWood;
         if (Objects.requireNonNull(netherPrepareTaskJustPick).isActive()) {
             netherPrepareTaskJustPick.isFinished(mod);
         }//return _netherPrepareTaskJustPick;
-        
+
         // Make sure we have at least a wooden pickaxe at all times
         // AND materials to craft a new one, so we aren't stuck in a cavern somewhere.
         int planksCount = 4 * mod.getInventoryTracker().getItemCount(ItemUtil.LOG) + mod.getInventoryTracker().getItemCount(
@@ -441,14 +441,14 @@ public class BeatMinecraftTask extends Task {
                 //return _netherPrepareTaskWood;
             }
         }
-        
+
         // Blaze rods
         int powderCount = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + (getBlazeRodsInPosession(mod) << 1);
         if (powderCount < TARGET_BLAZE_RODS << 1) {
             setDebugState("Collecting Blaze Rods");
             return blazeCollection;
         }
-        
+
         // Piglin Barter
         /*
         if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < TARGET_ENDER_PEARLS) {
@@ -470,11 +470,11 @@ public class BeatMinecraftTask extends Task {
             return new TradeWithPiglinsTask(PIGLIN_BARTER_GOLD_INGOT_BUFFER, new ItemTarget(Items.ENDER_PEARL, TARGET_ENDER_PEARLS));
         }
          */
-        
+
         setDebugState("Getting the hell out of here");
         return new EnterNetherPortalTask(new GetToBlockTask(cachedPortalInNether, false), Dimension.OVERWORLD);
     }
-    
+
     private Task endTick(AltoClef mod) {
 
         /*
@@ -485,15 +485,15 @@ public class BeatMinecraftTask extends Task {
             //Debug.logWarning("Uh oh: End Bed set to null for some reason. This shouldn't happen, but this will hurt a lot.");
         }
          */
-        
+
         setDebugState("Defeating the ender dragon.");
         return new KillEnderDragonTask();
     }
-    
+
     private Task foundPortalGetToEndTask(AltoClef mod) {
-        
+
         // PLACE SPAWNPOINT if we don't have one.
-        
+
         if (endBedSpawnPos != null) {
             if (mod.getChunkTracker().isChunkLoaded(endBedSpawnPos)) {
                 if (!mod.getBlockTracker().blockIsValid(endBedSpawnPos, Util.itemsToBlocks(ItemUtil.BED))) {
@@ -503,7 +503,7 @@ public class BeatMinecraftTask extends Task {
                 }
             }
         }
-        
+
         if (endBedSpawnPos == null) {
             boolean closeEnoughToPortal = false;
             if (!endPortalFrame.isEmpty()) {
@@ -518,7 +518,7 @@ public class BeatMinecraftTask extends Task {
             if (endBedSpawnPos == null && closeEnoughToPortal) {
                 setDebugState("Trying to set spawnpoint closer to end portal");
                 // Lock in to placing a bed.
-                
+
                 // If we're too low, move up so we're near the surface.
                 if (mod.getPlayer().getPos().y < 63) {
                     return new GetToYTask(64);
@@ -526,7 +526,7 @@ public class BeatMinecraftTask extends Task {
                 return placeBedSpawnTask;
             }
         } else {
-            
+
             // Make sure we have an IRON pick at least.
             if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) || !mod.getInventoryTracker().hasItem(
                     Items.IRON_SWORD, Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(Items.BUCKET, Items.WATER_BUCKET)) {
@@ -550,7 +550,7 @@ public class BeatMinecraftTask extends Task {
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 return TaskCatalogue.getItemTask("water_bucket", 1);
             }
-            
+
             // Make sure we have BUILDING supplies.
             int MINIMUM_BUILDING_BLOCKS = 32;
             if (mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK) < MINIMUM_BUILDING_BLOCKS &&
@@ -562,23 +562,23 @@ public class BeatMinecraftTask extends Task {
                 mod.getConfigState().removeProtectedItems(Items.DIRT, Items.COBBLESTONE);
             }
         }
-        
+
         // If the end portal is lit. Assume kamakazee mode, and enter the end portal.
         BlockPos nearestPortal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
         boolean endPortalLit = (nearestPortal != null);
         if (endPortalLit) {
             endKamakazeeEngaged = true;
-            
+
             setDebugState("ENTERING PORTAL");
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new GetToBlockTask(blockPos.up(), false, true),
                                             pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL), Blocks.END_PORTAL);
         }
-        
+
         setDebugState("Filling stronghold portal");
         // End portal is not lit
         return new FillStrongholdPortalTask(true);
     }
-    
+
     private int getBlazeRodsInPosession(AltoClef mod) {
         int rodsInPosession = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
         if (STORE_BLAZE_RODS_IN_CHEST) {
@@ -594,15 +594,15 @@ public class BeatMinecraftTask extends Task {
         }
         return rodsInPosession;
     }
-    
+
     private boolean strongholdPortalFound() {
         return endPortalFrame != null;
     }
-    
+
     private boolean isEndPortalOpened(AltoClef mod) {
         return portalEyesInFrame(mod) >= 12;
     }
-    
+
     private int portalEyesInFrame(AltoClef mod) {
         int count = 0;
         if (strongholdPortalFound()) {
@@ -619,7 +619,7 @@ public class BeatMinecraftTask extends Task {
         }
         return cachedEndPearlsInFrame;
     }
-    
+
     private enum ForceState {
         NONE,
         GETTING_DIAMOND_GEAR,

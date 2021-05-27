@@ -37,27 +37,27 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(6);
     private Task materialTask;
     private int failCount;
-    
+
     public PlaceBlockTask(BlockPos target, Block[] toPlace, boolean useThrowaways, boolean autoCollectStructureBlocks) {
         this.target = target;
         this.toPlace = toPlace;
         this.useThrowaways = useThrowaways;
         this.autoCollectStructureBlocks = autoCollectStructureBlocks;
     }
-    
+
     public PlaceBlockTask(BlockPos target, Block... toPlace) {
         this(target, toPlace, false, false);
     }
-    
+
     public static int getMaterialCount(AltoClef mod) {
         return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
     }
-    
+
     public static Task getMaterialTask(int count) {
         return TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", count), new ItemTarget("cobblestone", count),
                                                  new ItemTarget("netherrack", count));
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
@@ -67,23 +67,23 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         BlockState state = mod.getWorld().getBlockState(target);
         return Util.arrayContains(toPlace, state.getBlock());
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         progressChecker.reset();
         wanderTask.resetWander();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // Perform timeout wander
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             setDebugState("Wandering.");
             progressChecker.reset();
             return wanderTask;
         }
-        
+
         if (autoCollectStructureBlocks) {
             if (materialTask != null && materialTask.isActive() && !materialTask.isFinished(mod)) {
                 setDebugState("No structure items, collecting cobblestone + dirt as default.");
@@ -93,7 +93,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                     materialTask = null;
                 }
             }
-            
+
             //Item[] items = Util.toArray(Item.class, mod.getClientBaritoneSettings().acceptableThrowawayItems.value);
             if (getMaterialCount(mod) < MIN_MATERIALS) {
                 // TODO: Mine items, extract their resource key somehow.
@@ -102,8 +102,8 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                 return materialTask;
             }
         }
-        
-        
+
+
         // Check if we're approaching our point. If we fail, wander for a bit.
         if (!progressChecker.check(mod)) {
             failCount++;
@@ -114,15 +114,15 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                 Debug.logMessage("Trying alternative way of placing block...");
             }
         }
-        
-        
+
+
         // Place block
         if (tryingAlternativeWay()) {
             setDebugState("Alternative way: Trying to go above block to place block.");
             return new GetToBlockTask(target.up(), false);
         } else {
             setDebugState("Letting baritone place a block.");
-            
+
             // Perform baritone placement
             if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
                 Debug.logInternal("Run Structure Build");
@@ -130,17 +130,17 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, target);
             }
         }
-        
+
         return null;
     }
-    
+
     //TODO: Place structure where a leaf block was???? Might need to delete the block first if it's not empty/air/water.
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getBuilderProcess().onLostControl();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockTask) {
@@ -149,26 +149,26 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Place structure at " + target.toShortString();
     }
-    
+
     private boolean tryingAlternativeWay() {
         return failCount % 4 == 3;
     }
-    
-    
+
+
     private class PlaceStructureSchematic extends AbstractSchematic {
-        
+
         private final AltoClef _mod;
-        
+
         public PlaceStructureSchematic(AltoClef mod) {
             super(1, 1, 1);
             _mod = mod;
         }
-        
+
         @Override
         public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> available) {
             if (x == 0 && y == 0 && z == 0) {

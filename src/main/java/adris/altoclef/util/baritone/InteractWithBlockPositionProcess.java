@@ -47,12 +47,12 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     private boolean failed;
     private Input interactInput = Input.CLICK_RIGHT;
     private boolean shiftClick;
-    
+
     public InteractWithBlockPositionProcess(Baritone baritone, AltoClef mod) {
         super(baritone);
         _mod = mod;
     }
-    
+
     public static Optional<Rotation> getReach(BlockPos target, Direction side) {
         Optional<Rotation> reachable;
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
@@ -62,19 +62,19 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         } else {
             Vec3i sideVector = side.getVector();
             Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
-            
+
             Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
-            
+
             //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
             reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(),
                                                       false);
-            
+
             // Check for right angle
             if (reachable.isPresent()) {
                 // Note: If sneak, use RotationUtils.inferSneakingEyePosition
                 Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
                 Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
-                
+
                 double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
                 if (dot < 0) {
                     // We're perpendicular and cannot face.
@@ -84,7 +84,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         }
         return reachable;
     }
-    
+
     public void getToBlock(BlockPos target, Direction interactSide, Input interactInput, boolean blockOnTopMustBeRemoved, boolean walkInto,
                            Vec3i interactOffset, boolean shiftClick) {
         this.onLostControl();
@@ -95,39 +95,39 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         this.walkInto = walkInto;
         this.interactOffset = interactOffset;
         this.shiftClick = shiftClick;
-        
+
         cancelRightClick = false;
-        
+
         failed = false;
-        
+
         this.arrivalTickCount = 0;
-        
+
         this.equipTarget = null;
-        
+
         reachCounter = 0;
     }
-    
+
     public void getToBlock(BlockPos target, Input interactInput) {
         this.getToBlock(target, interactInput, false);
     }
-    
+
     public void getToBlock(BlockPos target, Input interactInput, boolean blockOnTopMustBeRemoved) {
         this.getToBlock(target, null, interactInput, blockOnTopMustBeRemoved, false, Vec3i.ZERO, false);
     }
-    
+
     public boolean isActive() {
         return target != null;
     }
-    
+
     public synchronized PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
-        
+
         if (calcFailed) {
             logDebug("Failed to calculate path, increasing reach to " + reachCounter);
             reachCounter++;
         }
-        
+
         Goal goal = createGoal(target, reachCounter);
-        
+
         //if (rightClickOnArrival || (goal.isInGoal(this.ctx.playerFeet()) && goal.isInGoal(this.baritone.getPathingBehavior().pathStart
         // ()) && isSafeToCancel)) {
         if (interactInput == null) {
@@ -141,7 +141,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                 return new PathingCommand(goal, PathingCommandType.CANCEL_AND_SET_GOAL);
             }
         }
-        
+
         switch (this.rightClick()) {
             case CANT_REACH:
                 return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
@@ -153,9 +153,9 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             default:
                 return new PathingCommand(goal, PathingCommandType.REVALIDATE_GOAL_AND_PATH);
         }
-        
+
     }
-    
+
     public synchronized void onLostControl() {
         target = null;
         this.baritone.getInputOverrideHandler().clearAllKeys();
@@ -165,21 +165,21 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             MinecraftClient.getInstance().options.keySneak.setPressed(false);
         }
     }
-    
+
     public String displayName0() {
         return "Get To " + target;
     }
-    
+
     public boolean failed() {
         return failed;
     }
-    
+
     public synchronized void setInteractEquipItem(ItemTarget item) {
         equipTarget = item;
     }
-    
+
     private Goal createGoal(BlockPos pos, int reachDistance) {
-        
+
         boolean sideMatters = !sideDoesntMatter();
         if (sideMatters) {
             Vec3i offs = interactSide.getVector();
@@ -189,7 +189,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             }
             pos = pos.add(offs);
         }
-        
+
         if (walkInto) {
             return new GoalTwoBlocks(pos);
         } else {
@@ -213,12 +213,12 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
             }
         }
     }
-    
+
     private ClickResponse rightClick() {
-        
+
         // Don't interact if baritone can't interact.
         if (Baritone.getAltoClefSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
-        
+
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
             //Debug.logMessage("Reachable: UPDATE");
@@ -234,7 +234,7 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
                     MinecraftClient.getInstance().options.keySneak.setPressed(true);
                 }
                 //System.out.println(this.ctx.player().playerScreenHandler);
-                
+
                 if (this.arrivalTickCount++ > 20 || cancelRightClick) {
                     failed = true;
                     this.logDirect("Right click timed out/cancelled");
@@ -248,15 +248,15 @@ public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
         }
         return ClickResponse.CANT_REACH;
     }
-    
+
     private boolean sideDoesntMatter() {
         return interactSide == null;
     }
-    
+
     public Optional<Rotation> getCurrentReach() {
         return getReach(target, interactSide);
     }
-    
+
     private enum ClickResponse {
         CANT_REACH,
         WAIT_FOR_CLICK,

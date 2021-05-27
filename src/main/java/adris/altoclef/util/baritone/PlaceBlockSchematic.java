@@ -13,13 +13,13 @@ import java.util.List;
 
 //@Deprecated
 public class PlaceBlockSchematic extends AbstractSchematic {
-    
+
     private static final int RANGE = 1;
     private final Block[] blockToPlace;
     private final boolean skipIfAlreadyThere;
     private final boolean isDone;
     private BlockState targetPlace;
-    
+
     public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
         blockToPlace = blocksToPlace;
@@ -27,11 +27,11 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         targetPlace = null;
         this.skipIfAlreadyThere = skipIfAlreadyThere;
     }
-    
+
     public PlaceBlockSchematic(Block[] blocksToPlace) {
         this(blocksToPlace, true);
     }
-    
+
     public PlaceBlockSchematic(Block blockToPlace) {
         this(new Block[]{ blockToPlace });
     }
@@ -41,17 +41,17 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         _targetPlace = null;
     }
      */
-    
+
     public boolean foundSpot() {
         return targetPlace != null;
     }
-    
+
     // No restrictions.
     //@Override
     //public boolean inSchematic(int x, int y, int z, BlockState currentState) {
     //    return true;
     //}
-    
+
     @Override
     public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> list) {
         // Only place at the origin.
@@ -87,8 +87,8 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         //System.out.println("] ( :(((((( )");
         return blockState;
     }
-    
-    
+
+
     private boolean blockIsTarget(Block block) {
         for (Block check : blockToPlace) {
             if (check.is(block)) return true;

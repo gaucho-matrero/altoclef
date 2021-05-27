@@ -24,17 +24,17 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     private final Timer pickupRepeatTimer = new Timer(1);
     private MLGBucketTask lastMLG;
     private boolean wasPickingUp;
-    
+
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
         // Won't work in the nether, duh
         if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
-        
+
         if (isFallingOhNo(mod)) {
             tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
@@ -43,7 +43,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         } else if (!tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                
+
                 if (lastMLG != null) {
                     BlockPos placed = lastMLG.getWaterPlacedPos();
                     //Debug.logInternal("PLACED: " + placed);
@@ -83,23 +83,23 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         }
         return Float.NEGATIVE_INFINITY;
     }
-    
+
     @Override
     public String getName() {
         return "MLG Water Bucket Fall Chain";
     }
-    
+
     @Override
     public boolean isActive() {
         // We're always checking for mlg.
         return true;
     }
-    
+
     @Override
     protected void onTaskFinish(AltoClef mod) {
         //_lastMLG = null;
     }
-    
+
     public boolean isFallingOhNo(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;

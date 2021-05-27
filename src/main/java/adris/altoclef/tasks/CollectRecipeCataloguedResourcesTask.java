@@ -19,12 +19,12 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     private final RecipeTarget[] targets;
     private final boolean ignoreUncataloguedSlots;
     private boolean finished;
-    
+
     public CollectRecipeCataloguedResourcesTask(boolean ignoreUncataloguedSlots, RecipeTarget... targets) {
         this.targets = targets;
         this.ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         if (finished) {
@@ -35,27 +35,27 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
         }
         return finished;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         finished = false;
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         // TODO: Cache this once instead of doing it every frame.
-        
+
         HashMap<String, Integer> catalogueCount = new HashMap<>();
-        
+
         for (RecipeTarget target : targets) {
             // Ignore this recipe if we have its item.
             //if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
-            
+
             // null = empty which is always met.
             if (target == null) continue;
-            
+
             int weNeed = target.getTargetItem().targetCount - mod.getInventoryTracker().getItemCount(target.getTargetItem());
-            
+
             if (weNeed > 0) {
                 CraftingRecipe recipe = target.getRecipe();
                 // Default, just go through the recipe slots and collect the first one.
@@ -80,8 +80,8 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                 }
             }
         }
-        
-        
+
+
         // (Cache this with the above stuff!!)
         // Grab materials
         for (String catalogueMaterialName : catalogueCount.keySet()) {
@@ -95,15 +95,15 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             }
         }
         finished = true;
-        
+
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectRecipeCataloguedResourcesTask) {
@@ -112,7 +112,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Collect Recipe Resources: " + ArrayUtils.toString(targets);

@@ -14,22 +14,22 @@ import net.minecraft.item.Items;
 
 public class CollectMagmaCreamTask extends ResourceTask {
     private final int count;
-    
+
     public CollectMagmaCreamTask(int count) {
         super(Items.MAGMA_CREAM, count);
         this.count = count;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         /*
@@ -71,21 +71,21 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 setDebugState("Going to overworld, no magma cream materials exist here.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-        
+
         setDebugState("INVALID DIMENSION??: " + mod.getCurrentDimension());
         return null;
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectMagmaCreamTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " Magma cream.";

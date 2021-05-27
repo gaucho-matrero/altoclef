@@ -13,12 +13,12 @@ import net.minecraft.util.math.BlockPos;
 
 public class GotoCommand extends Command {
     private static final int EMPTY = -1;
-    
+
     public GotoCommand() throws CommandException {
         super("goto", "Tell bot to travel to a set of coordinates.", new Arg(Integer.class, "x"), new Arg(Integer.class, "y", EMPTY, 2),
               new Arg(Integer.class, "z"));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         int x = parser.Get(Integer.class), y = parser.Get(Integer.class), z = parser.Get(Integer.class);

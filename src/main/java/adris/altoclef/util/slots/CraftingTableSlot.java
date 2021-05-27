@@ -3,19 +3,19 @@ package adris.altoclef.util.slots;
 
 public class CraftingTableSlot extends Slot {
     public static final CraftingTableSlot OUTPUT_SLOT = new CraftingTableSlot(0);
-    
+
     public CraftingTableSlot(int windowSlot) {
         this(windowSlot, false);
     }
-    
+
     protected CraftingTableSlot(int slot, boolean inventory) {
         super(slot, inventory);
     }
-    
+
     public static CraftingTableSlot getInputSlot(int x, int y) {
         return getInputSlot(y * 3 + x, true);
     }
-    
+
     public static CraftingTableSlot getInputSlot(int index, boolean big) {
         //noinspection AssignmentToMethodParameter
         index += 1;
@@ -29,7 +29,7 @@ public class CraftingTableSlot extends Slot {
             return getInputSlot(x, y);
         }
     }
-    
+
     @Override
     public int inventorySlotToWindowSlot(int inventorySlot) {
         if (inventorySlot < 9) {
@@ -37,7 +37,7 @@ public class CraftingTableSlot extends Slot {
         }
         return inventorySlot + 1;
     }
-    
+
     @Override
     protected int windowSlotToInventorySlot(int windowSlot) {
         if (windowSlot >= 37) {
@@ -45,7 +45,7 @@ public class CraftingTableSlot extends Slot {
         }
         return windowSlot - 1;
     }
-    
+
     @Override
     protected String getName() {
         return "CraftingTable";

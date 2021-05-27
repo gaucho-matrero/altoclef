@@ -39,23 +39,23 @@ public abstract class ChunkSearchTask extends Task {
     };
     private boolean _first = true;
     private boolean _finished;
-    
+
     protected ChunkSearchTask(BlockPos startPoint) {
         this.startPoint = startPoint;
     }
-    
+
     protected ChunkSearchTask(ChunkPos chunkPos) {
         this(chunkPos.getStartPos().add(1, 1, 1));
     }
-    
+
     public Set<ChunkPos> getSearchedChunks() {
         return searchedAlready;
     }
-    
+
     public boolean finished() {
         return _finished;
     }
-    
+
     // Virtual
     protected ChunkPos getBestChunk(AltoClef mod, List<ChunkPos> chunks) {
         double lowestScore = Double.POSITIVE_INFINITY;
@@ -73,12 +73,12 @@ public abstract class ChunkSearchTask extends Task {
         }
         return bestChunk;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return searchLater.isEmpty();
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         /*
@@ -95,17 +95,17 @@ public abstract class ChunkSearchTask extends Task {
                 searchChunkOrQueueSearch(mod, startPos);
             }
         }
-        
+
         mod.getOnChunkLoad().addListener(chunkLoadEvent);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // WTF This is a horrible idea.
         // Backup in case if chunk search fails?
         //onChunkLoad((WorldChunk) mod.getWorld().getChunk(mod.getPlayer().getBlockPos()));
-        
+
         synchronized (searchMutex) {
             // Search all items from _justLoaded that we ought to search.
             for (ChunkPos justLoaded : justLoaded) {
@@ -118,25 +118,25 @@ public abstract class ChunkSearchTask extends Task {
             }
             justLoaded.clear();
         }
-        
+
         // Now that we have an updated map, go to the nearest
         ChunkPos closest = getBestChunk(mod, searchLater);
-        
+
         if (closest == null) {
             _finished = true;
             Debug.logWarning("Failed to find any chunks to go to. If we finish, that means we scanned all possible chunks.");
             //Debug.logMessage("wtf??????: " + _finished);
             return null;
         }
-        
+
         return new GetToChunkTask(closest);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getOnChunkLoad().removeListener(chunkLoadEvent);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ChunkSearchTask) {
@@ -146,14 +146,14 @@ public abstract class ChunkSearchTask extends Task {
         }
         return false;
     }
-    
+
     private void searchChunkOrQueueSearch(AltoClef mod, ChunkPos pos) {
         // Don't search/consider this chunk again.
         if (consideredAlready.contains(pos)) {
             return;
         }
         consideredAlready.add(pos);
-        
+
         if (!trySearchChunk(mod, pos)) {
             // We'll check it later if we haven't searched it.
             if (!searchedAlready.contains(pos)) {
@@ -161,7 +161,7 @@ public abstract class ChunkSearchTask extends Task {
             }
         }
     }
-    
+
     /**
      * Try to search the chunk.
      *
@@ -187,7 +187,7 @@ public abstract class ChunkSearchTask extends Task {
         }
         return false;
     }
-    
+
     private void onChunkLoad(WorldChunk chunk) {
         if (chunk == null) return;
         synchronized (searchMutex) {
@@ -196,8 +196,8 @@ public abstract class ChunkSearchTask extends Task {
             }
         }
     }
-    
+
     protected abstract boolean isChunkPartOfSearchSpace(AltoClef mod, ChunkPos pos);
-    
+
     protected abstract boolean isChunkSearchEqual(ChunkSearchTask other);
 }

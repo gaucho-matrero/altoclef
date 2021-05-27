@@ -18,17 +18,17 @@ public class CachedProjectile {
     public Type projectileType;
     private Vec3d cachedHit;
     private boolean cacheHeld;
-    
+
     public Vec3d getCachedHit() {
         return cachedHit;
     }
-    
+
     public void setCacheHit(Vec3d cache) {
         cachedHit = cache;
         cacheHeld = true;
         lastCache.reset();
     }
-    
+
     public boolean needsToReCache() {
         return !cacheHeld || lastCache.elapsed();
     }

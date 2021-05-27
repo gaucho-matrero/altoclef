@@ -19,7 +19,7 @@ public class GiveCommand extends Command {
         super("give", "Collects an item and gives it to you or someone else", new Arg(String.class, "username", null, 2),
               new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String username = parser.Get(String.class);
@@ -59,5 +59,5 @@ public class GiveCommand extends Command {
             finish();
         }
     }
-    
+
 }

@@ -16,24 +16,24 @@ public class CollectEggsTask extends ResourceTask {
     private final int count;
     private final DoToClosestEntityTask waitNearChickens;
     private AltoClef mod;
-    
+
     public CollectEggsTask(int targetCount) {
         super(Items.EGG, targetCount);
         count = targetCount;
         waitNearChickens = new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), chicken -> new GetToEntityTask(chicken, 5),
                                                      ChickenEntity.class);
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         this.mod = mod;
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Wrong dimension check.
@@ -45,17 +45,17 @@ public class CollectEggsTask extends ResourceTask {
         setDebugState("Waiting around chickens. Yes.");
         return waitNearChickens;
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectEggsTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " eggs.";

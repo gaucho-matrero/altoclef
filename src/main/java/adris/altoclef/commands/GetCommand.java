@@ -14,16 +14,16 @@ import java.util.Arrays;
 
 
 public class GetCommand extends Command {
-    
+
     public GetCommand() throws CommandException {
         super("get", "Get an item/resource", new Arg(String.class, "name"), new Arg(Integer.class, "count", 1, 1));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String resourceName = parser.Get(String.class);
         int count = parser.Get(Integer.class);
-        
+
         if (TaskCatalogue.taskExists(resourceName)) {
             Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
             mod.runUserTask(targetTask, nothing -> finish());

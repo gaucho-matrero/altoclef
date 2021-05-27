@@ -20,36 +20,36 @@ import java.util.stream.Collectors;
 public class SimpleChunkTracker {
     private final AltoClef mod;
     private final Set<ChunkPos> loaded = new HashSet<>();
-    
+
     public SimpleChunkTracker(AltoClef mod) {
         this.mod = mod;
     }
-    
+
     public void onLoad(ChunkPos pos) {
         //Debug.logInternal("LOADED: " + pos);
         loaded.add(pos);
     }
-    
+
     public void onUnload(ChunkPos pos) {
         //Debug.logInternal("unloaded: " + pos);
         loaded.remove(pos);
     }
-    
+
     public boolean isChunkLoaded(ChunkPos pos) {
         return !(mod.getWorld().getChunk(pos.x, pos.z) instanceof EmptyChunk);
     }
-    
+
     public boolean isChunkLoaded(BlockPos pos) {
         return isChunkLoaded(new ChunkPos(pos));
     }
-    
+
     public List<ChunkPos> getLoadedChunks() {
         List<ChunkPos> result = new ArrayList<>(loaded);
         // Only show LOADED chunks.
         result = result.stream().filter(this::isChunkLoaded).distinct().collect(Collectors.toList());
         return result;
     }
-    
+
     public boolean scanChunk(ChunkPos chunk, Predicate<BlockPos> onBlock) {
         if (!isChunkLoaded(chunk)) return false;
         //Debug.logInternal("SCANNED CHUNK " + chunk.toString());
@@ -62,12 +62,12 @@ public class SimpleChunkTracker {
         }
         return false;
     }
-    
+
     public void reset(AltoClef mod) {
         Debug.logInternal("CHUNKS RESET");
         loaded.clear();
     }
-    
+
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {
         scanChunk(chunk, (block) -> false);
     }

@@ -17,11 +17,11 @@ import java.util.List;
 
 public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
     private final double distanceToRun;
-    
+
     public RunAwayFromCreepersTask(double distance) {
         distanceToRun = distance;
     }
-    
+
     @SuppressWarnings("RedundantIfStatement")
     @Override
     protected boolean isEqual(Task obj) {
@@ -33,30 +33,30 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Run " + distanceToRun + " blocks away from creepers";
     }
-    
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromCreepers(mod, distanceToRun);
     }
-    
+
     private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
-        
+
         public GoalRunAwayFromCreepers(AltoClef mod, double distance) {
             super(mod, distance, false, 10);
         }
-        
+
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
             return new ArrayList<>(mod.getEntityTracker().getTrackedEntities(CreeperEntity.class));
         }
-        
+
         @Override
         protected double getCostOfEntity(Entity entity, int x, int y, int z) {
             if (entity instanceof CreeperEntity) {

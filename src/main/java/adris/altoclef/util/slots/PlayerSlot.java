@@ -18,23 +18,23 @@ public class PlayerSlot extends Slot {
             ARMOR_HELMET_SLOT, ARMOR_CHESTPLATE_SLOT, ARMOR_LEGGINGS_SLOT, ARMOR_BOOTS_SLOT
     };
     public static final PlayerSlot OFFHAND_SLOT = new PlayerSlot(45);
-    
+
     public PlayerSlot(int windowSlot) {
         this(windowSlot, false);
     }
-    
+
     protected PlayerSlot(int slot, boolean inventory) {
         super(slot, inventory);
     }
-    
+
     public static PlayerSlot getCraftInputSlot(int x, int y) {
         return getCraftInputSlot((y << 1) + x);
     }
-    
+
     public static PlayerSlot getCraftInputSlot(int index) {
         return new PlayerSlot(index + 1);
     }
-    
+
     public static Slot getEquipSlot(EquipmentSlot equipSlot) {
         switch (equipSlot) {
             case MAINHAND:
@@ -52,18 +52,18 @@ public class PlayerSlot extends Slot {
         }
         return null;
     }
-    
+
     @Override
     public void ensureWindowOpened() {
         //Debug.logMessage("PLAYER INVENTORY OPENED");
-        
-        
+
+
         //ClientPlayerInteractionManager controller = MinecraftClient.getInstance().interactionManager;
-        
+
         //MinecraftClient.getInstance().openScreen(new InventoryScreen(MinecraftClient.getInstance().player));
-        
+
         //controller.clickButton();
-        
+
         // Nope. Maybe you gotta send packets?
         //player.inventory.onOpen(player);
 
@@ -73,7 +73,7 @@ public class PlayerSlot extends Slot {
         MinecraftClient.getInstance().openScreen(screen);
          */
     }
-    
+
     @Override
     public int inventorySlotToWindowSlot(int inventorySlot) {
         if (inventorySlot < 9) {
@@ -81,7 +81,7 @@ public class PlayerSlot extends Slot {
         }
         return inventorySlot;
     }
-    
+
     @Override
     protected int windowSlotToInventorySlot(int windowSlot) {
         if (windowSlot >= 36) {
@@ -89,10 +89,10 @@ public class PlayerSlot extends Slot {
         }
         return windowSlot;
     }
-    
+
     @Override
     protected String getName() {
         return "Player";
     }
-    
+
 }

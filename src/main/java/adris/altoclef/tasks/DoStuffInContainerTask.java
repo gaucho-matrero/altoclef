@@ -31,49 +31,49 @@ public abstract class DoStuffInContainerTask extends Task {
     private final Timer justPlacedTimer = new Timer(3);
     private BlockPos cachedContainerPosition;
     private Task openTableTask;
-    
+
     public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
         this.containerBlock = containerBlock;
         this.containerCatalogueName = containerCatalogueName;
-        
+
         placeTask = new PlaceBlockNearbyTask(this.containerBlock);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         if (openTableTask == null) {
             openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), blockpos -> new GetToBlockTask(blockpos, true),
                                                      containerBlock);
         }
-        
+
         mod.getBlockTracker().trackBlock(containerBlock);
-        
+
         // Protect container since we might place it.
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(containerBlock.asItem());
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // If we're placing, keep on placing.
         if (mod.getInventoryTracker().hasItem(containerBlock.asItem()) && placeTask.isActive() && !placeTask.isFinished(mod)) {
             setDebugState("Placing container");
             return placeTask;
         }
-        
+
         if (isContainerOpen(mod)) {
             return containerSubTask(mod);
         }
-        
+
         // infinity if such a container does not exist.
         double costToWalk = Double.POSITIVE_INFINITY;
-        
+
         BlockPos nearest;
-        
+
         Vec3d currentPos = mod.getPlayer().getPos();
         BlockPos override = overrideContainerPosition(mod);
-        
+
         if (override != null && mod.getBlockTracker().blockIsValid(override, containerBlock)) {
             // We have an override so go there instead.
             nearest = override;
@@ -91,7 +91,7 @@ public abstract class DoStuffInContainerTask extends Task {
         if (nearest != null) {
             costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, Util.toVec3d(nearest));
         }
-        
+
         // Make a new container if going to the container is a pretty bad cost.
         // Also keep on making the container if we're stuck in some
         if (costToWalk > getCostToMakeNew(mod)) {
@@ -99,10 +99,10 @@ public abstract class DoStuffInContainerTask extends Task {
         }
         if (nearest == null || (!placeForceTimer.elapsed() && justPlacedTimer.elapsed())) {
             // It's cheaper to make a new one, or our only option.
-            
+
             // We're no longer going to our previous container.
             cachedContainerPosition = null;
-            
+
             // Get if we don't have...
             if (!mod.getInventoryTracker().hasItem(containerCatalogueName)) {
                 //Debug.logInternal("GRABBING " + _containerCatalogueName);
@@ -111,37 +111,37 @@ public abstract class DoStuffInContainerTask extends Task {
                 setDebugState("Getting container item");
                 return TaskCatalogue.getItemTask(containerCatalogueName, 1);
             }
-            
+
             setDebugState("Placing container... Oof.");
-            
+
             justPlacedTimer.reset();
             // Now place!
             return placeTask;
         }
-        
+
         cachedContainerPosition = nearest;
-        
+
         // Walk to it and open it
         setDebugState("Walking to container... " + nearest);
-        
+
         // Wait for food
         if (mod.getFoodTaskChain().isTryingToEat()) {
             return null;
         }
-        
+
         if (nearest != null) {
             return openTableTask;
         }
         return null;
         //return new GetToBlockTask(nearest, true);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(containerBlock);
         mod.getConfigState().pop();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof DoStuffInContainerTask) {
@@ -152,26 +152,26 @@ public abstract class DoStuffInContainerTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Doing stuff in " + containerCatalogueName + " container";
     }
-    
+
     // Virtual
     protected BlockPos overrideContainerPosition(AltoClef mod) {
         return null;
     }
-    
+
     protected BlockPos getTargetContainerPosition() {
         return cachedContainerPosition;
     }
-    
+
     protected abstract boolean isSubTaskEqual(DoStuffInContainerTask obj);
-    
+
     protected abstract boolean isContainerOpen(AltoClef mod);
-    
+
     protected abstract Task containerSubTask(AltoClef mod);
-    
+
     protected abstract double getCostToMakeNew(AltoClef mod);
 }

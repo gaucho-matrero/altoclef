@@ -12,24 +12,24 @@ import adris.altoclef.util.Dimension;
 //  get a wooden pick.
 public class CollectFuelTask extends Task {
     private final double targetFuel;
-    
+
     public CollectFuelTask(double targetFuel) {
         this.targetFuel = targetFuel;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return mod.getInventoryTracker().getTotalFuelNormal() >= targetFuel;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         // Nothing
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         switch (mod.getCurrentDimension()) {
             case OVERWORLD:
                 // Just collect coal for now.
@@ -45,12 +45,12 @@ public class CollectFuelTask extends Task {
         setDebugState("INVALID DIMENSION: " + mod.getCurrentDimension());
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Nothing
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CollectFuelTask) {
@@ -59,7 +59,7 @@ public class CollectFuelTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Collect Fuel: x" + targetFuel;

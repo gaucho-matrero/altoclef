@@ -29,20 +29,20 @@ public abstract class ResourceTask extends Task {
     private boolean forceDimension;
     private Dimension targetDimension;
     private BlockPos mineLastClosest;
-    
+
     public ResourceTask(ItemTarget[] itemTargets) {
         this.itemTargets = itemTargets;
         pickupTask = new PickupDroppedItemTask(this.itemTargets, true);
     }
-    
+
     public ResourceTask(ItemTarget target) {
         this(new ItemTarget[]{ target });
     }
-    
+
     public ResourceTask(Item item, int targetCount) {
         this(new ItemTarget(item, targetCount));
     }
-    
+
     // Returns: Whether this failed.
     public static boolean ensureInventoryFree(AltoClef mod) {
         if (mod.getInventoryTracker().isInventoryFull()) {
@@ -59,13 +59,13 @@ public abstract class ResourceTask extends Task {
         }
         return true;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
         return mod.getInventoryTracker().targetMet(itemTargets);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
@@ -75,14 +75,14 @@ public abstract class ResourceTask extends Task {
         }
         onResourceStart(mod);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
             if (mod.getEntityTracker().itemDropped(itemTargets)) {
-                
+
                 // If we're picking up a pickaxe (we can't go far underground or mine much)
                 if (PickupDroppedItemTask.isIsGettingPickaxeFirst(mod)) {
                     if (pickupTask.isCollectingPickaxeForThis()) {
@@ -95,7 +95,7 @@ public abstract class ResourceTask extends Task {
                         return onResourceTick(mod);
                     }
                 }
-                
+
                 double range = mod.getModSettings().getResourcePickupRange();
                 ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemTargets);
                 if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (pickupTask.isActive() && !pickupTask.isFinished(mod))) {
@@ -103,7 +103,7 @@ public abstract class ResourceTask extends Task {
                 }
             }
         }
-        
+
         // Check for chests and grab resources from them.
         if (currentChest != null) {
             ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(currentChest);
@@ -129,7 +129,7 @@ public abstract class ResourceTask extends Task {
                 return new PickupFromChestTask(currentChest, itemTargets);
             }
         }
-        
+
         // We may just mine if a block is found.
         if (mineIfPresent != null) {
             ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(mineIfPresent));
@@ -150,10 +150,10 @@ public abstract class ResourceTask extends Task {
                 }
             }
         }
-        
+
         return onResourceTick(mod);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getConfigState().pop();
@@ -162,7 +162,7 @@ public abstract class ResourceTask extends Task {
         }
         onResourceStop(mod, interruptTask);
     }
-    
+
     @Override
     protected boolean isEqual(Task other) {
         // Same target items
@@ -173,7 +173,7 @@ public abstract class ResourceTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         StringBuilder result = new StringBuilder();
@@ -188,38 +188,38 @@ public abstract class ResourceTask extends Task {
         result.append("]");
         return result.toString();
     }
-    
+
     protected boolean isInWrongDimension(AltoClef mod) {
         if (forceDimension) {
             return mod.getCurrentDimension() != targetDimension;
         }
         return false;
     }
-    
+
     protected Task getToCorrectDimensionTask(AltoClef mod) {
         return new DefaultGoToDimensionTask(targetDimension);
     }
-    
+
     public ResourceTask mineIfPresent(Block[] toMine) {
         mineIfPresent = toMine;
         return this;
     }
-    
+
     public ResourceTask forceDimension(Dimension dimension) {
         forceDimension = true;
         targetDimension = dimension;
         return this;
     }
-    
+
     protected abstract boolean shouldAvoidPickingUp(AltoClef mod);
-    
+
     protected abstract void onResourceStart(AltoClef mod);
-    
+
     protected abstract Task onResourceTick(AltoClef mod);
-    
+
     protected abstract void onResourceStop(AltoClef mod, Task interruptTask);
-    
+
     protected abstract boolean isEqualResource(ResourceTask obj);
-    
+
     protected abstract String toDebugStringName();
 }

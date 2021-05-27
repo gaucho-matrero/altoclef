@@ -20,11 +20,11 @@ import java.util.Objects;
 public class EquipArmorTask extends Task {
     private final String[] toEquip;
     private final Timer moveTimer = new Timer(0.5f);
-    
+
     public EquipArmorTask(String... toEquip) {
         this.toEquip = toEquip;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         for (String armor : toEquip) {
@@ -37,15 +37,15 @@ public class EquipArmorTask extends Task {
         }
         return true;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         ItemTarget[] targets = new ItemTarget[toEquip.length];
         int i = 0;
         boolean armorMet = true;
@@ -61,11 +61,11 @@ public class EquipArmorTask extends Task {
             setDebugState("Obtaining armor");
             return new CataloguedResourceTask(targets);
         }
-        
+
         setDebugState("Equipping armor");
-        
+
         // Now equip
-        
+
         if (moveTimer.elapsed()) {
             moveTimer.reset();
             for (String armor : toEquip) {
@@ -86,12 +86,12 @@ public class EquipArmorTask extends Task {
         }
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof EquipArmorTask) {
@@ -100,7 +100,7 @@ public class EquipArmorTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Equipping armor " + ArrayUtils.toString(toEquip);

@@ -30,8 +30,8 @@ public class InteractItemWithBlockTask extends Task {
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(5);
     private boolean trying;
     private int prevReach = -1;
-    
-    
+
+
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto,
                                      Vec3i interactOffset, boolean shouldShiftClick) {
         this.toUse = toUse;
@@ -42,45 +42,45 @@ public class InteractItemWithBlockTask extends Task {
         this.interactOffset = interactOffset;
         this.shouldShiftClick = shouldShiftClick;
     }
-    
+
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto,
                                      boolean shouldShiftClick) {
         this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shouldShiftClick);
     }
-    
+
     public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
         this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
     }
-    
+
     public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         // null means any side is OK
         this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
     }
-    
+
     public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
         this(toUse, target, walkInto, Vec3i.ZERO);
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return trying && !proc(mod).isActive();
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         trying = false;
         moveChecker.reset();
         wanderTask.resetWander();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         if (toUse != null && !mod.getInventoryTracker().targetMet(toUse)) {
             moveChecker.reset();
             return TaskCatalogue.getItemTask(toUse);
         }
-        
+
         // Wander and check
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             moveChecker.reset();
@@ -91,7 +91,7 @@ public class InteractItemWithBlockTask extends Task {
             timedOut.invoke();
             return wanderTask;
         }
-        
+
         if (proc(mod).isActive()) {
             if (prevReach < MAX_REACH && proc(mod).reachCounter != prevReach) {
                 prevReach = proc(mod).reachCounter;
@@ -104,15 +104,15 @@ public class InteractItemWithBlockTask extends Task {
                 proc(mod).setInteractEquipItem(toUse);
             }
         }
-        
+
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         proc(mod).onLostControl();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof InteractItemWithBlockTask) {
@@ -127,14 +127,14 @@ public class InteractItemWithBlockTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Interact using " + toUse + " at " + target + " dir " + direction;
     }
-    
+
     private InteractWithBlockPositionProcess proc(AltoClef mod) {
         return mod.getCustomBaritone().getInteractWithBlockPositionProcess();
     }
-    
+
 }

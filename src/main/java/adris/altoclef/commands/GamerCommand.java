@@ -11,7 +11,7 @@ public class GamerCommand extends Command {
     public GamerCommand() {
         super("gamer", "Beats the game");
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         mod.runUserTask(new BeatMinecraftTask(), nothing -> finish());

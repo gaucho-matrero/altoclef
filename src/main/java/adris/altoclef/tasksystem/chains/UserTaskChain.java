@@ -21,16 +21,16 @@ public class UserTaskChain extends SingleTaskChain {
     public final Action<String> onTaskFinish = new Action<>();
     private final Stopwatch taskStopwatch = new Stopwatch();
     private Consumer currentOnFinish = null;
-    
+
     public UserTaskChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     private static String prettyPrintTimeDuration(double seconds) {
         int minutes = (int) (seconds / 60);
         int hours = minutes / 60;
         int days = hours / 24;
-        
+
         String result = "";
         if (days != 0) {
             result += days + " days ";
@@ -47,16 +47,16 @@ public class UserTaskChain extends SingleTaskChain {
         result += String.format("%.2f", (seconds % 60));
         return result;
     }
-    
+
     @Override
     protected void onTick(AltoClef mod) {
-        
+
         // Pause if we're not loaded into a world.
         if (!mod.inGame()) return;
-        
+
         super.onTick(mod);
     }
-    
+
     @Override
     protected void onTaskFinish(AltoClef mod) {
         boolean shouldIdle = mod.getModSettings().shouldIdleWhenNotActive();
@@ -79,14 +79,14 @@ public class UserTaskChain extends SingleTaskChain {
             mod.runUserTask(new IdleTask());
         }
     }
-    
+
     public void cancel(AltoClef mod) {
         if (mainTask != null && mainTask.isActive()) {
             stop(mod);
             onTaskFinish(mod);
         }
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
         // Stop shortcut
@@ -101,12 +101,12 @@ public class UserTaskChain extends SingleTaskChain {
         }
         return 50;
     }
-    
+
     @Override
     public String getName() {
         return "User Tasks";
     }
-    
+
     public void runTask(AltoClef mod, Task task, Consumer onFinish) {
         currentOnFinish = onFinish;
         Debug.logMessage("User Task Set: " + task.toString());

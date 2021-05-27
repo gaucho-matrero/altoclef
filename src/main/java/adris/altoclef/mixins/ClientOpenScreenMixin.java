@@ -17,7 +17,7 @@ public final class ClientOpenScreenMixin {
     private void onScreenOpenBegin(@Nullable Screen screen, CallbackInfo ci) {
         StaticMixinHookups.onScreenOpenBegin(screen);
     }
-    
+
     @Inject(method = "openScreen", at = @At("TAIL"))
     private void onScreenOpenEnd(@Nullable Screen screen, CallbackInfo ci) {
         StaticMixinHookups.onScreenOpenEnd(screen);

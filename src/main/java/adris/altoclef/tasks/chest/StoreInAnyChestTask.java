@@ -21,24 +21,24 @@ public class StoreInAnyChestTask extends Task {
     private final HashSet<BlockPos> dungeonChests = new HashSet<>();
     private final HashSet<BlockPos> nonDungeonChests = new HashSet<>();
     private final ItemTarget[] targets;
-    
+
     public StoreInAnyChestTask(ItemTarget... targets) {
         this.targets = targets;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.CHEST);
         dungeonChests.clear();
         nonDungeonChests.clear();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         Predicate<BlockPos> invalidChest = chest -> {
             ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(chest);
             if (data != null && data.isFull()) return true;
-            
+
             if (mod.getModSettings().shouldAvoidSearchingForDungeonChests()) {
                 if (dungeonChests.contains(chest)) return true;
                 if (nonDungeonChests.contains(chest)) return false;
@@ -57,13 +57,13 @@ public class StoreInAnyChestTask extends Task {
             }
             return false;
         };
-        
+
         if (mod.getBlockTracker().anyFound(invalidChest, Blocks.CHEST)) {
             setDebugState("Going to chest and depositing items");
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new StoreInChestTask(blockPos, targets),
                                             pos -> mod.getBlockTracker().getNearestTracking(pos, invalidChest, Blocks.CHEST), Blocks.CHEST);
         }
-        
+
         // Craft + place chest nearby
         setDebugState("Placing chest nearby");
         if (mod.getInventoryTracker().hasItem(Items.CHEST)) {
@@ -71,12 +71,12 @@ public class StoreInAnyChestTask extends Task {
         }
         return TaskCatalogue.getItemTask("chest", 1);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.CHEST);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof StoreInAnyChestTask) {
@@ -85,7 +85,7 @@ public class StoreInAnyChestTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Storing in any chest: " + Util.arrayToString(targets);

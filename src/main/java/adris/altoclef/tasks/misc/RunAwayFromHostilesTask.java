@@ -19,24 +19,24 @@ import java.util.stream.Stream;
 public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     private final double distanceToRun;
     private final boolean excludeSkeletons;
-    
+
     public RunAwayFromHostilesTask(double distance, boolean excludeSkeletons) {
         distanceToRun = distance;
         this.excludeSkeletons = !excludeSkeletons;
     }
-    
+
     public RunAwayFromHostilesTask(double distance) {
         this(distance, false);
     }
-    
-    
+
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, distanceToRun);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof RunAwayFromHostilesTask) {
@@ -45,18 +45,18 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "NIGERUNDAYOO, SUMOOKEYY!";
     }
-    
+
     public class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
-        
+
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
             super(mod, distance, false, 0.8);
         }
-        
+
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
             List<Entity> result;

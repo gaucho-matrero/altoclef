@@ -48,7 +48,7 @@ public class KillEnderDragonTask extends Task {
                                                                           new Block[]{ Blocks.END_STONE }, MiningRequirement.WOOD);
     private final PunkEnderDragonTask punkTask = new PunkEnderDragonTask();
     private BlockPos exitPortalTop;
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
@@ -59,28 +59,28 @@ public class KillEnderDragonTask extends Task {
                 entity -> entity instanceof EndermanEntity || entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart);
         mod.getConfigState().setPreferredStairs(true);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (exitPortalTop == null) {
             exitPortalTop = locateExitPortalTop(mod);
         }
-        
-        
+
+
         if (!isRailingOnDragon() && lookDownTimer.elapsed()) {
             if (mod.getPlayer().isOnGround()) {
                 lookDownTimer.reset();
                 mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, -90f), true);
             }
         }
-        
+
         // If there is a portal, enter it.
         if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
             setDebugState("Entering portal to beat the game.");
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new GetToBlockTask(blockPos.up(), false),
                                             pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL), Blocks.END_PORTAL);
         }
-        
+
         // If we have no building materials (stone + cobble + end stone), get end stone
         // If there are crystals, suicide blow em up.
         // If there are no crystals, punk the dragon if it's close.
@@ -99,7 +99,7 @@ public class KillEnderDragonTask extends Task {
         } else {
             mod.getConfigState().removeProtectedItems(Items.END_STONE);
         }
-        
+
         // Blow up the nearest end crystal
         if (mod.getEntityTracker().entityFound(EndCrystalEntity.class)) {
             setDebugState("Kamakazeeing crystals");
@@ -111,7 +111,7 @@ public class KillEnderDragonTask extends Task {
                 return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
             }, EndCrystalEntity.class);
         }
-        
+
         // Punk dragon
         if (mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("Punking dragon");
@@ -121,43 +121,43 @@ public class KillEnderDragonTask extends Task {
         return null;
         //return new KillEntitiesTask(EnderDragonEntity.class);
     }
-    
-    
+
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getConfigState().pop();
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof KillEnderDragonTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Killing Ender Dragon";
     }
-    
+
     private boolean isRailingOnDragon() {
         return punkTask.getMode() == Mode.RAILING;
     }
-    
+
     private BlockPos locateExitPortalTop(AltoClef mod) {
         if (!mod.getChunkTracker().isChunkLoaded(new BlockPos(0, 64, 0))) return null;
         int height = WorldUtil.getGroundHeight(mod, 0, 0, Blocks.BEDROCK);
         if (height != -1) return new BlockPos(0, height, 0);
         return null;
     }
-    
+
     private enum Mode {
         WAITING_FOR_PERCH,
         RAILING
     }
-    
-    
+
+
     private class PunkEnderDragonTask extends Task {
-        
+
         private final HashMap<BlockPos, Double> _breathCostMap = new HashMap<>();
         private final Timer _hitHoldTimer = new Timer(0.1);
         private final Timer _hitResetTimer = new Timer(2);
@@ -169,14 +169,14 @@ public class KillEnderDragonTask extends Task {
         private BlockPos _randomWanderPos;
         private boolean _wasHitting;
         private boolean _wasReleased;
-        
+
         private PunkEnderDragonTask() {
         }
-        
+
         public Mode getMode() {
             return _mode;
         }
-        
+
         private void hit(AltoClef mod) {
             mod.getExtraBaritoneSettings().setInteractionPaused(true);
             if (!_wasHitting) {
@@ -198,7 +198,7 @@ public class KillEnderDragonTask extends Task {
                 _wasHitting = false;
             }
         }
-        
+
         private void stopHitting(AltoClef mod) {
             if (_wasHitting) {
                 //MinecraftClient.getInstance().options.keyAttack.setPressed(false);
@@ -210,39 +210,39 @@ public class KillEnderDragonTask extends Task {
                 _wasHitting = false;
             }
         }
-        
-        
+
+
         @Override
         protected void onStart(AltoClef mod) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         }
-        
+
         @Override
         protected Task onTick(AltoClef mod) {
-            
+
             updateBreathCostMap(mod);
-            
+
             if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
                 setDebugState("No dragon found.");
                 return null;
             }
             EnderDragonEntity dragon = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class).get(0);
-            
+
             Phase dragonPhase = dragon.getPhaseManager().getCurrent();
             //Debug.logInternal("PHASE: " + dragonPhase);
-            
+
             boolean perchingOrGettingReady = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering();
-            
+
             switch (_mode) {
                 case RAILING:
-                    
+
                     if (!perchingOrGettingReady) {
                         Debug.logMessage("Dragon no longer perching.");
                         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                         _mode = Mode.WAITING_FOR_PERCH;
                         break;
                     }
-                    
+
                     //DamageSource.DRAGON_BREATH
                     Entity head = dragon.partHead;
                     // Go for the head
@@ -319,30 +319,30 @@ public class KillEnderDragonTask extends Task {
             }
             return null;
         }
-        
+
         @Override
         protected void onStop(AltoClef mod, Task interruptTask) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
             mod.getControllerExtras().mouseClickOverride(0, false);
         }
-        
+
         @Override
         protected boolean isEqual(Task obj) {
             return obj instanceof PunkEnderDragonTask;
         }
-        
+
         @Override
         protected String toDebugString() {
             return "Punking the dragon";
         }
-        
+
         private BlockPos getRandomWanderPos(AltoClef mod) {
             double RADIUS_RANGE = 60;
             double MIN_RADIUS = 7;
             BlockPos pos = null;
             int allowed = 5000;
-            
+
             while (pos == null) {
                 if (allowed-- < 0) {
                     Debug.logWarning("Failed to find random solid ground in end, this may lead to problems.");
@@ -361,8 +361,8 @@ public class KillEnderDragonTask extends Task {
             }
             return pos;
         }
-        
-        
+
+
         private void updateBreathCostMap(AltoClef mod) {
             _breathCostMap.clear();
             double radius = 4;
@@ -382,15 +382,15 @@ public class KillEnderDragonTask extends Task {
                 }
             }
         }
-        
+
         private class AvoidDragonFireGoal implements Goal {
-            
+
             @Override
             public boolean isInGoal(int x, int y, int z) {
                 BlockPos pos = new BlockPos(x, y, z);
                 return !_breathCostMap.containsKey(pos);
             }
-            
+
             @Override
             public double heuristic(int x, int y, int z) {
                 BlockPos pos = new BlockPos(x, y, z);

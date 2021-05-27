@@ -18,22 +18,22 @@ import net.minecraft.item.Items;
 
 public class CollectSandstoneTask extends ResourceTask {
     private final int count;
-    
+
     public CollectSandstoneTask(int targetCount) {
         super(Items.SANDSTONE, targetCount);
         count = targetCount;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.SAND) >= 4) {
@@ -46,17 +46,17 @@ public class CollectSandstoneTask extends ResourceTask {
                                       new Block[]{ Blocks.SANDSTONE, Blocks.SAND }, MiningRequirement.WOOD).forceDimension(
                 Dimension.OVERWORLD);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectSandstoneTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " sandstone.";

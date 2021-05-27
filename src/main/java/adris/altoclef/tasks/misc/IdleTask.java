@@ -12,29 +12,29 @@ public class IdleTask extends Task {
         // Never finish
         return false;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         // Do nothing except maybe test code
         AltoClefCommands.IDLE_TEST_TICK_FUNCTION(mod);
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof IdleTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Idle";

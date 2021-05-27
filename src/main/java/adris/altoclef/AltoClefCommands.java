@@ -72,7 +72,7 @@ import java.util.List;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class AltoClefCommands extends CommandList {
-    
+
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
         super(executor,
               // List commands here
@@ -96,11 +96,11 @@ public class AltoClefCommands extends CommandList {
               //    new TestSwapInventoryCommand()
              );
     }
-    
+
     // TODO: 2021-05-22 move to unit tests
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
         // Test code here
-        
+
         // Print all uncatalogued resources as well as resources that don't have a corresponding item
         /*
         Set<String> collectable = new HashSet<>(TaskCatalogue.resourceNames());
@@ -152,11 +152,11 @@ public class AltoClefCommands extends CommandList {
 
          */
     }
-    
+
     public static void IDLE_TEST_TICK_FUNCTION(AltoClef mod) {
         // Test code here
     }
-    
+
     public static void TEMP_TEST_FUNCTION(AltoClef mod, String arg) {
         //mod.runUserTask();
         Debug.logMessage("Running test...");
@@ -169,8 +169,8 @@ public class AltoClefCommands extends CommandList {
         */
         //mod.runUserTask(new PickupDroppedItemTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
         //mod.runUserTask(new MineAndCollectTask(Arrays.asList(new ItemTarget(ItemUtil.LOG))));
-        
-        
+
+
         // what is this?
         ItemTarget plank = new ItemTarget("planks");
         ItemTarget stick = new ItemTarget("stick");
@@ -186,7 +186,7 @@ public class AltoClefCommands extends CommandList {
                 null, stick, null, //
         }, 1);
         ItemTarget woodenSwordItem = new ItemTarget(Items.WOODEN_SWORD, 1);
-        
+
         switch (arg) { // TODO: 2021-05-22 ew, a switch case
             case "":
                 // Idle
@@ -277,7 +277,7 @@ public class AltoClefCommands extends CommandList {
                             Debug.logMessage(i + "...");
                             sleepSec(1.0);
                         }
-                        
+
                         Item[] cobb = { Items.COBBLESTONE };
                         Item[] stic = { Items.STICK };
                         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{
@@ -285,7 +285,7 @@ public class AltoClefCommands extends CommandList {
                                 null, stic, null, //
                                 null, stic, null, //
                         }, 1);
-                        
+
                         mod.runUserTask(new CraftGenericTask(recipe));
                         /*
                         Item toEquip = Items.BUCKET;//Items.AIR;
@@ -308,26 +308,26 @@ public class AltoClefCommands extends CommandList {
                         }
                          */
                     }
-                    
+
                     private void swap(Slot slot1, Slot slot2) {
                         mod.getInventoryTracker().clickSlot(slot1);
-                        
+
                         Debug.logMessage("MOVE 1...");
                         sleepSec(1.0);
                         // Pick up slot2
                         ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
                         Debug.logMessage("MOVE 2...");
                         sleepSec(1.0);
-                        
+
                         // slot 1 is now in slot 2
                         // slot 2 is now in cursor
-                        
+
                         // If slot 2 is not empty, move it back to slot 1
                         //if (second != null && !second.isEmpty()) {
                         mod.getInventoryTracker().clickSlot(slot1);
                         Debug.logMessage("MOVE 3!");
                     }
-                    
+
                 }.start();
                 //mod.getInventoryTracker().equipItem(Items.AIR);
                 break;
@@ -424,7 +424,7 @@ public class AltoClefCommands extends CommandList {
                 break;
         }
     }
-    
+
     private static void sleepSec(double seconds) {
         try {
             Thread.sleep((long) (1000.0 * seconds));
@@ -432,5 +432,5 @@ public class AltoClefCommands extends CommandList {
             e.printStackTrace();
         }
     }
-    
+
 }

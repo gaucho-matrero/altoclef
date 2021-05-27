@@ -16,31 +16,31 @@ public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
     private final boolean xz;
     // See GoalrunAwayFromEntities penalty value
     private final double penalty;
-    
+
     public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, boolean xz, double penalty) {
         runAwaySupplier = toRunAwayFrom;
         this.distanceToRun = distanceToRun;
         this.xz = xz;
         this.penalty = penalty;
     }
-    
+
     public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, double penalty) {
         this(toRunAwayFrom, distanceToRun, false, penalty);
     }
-    
-    
+
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalRunAwayStuff(mod, distanceToRun, xz);
     }
-    
-    
+
+
     private class GoalRunAwayStuff extends GoalRunAwayFromEntities {
-        
+
         public GoalRunAwayStuff(AltoClef mod, double distance, boolean xz) {
             super(mod, distance, xz, penalty);
         }
-        
+
         @Override
         protected List<net.minecraft.entity.Entity> getEntities(AltoClef mod) {
             return runAwaySupplier.get();

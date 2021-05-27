@@ -14,32 +14,32 @@ import adris.altoclef.util.Dimension;
  */
 public class DefaultGoToDimensionTask extends Task {
     private final Dimension target;
-    
+
     public DefaultGoToDimensionTask(Dimension target) {
         this.target = target;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return mod.getCurrentDimension() == target;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         setDebugState("NOT IMPLEMENTED YET!");
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof DefaultGoToDimensionTask) {
@@ -48,7 +48,7 @@ public class DefaultGoToDimensionTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Going to dimension: " + target + " (default version)";

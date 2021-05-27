@@ -12,7 +12,7 @@ import net.minecraft.util.math.Vec3d;
  * This lets us know that a block is unreachable, and will ignore it from the search intelligently.
  */
 public class WorldLocateBlacklist extends AbstractObjectBlacklist<BlockPos> {
-    
+
     @Override
     protected Vec3d getPos(BlockPos item) {
         return WorldUtil.toVec3d(item);

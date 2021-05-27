@@ -12,25 +12,25 @@ import java.util.List;
 
 
 public class CommandStatusOverlay {
-    
+
     public void render(AltoClef mod, MatrixStack matrixstack) {
         if (mod.getModSettings().shouldShowTaskChain()) {
             List<Task> tasks = Collections.emptyList();
             if (mod.getTaskRunner().getCurrentTaskChain() != null) {
                 tasks = mod.getTaskRunner().getCurrentTaskChain().getTasks();
             }
-            
+
             int color = 0xFFFFFFFF;
             drawTaskChain(MinecraftClient.getInstance().textRenderer, matrixstack, 0, 0, color, 10, tasks);
         }
     }
-    
+
     private void drawTaskChain(TextRenderer renderer, MatrixStack stack, float dx, float dy, int color, int maxLines, List<Task> tasks) {
         if (tasks.isEmpty()) {
             renderer.draw(stack, " (no task running) ", dx, dy, color);
         } else {
             float fontHeight = renderer.fontHeight;
-            
+
             if (tasks.size() > maxLines) {
                 for (int i = 0; i < tasks.size(); ++i) {
                     // Skip over the next tasks
@@ -51,7 +51,7 @@ public class CommandStatusOverlay {
                     dy += fontHeight + 2;
                 }
             }
-            
+
         }
     }
 }

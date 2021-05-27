@@ -11,12 +11,12 @@ import baritone.api.pathing.goals.Goal;
 public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
     private final double distanceHorizontal;
     private final double distanceVertical;
-    
+
     public DodgeProjectilesTask(double distanceHorizontal, double distanceVertical) {
         this.distanceHorizontal = distanceHorizontal;
         this.distanceVertical = distanceVertical;
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (cachedGoal != null) {
@@ -27,12 +27,12 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
         }
         return super.onTick(mod);
     }
-    
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalDodgeProjectiles(mod, distanceHorizontal, distanceVertical);
     }
-    
+
     @SuppressWarnings("RedundantIfStatement")
     @Override
     protected boolean isEqual(Task obj) {
@@ -45,7 +45,7 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Dodge arrows at " + distanceHorizontal + " blocks away";

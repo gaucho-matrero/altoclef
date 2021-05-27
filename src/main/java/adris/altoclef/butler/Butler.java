@@ -26,7 +26,7 @@ public class Butler {
     // Utility variables for command logic
     private boolean commandInstantRan;
     private boolean commandFinished;
-    
+
     public Butler(AltoClef mod) {
         this.mod = mod;
         userAuth = new UserAuth(mod);
@@ -40,11 +40,11 @@ public class Butler {
             }
         });
     }
-    
+
     public void reloadLists() {
         userAuth.reloadLists();
     }
-    
+
     public void receiveMessage(String msg) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
@@ -54,47 +54,47 @@ public class Butler {
             this.receiveWhisper(result.from, result.message);
         }
     }
-    
+
     public void receiveWhisper(String username, String message) {
-        
+
         // Ignore messages from other bots.
         if (message.startsWith(BUTLER_MESSAGE_START)) return;
-        
+
         if (userAuth.isUserAuthorized(username)) {
             executeWhisper(username, message);
         } else {
             sendWhisper(username, "Sorry, you're not authorized!", MessagePriority.UNAUTHORIZED);
         }
     }
-    
+
     public boolean isUserAuthorized(String username) {
         return userAuth.isUserAuthorized(username);
     }
-    
+
     public void onLog(String message, MessagePriority priority) {
         if (currentUser != null) {
             sendWhisper(message, priority);
         }
     }
-    
+
     public void onLogWarning(String message, MessagePriority priority) {
         if (currentUser != null) {
             sendWhisper("[WARNING:] " + message, priority);
         }
     }
-    
+
     public void tick() {
         // Nothing for now.
     }
-    
+
     public String getCurrentUser() {
         return currentUser;
     }
-    
+
     public boolean hasCurrentUser() {
         return currentUser != null;
     }
-    
+
     private void executeWhisper(String username, String message) {
         String prevUser = currentUser;
         try {
@@ -121,7 +121,7 @@ public class Butler {
             currentUser = prevUser;
         }
     }
-    
+
     private void sendWhisper(String message, MessagePriority priority) {
         if (currentUser != null) {
             sendWhisper(currentUser, message, priority);
@@ -129,7 +129,7 @@ public class Butler {
             Debug.logWarning("Failed to send butler message as there are no users present: " + message);
         }
     }
-    
+
     private void sendWhisper(String username, String message, MessagePriority priority) {
         mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
     }

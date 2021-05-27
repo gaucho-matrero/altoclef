@@ -17,23 +17,23 @@ public class FoodChain extends SingleTaskChain {
     private static final int RIGHT_CLICK_KEY = 1 - 100;
     private boolean isTryingToEat;
     private boolean requestFillup;
-    
+
     public FoodChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
-        
+
         if (!mod.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         if (!mod.getModSettings().isAutoEat()) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         if (mod.getInventoryTracker().totalFoodScore() <= 0) {
             // Do nothing if we have no food.
             stopEat(mod);
@@ -47,30 +47,30 @@ public class FoodChain extends SingleTaskChain {
             - We're very low on health and are even slightly hungry
         - We're kind of hungry and have food that fits perfectly
          */
-        
+
         // We're in danger, don't eat now!!
         if (mod.getMobDefenseChain().isDoingAcrobatics() || mod.getMLGBucketChain().isFallingOhNo(mod)) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
-        
+
         // If we requested a fillup but we're full, stop.
         if (requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() == 20) {
             requestFillup = false;
         }
-        
+
         if (needsToEat(mod) || requestFillup) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
                 //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
                 isTryingToEat = true;
                 requestFillup = true;
-                
+
                 // Make sure we're not facing a container
                 if (!LookUtil.tryAvoidingInteractable(mod)) {
                     return Float.NEGATIVE_INFINITY;
                 }
-                
+
                 mod.getInventoryTracker().equipItem(toUse);
                 startEat(mod);
             } else {
@@ -79,22 +79,22 @@ public class FoodChain extends SingleTaskChain {
         } else if (isTryingToEat) {
             stopEat(mod);
         }
-        
-        
+
+
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
     }
-    
+
     @Override
     public String getName() {
         return "Food";
     }
-    
+
     private void startEat(AltoClef mod) {
         MinecraftClient.getInstance().options.keyUse.setPressed(true);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
-    
+
     private void stopEat(AltoClef mod) {
         if (isTryingToEat) {
             MinecraftClient.getInstance().options.keyUse.setPressed(false);
@@ -103,15 +103,15 @@ public class FoodChain extends SingleTaskChain {
             requestFillup = false;
         }
     }
-    
+
     public boolean needsToEat(AltoClef mod) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         assert player != null;
         int foodLevel = player.getHungerManager().getFoodLevel();
         float health = player.getHealth();
-        
+
         //Debug.logMessage("FOOD: " + foodLevel + " -- HEALTH: " + health);
-        
+
         // TODO: Threshold behaviour preferences
         if (foodLevel >= 20) {
             // We can't eat.
@@ -129,7 +129,7 @@ public class FoodChain extends SingleTaskChain {
                 return true;
             }
         }
-        
+
         // Eat if we're more than 2.5 units hungry and we have a perfect fit.
         if (foodLevel < 20 - 5) {
             int need = 20 - foodLevel;
@@ -137,10 +137,10 @@ public class FoodChain extends SingleTaskChain {
             int fills = (best != null && best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : 0;
             return fills == need;
         }
-        
+
         return false;
     }
-    
+
     private Item getBestItemToEat(AltoClef mod) {
         int foodToFill = 20 - mod.getPlayer().getHungerManager().getFoodLevel();
         Item bestItem = null;
@@ -162,11 +162,11 @@ public class FoodChain extends SingleTaskChain {
         }
         return bestItem;
     }
-    
+
     public boolean isTryingToEat() {
         return isTryingToEat;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod) {
         if (isTryingToEat) {
@@ -177,18 +177,18 @@ public class FoodChain extends SingleTaskChain {
         }
         super.onStop(mod);
     }
-    
+
     @Override
     public boolean isActive() {
         // We're always checking for food.
         return true;
     }
-    
+
     @Override
     protected void onTaskFinish(AltoClef mod) {
         // Nothing.
     }
-    
+
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {
         // Don't do this if we have no food

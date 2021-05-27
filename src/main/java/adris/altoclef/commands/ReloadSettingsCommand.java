@@ -10,7 +10,7 @@ public class ReloadSettingsCommand extends Command {
     public ReloadSettingsCommand() {
         super("reload_settings", "Reloads bot settings and butler whitelist/blacklist.");
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
         mod.getButler().reloadLists();

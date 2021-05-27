@@ -15,28 +15,28 @@ public class CraftInInventoryTask extends ResourceTask {
     private final boolean collect;
     private final boolean ignoreUncataloguedSlots;
     private boolean fullCheckSucceeded = true;
-    
+
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
         this.recipe = recipe;
         this.collect = collect;
         this.ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
-    
+
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
         this(target, recipe, true, false);
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         fullCheckSucceeded = true;
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         ItemTarget toGet = itemTargets[0];
@@ -45,7 +45,7 @@ public class CraftInInventoryTask extends ResourceTask {
             setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
         }
-        
+
         // Free up inventory
         if (mod.getInventoryTracker().isInventoryFull()) {
             // Throw away!
@@ -60,17 +60,17 @@ public class CraftInInventoryTask extends ResourceTask {
                 fullCheckSucceeded = false;
             }
         }
-        
+
         setDebugState("Crafting in inventory... for " + toGet);
         return new CraftGenericTask(recipe);
         //craftInstant(mod, _recipe);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CraftInInventoryTask) {
@@ -80,21 +80,21 @@ public class CraftInInventoryTask extends ResourceTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return toCraftingDebugStringName() + " " + recipe;
     }
-    
+
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
         return new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, new RecipeTarget(itemTargets[0], recipe));
     }
-    
+
     protected String toCraftingDebugStringName() {
         return "Craft 2x2 Task";
     }
-    
+
     protected boolean isCraftingEqual(CraftInInventoryTask other) {
         return true;
     }

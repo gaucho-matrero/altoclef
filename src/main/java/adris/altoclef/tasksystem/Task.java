@@ -9,13 +9,13 @@ import java.util.function.Predicate;
 
 
 public abstract class Task {
-    
+
     private String debugState = "";
     private Task sub;
     private boolean first = true;
     private boolean stopped;
     private boolean active;
-    
+
     public void tick(AltoClef mod, TaskChain parentChain) {
         parentChain.addTaskToChain(this);
         if (first) {
@@ -26,7 +26,7 @@ public abstract class Task {
             stopped = false;
         }
         if (stopped) return;
-        
+
         Task newSub = onTick(mod);
         // We have a sub task
         if (newSub != null) {
@@ -37,11 +37,11 @@ public abstract class Task {
                         // Our previous sub must be interrupted.
                         sub.stop(mod, newSub);
                     }
-                    
+
                     sub = newSub;
                 }
             }
-            
+
             // Run our child
             sub.tick(mod, parentChain);
         } else {
@@ -53,28 +53,28 @@ public abstract class Task {
             }
         }
     }
-    
+
     public void reset() {
         first = true;
         active = false;
         stopped = false;
     }
-    
+
     protected void stop(AltoClef mod, Task interruptTask) {
         if (!active) return;
-        
+
         onStop(mod, interruptTask);
         Debug.logInternal("Task STOP: " + this + ", interrupted by " + interruptTask);
-        
+
         if (sub != null && !sub.stopped()) {
             sub.stop(mod, interruptTask);
         }
-        
+
         first = true;
         active = false;
         stopped = true;
     }
-    
+
     protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
         if (!condition && !stopped) {
             Debug.logError("Task assertion failed: " + message);
@@ -83,11 +83,11 @@ public abstract class Task {
         }
         return condition;
     }
-    
+
     public void stop(AltoClef mod) {
         stop(mod, null);
     }
-    
+
     protected void setDebugState(String state) {
         if (debugState.equals(state)) {
             debugState = state;
@@ -96,31 +96,31 @@ public abstract class Task {
             Debug.logInternal(toString());
         }
     }
-    
+
     // Virtual
     public boolean isFinished(AltoClef mod) {
         return false;
     }
-    
+
     public boolean isActive() {
         return active;
     }
-    
+
     public boolean stopped() {
         return stopped;
     }
-    
+
     protected abstract void onStart(AltoClef mod);
-    
+
     protected abstract Task onTick(AltoClef mod);
-    
+
     // interruptTask = null if the task stopped cleanly
     protected abstract void onStop(AltoClef mod, Task interruptTask);
-    
+
     protected abstract boolean isEqual(Task obj);
-    
+
     protected abstract String toDebugString();
-    
+
     public boolean thisOrChildSatisfies(Predicate<? super Task> pred) {
         Task t = this;
         while (t != null) {
@@ -129,11 +129,11 @@ public abstract class Task {
         }
         return false;
     }
-    
+
     public boolean thisOrChildAreTimedOut() {
         return thisOrChildSatisfies(TimeoutWanderTask.class::isInstance);
     }
-    
+
     /**
      * Sometimes a task just can NOT be bothered to be interrupted right now. For instance, if we're in mid air and MUST complete the
      * parkour movement.
@@ -148,7 +148,7 @@ public abstract class Task {
         }
         return true;
     }
-    
+
     @Override
     public int hashCode() {
         int result = debugState != null ? debugState.hashCode() : 0;
@@ -158,7 +158,7 @@ public abstract class Task {
         result = 31 * result + (active ? 1 : 0);
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Task) {
@@ -166,7 +166,7 @@ public abstract class Task {
         }
         return false;
     }
-    
+
     @Override
     public String toString() {
         return "<" + toDebugString() + "> " + debugState;

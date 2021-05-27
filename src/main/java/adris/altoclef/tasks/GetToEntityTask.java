@@ -15,52 +15,52 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     private final double closeEnoughDistance;
     private final MovementProgressChecker progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(10);
-    
+
     public GetToEntityTask(Entity entity, double closeEnoughDistance) {
         this.entity = entity;
         this.closeEnoughDistance = closeEnoughDistance;
     }
-    
+
     public GetToEntityTask(Entity entity) {
         this(entity, 1);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         wanderTask.resetWander();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             progress.reset();
             setDebugState("Failed to get to target, wandering for a bit.");
             return wanderTask;
         }
-        
+
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(entity, closeEnoughDistance));
         }
-        
+
         if (mod.getPlayer().isInRange(entity, closeEnoughDistance)) {
             progress.reset();
         }
-        
+
         if (!progress.check(mod)) {
             return wanderTask;
         }
-        
+
         setDebugState("Going to entity");
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToEntityTask) {
@@ -69,7 +69,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Approach entity " + entity.getDisplayName().asString();

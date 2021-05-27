@@ -39,36 +39,36 @@ public class CollectObsidianTask extends ResourceTask {
     private final int count;
     private Task forceCompleteTask;
     private BlockPos lavaWaitCurrentPos;
-    
+
     public CollectObsidianTask(int count) {
         super(Items.OBSIDIAN, count);
         this.count = count;
     }
-    
+
     private static BlockPos getLavaStructurePos(BlockPos lavaPos) {
         return lavaPos.add(1, 1, 0);
     }
-    
+
     private static BlockPos getLavaWaterPos(BlockPos lavaPos) {
         return lavaPos.up();
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getConfigState().push();
-        
+
         mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
         mod.getConfigState().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
-        
+
         mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
         mod.getBlockTracker().trackBlock(Blocks.WATER);
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
-        
+
         // Avoid placing on the lava block we're trying to mine.
         mod.getConfigState().avoidBlockPlacing(pos -> {
             if (lavaWaitCurrentPos != null) {
@@ -83,26 +83,26 @@ public class CollectObsidianTask extends ResourceTask {
             return false;
         });
     }
-    
+
     @Override
     protected adris.altoclef.tasksystem.Task onResourceTick(AltoClef mod) {
-        
+
         // Clear the current waiting lava pos if it's no longer lava.
         if (lavaWaitCurrentPos != null && mod.getChunkTracker().isChunkLoaded(lavaWaitCurrentPos) && mod.getWorld().getBlockState(
                 lavaWaitCurrentPos).getBlock() != Blocks.LAVA) {
             lavaWaitCurrentPos = null;
         }
-        
+
         // Get a diamond pickaxe FIRST
         if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.DIAMOND)) {
             setDebugState("Getting diamond pickaxe first");
             return new SatisfyMiningRequirementTask(MiningRequirement.DIAMOND);
         }
-        
+
         if (forceCompleteTask != null && forceCompleteTask.isActive() && !forceCompleteTask.isFinished(mod)) {
             return forceCompleteTask;
         }
-        
+
         if (mod.getBlockTracker().anyFound(Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
@@ -110,46 +110,46 @@ public class CollectObsidianTask extends ResourceTask {
                 BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldUtil.toVec3d(nearestObby),
                                                                                  blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true),
                                                                                  Blocks.WATER);
-                
+
                 if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 10 * 10) {
                     forceCompleteTask = new ClearLiquidTask(nearestWater);
                     setDebugState("Clearing water nearby obsidian");
                     return forceCompleteTask;
                 }
             }
-            
+
             setDebugState("Mining/Collecting obsidian");
             return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, count), new Block[]{ Blocks.OBSIDIAN },
                                           MiningRequirement.DIAMOND);
         }
-        
+
         Function<Vec3d, BlockPos> getNearestLava = ppos -> mod.getBlockTracker().getNearestTracking(ppos, blockPos -> {
             if (lavaBlacklist.contains(blockPos)) return true;
             if (!WorldUtil.isSourceBlock(mod, blockPos, true)) return true;
-            
+
             BlockPos placeOnPos = getLavaStructurePos(blockPos);
-            
+
             BlockState placeOnState = mod.getWorld().getBlockState(placeOnPos);
             // We can't place a structure on lava.
             return placeOnState.getBlock() instanceof FluidBlock;
             //if (!mod.getWorld().getBlockState(placeOnPos).getFluidState().isEmpty()) return true;
         }, Blocks.LAVA);
-        
+
         // No stuff detected, try finding lava and placing water near it.
         BlockPos nearestLava = getNearestLava.apply(mod.getPlayer().getPos());
-        
+
         //Debug.logInternal("NEAREST LAVA: " + (nearestLava != null? nearestLava.toShortString() : "(null)") + " # lava: " + mod
         // .getBlockTracker().getKnownLocations(Blocks.LAVA).size());
-        
+
         if (nearestLava != null) {
-            
+
             //noinspection PointlessNullCheck
             if (lavaWaitCurrentPos == null || !nearestLava.equals(lavaWaitCurrentPos)) {
                 // We found a new lava to pursue.
                 lavaWaitCurrentPos = nearestLava;
                 lavaTimeout.reset();
             }
-            
+
             // Collect water first
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 lavaTimeout.reset();
@@ -157,14 +157,14 @@ public class CollectObsidianTask extends ResourceTask {
                 setDebugState("Getting water bucket");
                 return forceCompleteTask;
             }
-            
+
             if (!lavaTimeout.check(mod)) {
                 Debug.logMessage("Failed to obsidian-ify lava, blacklisting.");
                 lavaBlacklist.add(lavaWaitCurrentPos);
                 //_lavaWaitCurrentPos = null;
                 return null;
             }
-            
+
             // Make sure we have a spot to place the water.
             BlockPos waterTargetPos = getLavaWaterPos(nearestLava);
             BlockPos placeOnPos = getLavaStructurePos(nearestLava);
@@ -172,23 +172,23 @@ public class CollectObsidianTask extends ResourceTask {
                 setDebugState("Making structure to place water on");
                 return new PlaceStructureBlockTask(placeOnPos);
             }
-            
+
             setDebugState("Placing water near lava");
-            
+
             if (!mod.getWorld().getBlockState(waterTargetPos).isAir()) {
                 return new DestroyBlockTask(waterTargetPos);
             }
-            
+
             //_placeWaterTimeout.reset();
             return new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("water_bucket", 1), Direction.WEST, placeOnPos, true);
         } else {
             lavaTimeout.reset();
         }
-        
+
         setDebugState("Wandering, no obsidian/lava found.");
         return new TimeoutWanderTask(true);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);
@@ -196,7 +196,7 @@ public class CollectObsidianTask extends ResourceTask {
         mod.getBlockTracker().stopTracking(Blocks.OBSIDIAN);
         mod.getConfigState().pop();
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CollectObsidianTask) {
@@ -205,7 +205,7 @@ public class CollectObsidianTask extends ResourceTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collect " + count + " blocks of obsidian";

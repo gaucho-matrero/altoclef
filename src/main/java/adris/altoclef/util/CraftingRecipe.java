@@ -8,38 +8,38 @@ import java.util.Arrays;
 
 
 public class CraftingRecipe {
-    
+
     private ItemTarget[] slots;
-    
+
     private int width;
     private int height;
-    
+
     private boolean shapeless;
-    
+
     private String shortName;
-    
+
     private int outputCount;
-    
+
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
     //private final Set<Integer> _mustMatch = new HashSet<>();
-    
+
     private CraftingRecipe() {
     }
-    
+
     public static CraftingRecipe newShapedRecipe(Item[][] items, int outputCount) {
         return newShapedRecipe(null, items, outputCount);
     }
-    
+
     public static CraftingRecipe newShapedRecipe(ItemTarget[] slots, int outputCount) {
         return newShapedRecipe(null, slots, outputCount);
     }
-    
+
     public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items, int outputCount) {
         return newShapedRecipe(shortName, createSlots(items), outputCount);
     }
-    
+
     public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots, int outputCount) {
         if (slots.length != 4 && slots.length != 9) {
             Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
@@ -64,16 +64,16 @@ public class CraftingRecipe {
             result.height = 3;
         }
         result.shapeless = false;
-        
+
         return result;
     }
-    
+
     private static ItemTarget[] createSlots(ItemTarget[] slots) {
         ItemTarget[] result = new ItemTarget[slots.length];
         System.arraycopy(slots, 0, result, 0, slots.length);
         return result;
     }
-    
+
     private static ItemTarget[] createSlots(Item[][] slots) {
         ItemTarget[] result = new ItemTarget[slots.length];
         for (int i = 0; i < slots.length; ++i) {
@@ -85,9 +85,9 @@ public class CraftingRecipe {
         }
         return result;
     }
-    
+
     public ItemTarget getSlot(int index) {
-        
+
         return slots[index];
     }
 
@@ -130,19 +130,19 @@ public class CraftingRecipe {
         return this;
     }
      */
-    
+
     public int getSlotCount() {
         return slots.length;
     }
-    
+
     public int getWidth() {
         return width;
     }
-    
+
     public int getHeight() {
         return height;
     }
-    
+
     public boolean isShapeless() {
         return shapeless;
     }
@@ -160,15 +160,15 @@ public class CraftingRecipe {
         return result;
     }
      */
-    
+
     public boolean isBig() {
         return slots.length > 4;
     }
-    
+
     public int outputCount() {
         return outputCount;
     }
-    
+
     @Override
     public int hashCode() {
         int result = Arrays.hashCode(slots);
@@ -179,7 +179,7 @@ public class CraftingRecipe {
         result = 31 * result + outputCount;
         return result;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof CraftingRecipe) {
@@ -193,7 +193,7 @@ public class CraftingRecipe {
         }
         return false;
     }
-    
+
     @Override
     public String toString() {
         return "CraftingRecipe{" +
@@ -252,6 +252,6 @@ public class CraftingRecipe {
         }
     }
      */
-    
+
     //public static ItemTarget EMPTY = new ItemTarget();
 }

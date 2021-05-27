@@ -120,18 +120,18 @@ import static net.minecraft.item.Items.*;
 
 @SuppressWarnings({ "rawtypes", "CodeBlock2Expr", "UnusedReturnValue" })
 public class TaskCatalogue {
-    
+
     private static final HashMap<String, Item[]> NAME_TO_ITEM_MAP = new HashMap<>();
     private static final HashMap<String, CataloguedResource> NAME_TO_RESOURCE_MAP = new HashMap<>();
     private static final HashSet<Item> OBTAINABLE_RESOURCES = new HashSet<>();
-    
+
     static {
         /// DEFINE RESOURCE TASKS HERE
         // TODO: 2021-05-22 move resources to json file or yaml or some shit
         // TODO: 2021-05-22 I HATE static stuff
         String plan = "planks";
         String stic = "stick";
-        
+
         /// RAW RESOURCES
         mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG).anyDimension();
         woodTasks("log", wood -> wood.log, (wood, count) -> {
@@ -226,8 +226,8 @@ public class TaskCatalogue {
         crop("beetroot", BEETROOT, BEETROOTS, BEETROOT_SEEDS);
         simple("wheat_seeds", WHEAT_SEEDS, CollectWheatSeedsTask::new);
         crop("beetroot_seeds", BEETROOT_SEEDS, BEETROOTS, BEETROOT_SEEDS);
-        
-        
+
+
         // MATERIALS
         simple("planks", ItemUtil.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
         for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks,
@@ -329,8 +329,8 @@ public class TaskCatalogue {
         shapedRecipe2x2("chiseled_sandstone", CHISELED_SANDSTONE, 1, "sandstone_slab", "sandstone_slab", null, null);
         shapedRecipe2x2("chiseled_stone_bricks", CHISELED_STONE_BRICKS, 1, "stone_brick_slab", null, "stone_brick_slab", null);
         shapedRecipe2x2("chiseled_nether_bricks", CHISELED_NETHER_BRICKS, 1, "nether_brick_slab", null, "nether_brick_slab", null);
-        
-        
+
+
         /// TOOLS
         tools("wooden", "planks", WOODEN_PICKAXE, WOODEN_SHOVEL, WOODEN_SWORD, WOODEN_AXE, WOODEN_HOE);
         tools("stone", "cobblestone", STONE_PICKAXE, STONE_SHOVEL, STONE_SWORD, STONE_AXE, STONE_HOE);
@@ -371,8 +371,8 @@ public class TaskCatalogue {
         woodTasks("boat", woodItems -> woodItems.boat,
                   (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
         shapedRecipe3x3("lead", LEAD, 1, "string", "string", null, "string", "slime_ball", null, null, null, "string");
-        
-        
+
+
         // FURNITURE
         shapedRecipe2x2("crafting_table", CRAFTING_TABLE, 1, plan, plan, plan, plan);
         simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
@@ -442,7 +442,7 @@ public class TaskCatalogue {
         });
         shapedRecipe2x2("jack_o_lantern", JACK_O_LANTERN, 1, "carved_pumpkin", null, "torch", null);
         shapedRecipe3x3("target", TARGET, 1, null, "redstone", null, "redstone", "hay_block", "redstone", null, "redstone", null);
-        
+
         // A BUNCH OF WOODEN STUFF
         simple("wooden_stairs", ItemUtil.WOOD_STAIRS, CollectWoodenStairsTask::new);
         woodTasks("stairs", woodItems -> woodItems.stairs, (woodItems, count) -> {
@@ -476,11 +476,11 @@ public class TaskCatalogue {
         alias("trapdoor", "wooden_trapdoor");
         alias("fence", "wooden_fence");
         alias("fence_gate", "wooden_fence_gate");
-        
+
         shapedRecipe2x2("stone_pressure_plate", STONE_PRESSURE_PLATE, 1, "stone", "stone", null, null);
         shapedRecipe2x2("heavy_weighted_pressure_plate", HEAVY_WEIGHTED_PRESSURE_PLATE, 1, "iron_ingot", "iron_ingot", null, null);
         shapedRecipe2x2("light_weighted_pressure_plate", LIGHT_WEIGHTED_PRESSURE_PLATE, 1, "gold_ingot", "gold_ingot", null, null);
-        
+
         shapedRecipe3x3("daylight_detector", DAYLIGHT_DETECTOR, 1, "glass", "glass", "glass", "quartz", "quartz", "quartz",
                         "wooden_slab", "wooden_slab", "wooden_slab");
         shapedRecipe3x3("tripwire_hook", TRIPWIRE_HOOK, 2, "iron_ingot", null, null, "stick", null, null, "planks", null, null);
@@ -517,8 +517,8 @@ public class TaskCatalogue {
         alias("minecart_with_furnace", "furnace_minecart");
         alias("minecart_with_hopper", "hopper_minecart");
         alias("minecart_with_tnt", "tnt_minecart");
-        
-        
+
+
         /// FOOD
         mobCook("porkchop", PORKCHOP, COOKED_PORKCHOP, PigEntity.class);
         mobCook("beef", BEEF, COOKED_BEEF, CowEntity.class);
@@ -549,7 +549,7 @@ public class TaskCatalogue {
             shapedRecipe3x3("beetroot_soup", BEETROOT_SOUP, 1, b, b, b, b, b, b, null, "bowl", null);
         }
     }
-    
+
     private static CataloguedResource put(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
         CataloguedResource result = new CataloguedResource(matches, getTask);
         Block[] blocks = Util.itemsToBlocks(matches);
@@ -573,7 +573,7 @@ public class TaskCatalogue {
         return getItemTask(ItemTarget.trimItemName(item.getTranslationKey()), count);
     }
     */
-    
+
     // This is here so that we can use strings for item targets (optionally) and stuff like that.
     public static Item[] getItemMatches(String name) {
         if (!NAME_TO_ITEM_MAP.containsKey(name)) {
@@ -581,90 +581,90 @@ public class TaskCatalogue {
         }
         return NAME_TO_ITEM_MAP.get(name);
     }
-    
+
     public static boolean isObtainable(Item item) {
         return OBTAINABLE_RESOURCES.contains(item);
     }
-    
+
     public static ItemTarget getItemTarget(String name, int count) {
         return new ItemTarget(name, count);
     }
-    
+
     public static CataloguedResourceTask getSquashedItemTask(ItemTarget... targets) {
         return new CataloguedResourceTask(true, targets);
     }
-    
+
     public static ResourceTask getItemTask(String name, int count) {
-        
+
         if (!taskExists(name)) {
             Debug.logWarning("Task " + name + " does not exist. Error possibly.");
             Debug.logStack();
             return null;
         }
-        
+
         CataloguedResource catalogueValue = NAME_TO_RESOURCE_MAP.get(name);
         return catalogueValue.getResource(count);
     }
-    
+
     public static ResourceTask getItemTask(ItemTarget target) {
         return getItemTask(target.getCatalogueName(), target.targetCount);
     }
-    
+
     public static boolean taskExists(String name) {
         return NAME_TO_RESOURCE_MAP.containsKey(name);
     }
-    
+
     public static Collection<String> resourceNames() {
         return NAME_TO_RESOURCE_MAP.keySet();
     }
-    
+
     private static CataloguedResource simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
         return put(name, matches, getTask);
     }
-    
+
     private static CataloguedResource simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
         return simple(name, new Item[]{ matches }, getTask);
     }
-    
+
     private static CataloguedResource mine(String name, MiningRequirement requirement, Item[] toMine, Item... targets) {
         Block[] toMineBlocks = new Block[toMine.length];
         for (int i = 0; i < toMine.length; ++i)
             toMineBlocks[i] = Block.getBlockFromItem(toMine[i]);
         return mine(name, requirement, toMineBlocks, targets);
     }
-    
+
     private static CataloguedResource mine(String name, MiningRequirement requirement, Block[] toMine, Item... targets) {
         return put(name, targets, count -> new MineAndCollectTask(new ItemTarget(targets, count), toMine,
                                                                   requirement)).dontMineIfPresent(); // Mining already taken care of!!
     }
-    
+
     private static CataloguedResource mine(String name, MiningRequirement requirement, Block toMine, Item target) {
         return mine(name, requirement, new Block[]{ toMine }, target);
     }
-    
+
     private static CataloguedResource mine(String name, Block toMine, Item target) {
         return mine(name, MiningRequirement.HAND, toMine, target);
     }
-    
+
     private static CataloguedResource mine(String name, Item target) {
         return mine(name, Block.getBlockFromItem(target), target);
     }
-    
+
     private static CataloguedResource shear(String name, Block[] toShear, Item... targets) {
         return put(name, targets,
                    count -> new ShearAndCollectBlockTask(new ItemTarget[]{ new ItemTarget(targets, count) }, toShear)).dontMineIfPresent();
     }
-    
+
     private static CataloguedResource shear(String name, Block toShear, Item... targets) {
         return shear(name, new Block[]{ toShear }, targets);
     }
-    
+
     private static CataloguedResource shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2,
                                                       String s3) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[]{ t(s0), t(s1), t(s2), t(s3) }, outputCount);
         return put(name, matches, count -> new CraftInInventoryTask(new ItemTarget(matches, count), recipe));
     }
-    
+
     private static CataloguedResource shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2,
                                                       String s3, String s4, String s5, String s6, String s7, String s8) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[]{
@@ -672,66 +672,66 @@ public class TaskCatalogue {
         }, outputCount);
         return put(name, matches, count -> new CraftInTableTask(new ItemTarget(matches, count), recipe));
     }
-    
+
     private static CataloguedResource shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
         return shapedRecipe2x2(name, new Item[]{ match }, craftCount, s0, s1, s2, s3);
     }
-    
+
     private static CataloguedResource shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3,
                                                       String s4, String s5, String s6, String s7, String s8) {
         return shapedRecipe3x3(name, new Item[]{ match }, craftCount, s0, s1, s2, s3, s4, s5, s6, s7, s8);
     }
-    
+
     private static CataloguedResource shapedRecipe3x3Block(String name, Item match, String material) {
         return shapedRecipe3x3(name, match, 1, material, material, material, material, material, material, material, material, material);
     }
-    
+
     private static CataloguedResource shapedRecipeSlab(String name, Item match, String material) {
         return shapedRecipe3x3(name, match, 6, null, null, null, null, null, null, material, material, material);
     }
-    
+
     private static CataloguedResource shapedRecipeStairs(String name, Item match, String material) {
         return shapedRecipe3x3(name, match, 4, material, null, null, material, material, null, material, material, material);
     }
-    
+
     private static CataloguedResource shapedRecipeWall(String name, Item match, String material) {
         return shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
-    
+
     private static CataloguedResource smelt(String name, Item[] matches, String materials) {
         return put(name, matches,
                    count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
-    
+
     private static CataloguedResource smelt(String name, Item match, String materials) {
         return smelt(name, new Item[]{ match }, materials);
     }
-    
+
     private static CataloguedResource mob(String name, Item[] matches, Class mobClass) {
         return put(name, matches, count -> new KillAndLootTask(mobClass, new ItemTarget(matches, count)));
     }
-    
+
     private static CataloguedResource mob(String name, Item match, Class mobClass) {
         return mob(name, new Item[]{ match }, mobClass);
     }
-    
+
     private static void mobCook(String uncookedName, String cookedName, Item uncooked, Item cooked, Class mobClass) {
         mob(uncookedName, uncooked, mobClass);
         smelt(cookedName, cooked, uncookedName);
     }
-    
+
     private static void mobCook(String uncookedName, Item uncooked, Item cooked, Class mobClass) {
         mobCook(uncookedName, "cooked_" + uncookedName, uncooked, cooked, mobClass);
     }
-    
+
     private static CataloguedResource crop(String name, Item[] matches, Block[] cropBlocks, Item[] cropSeeds) {
         return put(name, matches, count -> new CollectCropTask(new ItemTarget(matches, count), cropBlocks, cropSeeds));
     }
-    
+
     public static CataloguedResource crop(String name, Item match, Block cropBlock, Item cropSeed) {
         return crop(name, new Item[]{ match }, new Block[]{ cropBlock }, new Item[]{ cropSeed });
     }
-    
+
     private static void colorfulTasks(String baseName, Function<? super ItemUtil.ColorfulItems, ? extends Item> getMatch,
                                       BiFunction<? super ItemUtil.ColorfulItems, ? super Integer, ? extends ResourceTask> getTask) {
         for (DyeColor dcol : DyeColor.values()) {
@@ -741,7 +741,7 @@ public class TaskCatalogue {
             put(prefix + "_" + baseName, new Item[]{ getMatch.apply(color) }, count -> getTask.apply(color, count));
         }
     }
-    
+
     private static CataloguedResource[] woodTasks(String baseName, Function<? super ItemUtil.WoodItems, ? extends Item> getMatch,
                                                   BiFunction<? super ItemUtil.WoodItems, ? super Integer, ? extends ResourceTask> getTask,
                                                   boolean requireNetherForNetherStuff) {
@@ -760,12 +760,12 @@ public class TaskCatalogue {
         }
         return Util.toArray(CataloguedResource.class, result);
     }
-    
+
     private static CataloguedResource[] woodTasks(String baseName, Function<? super ItemUtil.WoodItems, ? extends Item> getMatch,
                                                   BiFunction<? super ItemUtil.WoodItems, ? super Integer, ? extends ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }
-    
+
     private static void tools(String toolMaterialName, String material, Item pickaxeItem, Item shovelItem, Item swordItem, Item axeItem,
                               Item hoeItem) {
         String s = "stick";
@@ -775,7 +775,7 @@ public class TaskCatalogue {
         shapedRecipe3x3(toolMaterialName + "_axe", axeItem, 1, material, material, null, material, s, null, null, s, null);
         shapedRecipe3x3(toolMaterialName + "_hoe", hoeItem, 1, material, material, null, null, s, null, null, s, null);
     }
-    
+
     private static void armor(String armorMaterialName, String material, Item helmetItem, Item chestplateItem, Item leggingsItem,
                               Item bootsItem) {
         shapedRecipe3x3(armorMaterialName + "_helmet", helmetItem, 1, material, material, material, material, null, material, null, null,
@@ -786,50 +786,50 @@ public class TaskCatalogue {
                         null, material);
         shapedRecipe3x3(armorMaterialName + "_boots", bootsItem, 1, null, null, null, material, null, material, material, null, material);
     }
-    
+
     private static void alias(String newName, String original) {
         NAME_TO_RESOURCE_MAP.put(newName, NAME_TO_RESOURCE_MAP.get(original));
         NAME_TO_ITEM_MAP.put(newName, NAME_TO_ITEM_MAP.get(original));
     }
-    
+
     private static ItemTarget t(String cataloguedName) {
         return new ItemTarget(cataloguedName);
     }
-    
+
     public static class CataloguedResource {
         private final Item[] targets;
         private final Function<? super Integer, ? extends ResourceTask> resourceFunction;
-        
+
         private boolean shouldMine;
         private boolean shouldForceDimension;
         private Dimension targetDimension;
-        
+
         public CataloguedResource(Item[] targets, Function<? super Integer, ? extends ResourceTask> resourceFunction) {
             this.targets = targets;
             this.resourceFunction = resourceFunction;
         }
-        
+
         public CataloguedResource mineIfPresent() {
             shouldMine = true;
             return this;
         }
-        
+
         public CataloguedResource dontMineIfPresent() {
             shouldMine = false;
             return this;
         }
-        
+
         public CataloguedResource forceDimension(Dimension dimension) {
             shouldForceDimension = true;
             targetDimension = dimension;
             return this;
         }
-        
+
         public CataloguedResource anyDimension() {
             shouldForceDimension = false;
             return this;
         }
-        
+
         public ResourceTask getResource(int count) {
             ResourceTask result = resourceFunction.apply(count);
             if (shouldMine) {

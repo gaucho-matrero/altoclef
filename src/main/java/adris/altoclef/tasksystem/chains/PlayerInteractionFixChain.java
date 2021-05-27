@@ -26,30 +26,30 @@ public class PlayerInteractionFixChain extends TaskChain {
     private final Timer shiftDepressTimeout = new Timer(10);
     private final Timer betterToolTimer = new Timer(0.5);
     private ItemStack lastHandStack;
-    
+
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
-    
+
     }
-    
+
     @Override
     protected void onTick(AltoClef mod) {
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
-        
+
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
-        
+
         if (betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
             betterToolTimer.reset();
@@ -75,7 +75,7 @@ public class PlayerInteractionFixChain extends TaskChain {
                         }
                     }
                 }
-                
+
                 // Only accept tools OUTSIDE OF HOTBAR!
                 // Baritone will take care of tools inside the hotbar.
                 if (bestToolSlot != null && bestToolSlot.getInventorySlot() >= 9) {
@@ -84,7 +84,7 @@ public class PlayerInteractionFixChain extends TaskChain {
                 }
             }
         }
-        
+
         // Unpress shift (it gets stuck for some reason???)
         if (MinecraftClient.getInstance().options.keySneak.isPressed()) {
             if (shiftDepressTimeout.elapsed()) {
@@ -94,7 +94,7 @@ public class PlayerInteractionFixChain extends TaskChain {
         } else {
             shiftDepressTimeout.reset();
         }
-        
+
         // Refresh inventory
         if (generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getControllerExtras().isBreakingBlock()) {
@@ -104,9 +104,9 @@ public class PlayerInteractionFixChain extends TaskChain {
                 return Float.NEGATIVE_INFINITY;
             }
         }
-        
+
         ItemStack currentStack = mod.getPlayer().inventory.getCursorStack();
-        
+
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck
             if (lastHandStack == null || !ItemStack.areEqual(currentStack, lastHandStack)) {
@@ -117,7 +117,7 @@ public class PlayerInteractionFixChain extends TaskChain {
         } else {
             lastHandStack = null;
         }
-        
+
         // If we have something in our hand for a period of time...
         if (lastHandStack != null && stackHeldTimeout.elapsed()) {
             Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
@@ -136,15 +136,15 @@ public class PlayerInteractionFixChain extends TaskChain {
             }
             mod.getInventoryTracker().clickSlot(PlayerInventorySlot.getFromInventory(slotToMoveTo));
         }
-        
+
         return Float.NEGATIVE_INFINITY;
     }
-    
+
     @Override
     public boolean isActive() {
         return true;
     }
-    
+
     @Override
     public String getName() {
         return "Hand Stack Fix Chain";

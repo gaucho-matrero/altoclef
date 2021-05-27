@@ -22,16 +22,16 @@ import java.util.List;
 public class CraftGenericTask extends Task {
     private final CraftingRecipe recipe;
     private Timer invTimer;
-    
+
     public CraftGenericTask(CraftingRecipe recipe) {
         this.recipe = recipe;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (invTimer == null) {
@@ -40,7 +40,7 @@ public class CraftGenericTask extends Task {
             invTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
         }
         boolean delayedCraft = (invTimer.getDuration() > 0);
-        
+
         if (!invTimer.elapsed()) {
             // Each "tick" past here is one operation.
             // Wait until timer comes back.
@@ -48,9 +48,9 @@ public class CraftGenericTask extends Task {
         } else {
             invTimer.reset();
         }
-        
+
         boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
-        
+
         if (!bigCrafting) {
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
                 // Make sure we're not in another screen before we craft,
@@ -60,7 +60,7 @@ public class CraftGenericTask extends Task {
                 if (delayedCraft) return null;
             }
         }
-        
+
         // For each slot in table
         for (int craftSlot = 0; craftSlot < recipe.getSlotCount(); ++craftSlot) {
             ItemTarget toFill = recipe.getSlot(craftSlot);
@@ -99,9 +99,9 @@ public class CraftGenericTask extends Task {
                 }
             }
         }
-        
+
         Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-        
+
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
         // Grab back. This shouldn't be necessary
@@ -116,15 +116,15 @@ public class CraftGenericTask extends Task {
 
         if (delayedCraft) return null;
          */
-        
+
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CraftGenericTask) {
@@ -132,7 +132,7 @@ public class CraftGenericTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Crafting " + recipe.toString();

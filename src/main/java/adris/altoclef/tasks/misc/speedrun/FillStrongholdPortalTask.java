@@ -21,17 +21,17 @@ public class FillStrongholdPortalTask extends Task {
     private final boolean destroySilverfishSpawner;
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(10);
     private final MovementProgressChecker progressChecker = new MovementProgressChecker(3);
-    
+
     public FillStrongholdPortalTask(boolean destroySilverfishSpawner) {
         this.destroySilverfishSpawner = destroySilverfishSpawner;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
         return closest != null && mod.getChunkTracker().isChunkLoaded(closest);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
@@ -41,10 +41,10 @@ public class FillStrongholdPortalTask extends Task {
             mod.getBlockTracker().trackBlock(Blocks.SPAWNER);
         }
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // If we encounter that weird back+forth bug, this might fix.
         // Overkill, but it would REALLY suck if the run stopped here.
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
@@ -52,7 +52,7 @@ public class FillStrongholdPortalTask extends Task {
             setDebugState("Wandering");
             return wanderTask;
         }
-        
+
         if (destroySilverfishSpawner) {
             BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
                                                                                   test -> !(WorldUtil.getSpawnerEntity(mod,
@@ -63,7 +63,7 @@ public class FillStrongholdPortalTask extends Task {
                 return new DestroyBlockTask(silverfishSpawner);
             }
         }
-        
+
         setDebugState("Filling in Portal");
         if (!progressChecker.check(mod)) {
             progressChecker.reset();
@@ -77,7 +77,7 @@ public class FillStrongholdPortalTask extends Task {
                                                                                        .blockIsValid(test, Blocks.END_PORTAL_FRAME),
                                                                       Blocks.END_PORTAL_FRAME));
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL_FRAME, Blocks.END_PORTAL);
@@ -86,7 +86,7 @@ public class FillStrongholdPortalTask extends Task {
         }
         mod.getConfigState().pop();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof FillStrongholdPortalTask) {
@@ -94,7 +94,7 @@ public class FillStrongholdPortalTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Fill Stronghold Portal";

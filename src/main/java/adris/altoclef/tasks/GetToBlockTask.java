@@ -19,17 +19,17 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
     private final boolean preferStairs;
     private final MovementProgressChecker moveChecker = new MovementProgressChecker(10, 1, 5, 0.1);
     private boolean running;
-    
+
     public GetToBlockTask(BlockPos position, boolean rightClickOnArrival, boolean preferStairs) {
         this.position = position;
         this.rightClickOnArrival = rightClickOnArrival;
         this.preferStairs = preferStairs;
     }
-    
+
     public GetToBlockTask(BlockPos position, boolean rightClickOnArrival) {
         this(position, rightClickOnArrival, false);
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         if (rightClickOnArrival) {
@@ -39,29 +39,29 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
             return position.isWithinDistance(mod.getPlayer().getPos(), 1);
         }
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         if (preferStairs) {
             mod.getConfigState().push();
             mod.getConfigState().setPreferredStairs(true);
         }
-        
+
         startProc(mod);
         moveChecker.reset();
         wanderTask.resetWander();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // Wander
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             setDebugState("Wandering...");
             moveChecker.reset();
             return wanderTask;
         }
-        
+
         if (!procActive(mod)) {
             Debug.logWarning("Restarting interact with block...");
             startProc(mod);
@@ -76,7 +76,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
         setDebugState("Going to block.");
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         running = false;
@@ -85,7 +85,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
             mod.getConfigState().pop();
         }
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToBlockTask) {
@@ -95,12 +95,12 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Getting to block " + position;
     }
-    
+
     private boolean procActive(AltoClef mod) {
         if (rightClickOnArrival) {
             return mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive() &&
@@ -109,7 +109,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
             return mod.getClientBaritone().getCustomGoalProcess().isActive();
         }
     }
-    
+
     private void startProc(AltoClef mod) {
         if (rightClickOnArrival) {
             mod.getCustomBaritone().getInteractWithBlockPositionProcess().getToBlock(position, Input.CLICK_RIGHT);
@@ -117,7 +117,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalTwoBlocks(position));
         }
     }
-    
+
     private void stopProc(AltoClef mod) {
         if (!mod.inGame()) return;
         if (rightClickOnArrival) {

@@ -16,17 +16,17 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
             Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD, Items.GOLDEN_SWORD, Items.DIAMOND_AXE,
             Items.IRON_AXE, Items.STONE_AXE, Items.WOODEN_AXE, Items.GOLDEN_AXE
     };
-    
+
     private static final double MAINTAIN_DISTANCE = 3;
-    
+
     protected AbstractKillEntityTask() {
         this(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
     }
-    
+
     protected AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
-    
+
     public static void equipWeapon(AltoClef mod) {
         for (Item item : WEAPON_ITEMS) {
             if (mod.getInventoryTracker().hasItem(item)) {
@@ -35,11 +35,11 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
             }
         }
     }
-    
+
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
         float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
-        
+
         // Equip weapon
         equipWeapon(mod);
         if (hitProg >= 0.99) {

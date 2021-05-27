@@ -20,56 +20,56 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
     private T currentlyPursuing;
     private boolean wasWandering;
     private Task goalTask;
-    
+
     protected abstract Vec3d getPos(AltoClef mod, T obj);
-    
+
     protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
-    
+
     protected abstract Vec3d getOriginPos(AltoClef mod);
-    
+
     protected abstract Task getGoalTask(T obj);
-    
+
     protected abstract boolean isValid(AltoClef mod, T obj);
-    
+
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
     }
-    
+
     public void resetSearch() {
         currentlyPursuing = null;
         heuristicMap.clear();
         goalTask = null;
     }
-    
+
     public boolean wasWandering() {
         return wasWandering;
     }
-    
+
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();
         return ticksRemainingOp.orElse(Double.POSITIVE_INFINITY);
     }
-    
+
     private boolean isMovingToClosestPos(AltoClef mod) {
         return goalTask != null;// && _goalTask.isActive() && !_goalTask.isFinished(mod);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-    
+
         wasWandering = false;
-        
+
         // Reset our pursuit if our pursuing object no longer is pursuable.
         if (currentlyPursuing != null && !isValid(mod, currentlyPursuing)) {
             // This is probably a good idea, no?
             heuristicMap.remove(currentlyPursuing);
             currentlyPursuing = null;
         }
-        
+
         // Get closest object
         T newClosest = getClosestTo(mod, getOriginPos(mod));
-        
+
         // Receive closest object and position
         if (newClosest != null && !newClosest.equals(currentlyPursuing)) {
             // Different closest object
@@ -100,25 +100,25 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                 }
             }
         }
-        
+
         if (currentlyPursuing != null) {
             goalTask = getGoalTask(currentlyPursuing);
             return goalTask;
         } else {
             goalTask = null;
         }
-        
+
         //noinspection ConstantConditions
         if (newClosest == null && currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
             wasWandering = true;
             return getWanderTask(mod);
         }
-        
+
         setDebugState("Waiting for calculations I think (NOT wandering)");
         return null;
     }
-    
+
     // Interface DRAFT:
     /*
      * MAKE THIS AN ABSTRACT TASK

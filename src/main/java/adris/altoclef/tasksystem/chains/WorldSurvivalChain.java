@@ -12,15 +12,15 @@ import net.minecraft.entity.effect.StatusEffects;
 public class WorldSurvivalChain extends SingleTaskChain {
     private final Timer wasInLavaTimer = new Timer(1);
     private boolean wasAvoidingDrowning;
-    
+
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
         if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
-        
+
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {
             mod.getConfigState().allowWalkThroughLava(true);
@@ -30,12 +30,12 @@ public class WorldSurvivalChain extends SingleTaskChain {
         mod.getConfigState().allowWalkThroughLava(false);
         return Float.NEGATIVE_INFINITY;
     }
-    
+
     @Override
     public String getName() {
         return "Misc World Survival Chain";
     }
-    
+
     private void handleDrowning(AltoClef mod) {
         // Swim
         boolean drowned = true;
@@ -57,7 +57,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
     }
-    
+
     private boolean isInLavaOhShit(AltoClef mod) {
         if (mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             wasInLavaTimer.reset();
@@ -65,15 +65,15 @@ public class WorldSurvivalChain extends SingleTaskChain {
         }
         return mod.getPlayer().isOnFire() && !wasInLavaTimer.elapsed();
     }
-    
+
     @Override
     public boolean isActive() {
         // Always check for survival.
         return true;
     }
-    
+
     @Override
     protected void onTaskFinish(AltoClef mod) {
-    
+
     }
 }

@@ -18,12 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Block.class)
 public class BlockModifiedByPlayerMixin {
-    
+
     @Inject(method = "onBreak", at = @At("HEAD"))
     public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
         StaticMixinHookups.onBlockBroken(world, pos, state, player);
     }
-    
+
     @Inject(method = "onPlaced", at = @At("HEAD"))
     public void onBlockPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack,
                               CallbackInfo ci) {
@@ -31,5 +31,5 @@ public class BlockModifiedByPlayerMixin {
         //Debug.logInternal("[TEMP] global place");
         //StaticMixinHookups.onBlockPlaced(world, pos, state, placer, itemStack);
     }
-    
+
 }

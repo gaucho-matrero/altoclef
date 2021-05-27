@@ -10,19 +10,19 @@ import net.minecraft.item.Item;
 
 
 public class CollectFenceGateTask extends CraftWithMatchingPlanksTask {
-    
+
     public CollectFenceGateTask(Item[] targets, ItemTarget planks, int count) {
         super(targets, createRecipe(planks), new boolean[]{ false, true, false, false, true, false, false, false, false }, count);
     }
-    
+
     public CollectFenceGateTask(Item target, String plankCatalogueName, int count) {
         this(new Item[]{ target }, new ItemTarget(plankCatalogueName, 1), count);
     }
-    
+
     public CollectFenceGateTask(int count) {
         this(ItemUtil.WOOD_FENCE_GATE, TaskCatalogue.getItemTarget("planks", 1), count);
     }
-    
+
     private static CraftingRecipe createRecipe(ItemTarget planks) {
         ItemTarget p = planks;
         ItemTarget s = TaskCatalogue.getItemTarget("stick", 1);

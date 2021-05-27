@@ -15,7 +15,7 @@ import net.minecraft.util.math.Vec3i;
 public class EscapeFromLavaTask extends Task {
     private final Timer scanTimer = new Timer(5);
     private BlockPos target;
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
@@ -23,7 +23,7 @@ public class EscapeFromLavaTask extends Task {
         target = null;
         scanTimer.forceElapse();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (scanTimer.elapsed() && target == null) {
@@ -38,22 +38,22 @@ public class EscapeFromLavaTask extends Task {
         setDebugState("Couldn't find safe spot. This is bad news.");
         return new TimeoutWanderTask();
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getConfigState().pop();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof EscapeFromLavaTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Escaping lava";
     }
-    
+
     private BlockPos findSafePos(AltoClef mod) {
         // What constitutes a safe pos?
         // For each block within a 50 block radius:

@@ -24,40 +24,40 @@ public class DeathMenuChain extends TaskChain {
     private boolean reconnecting;
     private int deathCount;
     private Class<? extends Screen> prevScreen;
-    
+
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     private boolean shouldAutoRespawn(AltoClef mod) {
         return mod.getModSettings().isAutoRespawn();
     }
-    
+
     private boolean shouldAutoReconnect(AltoClef mod) {
         return mod.getModSettings().isAutoReconnect();
     }
-    
+
     @Override
     protected void onStop(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
-    
+
     }
-    
+
     @Override
     protected void onTick(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     public float getPriority(AltoClef mod) {
         //MinecraftClient.getInstance().getCurrentServerEntry().address;
         //        MinecraftClient.getInstance().
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        
+
         // This might fix Weird fail to respawn that happened only once
         if (prevScreen == DeathScreen.class) {
             if (deathRetryTimer.elapsed()) {
@@ -68,14 +68,14 @@ public class DeathMenuChain extends TaskChain {
         } else {
             deathRetryTimer.reset();
         }
-        
+
         if (screen != null && screen.getClass() != prevScreen) {
-            
+
             // Keep track of the last server we were on so we can re-connect.
             if (mod.inGame()) {
                 prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
             }
-            
+
             if (screen instanceof DeathScreen) {
                 if (shouldAutoRespawn(mod)) {
                     deathCount++;
@@ -99,7 +99,7 @@ public class DeathMenuChain extends TaskChain {
                 reconnectTimer.reset();
                 Debug.logMessage("RECONNECTING: Going ");
                 reconnecting = false;
-                
+
                 if (prevServerEntry == null) {
                     Debug.logWarning("Failed to re-connect to server, no server entry cached.");
                 } else {
@@ -111,12 +111,12 @@ public class DeathMenuChain extends TaskChain {
         }
         return Float.NEGATIVE_INFINITY;
     }
-    
+
     @Override
     public boolean isActive() {
         return true;
     }
-    
+
     @Override
     public String getName() {
         return "Death Menu Respawn Handling";

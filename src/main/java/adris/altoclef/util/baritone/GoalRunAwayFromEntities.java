@@ -11,24 +11,24 @@ import java.util.List;
 
 
 public abstract class GoalRunAwayFromEntities implements Goal {
-    
+
     private final AltoClef mod;
     private final double distance;
     private final boolean xzOnly;
-    
+
     // Higher: We will move more directly away from each entity
     // Too high: We will refuse to take alternative, faster paths and will dig straight away.
     // Lower: We will in general move far away from an entity, allowing the ocassional closer traversal.
     // Too low: We will just run straight into the entity to go past it.
     private final double _penaltyFactor;
-    
+
     public GoalRunAwayFromEntities(AltoClef mod, double distance, boolean xzOnly, double penaltyFactor) {
         this.mod = mod;
         this.distance = distance;
         this.xzOnly = xzOnly;
         _penaltyFactor = penaltyFactor;
     }
-    
+
     @Override
     public boolean isInGoal(int x, int y, int z) {
         List<Entity> entities = getEntities(mod);
@@ -46,7 +46,7 @@ public abstract class GoalRunAwayFromEntities implements Goal {
         }
         return true;
     }
-    
+
     @Override
     public double heuristic(int x, int y, int z) {
         // The lower the cost, the better.
@@ -70,9 +70,9 @@ public abstract class GoalRunAwayFromEntities implements Goal {
         }
         //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
-    
+
     protected abstract List<Entity> getEntities(AltoClef mod);
-    
+
     // Virtual
     protected double getCostOfEntity(Entity entity, int x, int y, int z) {
         double heuristic = 0;

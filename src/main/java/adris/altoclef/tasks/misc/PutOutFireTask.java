@@ -16,32 +16,32 @@ import net.minecraft.util.math.Direction;
  */
 public class PutOutFireTask extends Task {
     private final BlockPos firePosition;
-    
+
     public PutOutFireTask(BlockPos firePosition) {
         this.firePosition = firePosition;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         BlockState s = mod.getWorld().getBlockState(firePosition);
         return (s.getBlock() != Blocks.FIRE && s.getBlock() != Blocks.SOUL_FIRE);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         return new InteractItemWithBlockTask(null, Direction.UP, firePosition.down(), Input.CLICK_LEFT, false, false);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof PutOutFireTask) {
@@ -50,7 +50,7 @@ public class PutOutFireTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Putting out fire at " + firePosition;

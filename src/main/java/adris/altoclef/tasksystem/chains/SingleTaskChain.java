@@ -13,18 +13,18 @@ public abstract class SingleTaskChain extends TaskChain {
     private final Stopwatch taskStopwatch = new Stopwatch();
     protected Task mainTask;
     private boolean interrupted;
-    
+
     protected SingleTaskChain(TaskRunner runner) {
         super(runner);
     }
-    
+
     protected void onStop(AltoClef mod) {
         if (isActive() && mainTask != null) {
             mainTask.stop(mod);
             mainTask = null;
         }
     }
-    
+
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
         Debug.logInternal("Chain Interrupted: " + this + " by " + other.toString());
@@ -34,18 +34,18 @@ public abstract class SingleTaskChain extends TaskChain {
             mainTask.stop(mod);
         }
     }
-    
+
     @Override
     protected void onTick(AltoClef mod) {
         if (!isActive()) return;
-        
+
         if (interrupted) {
             interrupted = false;
             if (mainTask != null) {
                 mainTask.reset();
             }
         }
-        
+
         if (mainTask != null) {
             if ((mainTask.isFinished(mod)) || mainTask.stopped()) {
                 onTaskFinish(mod);
@@ -54,21 +54,21 @@ public abstract class SingleTaskChain extends TaskChain {
             }
         }
     }
-    
+
     @Override
     public boolean isActive() {
         return mainTask != null;
     }
-    
+
     public void setTask(Task task) {
         if (mainTask == null || !mainTask.equals(task)) {
             mainTask = task;
             if (task != null) task.reset();
         }
     }
-    
+
     protected abstract void onTaskFinish(AltoClef mod);
-    
+
     public Task getCurrentTask() {
         return mainTask;
     }

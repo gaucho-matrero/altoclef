@@ -9,21 +9,21 @@ import adris.altoclef.util.MiningRequirement;
 
 public class SatisfyMiningRequirementTask extends Task {
     private final MiningRequirement requirement;
-    
+
     public SatisfyMiningRequirementTask(MiningRequirement requirement) {
         this.requirement = requirement;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return mod.getInventoryTracker().miningRequirementMet(requirement);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         switch (requirement) {
@@ -41,12 +41,12 @@ public class SatisfyMiningRequirementTask extends Task {
         }
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof SatisfyMiningRequirementTask) {
@@ -55,7 +55,7 @@ public class SatisfyMiningRequirementTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Satisfy Mining Req: " + requirement;

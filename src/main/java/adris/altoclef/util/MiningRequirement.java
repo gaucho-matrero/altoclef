@@ -13,13 +13,13 @@ public enum MiningRequirement {
     STONE(Items.STONE_PICKAXE),
     IRON(Items.IRON_PICKAXE),
     DIAMOND(Items.DIAMOND_PICKAXE);
-    
+
     private final Item minPickaxe;
-    
+
     MiningRequirement(Item minPickaxe) {
         this.minPickaxe = minPickaxe;
     }
-    
+
     public static MiningRequirement getMinimumRequirementForBlock(Block block) {
         if (block.getDefaultState().isToolRequired()) {
             for (MiningRequirement req : values()) {
@@ -34,9 +34,9 @@ public enum MiningRequirement {
         }
         return HAND;
     }
-    
+
     public Item getMinimumPickaxe() {
         return minPickaxe;
     }
-    
+
 }

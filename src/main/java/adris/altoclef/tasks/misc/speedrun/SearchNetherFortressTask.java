@@ -11,7 +11,7 @@ import net.minecraft.util.math.ChunkPos;
 
 
 public class SearchNetherFortressTask extends SearchChunksExploreTask {
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (mod.getCurrentDimension() != Dimension.NETHER) {
@@ -20,18 +20,18 @@ public class SearchNetherFortressTask extends SearchChunksExploreTask {
         }
         return super.onTick(mod);
     }
-    
+
     @Override
     protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
         // Search nether fortresses
         return mod.getChunkTracker().scanChunk(pos, (block) -> mod.getWorld().getBlockState(block).getBlock() == Blocks.NETHER_BRICKS);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof SearchNetherFortressTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Searching for nether fortress...";

@@ -31,38 +31,38 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     private boolean collectingPickaxeForThisResource;
     private ItemEntity currentDrop;
     private boolean fullCheckFailed;
-    
+
     public PickupDroppedItemTask(ItemTarget[] itemTargets, boolean freeInventoryIfFull) {
         this.itemTargets = itemTargets;
         this.freeInventoryIfFull = freeInventoryIfFull;
     }
-    
+
     public PickupDroppedItemTask(ItemTarget target, boolean freeInventoryIfFull) {
         this(new ItemTarget[]{ target }, freeInventoryIfFull);
     }
-    
+
     public PickupDroppedItemTask(Item item, int targetCount, boolean freeInventoryIfFull) {
         this(new ItemTarget(item, targetCount), freeInventoryIfFull);
     }
-    
+
     public static boolean isIsGettingPickaxeFirst(AltoClef mod) {
         return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();
     }
-    
+
     public boolean isCollectingPickaxeForThis() {
         return collectingPickaxeForThisResource;
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         fullCheckFailed = false;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task other) {
         // Same target items
@@ -72,7 +72,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         StringBuilder result = new StringBuilder();
@@ -87,23 +87,23 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         result.append("]");
         return result.toString();
     }
-    
+
     @Override
     protected Vec3d getPos(AltoClef mod, ItemEntity obj) {
         return obj.getPos();
     }
-    
+
     @Override
     protected ItemEntity getClosestTo(AltoClef mod, Vec3d pos) {
         if (!mod.getEntityTracker().itemDropped(itemTargets)) return null;
         return mod.getEntityTracker().getClosestItemDrop(pos, itemTargets);
     }
-    
+
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
         return mod.getPlayer().getPos();
     }
-    
+
     @Override
     protected Task getGoalTask(ItemEntity obj) {
         if (!obj.equals(currentDrop) && isGettingPickaxeFirstFlag && collectingPickaxeForThisResource) {
@@ -114,12 +114,12 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         currentDrop = obj;
         return new GetToEntityTask(obj);
     }
-    
+
     @Override
     protected boolean isValid(AltoClef mod, ItemEntity obj) {
         return obj.isAlive() && !blacklist.contains(obj);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
@@ -127,7 +127,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             progressChecker.reset();
             return wanderTask;
         }
-        
+
         // If we're getting a pickaxe for THIS resource...
         if (isIsGettingPickaxeFirst(mod) && collectingPickaxeForThisResource && !mod.getInventoryTracker().miningRequirementMet(
                 MiningRequirement.STONE)) {
@@ -140,7 +140,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             }
             collectingPickaxeForThisResource = false;
         }
-        
+
         if (!progressChecker.check(mod)) {
             progressChecker.reset();
             if (currentDrop != null) {
@@ -165,7 +165,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         }
         if (freeInventoryIfFull) {
             boolean weGood = ResourceTask.ensureInventoryFree(mod);
-            
+
             if (weGood) {
                 fullCheckFailed = false;
             } else {
@@ -175,8 +175,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                 fullCheckFailed = true;
             }
         }
-        
+
         return super.onTick(mod);
     }
-    
+
 }

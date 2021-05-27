@@ -19,22 +19,22 @@ import net.minecraft.item.Items;
 
 public class CollectGoldNuggetsTask extends ResourceTask {
     private final int count;
-    
+
     public CollectGoldNuggetsTask(int count) {
         super(Items.GOLD_NUGGET, count);
         this.count = count;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         switch (mod.getCurrentDimension()) {
@@ -59,21 +59,21 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 setDebugState("Going to overworld");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-        
+
         setDebugState("INVALID DIMENSION??: " + mod.getCurrentDimension());
         return null;
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectGoldNuggetsTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " nuggets";

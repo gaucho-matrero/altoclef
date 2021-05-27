@@ -26,18 +26,18 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private final Timer craftResetTimer = new Timer(10);
     private boolean fullCheckSucceeded = true;
     private int craftCount;
-    
+
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
         collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
         this.targets = targets;
         this.collect = collect;
     }
-    
+
     public DoCraftInTableTask(RecipeTarget[] targets) {
         this(targets, true, false);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         super.onStart(mod);
@@ -46,14 +46,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(getMaterialsArray());
         fullCheckSucceeded = true;
-        
+
         // Reset our "finished" value in the collect recipe thing.
         collectTask.reset();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         // TODO: This shouldn't be here.
         // This is duct tape for the following scenario:
         //
@@ -67,7 +67,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         if (collect) {
             if (!collectTask.isFinished(mod)) {
-                
+
                 if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(targets)) {
                     setDebugState("craft does NOT have RECIPE MATERIALS: " + Util.arrayToString(targets));
                     return collectTask;
@@ -83,14 +83,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
         }
          */
-        
+
         if (!isContainerOpen(mod)) {
             craftResetTimer.reset();
         }
-        
+
         return super.onTick(mod);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
@@ -99,26 +99,26 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             mod.getPlayer().closeHandledScreen();
         }
     }
-    
+
     @Override
     protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
         if (obj instanceof DoCraftInTableTask) {
             DoCraftInTableTask other = (DoCraftInTableTask) obj;
-            
+
             return Util.arraysEqual(other.targets, targets);
         }
         return false;
     }
-    
+
     @Override
     protected boolean isContainerOpen(AltoClef mod) {
         return (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
     }
-    
+
     @Override
     protected Task containerSubTask(AltoClef mod) {
         //Debug.logMessage("GOT TO TABLE. Crafting...");
-        
+
         // Already handled above...
         /*
         if (_collect) {
@@ -131,16 +131,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
         }
          */
-        
+
         if (craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getPlayer().closeHandledScreen();
             return null;
         }
-        
-        
+
+
         for (RecipeTarget target : targets) {
-            
+
             if (!mod.getInventoryTracker().targetMet(target.getTargetItem())) {
                 // Free up inventory
                 if (mod.getInventoryTracker().isInventoryFull()) {
@@ -156,16 +156,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                         fullCheckSucceeded = false;
                     }
                 }
-                
+
                 //Debug.logMessage("Crafting: " + target.getRecipe());
                 return new CraftGenericTask(target.getRecipe());
                 //craftInstant(mod, target.getRecipe());
             }
         }
-        
+
         return null;
     }
-    
+
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // TODO: If we have an axe, lower the cost.
@@ -176,12 +176,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // TODO: If cached and the closest log is really far away, strike the price UP
         return 300;
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         return craftCount >= targets.length;//_crafted;
     }
-    
+
     private Item[] getMaterialsArray() {
         List<Item> result = new ArrayList<>();
         for (RecipeTarget target : targets) {
@@ -195,5 +195,5 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         result.toArray(returnthing);
         return returnthing;
     }
-    
+
 }

@@ -13,14 +13,14 @@ import net.minecraft.entity.Entity;
 
 public class KillPlayerTask extends AbstractKillEntityTask {
     private final String playerName;
-    
+
     private final IProgressChecker<Double> _distancePlayerCheck = new ProgressCheckerRetry<>(new LinearProgressChecker(5, -2), 3);
-    
+
     public KillPlayerTask(String name) {
         super(5, 7, 1);
         playerName = name;
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         // If we're closer to the player, our task isn't bad.
@@ -39,7 +39,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
         }
         return super.onTick(mod);
     }
-    
+
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
         if (other instanceof KillPlayerTask) {
@@ -47,7 +47,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
         }
         return false;
     }
-    
+
     @Override
     protected Entity getEntityTarget(AltoClef mod) {
         if (mod.getEntityTracker().isPlayerLoaded(playerName)) {
@@ -57,7 +57,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
         setDebugState("Player not found");
         return null;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Punking " + playerName;

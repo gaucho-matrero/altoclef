@@ -16,43 +16,43 @@ import net.minecraft.item.Items;
 
 public class CollectQuartzTask extends ResourceTask {
     private final int count;
-    
+
     public CollectQuartzTask(int count) {
         super(Items.QUARTZ, count);
         this.count = count;
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
-    
+
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() != Dimension.NETHER) {
             setDebugState("Going to nether");
             return new DefaultGoToDimensionTask(Dimension.NETHER);
         }
-        
+
         setDebugState("Mining");
         return new MineAndCollectTask(new ItemTarget("quartz", count), new Block[]{ Blocks.NETHER_QUARTZ_ORE }, MiningRequirement.WOOD);
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         return obj instanceof CollectQuartzTask;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Collecting " + count + " quartz";

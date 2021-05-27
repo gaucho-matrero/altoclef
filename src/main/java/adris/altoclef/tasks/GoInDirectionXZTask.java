@@ -12,22 +12,22 @@ public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
     private final Vec3d origin;
     private final Vec3d delta;
     private final double sidePenalty;
-    
+
     public GoInDirectionXZTask(Vec3d origin, Vec3d delta, double sidePenalty) {
         this.origin = origin;
         this.delta = delta;
         this.sidePenalty = sidePenalty;
     }
-    
+
     private static boolean closeEnough(Vec3d a, Vec3d b) {
         return a.squaredDistanceTo(b) < 0.001;
     }
-    
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalDirectionXZ(origin, delta, sidePenalty);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GoInDirectionXZTask) {
@@ -36,7 +36,7 @@ public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Going in direction: <" + origin.x + "," + origin.z + "> direction: <" + delta.x + "," + delta.z + ">";

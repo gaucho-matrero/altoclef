@@ -13,7 +13,7 @@ public class FoodCommand extends Command {
     public FoodCommand() throws CommandException {
         super("food", "Collects a certain amount of food", new Arg(Integer.class, "count"));
     }
-    
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)), nothing -> finish());

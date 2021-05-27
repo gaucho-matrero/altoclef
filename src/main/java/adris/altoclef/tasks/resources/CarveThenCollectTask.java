@@ -21,7 +21,7 @@ public class CarveThenCollectTask extends ResourceTask {
     private final ItemTarget toCarve;
     private final Block[] toCarveBlocks;
     private final ItemTarget carveWith;
-    
+
     public CarveThenCollectTask(ItemTarget target, Block[] targetBlocks, ItemTarget toCarve, Block[] toCarveBlocks, ItemTarget carveWith) {
         super(target);
         this.target = target;
@@ -30,23 +30,23 @@ public class CarveThenCollectTask extends ResourceTask {
         this.toCarveBlocks = toCarveBlocks;
         this.carveWith = carveWith;
     }
-    
+
     public CarveThenCollectTask(Item target, int targetCount, Block targetBlock, Item toCarve, Block toCarveBlock, Item carveWith) {
         this(new ItemTarget(target, targetCount), new Block[]{ targetBlock }, new ItemTarget(toCarve, targetCount),
              new Block[]{ toCarveBlock }, new ItemTarget(carveWith, 1));
     }
-    
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
     }
-    
+
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(targetBlocks);
         mod.getBlockTracker().trackBlock(toCarveBlocks);
     }
-    
+
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // If target block spotted, break it!
@@ -56,7 +56,7 @@ public class CarveThenCollectTask extends ResourceTask {
         //      collect carve items!
         // ELSE:
         //      Place carved items down
-        
+
         // If our target block is placed, break it!
         if (mod.getBlockTracker().anyFound(targetBlocks)) {
             setDebugState("Breaking carved/target block");
@@ -86,13 +86,13 @@ public class CarveThenCollectTask extends ResourceTask {
             return new PlaceBlockNearbyTask(toCarveBlocks);
         }
     }
-    
+
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(targetBlocks);
         mod.getBlockTracker().stopTracking(toCarveBlocks);
     }
-    
+
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CarveThenCollectTask) {
@@ -102,7 +102,7 @@ public class CarveThenCollectTask extends ResourceTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugStringName() {
         return "Getting after carving: " + target;

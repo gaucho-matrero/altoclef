@@ -26,20 +26,20 @@ import java.util.Optional;
 public class MLGBucketTask extends Task {
     private boolean clicked;
     private BlockPos placedPos;
-    
+
     private RaycastContext test(Entity player, Vec3d offset) {
         Vec3d pos = player.getPos();
         return new RaycastContext(pos, pos.add(0, -5.33, 0).add(offset), RaycastContext.ShapeType.COLLIDER,
                                   RaycastContext.FluidHandling.NONE, player);
     }
-    
+
     @Override
     public boolean isFinished(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.NETHER) return true;
         return !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() ||
                mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         clicked = false;
@@ -49,7 +49,7 @@ public class MLGBucketTask extends Task {
         // Look down at first, usually does the trick.
         mod.getPlayer().pitch = 90;
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
@@ -65,10 +65,10 @@ public class MLGBucketTask extends Task {
                 break;
             }
         }
-        
+
         if (result.getType() == HitResult.Type.BLOCK) {
             BlockPos toPlaceOn = result.getBlockPos();
-            
+
             BlockPos willLandIn = toPlaceOn.up();
             // If we're water, we're ok. Do nothing.
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
@@ -80,12 +80,12 @@ public class MLGBucketTask extends Task {
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
                 return null;
             }
-            
+
             if (!mod.getInventoryTracker().equipItem(Items.WATER_BUCKET)) {
                 Debug.logWarning("Failed to equip bucket for mlg. Oh shit.");
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
             }
-            
+
             IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
             Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), toPlaceOn, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
@@ -116,27 +116,27 @@ public class MLGBucketTask extends Task {
         }
         return null;
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
         MinecraftClient.getInstance().options.keyUse.setPressed(false);
         //MinecraftClient.getInstance().options.keySneak.setPressed(false);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         return obj instanceof MLGBucketTask;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Epic gaemer moment";
     }
-    
-    
+
+
     public BlockPos getWaterPlacedPos() {
         return placedPos;
     }
-    
+
 }

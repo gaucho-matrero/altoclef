@@ -24,11 +24,11 @@ public class GiveItemToPlayerTask extends Task {
     private final CataloguedResourceTask resourceTask;
     private final List<ItemTarget> throwTarget = new ArrayList<>();
     private boolean droppingItems;
-    
+
     public GiveItemToPlayerTask(String player, ItemTarget... targets) {
         playerName = player;
         this.targets = targets;
-        
+
         // Some targets may not exist, so ignore the resources for them!
         List<ItemTarget> result = new ArrayList<>();
         for (ItemTarget target : targets) {
@@ -36,18 +36,18 @@ public class GiveItemToPlayerTask extends Task {
         }
         resourceTask = TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, result));
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         droppingItems = false;
         throwTarget.clear();
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
-        
+
         if (droppingItems) {
             // THROW ITEMS
             setDebugState("Throwing items");
@@ -69,18 +69,18 @@ public class GiveItemToPlayerTask extends Task {
             stop(mod);
             return null;
         }
-        
+
         if (!mod.getInventoryTracker().targetMet(targets)) {
             setDebugState("Collecting resources...");
             return resourceTask;
         }
-        
+
         if (targetPos == null) {
             mod.logWarning("Failed to get to player \"" + playerName + "\" because we have no idea where they are.");
             stop(mod);
             return null;
         }
-        
+
         if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
             if (!mod.getEntityTracker().isPlayerLoaded(playerName)) {
                 mod.logWarning("Failed to get to player \"" + playerName +
@@ -91,16 +91,16 @@ public class GiveItemToPlayerTask extends Task {
             droppingItems = true;
             throwTarget.addAll(Arrays.asList(targets));
         }
-        
+
         setDebugState("Going to player...");
         return new FollowPlayerTask(playerName);
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-    
+
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GiveItemToPlayerTask) {
@@ -110,7 +110,7 @@ public class GiveItemToPlayerTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Giving items to " + playerName;

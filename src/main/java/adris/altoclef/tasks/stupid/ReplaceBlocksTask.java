@@ -21,7 +21,7 @@ import java.util.Stack;
 
 
 public class ReplaceBlocksTask extends Task {
-    
+
     // We won't be asked to collect more materials than this at a single time.
     private static final int MAX_MATERIALS_NEEDED_AT_A_TIME = 64;
     private final Block[] toFind;
@@ -52,45 +52,45 @@ public class ReplaceBlocksTask extends Task {
     };
     private Task collectMaterialsTask;
     private Task replaceTask;
-    
+
     public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block... toFind) {
         this.toFind = toFind;
         this.toReplace = toReplace;
         this.from = from;
         this.to = to;
     }
-    
+
     public ReplaceBlocksTask(ItemTarget toReplace, Block... toFind) {
         this(toReplace, null, null, toFind);
     }
-    
+
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
         mod.getConfigState().addProtectedItems(toReplace.getMatches());
         // TODO: Bug: We may want to replace a block that's considered a CONSTRUCTION block.
         // If that's the case, we are in trouble.
-        
+
         mod.getBlockTracker().trackBlock(toFind);
-        
+
         //_forceReplace.clear();
-        
+
         mod.getControllerExtras().onBlockBroken.addListener(blockBrokenListener);
     }
-    
+
     @Override
     protected Task onTick(AltoClef mod) {
-        
+
         if (collectMaterialsTask != null && collectMaterialsTask.isActive() && !collectMaterialsTask.isFinished(mod)) {
             setDebugState("Collecting materials...");
             return collectMaterialsTask;
         }
-        
+
         if (replaceTask != null && replaceTask.isActive() && !replaceTask.isFinished(mod)) {
             setDebugState("Replacing a block");
             return replaceTask;
         }
-        
+
         // Get to replace item
         if (!mod.getInventoryTracker().hasItem(toReplace.getMatches())) {
             List<BlockPos> locations = mod.getBlockTracker().getKnownLocations(toFind);
@@ -104,9 +104,9 @@ public class ReplaceBlocksTask extends Task {
             return collectMaterialsTask;
             //return TaskCatalogue.getItemTask(_toReplace);
         }
-        
+
         Block[] blocksToPlace = Util.itemsToBlocks(toReplace.getMatches());
-        
+
         // If we are forced to replace something we broke, do it now.
         while (!forceReplace.empty()) {
             BlockPos toReplace = forceReplace.pop();
@@ -115,7 +115,7 @@ public class ReplaceBlocksTask extends Task {
                 return replaceTask;
             }
         }
-        
+
         // Now replace
         setDebugState("Searching for blocks to replace...");
         return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), whereToPlace -> {
@@ -123,13 +123,13 @@ public class ReplaceBlocksTask extends Task {
             return replaceTask;
         }, pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore), toFind));
     }
-    
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getControllerExtras().onBlockBroken.removeListener(blockBrokenListener);
         mod.getConfigState().pop();
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ReplaceBlocksTask) {
@@ -138,12 +138,12 @@ public class ReplaceBlocksTask extends Task {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Replacing " + Util.arrayToString(toFind) + " with " + toReplace;
     }
-    
+
     private boolean isWithinRange(BlockPos pos) {
         if (from != null) {
             if (from.getX() > pos.getX() || from.getY() > pos.getY() || from.getZ() > pos.getZ()) {

@@ -9,16 +9,16 @@ import baritone.api.pathing.goals.GoalYLevel;
 
 public class GetToYTask extends CustomBaritoneGoalTask {
     private final int yLevel;
-    
+
     public GetToYTask(int ylevel) {
         yLevel = ylevel;
     }
-    
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalYLevel(yLevel);
     }
-    
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToYTask) {
@@ -26,7 +26,7 @@ public class GetToYTask extends CustomBaritoneGoalTask {
         }
         return false;
     }
-    
+
     @Override
     protected String toDebugString() {
         return "Going to y=" + yLevel;
