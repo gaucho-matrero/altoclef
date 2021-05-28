@@ -348,7 +348,9 @@ public class AltoClefCommands extends CommandList {
             case "example":
                 mod.runUserTask(new ExampleTask2());
                 break;
+
         }
+
     }
 
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
@@ -369,7 +371,8 @@ public class AltoClefCommands extends CommandList {
             new FoodCommand(),
             new ReloadSettingsCommand(),
             new GamerCommand(),
-            new PunkCommand()
+            new PunkCommand(),
+            new FullBrightCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );
