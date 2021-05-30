@@ -5,7 +5,7 @@ import java.util.Objects;
 public class SmeltTarget {
 
     private ItemTarget _material;
-    private ItemTarget _item;
+    private final ItemTarget _item;
 
     public SmeltTarget(ItemTarget item, ItemTarget material) {
         _item = item;
@@ -16,7 +16,10 @@ public class SmeltTarget {
     public ItemTarget getItem() {
         return _item;
     }
-    public ItemTarget getMaterial() { return _material; }
+
+    public ItemTarget getMaterial() {
+        return _material;
+    }
 
     @Override
     public boolean equals(Object o) {

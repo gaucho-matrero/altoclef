@@ -42,18 +42,13 @@ public class BeeMovieTask extends Task {
     private final StreamedSignStringParser _textParser;
 
     private final String _uniqueId;
-
-    private boolean _finished = false;
-
-    private List<String> _cachedStrings = new ArrayList<>();
-
-    private PlaceSignTask _currentPlace = null;
-
-    // Grab extra resources and acquire extra tools for speed
-    private boolean _sharpenTheAxe = true;
-
     private final Task _extraSignAcquireTask;
     private final Task _structureMaterialsTask;
+    private boolean _finished = false;
+    private final List<String> _cachedStrings = new ArrayList<>();
+    private PlaceSignTask _currentPlace = null;
+    // Grab extra resources and acquire extra tools for speed
+    private final boolean _sharpenTheAxe = true;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
         _uniqueId = uniqueId;
@@ -61,7 +56,20 @@ public class BeeMovieTask extends Task {
         _textParser = new StreamedSignStringParser(input);
 
         _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
-        _structureMaterialsTask =new MineAndCollectTask(new ItemTarget(new Item[] {Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[] {Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
+        _structureMaterialsTask = new MineAndCollectTask(new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[]{Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
+    }
+
+    private static int sign(int num) {
+        return Integer.compare(num, 0);
+    }
+
+    private static boolean isSign(Block block) {
+        if (block == null) return false;
+        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
+        for (Block candidate : candidates) {
+            if (block.is(candidate)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -83,10 +91,6 @@ public class BeeMovieTask extends Task {
         return sign(delta.getX()) == sign(_direction.getX())
                 && sign(delta.getY()) == sign(_direction.getY())
                 && sign(delta.getZ()) == sign(_direction.getZ());
-    }
-
-    private static int sign(int num) {
-        return Integer.compare(num, 0);
     }
 
     @Override
@@ -186,7 +190,7 @@ public class BeeMovieTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof BeeMovieTask) {
-            return ((BeeMovieTask)obj)._uniqueId.equals(_uniqueId);
+            return ((BeeMovieTask) obj)._uniqueId.equals(_uniqueId);
         }
         return false;
     }
@@ -199,15 +203,6 @@ public class BeeMovieTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         return _finished;
-    }
-
-    private static boolean isSign(Block block) {
-        if (block == null) return false;
-        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
-        for(Block candidate : candidates) {
-            if (block.is(candidate)) return true;
-        }
-        return false;
     }
 
     static class StreamedSignStringParser {
@@ -260,12 +255,11 @@ public class BeeMovieTask extends Task {
 
                 line.append(c);
 
-                boolean done = false;
+                boolean done = c == '\0';
 
                 // Can be a special delimiter for a new sign.
-                if (c == '\0') done = true;
 
-                if ( c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(line.toString()) > SIGN_TEXT_MAX_WIDTH) {
+                if (c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(line.toString()) > SIGN_TEXT_MAX_WIDTH) {
                     line.delete(0, line.length());
                     line.append(c);
                     lineCount++;

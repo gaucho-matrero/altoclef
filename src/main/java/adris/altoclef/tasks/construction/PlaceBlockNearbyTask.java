@@ -31,30 +31,11 @@ public class PlaceBlockNearbyTask extends Task {
     private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
 
     private final Timer _randomlookTimer = new Timer(0.25);
-
+    private final Predicate<BlockPos> _cantPlaceHere;
     private BlockPos _justPlaced; // Where we JUST placed a block.
     private BlockPos _tryPlace;   // Where we should TRY placing a block.
-
-    private final Predicate<BlockPos> _cantPlaceHere;
-
-    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block ...toPlace) {
-        _toPlace = toPlace;
-        _cantPlaceHere = cantPlaceHere;
-    }
-    public PlaceBlockNearbyTask(Block ...toPlace) {
-        this(blockPos -> false, toPlace);
-    }
-
     // Oof, necesarry for the onBlockPlaced action.
     private AltoClef _mod;
-
-    @Override
-    protected void onStart(AltoClef mod) {
-        _mod = mod;
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
-    }
-
     private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced = new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
         @Override
         public void invoke(PlayerExtraController.BlockPlaceEvent value) {
@@ -63,6 +44,22 @@ public class PlaceBlockNearbyTask extends Task {
             }
         }
     };
+
+    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block... toPlace) {
+        _toPlace = toPlace;
+        _cantPlaceHere = cantPlaceHere;
+    }
+
+    public PlaceBlockNearbyTask(Block... toPlace) {
+        this(blockPos -> false, toPlace);
+    }
+
+    @Override
+    protected void onStart(AltoClef mod) {
+        _mod = mod;
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
+    }
 
     @Override
     protected Task onTick(AltoClef mod) {
@@ -212,7 +209,7 @@ public class PlaceBlockNearbyTask extends Task {
             boolean solid = WorldUtil.isSolid(mod, blockPos);
             boolean inside = WorldUtil.isInsidePlayer(mod, blockPos);
             // We can't break this block.
-            if ( solid && !WorldUtil.canBreak(mod, blockPos)) {
+            if (solid && !WorldUtil.canBreak(mod, blockPos)) {
                 continue;
             }
             // We can't place here as defined by user.
@@ -226,7 +223,7 @@ public class PlaceBlockNearbyTask extends Task {
             boolean hasBelow = WorldUtil.isSolid(mod, blockPos.down());
             double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos(), false);
 
-            double score = distSq + (solid ? 4:0) + (hasBelow? 0 : 10) + (inside ? 3 : 0);
+            double score = distSq + (solid ? 4 : 0) + (hasBelow ? 0 : 10) + (inside ? 3 : 0);
 
             if (score < smallestScore) {
                 best = blockPos;

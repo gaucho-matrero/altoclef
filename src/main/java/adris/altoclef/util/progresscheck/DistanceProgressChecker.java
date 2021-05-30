@@ -4,12 +4,10 @@ import net.minecraft.util.math.Vec3d;
 
 public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
+    private final IProgressChecker<Double> _distanceChecker;
     private Vec3d _start;
     private Vec3d _prevPos;
-
-    private boolean _reduceDistance;
-
-    private final IProgressChecker<Double> _distanceChecker;
+    private final boolean _reduceDistance;
 
     public DistanceProgressChecker(IProgressChecker<Double> distanceChecker, boolean reduceDistance) {
         _distanceChecker = distanceChecker;
@@ -19,9 +17,11 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
         }
         reset();
     }
+
     public DistanceProgressChecker(double timeout, double minDistanceToMake, boolean reduceDistance) {
         this(new LinearProgressChecker(timeout, minDistanceToMake), reduceDistance);
     }
+
     public DistanceProgressChecker(double timeout, double minDistanceToMake) {
         this(timeout, minDistanceToMake, false);
     }

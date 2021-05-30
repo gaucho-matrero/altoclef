@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * For testing.
- *
+ * <p>
  * As solonovamax suggested, this stuff should REALLY be moved to unit tests
  * https://github.com/adrisj7-AltoClef/altoclef/pull/7#discussion_r641792377
  * but getting timed tests and testing worlds set up in Minecraft might be
@@ -115,7 +115,7 @@ public class Playground {
                 mod.runUserTask(new PlaceSignTask("Hello there!"));
                 break;
             case "sign2":
-                mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10),"Hello there!"));
+                mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10), "Hello there!"));
                 break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3), true));
@@ -272,7 +272,7 @@ public class Playground {
                 try {
                     int unobtainable = 0;
                     int total = 0;
-                    File f=new File(fname);
+                    File f = new File(fname);
                     FileWriter fw = new FileWriter(f);
                     for (Identifier id : Registry.ITEM.getIds()) {
                         Item item = Registry.ITEM.get(id);
@@ -280,7 +280,7 @@ public class Playground {
                             ++unobtainable;
                             fw.write(item.getTranslationKey() + "\n");
                         }
-                        total ++;
+                        total++;
                     }
                     fw.flush();
                     fw.close();
@@ -315,7 +315,7 @@ public class Playground {
             case "replace":
                 // Creates a mini valley of crafting tables.
                 BlockPos from = mod.getPlayer().getBlockPos().add(new Vec3i(-100, -20, -100));
-                BlockPos to = mod.getPlayer().getBlockPos().add(new Vec3i(100, 255 , 100));
+                BlockPos to = mod.getPlayer().getBlockPos().add(new Vec3i(100, 255, 100));
                 Block[] toFind = new Block[]{Blocks.GRASS_BLOCK};// Blocks.COBBLESTONE};
                 ItemTarget toReplace = new ItemTarget("crafting_table");//"stone");
                 mod.runUserTask(new ReplaceBlocksTask(toReplace, from, to, toFind));

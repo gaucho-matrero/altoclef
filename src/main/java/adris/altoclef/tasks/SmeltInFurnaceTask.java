@@ -41,8 +41,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // TODO: Do them in order.
         _doTask = new DoSmeltInFurnaceTask(targets[0]);
     }
+
     public SmeltInFurnaceTask(SmeltTarget target) {
-        this(new SmeltTarget[] {target});
+        this(new SmeltTarget[]{target});
     }
 
     private static ItemTarget[] extractItemTargets(SmeltTarget[] recipeTargets) {
@@ -105,14 +106,10 @@ public class SmeltInFurnaceTask extends ResourceTask {
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask implements ITaskWithDowntime {
 
         private final SmeltTarget _target;
-
+        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
         private ContainerTracker.FurnaceData _currentFurnace;
-
         // When we're expected to run out of fuel.
         private int _runOutOfFuelExpectedTick;
-
-        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
-
         private boolean _ignoreMaterials = false;
 
         private boolean _ranOutOfMaterials = false;
@@ -129,7 +126,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
             if (obj instanceof DoSmeltInFurnaceTask) {
-                DoSmeltInFurnaceTask other = (DoSmeltInFurnaceTask)obj;
+                DoSmeltInFurnaceTask other = (DoSmeltInFurnaceTask) obj;
                 return other._target.equals(_target) && other._ignoreMaterials == _ignoreMaterials;
             }
             return false;
@@ -239,7 +236,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Move materials
 
             ItemStack output = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            int outputCount = _target.getItem().matches(output.getItem())?  output.getCount() : 0;
+            int outputCount = _target.getItem().matches(output.getItem()) ? output.getCount() : 0;
             int materialCount = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount();
 
             int currentlyHeld = mod.getInventoryTracker().getItemCount(_target.getItem());
@@ -327,7 +324,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             // We got stone
             if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) > 8) {
-                double cost = 300 - (50 * (double)mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
+                double cost = 300 - (50 * (double) mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
                 return Math.max(cost, 60);
             }
             // We got pick

@@ -33,27 +33,18 @@ import java.util.Optional;
 public class InteractWithBlockTask extends Task {
 
     private static final int MAX_REACH = 7;
-
+    public final Action TimedOut = new Action();
     private final ItemTarget _toUse;
-
     private final Direction _direction;
     private final BlockPos _target;
-
     private final boolean _walkInto;
-
     private final Vec3i _interactOffset;
-
     private final Input _interactInput;
-
     private final boolean _shiftClick;
-
     private final Timer _clickTimer = new Timer(5);
-
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
-    public final Action TimedOut = new Action();
-
-    private int reachDistance = 0;
+    private final int reachDistance = 0;
 
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
@@ -64,24 +55,97 @@ public class InteractWithBlockTask extends Task {
         _interactOffset = interactOffset;
         _shiftClick = shiftClick;
     }
+
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
         this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shiftClick);
     }
+
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
         this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
     }
+
     public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         // null means any side is OK
         this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
     }
+
     public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
         this(toUse, target, walkInto, Vec3i.ZERO);
     }
+
     public InteractWithBlockTask(ItemTarget toUse, BlockPos target) {
         this(toUse, target, false);
     }
+
     public InteractWithBlockTask(BlockPos target) {
         this(null, null, target, Input.CLICK_RIGHT, false, false);
+    }
+
+    public static Optional<Rotation> getReach(BlockPos target, Direction side) {
+        Optional<Rotation> reachable;
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
+        if (side == null) {
+            assert MinecraftClient.getInstance().player != null;
+            reachable = RotationUtils.reachable(ctx.player(), target, ctx.playerController().getBlockReachDistance());
+        } else {
+            Vec3i sideVector = side.getVector();
+            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
+
+            Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
+
+            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+            reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
+
+            // Check for right angle
+            if (reachable.isPresent()) {
+                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
+                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
+                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
+
+                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
+                if (dot < 0) {
+                    // We're perpendicular and cannot face.
+                    return Optional.empty();
+                }
+            }
+        }
+        return reachable;
+    }
+
+    private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
+
+        boolean sideMatters = interactSide != null;
+        if (sideMatters) {
+            Vec3i offs = interactSide.getVector();
+            if (offs.getY() == -1) {
+                // If we're below, place ourselves two blocks below.
+                offs = offs.down();
+            }
+            target = target.add(offs);
+        }
+
+        if (walkInto) {
+            return new GoalTwoBlocks(target);
+        } else {
+            if (sideMatters) {
+                // Make sure we're on the right side of the block.
+                /*
+                Vec3i offs = _interactSide.getVector();
+                Goal sideGoal;
+                if (offs.getY() == 1) {
+                    sideGoal = new GoalYLevel(_target.getY() + 1);
+                } else if (offs.getY() == -1) {
+                    sideGoal = new GoalYLevel(_target.getY() - 1);
+                } else {
+                    sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
+                }*/
+                Goal sideGoal = new GoalBlockSide(target, interactSide, 1);
+                return new GoalAnd(sideGoal, new GoalNear(target.add(interactOffset), reachDistance));
+            } else {
+                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
+                return new GoalNear(target.add(interactOffset), reachDistance);
+            }
+        }
     }
 
     @Override
@@ -168,8 +232,7 @@ public class InteractWithBlockTask extends Task {
             if (task._toUse != null && !task._toUse.equals(_toUse)) return false;
             if (!task._target.equals(_target)) return false;
             if (!task._interactInput.equals(_interactInput)) return false;
-            if (task._walkInto != _walkInto) return false;
-            return true;
+            return task._walkInto == _walkInto;
         }
         return false;
     }
@@ -219,81 +282,14 @@ public class InteractWithBlockTask extends Task {
         return ClickResponse.CANT_REACH;
     }
 
-    private enum ClickResponse {
-        CANT_REACH,
-        WAIT_FOR_CLICK,
-        CLICK_ATTEMPTED
-    }
-
     public Optional<Rotation> getCurrentReach() {
         return getReach(_target, _direction);
     }
 
-    public static Optional<Rotation> getReach(BlockPos target, Direction side) {
-        Optional<Rotation> reachable;
-        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
-        if (side == null) {
-            assert MinecraftClient.getInstance().player != null;
-            reachable = RotationUtils.reachable(ctx.player(), target, ctx.playerController().getBlockReachDistance());
-        } else {
-            Vec3i sideVector = side.getVector();
-            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
-
-            Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
-
-            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-            reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
-
-            // Check for right angle
-            if (reachable.isPresent()) {
-                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
-                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
-                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
-
-                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
-                if (dot < 0) {
-                    // We're perpendicular and cannot face.
-                    return Optional.empty();
-                }
-            }
-        }
-        return reachable;
-    }
-
-    private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
-
-        boolean sideMatters = interactSide != null;
-        if (sideMatters) {
-            Vec3i offs = interactSide.getVector();
-            if (offs.getY() == -1) {
-                // If we're below, place ourselves two blocks below.
-                offs = offs.down();
-            }
-            target = target.add(offs);
-        }
-
-        if (walkInto) {
-            return new GoalTwoBlocks(target);
-        } else {
-            if (sideMatters) {
-                // Make sure we're on the right side of the block.
-                /*
-                Vec3i offs = _interactSide.getVector();
-                Goal sideGoal;
-                if (offs.getY() == 1) {
-                    sideGoal = new GoalYLevel(_target.getY() + 1);
-                } else if (offs.getY() == -1) {
-                    sideGoal = new GoalYLevel(_target.getY() - 1);
-                } else {
-                    sideGoal = new GoalXZ(_target.getX() + offs.getX(), _target.getZ() + offs.getZ());
-                }*/
-                Goal sideGoal = new GoalBlockSide(target, interactSide, 1);
-                return new GoalAnd(sideGoal, new GoalNear(target.add(interactOffset), reachDistance));
-            } else {
-                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
-                return new GoalNear(target.add(interactOffset), reachDistance);
-            }
-        }
+    private enum ClickResponse {
+        CANT_REACH,
+        WAIT_FOR_CLICK,
+        CLICK_ATTEMPTED
     }
 
 

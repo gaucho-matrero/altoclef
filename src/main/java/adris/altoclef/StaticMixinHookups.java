@@ -14,9 +14,9 @@ import net.minecraft.world.chunk.WorldChunk;
 
 /**
  * Mixins have no way (currently) to access our mod.
- *
+ * <p>
  * As a result I'll do this statically.
- *
+ * <p>
  * However, I want to avoid grabbing AltoClef in a static context, so this class
  * serves at the "static dumpster" which is the only spot where
  * I allow the bad practice of singletons to flourish
@@ -24,6 +24,8 @@ import net.minecraft.world.chunk.WorldChunk;
 public class StaticMixinHookups {
 
     private static AltoClef _mod;
+    // for SOME REASON baritone triggers a block cancel breaking every other frame, so we have a 2 frame requirement for that?
+    private static int _breakCancelFrames;
 
     public static void hookupMod(AltoClef mod) {
         _mod = mod;
@@ -37,10 +39,9 @@ public class StaticMixinHookups {
         _mod.onClientTick();
     }
 
-    public static void onClientRenderOverlay(MatrixStack stack) {_mod.onClientRenderOverlay(stack);}
-
-    // for SOME REASON baritone triggers a block cancel breaking every other frame, so we have a 2 frame requirement for that?
-    private static int _breakCancelFrames;
+    public static void onClientRenderOverlay(MatrixStack stack) {
+        _mod.onClientRenderOverlay(stack);
+    }
 
     // Every chat message can be interrupted by us
     public static void onChat(ChatEvent e) {
@@ -71,6 +72,7 @@ public class StaticMixinHookups {
         //Debug.logMessage("BLOCK BROKEN: " + (world == _mod.getWorld()) + " : " + pos + " " + state.getBlock().getTranslationKey() + " " + player.getName().getString());
         _mod.getControllerExtras().onBlockBroken(world, pos, state, player);
     }
+
     public static void onBlockPlaced(BlockPos pos, BlockState state) {
         _mod.getControllerExtras().onBlockPlaced(pos, state);
     }
@@ -108,5 +110,7 @@ public class StaticMixinHookups {
         }
     }
 
-    public static void onGameOverlayMessage(String message) {_mod.onGameOverlayMessage.invoke(message);}
+    public static void onGameOverlayMessage(String message) {
+        _mod.onGameOverlayMessage.invoke(message);
+    }
 }

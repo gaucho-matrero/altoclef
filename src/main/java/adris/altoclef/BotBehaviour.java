@@ -19,9 +19,8 @@ import java.util.function.Predicate;
  */
 public class BotBehaviour {
 
-    private AltoClef _mod;
-
     Deque<State> _states = new ArrayDeque<>();
+    private final AltoClef _mod;
 
     public BotBehaviour(AltoClef mod) {
         _mod = mod;
@@ -42,7 +41,7 @@ public class BotBehaviour {
         current().applyState();
     }
 
-    public void addThrowawayItems(Item ...items) {
+    public void addThrowawayItems(Item... items) {
         Collections.addAll(current().throwawayItems, items);
         current().applyState();
     }
@@ -67,6 +66,7 @@ public class BotBehaviour {
     public boolean exclusivelyMineLogs() {
         return current().exclusivelyMineLogs;
     }
+
     public void setExclusivelyMineLogs(boolean value) {
         current().exclusivelyMineLogs = value;
         current().applyState();
@@ -78,6 +78,7 @@ public class BotBehaviour {
         }
         return false;
     }
+
     public void addForceFieldExclusion(Predicate<Entity> pred) {
         current().excludeFromForceField.add(pred);
         // Not needed, as excludeFromForceField isn't applied anywhere else.
@@ -88,6 +89,7 @@ public class BotBehaviour {
         current().blocksToAvoidBreaking.add(pos);
         current().applyState();
     }
+
     public void avoidBlockBreaking(Predicate<BlockPos> pred) {
         current().toAvoidBreaking.add(pred);
         current().applyState();
@@ -124,11 +126,12 @@ public class BotBehaviour {
         current().applyState();
     }
 
-    public void addProtectedItems(Item ...items) {
+    public void addProtectedItems(Item... items) {
         Collections.addAll(current().protectedItems, items);
         current().applyState();
     }
-    public void removeProtectedItems(Item ...items) {
+
+    public void removeProtectedItems(Item... items) {
         current().protectedItems.removeAll(Arrays.asList(items));
         current().applyState();
     }
@@ -141,19 +144,23 @@ public class BotBehaviour {
     public boolean shouldForceFieldPlayers() {
         return current().forceFieldPlayers;
     }
+
     public void setForceFieldPlayers(boolean forceFieldPlayers) {
         current().forceFieldPlayers = forceFieldPlayers;
         // Not needed, nothing changes.
         // current.applyState()
     }
+
     public void allowWalkThroughLava(boolean allow) {
         current().walkThroughLava = allow;
         current().applyState();
     }
+
     public void setPreferredStairs(boolean allow) {
         current().preferredStairs = allow;
         current().applyState();
     }
+
     public void setAllowDiagonalAscend(boolean allow) {
         current().allowDiagonalAscend = allow;
         current().applyState();
@@ -186,6 +193,7 @@ public class BotBehaviour {
             _states.push(new State(current()));
         }
     }
+
     public void pop() {
         if (_states.isEmpty()) {
             Debug.logError("State stack is empty. This shouldn't be happening.");

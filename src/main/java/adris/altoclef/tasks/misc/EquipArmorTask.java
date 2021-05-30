@@ -19,7 +19,7 @@ public class EquipArmorTask extends Task {
 
     private final Timer _moveTimer = new Timer(0.5f);
 
-    public EquipArmorTask(String ...toEquip) {
+    public EquipArmorTask(String... toEquip) {
         _toEquip = toEquip;
     }
 

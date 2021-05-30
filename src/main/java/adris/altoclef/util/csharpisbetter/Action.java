@@ -6,11 +6,9 @@ import java.util.List;
 public class Action<T> {
 
     private final List<ActionListener<T>> _consumers = new ArrayList<>();
-
-    private boolean _lock = false;
-
     private final List<ActionListener<T>> _toAdd = new ArrayList<>();
     private final List<ActionListener<T>> _toRemove = new ArrayList<>();
+    private boolean _lock = false;
 
     public void addListener(ActionListener<T> listener) {
         if (_lock) {
@@ -34,7 +32,7 @@ public class Action<T> {
         _lock = true;
         _consumers.addAll(_toAdd);
         _toAdd.clear();
-        for(ActionListener<T> consumer : _consumers) {
+        for (ActionListener<T> consumer : _consumers) {
             consumer.invoke(value);
         }
         _lock = false;

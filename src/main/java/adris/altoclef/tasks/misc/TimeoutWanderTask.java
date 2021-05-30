@@ -19,21 +19,14 @@ import net.minecraft.util.math.Vec3d;
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     private final float _distanceToWander;
-
-    private Vec3d _origin;
-
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
-
-    private boolean _executingPlanB = false;
-
-    private boolean _forceExplore;
-
-    private Task _unstuckTask = null;
-
-    private int _failCounter;
-
     private final boolean _increaseRange;
+    //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
+    private Vec3d _origin;
+    private boolean _executingPlanB = false;
+    private boolean _forceExplore;
+    private Task _unstuckTask = null;
+    private int _failCounter;
     private double _wanderDistanceExtension;
 
     public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
@@ -41,15 +34,27 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         _increaseRange = increaseRange;
         _forceExplore = false;
     }
+
     public TimeoutWanderTask(float distanceToWander) {
         this(distanceToWander, false);
     }
+
     public TimeoutWanderTask() {
         this(Float.POSITIVE_INFINITY, false);
     }
+
     public TimeoutWanderTask(boolean forceExplore) {
         this();
         _forceExplore = forceExplore;
+    }
+
+    private static BlockPos[] generateSides(BlockPos pos) {
+        return new BlockPos[]{
+                pos.add(1, 0, 0),
+                pos.add(-1, 0, 0),
+                pos.add(0, 0, 1),
+                pos.add(0, 0, -1),
+        };
     }
 
     public void resetWander() {
@@ -80,7 +85,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                mod.getClientBaritone().getExploreProcess().explore((int)_origin.getX(), (int)_origin.getZ());
+                mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
             }
         }
 
@@ -114,7 +119,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     }
 
     private Goal getRandomDirectionGoal(AltoClef mod) {
-        double distance = Float.isInfinite(_distanceToWander)? _distanceToWander : _distanceToWander + _wanderDistanceExtension;
+        double distance = Float.isInfinite(_distanceToWander) ? _distanceToWander : _distanceToWander + _wanderDistanceExtension;
         return new GoalRunAway(distance, mod.getPlayer().getBlockPos());
     }
 
@@ -189,19 +194,12 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         }
         return null;
     }
+
     private boolean isFence(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock;
     }
+
     private Task getFenceUnstuckTask(AltoClef mod, BlockPos fencePos) {
         return new DestroyBlockTask(fencePos);
-    }
-
-    private static BlockPos[] generateSides(BlockPos pos) {
-        return new BlockPos[] {
-                pos.add(1, 0, 0),
-                pos.add(-1, 0, 0),
-                pos.add(0, 0, 1),
-                pos.add(0, 0, -1),
-        };
     }
 }

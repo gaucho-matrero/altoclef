@@ -47,12 +47,15 @@ public class MineAndCollectTask extends ResourceTask {
         _blocksToMine = blocksToMine;
         _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
     }
+
     public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
         this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
     }
+
     public MineAndCollectTask(ItemTarget target, Block[] blocksToMine, MiningRequirement requirement) {
-        this(new ItemTarget[] {target}, blocksToMine, requirement);
+        this(new ItemTarget[]{target}, blocksToMine, requirement);
     }
+
     public MineAndCollectTask(Item item, int count, Block[] blocksToMine, MiningRequirement requirement) {
         this(new ItemTarget(item, count), blocksToMine, requirement);
     }
@@ -60,7 +63,7 @@ public class MineAndCollectTask extends ResourceTask {
     public static Block[] itemTargetToBlockList(ItemTarget[] targets) {
         List<Block> result = new ArrayList<>(targets.length);
         for (ItemTarget target : targets) {
-            for(Item item : target.getMatches()) {
+            for (Item item : target.getMatches()) {
                 result.add(Block.getBlockFromItem(item));
             }
         }
@@ -156,16 +159,11 @@ public class MineAndCollectTask extends ResourceTask {
 
         private final Block[] _blocks;
         private final ItemTarget[] _targets;
-
-        private BlockPos _miningPos;
-
-        private AltoClef _mod;
-
         private final Set<BlockPos> _blacklist = new HashSet<>();
-
         private final MovementProgressChecker _progressChecker = new MovementProgressChecker(1);
-
         private final Task _pickupTask;
+        private BlockPos _miningPos;
+        private AltoClef _mod;
 
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
@@ -183,7 +181,7 @@ public class MineAndCollectTask extends ResourceTask {
                 ItemEntity item = (ItemEntity) obj;
                 return item.getPos();
             }
-            throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+            throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
         }
 
         @Override
@@ -193,10 +191,7 @@ public class MineAndCollectTask extends ResourceTask {
                 closestBlock = mod.getBlockTracker().getNearestTracking(pos, (check) -> {
                     if (_blacklist.contains(check)) return true;
                     // Filter out blocks that will get us into trouble. TODO: Blacklist
-                    if (!MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check)) {
-                        return true;
-                    }
-                    return false;
+                    return !MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check);
                 }, _blocks);
             }
             ItemEntity closestDrop = null;
@@ -204,8 +199,8 @@ public class MineAndCollectTask extends ResourceTask {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock == null? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
-            double dropSq = closestDrop == null? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos);
+            double blockSq = closestBlock == null ? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
+            double dropSq = closestDrop == null ? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos);
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
@@ -257,7 +252,7 @@ public class MineAndCollectTask extends ResourceTask {
 
                 return _pickupTask;
             }
-            throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+            throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
         }
 
         @Override

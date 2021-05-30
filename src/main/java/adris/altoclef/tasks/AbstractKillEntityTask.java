@@ -13,7 +13,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     // Not the "striking" distance, but the "ok we're close enough, lower our guard for other mobs and focus on this one" range.
     private static final double CONSIDER_COMBAT_RANGE = 10;
 
-    private static final Item[] WEAPON_ITEMS = new Item[] {
+    private static final Item[] WEAPON_ITEMS = new Item[]{
             Items.DIAMOND_SWORD,
             Items.IRON_SWORD,
             Items.STONE_SWORD,
@@ -31,9 +31,20 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     public AbstractKillEntityTask() {
         this(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
     }
+
     public AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
+
+    public static void equipWeapon(AltoClef mod) {
+        for (Item item : WEAPON_ITEMS) {
+            if (mod.getInventoryTracker().hasItem(item)) {
+                mod.getInventoryTracker().equipItem(item);
+                return;
+            }
+        }
+    }
+
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
         float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
@@ -44,14 +55,5 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
             mod.getController().attackEntity(mod.getPlayer(), entity);
         }
         return null;
-    }
-
-    public static void equipWeapon(AltoClef mod) {
-        for (Item item : WEAPON_ITEMS) {
-            if (mod.getInventoryTracker().hasItem(item)) {
-                mod.getInventoryTracker().equipItem(item);
-                return;
-            }
-        }
     }
 }

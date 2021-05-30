@@ -17,14 +17,34 @@ import java.util.function.Consumer;
 @SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
 
-    private final Stopwatch _taskStopwatch = new Stopwatch();
-
     public final Action<String> onTaskFinish = new Action<>();
-
+    private final Stopwatch _taskStopwatch = new Stopwatch();
     private Consumer _currentOnFinish = null;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
+    }
+
+    private static String prettyPrintTimeDuration(double seconds) {
+        int minutes = (int) (seconds / 60);
+        int hours = minutes / 60;
+        int days = hours / 24;
+
+        String result = "";
+        if (days != 0) {
+            result += days + " days ";
+        }
+        if (hours != 0) {
+            result += (hours % 24) + " hours ";
+        }
+        if (minutes != 0) {
+            result += (minutes % 60) + " minutes ";
+        }
+        if (!result.equals("")) {
+            result += "and ";
+        }
+        result += String.format("%.2f", (seconds % 60));
+        return result;
     }
 
     @Override
@@ -91,27 +111,5 @@ public class UserTaskChain extends SingleTaskChain {
         if (shouldIdle) {
             mod.runUserTask(new IdleTask());
         }
-    }
-
-    private static String prettyPrintTimeDuration(double seconds) {
-        int minutes = (int) (seconds / 60);
-        int hours = minutes / 60;
-        int days = hours / 24;
-
-        String result = "";
-        if (days != 0) {
-            result += days + " days ";
-        }
-        if (hours != 0) {
-            result += (hours % 24) + " hours ";
-        }
-        if (minutes != 0) {
-            result += (minutes % 60) + " minutes ";
-        }
-        if (!result.equals("")) {
-            result += "and ";
-        }
-        result += String.format("%.2f", (seconds % 60));
-        return result;
     }
 }

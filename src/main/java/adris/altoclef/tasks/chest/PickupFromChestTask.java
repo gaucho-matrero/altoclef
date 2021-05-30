@@ -20,7 +20,7 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
 
     private final BlockPos _targetChest;
 
-    public PickupFromChestTask(BlockPos targetChest, ItemTarget ...targets) {
+    public PickupFromChestTask(BlockPos targetChest, ItemTarget... targets) {
         super(targetChest);
         _targets = targets;
         _targetChest = targetChest;

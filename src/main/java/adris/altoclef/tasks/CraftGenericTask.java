@@ -98,7 +98,7 @@ public class CraftGenericTask extends Task {
             }
         }
 
-        Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+        Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
 
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
         //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
@@ -126,7 +126,7 @@ public class CraftGenericTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CraftGenericTask) {
-            return ((CraftGenericTask)obj)._recipe.equals(_recipe);
+            return ((CraftGenericTask) obj)._recipe.equals(_recipe);
         }
         return false;
     }

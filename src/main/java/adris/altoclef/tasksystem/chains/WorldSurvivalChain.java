@@ -9,8 +9,8 @@ import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
-    private boolean _wasAvoidingDrowning;
     private final Timer _wasInLavaTimer = new Timer(1);
+    private boolean _wasAvoidingDrowning;
 
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);

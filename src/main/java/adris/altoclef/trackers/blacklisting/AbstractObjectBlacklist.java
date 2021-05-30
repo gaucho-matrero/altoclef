@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 /**
  * Sometimes we will try to access something and fail TOO many times.
- *
+ * <p>
  * This lets us know that a block is unreachable, and will ignore it from the search intelligently.
  */
 public abstract class AbstractObjectBlacklist<T> {
@@ -34,7 +34,7 @@ public abstract class AbstractObjectBlacklist<T> {
             entry.numberOfFailures = 0;
             //Debug.logMessage("    TEMP: (failure RESET): " + pos.toShortString());
         }
-        entry.numberOfFailures ++;
+        entry.numberOfFailures++;
         entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
         Debug.logMessage("Blacklist: " + item.toString() + ": Try " + entry.numberOfFailures + " / " + entry.numberOfFailuresAllowed);
     }

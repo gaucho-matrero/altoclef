@@ -14,15 +14,11 @@ import java.util.Set;
 
 public abstract class SearchChunksExploreTask extends Task {
 
-    private ChunkSearchTask _searcher;
-
     private final Object _searcherMutex = new Object();
-
-    private AltoClef _mod;
-
     private final Set<ChunkPos> _alreadyExplored = new HashSet<>();
-
-    private ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
+    private ChunkSearchTask _searcher;
+    private AltoClef _mod;
+    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
         @Override
         public void invoke(WorldChunk value) {
             onChunkLoad(value);

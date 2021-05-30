@@ -13,11 +13,10 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
 public abstract class AbstractDoToEntityTask extends Task implements ITaskRequiresGrounded {
+    protected final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
     private final double _maintainDistance;
     private final double _combatGuardLowerRange;
     private final double _combatGuardLowerFieldRadius;
-
-    protected final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
     public AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
@@ -25,6 +24,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         _combatGuardLowerRange = combatGuardLowerRange;
         _combatGuardLowerFieldRadius = combatGuardLowerFieldRadius;
     }
+
     public AbstractDoToEntityTask(double maintainDistance) {
         this(maintainDistance, 0, Double.POSITIVE_INFINITY);
     }
@@ -61,13 +61,13 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
         double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
-        if (sqDist < _combatGuardLowerRange*_combatGuardLowerRange) {
+        if (sqDist < _combatGuardLowerRange * _combatGuardLowerRange) {
             mod.getMobDefenseChain().setForceFieldRange(_combatGuardLowerFieldRadius);
         } else {
             mod.getMobDefenseChain().resetForceField();
         }
 
-        boolean tooClose = sqDist < _maintainDistance*_maintainDistance;
+        boolean tooClose = sqDist < _maintainDistance * _maintainDistance;
         // Step away if we're too close
         if (tooClose) {
             //setDebugState("Maintaining distance");
@@ -76,7 +76,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             }
         }
 
-        if (entity.squaredDistanceTo(mod.getPlayer()) < playerReach*playerReach && result != null && result.getType() == HitResult.Type.ENTITY) {
+        if (entity.squaredDistanceTo(mod.getPlayer()) < playerReach * playerReach && result != null && result.getType() == HitResult.Type.ENTITY) {
             _progress.reset();
             return onEntityInteract(mod, entity);
         } else if (!tooClose) {
@@ -106,6 +106,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         }
         return false;
     }
+
     private boolean doubleCheck(double a, double b) {
         if (Double.isInfinite(a) == Double.isInfinite(b)) return true;
         return Math.abs(a - b) < 0.1;

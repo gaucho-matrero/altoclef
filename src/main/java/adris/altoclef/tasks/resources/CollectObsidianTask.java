@@ -32,20 +32,24 @@ import java.util.function.Function;
 
 public class CollectObsidianTask extends ResourceTask {
 
-    private Task _forceCompleteTask = null;
-
     private final Timer _placeWaterTimeout = new Timer(6);
-
     private final MovementProgressChecker _lavaTimeout = new MovementProgressChecker();
-
+    private final Set<BlockPos> _lavaBlacklist = new HashSet<>();
+    private final int _count;
+    private Task _forceCompleteTask = null;
     private BlockPos _lavaWaitCurrentPos;
 
-    private final Set<BlockPos> _lavaBlacklist = new HashSet<>();
-
-    private final int _count;
     public CollectObsidianTask(int count) {
         super(Items.OBSIDIAN, count);
         _count = count;
+    }
+
+    private static BlockPos getLavaStructurePos(BlockPos lavaPos) {
+        return lavaPos.add(1, 1, 0);
+    }
+
+    private static BlockPos getLavaWaterPos(BlockPos lavaPos) {
+        return lavaPos.up();
     }
 
     @Override
@@ -111,7 +115,7 @@ public class CollectObsidianTask extends ResourceTask {
             }
 
             setDebugState("Mining/Collecting obsidian");
-            return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[] {Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
+            return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[]{Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
         }
 
         Function<Vec3d, BlockPos> getNearestLava = ppos -> mod.getBlockTracker().getNearestTracking(ppos,
@@ -123,12 +127,10 @@ public class CollectObsidianTask extends ResourceTask {
 
                     BlockState placeOnState = mod.getWorld().getBlockState(placeOnPos);
                     // We can't place a structure on lava.
-                    if (placeOnState.getBlock() instanceof FluidBlock) return true;
+                    return placeOnState.getBlock() instanceof FluidBlock;
                     //if (!mod.getWorld().getBlockState(placeOnPos).getFluidState().isEmpty()) return true;
-
-                    return false;
                 },
-        Blocks.LAVA);
+                Blocks.LAVA);
 
         // No stuff detected, try finding lava and placing water near it.
         BlockPos nearestLava = getNearestLava.apply(mod.getPlayer().getPos());
@@ -183,12 +185,6 @@ public class CollectObsidianTask extends ResourceTask {
         return new TimeoutWanderTask(true);
     }
 
-    private static BlockPos getLavaStructurePos(BlockPos lavaPos) {
-        return lavaPos.add(1, 1, 0);
-    }
-    private static BlockPos getLavaWaterPos(BlockPos lavaPos) {
-        return lavaPos.up();
-    }
     @Override
     protected void onResourceStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);

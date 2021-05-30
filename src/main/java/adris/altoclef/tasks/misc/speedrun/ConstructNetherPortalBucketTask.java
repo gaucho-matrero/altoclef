@@ -28,7 +28,7 @@ import java.util.HashSet;
 public class ConstructNetherPortalBucketTask extends Task {
 
     // Order here matters
-    private static final Vec3i[] PORTAL_FRAME = new Vec3i[] {
+    private static final Vec3i[] PORTAL_FRAME = new Vec3i[]{
             // Left side
             new Vec3i(0, 0, -1),
             new Vec3i(0, 1, -1),
@@ -45,7 +45,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             new Vec3i(0, 3, 1)
     };
 
-    private static final Vec3i[] PORTAL_INTERIOR = new Vec3i[] {
+    private static final Vec3i[] PORTAL_INTERIOR = new Vec3i[]{
             new Vec3i(0, 0, 0),
             new Vec3i(0, 1, 0),
             new Vec3i(0, 2, 0),
@@ -54,13 +54,13 @@ public class ConstructNetherPortalBucketTask extends Task {
             new Vec3i(0, 2, 1)
     };
 
-    private static final Vec3i[] CAST_FRAME = new Vec3i[] {
-            new Vec3i(0, -1 ,0),
-            new Vec3i(0, 0 ,-1),
-            new Vec3i(0, 0 ,1),
-            new Vec3i(-1, 0 ,0),
-            new Vec3i(1, 0 ,0),
-            new Vec3i(1, 1 ,0)
+    private static final Vec3i[] CAST_FRAME = new Vec3i[]{
+            new Vec3i(0, -1, 0),
+            new Vec3i(0, 0, -1),
+            new Vec3i(0, 0, 1),
+            new Vec3i(-1, 0, 0),
+            new Vec3i(1, 0, 0),
+            new Vec3i(1, 1, 0)
     };
 
     // The "portalable" region includes the portal (1 x 6 x 4 structure) and an outer buffer for its construction and water bullshit.
@@ -68,24 +68,18 @@ public class ConstructNetherPortalBucketTask extends Task {
     // This can only really be explained visually, sorry!
     private static final Vec3i PORTALABLE_REGION_SIZE = new Vec3i(4, 6, 6);
     private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 0, 2);
-
+    private final Timer _lavaSearchTimer = new Timer(5);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(25);
+    // Stored here to cache lava blacklist
+    private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
+    private final Timer _refreshTimer = new Timer(11);
     private BlockPos _portalOrigin = null;
     private BlockPos _currentLavaTarget = null;
-
     private BlockPos _currentDestroyTarget = null;
     private BlockPos _currentPlaceTarget = null;
     private BlockPos _currentCastTarget = null;
-
     private boolean _firstSearch = false;
-    private final Timer _lavaSearchTimer = new Timer(5);
-
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(5);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(25);
-
-    // Stored here to cache lava blacklist
-    private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
-
-    private final Timer _refreshTimer = new Timer(11);
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -351,7 +345,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         _currentLavaTarget = null;
 
         // Now, clear the inside.
-        for(Vec3i offs : PORTAL_INTERIOR) {
+        for (Vec3i offs : PORTAL_INTERIOR) {
             BlockPos p = _portalOrigin.add(offs);
             assert MinecraftClient.getInstance().world != null;
             if (!MinecraftClient.getInstance().world.getBlockState(p).isAir()) {
@@ -365,7 +359,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1), Direction.UP, _portalOrigin.down(), true);
     }
 
     @Override
@@ -389,7 +383,7 @@ public class ConstructNetherPortalBucketTask extends Task {
 
         double nearestSqDistance = Double.POSITIVE_INFINITY;
         BlockPos nearestLake = null;
-        for(BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.LAVA)) {
+        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.LAVA)) {
             if (alreadyExplored.contains(pos)) continue;
             double sqDist = playerPos.getSquaredDistance(pos);
             if (sqDist < nearestSqDistance) {
@@ -418,8 +412,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         BlockState s = MinecraftClient.getInstance().world.getBlockState(origin);
         if (s.getBlock() != Blocks.LAVA) {
             return 0;
-        }
-        else {
+        } else {
             // We may not be a full lava block
             if (!s.getFluidState().isStill()) return 0;
             int level = s.getFluidState().getLevel();
@@ -428,7 +421,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             if (level != 8) return 0;
         }
 
-        BlockPos[] toCheck = new BlockPos[] {origin.north(), origin.south(), origin.east(), origin.west(), origin.up(), origin.down()};
+        BlockPos[] toCheck = new BlockPos[]{origin.north(), origin.south(), origin.east(), origin.west(), origin.up(), origin.down()};
 
         int bonus = 0;
         for (BlockPos check : toCheck) {
@@ -441,7 +434,7 @@ public class ConstructNetherPortalBucketTask extends Task {
 
     // Get a region that a portal can fit into
     private BlockPos getPortalableRegion(BlockPos lava, BlockPos playerPos, Vec3i sizeOffset, Vec3i sizeAllocation, int timeoutRange) {
-        Vec3i[] directions = new Vec3i[] { new Vec3i(1, 0, 0), new Vec3i(-1, 0, 0), new Vec3i(0, 0, 1), new Vec3i(0, 0, -1)};
+        Vec3i[] directions = new Vec3i[]{new Vec3i(1, 0, 0), new Vec3i(-1, 0, 0), new Vec3i(0, 0, 1), new Vec3i(0, 0, -1)};
 
         double minDistanceToPlayer = Double.POSITIVE_INFINITY;
         BlockPos bestPos = null;
@@ -451,7 +444,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             // Inch along
             for (int offs = 1; offs < timeoutRange; ++offs) {
 
-                Vec3i offset = new Vec3i(direction.getX()*offs, direction.getY()*offs, direction.getZ()*offs);
+                Vec3i offset = new Vec3i(direction.getX() * offs, direction.getY() * offs, direction.getZ() * offs);
 
                 boolean found = true;
                 // check for collision with lava in box

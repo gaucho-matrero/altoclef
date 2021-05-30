@@ -26,8 +26,13 @@ public class GoalDirectionXZ implements Goal {
         }
         this._sidePenalty = sidePenalty;
     }
+
     public GoalDirectionXZ(Vec3d origin, Vec3d offset) {
         this(origin, offset, 1000);
+    }
+
+    private static String maybeCensor(double value) {
+        return Baritone.settings().censorCoordinates.value ? "<censored>" : Double.toString(value);
     }
 
     public boolean isInGoal(int x, int y, int z) {
@@ -35,10 +40,10 @@ public class GoalDirectionXZ implements Goal {
     }
 
     public double heuristic(int x, int y, int z) {
-        double  dx = (x - this.originx),
+        double dx = (x - this.originx),
                 dz = (z - this.originz);
         double correctDistance = dx * this.dirx + dz * this.dirz;
-        double  px = dirx * correctDistance,
+        double px = dirx * correctDistance,
                 pz = dirz * correctDistance;
         double perpendicularDistance = ((dx - px) * (dx - px)) + ((dz - pz) * (dz - pz));
 
@@ -55,8 +60,5 @@ public class GoalDirectionXZ implements Goal {
 
     public String toString() {
         return String.format("GoalDirection{x=%s, z=%s, dx=%s, dz=%s}", maybeCensor(this.originx), maybeCensor(this.originz), maybeCensor(this.dirx), maybeCensor(this.dirz));
-    }
-    private static String maybeCensor(double value) {
-        return Baritone.settings().censorCoordinates.value? "<censored>" : Double.toString(value);
     }
 }
