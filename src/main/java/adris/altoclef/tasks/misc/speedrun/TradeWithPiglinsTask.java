@@ -12,7 +12,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.Hoglin;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.item.Item;
@@ -20,7 +19,6 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class TradeWithPiglinsTask extends ResourceTask {
 
@@ -120,13 +118,13 @@ public class TradeWithPiglinsTask extends ResourceTask {
         protected void onStart(AltoClef mod) {
             super.onStart(mod);
 
-            mod.getConfigState().push();
+            mod.getBehaviour().push();
 
             // Don't throw away our gold lol
-            mod.getConfigState().addProtectedItems(Items.GOLD_INGOT);
+            mod.getBehaviour().addProtectedItems(Items.GOLD_INGOT);
 
             // Don't attack piglins unless we've blacklisted them.
-            mod.getConfigState().addForceFieldExclusion(entity -> {
+            mod.getBehaviour().addForceFieldExclusion(entity -> {
                 if (entity instanceof PiglinEntity) {
                     return !_blacklisted.contains(entity);
                 }
@@ -137,7 +135,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         @Override
         protected void onStop(AltoClef mod, Task interruptTask) {
-            mod.getConfigState().pop();
+            mod.getBehaviour().pop();
             super.onStop(mod, interruptTask);
         }
 

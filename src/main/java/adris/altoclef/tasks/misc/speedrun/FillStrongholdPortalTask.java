@@ -28,8 +28,8 @@ public class FillStrongholdPortalTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().setPreferredStairs(false);
+        mod.getBehaviour().push();
+        mod.getBehaviour().setPreferredStairs(false);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME, Blocks.END_PORTAL);
         if (_destroySilverfishSpawner) {
             mod.getBlockTracker().trackBlock(Blocks.SPAWNER);
@@ -73,7 +73,7 @@ public class FillStrongholdPortalTask extends Task {
         if (_destroySilverfishSpawner) {
             mod.getBlockTracker().stopTracking(Blocks.SPAWNER);
         }
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

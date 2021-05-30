@@ -93,13 +93,13 @@ public class ConstructNetherPortalBucketTask extends Task {
         _currentDestroyTarget = null;
 
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
-        mod.getConfigState().push();
-        mod.getConfigState().setSearchAnywhereFlag(true);
+        mod.getBehaviour().push();
+        mod.getBehaviour().setSearchAnywhereFlag(true);
 
         // Avoid breaking portal frame if we're obsidian.
         // Also avoid placing on the lava + water
         // Also avoid breaking the cast frame
-        mod.getConfigState().avoidBlockBreaking(block -> {
+        mod.getBehaviour().avoidBlockBreaking(block -> {
             if (_portalOrigin != null) {
                 // Don't break CURRENT cast
                 if (_currentLavaTarget != null) {
@@ -124,7 +124,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         // We need to tell baritone to not make paths that require
         // bridging on avoidPlacing blocks.
         // Avoid placing stuff in the lava/water position of our cast.
-        mod.getConfigState().avoidBlockPlacing(block -> {
+        mod.getBehaviour().avoidBlockPlacing(block -> {
             if (_currentLavaTarget != null) {
                 BlockPos waterTarget = _currentLavaTarget.up();
                 return block.equals(_currentLavaTarget) || block.equals(waterTarget);
@@ -133,7 +133,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         });
 
         // Protect some used items
-        mod.getConfigState().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL);
+        mod.getBehaviour().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL);
 
         _progressChecker.reset();
     }
@@ -371,7 +371,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

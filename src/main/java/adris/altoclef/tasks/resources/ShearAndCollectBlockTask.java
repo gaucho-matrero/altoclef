@@ -24,14 +24,14 @@ public class ShearAndCollectBlockTask extends MineAndCollectTask {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().allowShears(true);
+        mod.getBehaviour().push();
+        mod.getBehaviour().allowShears(true);
         super.onStart(mod);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         super.onStop(mod, interruptTask);
     }
 

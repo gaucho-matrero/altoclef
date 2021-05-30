@@ -5,7 +5,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.RunAwayFromEntitiesTask;
-import adris.altoclef.tasks.RunAwayFromPositionTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -19,17 +18,14 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.function.Predicate;
@@ -89,8 +85,8 @@ public class TerminatorTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().setForceFieldPlayers(true);
+        mod.getBehaviour().push();
+        mod.getBehaviour().setForceFieldPlayers(true);
     }
 
     @Override

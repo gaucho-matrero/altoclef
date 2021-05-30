@@ -17,8 +17,8 @@ public class ExampleTask2 extends Task {
         mod.getBlockTracker().trackBlock(Blocks.OAK_LOG);
 
         // Extra credit: Bot will NOT damage trees.
-        mod.getConfigState().push();
-        mod.getConfigState().avoidBlockBreaking(blockPos -> {
+        mod.getBehaviour().push();
+        mod.getBehaviour().avoidBlockBreaking(blockPos -> {
             BlockState s = mod.getWorld().getBlockState(blockPos);
             return s.getBlock() == Blocks.OAK_LEAVES || s.getBlock() == Blocks.OAK_LOG;
         });
@@ -57,7 +57,7 @@ public class ExampleTask2 extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.OAK_LOG);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

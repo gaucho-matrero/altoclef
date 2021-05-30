@@ -51,8 +51,8 @@ public abstract class ResourceTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
         if (_mineIfPresent != null) {
             mod.getBlockTracker().trackBlock(_mineIfPresent);
         }
@@ -134,7 +134,7 @@ public abstract class ResourceTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         if (_mineIfPresent != null) {
             mod.getBlockTracker().stopTracking(_mineIfPresent);
         }

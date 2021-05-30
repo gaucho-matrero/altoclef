@@ -1,13 +1,11 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
@@ -23,9 +21,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -74,12 +69,12 @@ public class CollectFoodTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
+        mod.getBehaviour().push();
         // Protect ALL food
-        mod.getConfigState().addProtectedItems(ITEMS_TO_PICK_UP);
-        for (CookableFoodTarget food : COOKABLE_FOODS) mod.getConfigState().addProtectedItems(food.getRaw(), food.getCooked());
-        for (CropTarget crop : CROPS) mod.getConfigState().addProtectedItems(crop.cropItem);
-        mod.getConfigState().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
+        mod.getBehaviour().addProtectedItems(ITEMS_TO_PICK_UP);
+        for (CookableFoodTarget food : COOKABLE_FOODS) mod.getBehaviour().addProtectedItems(food.getRaw(), food.getCooked());
+        for (CropTarget crop : CROPS) mod.getBehaviour().addProtectedItems(crop.cropItem);
+        mod.getBehaviour().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
 
         mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
         mod.getBlockTracker().trackBlock(Blocks.SWEET_BERRY_BUSH);
@@ -244,7 +239,7 @@ public class CollectFoodTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
         mod.getBlockTracker().stopTracking(Blocks.SWEET_BERRY_BUSH);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

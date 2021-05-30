@@ -37,8 +37,8 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStart(AltoClef mod) {
         if (_preferStairs) {
-            mod.getConfigState().push();
-            mod.getConfigState().setPreferredStairs(true);
+            mod.getBehaviour().push();
+            mod.getBehaviour().setPreferredStairs(true);
         }
 
         startProc(mod);
@@ -76,7 +76,7 @@ public class GetToBlockTask extends Task implements ITaskRequiresGrounded {
         _running = false;
         stopProc(mod);
         if (_preferStairs) {
-            mod.getConfigState().pop();
+            mod.getBehaviour().pop();
         }
     }
 

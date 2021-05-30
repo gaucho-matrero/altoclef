@@ -61,8 +61,8 @@ public abstract class DoStuffInContainerTask extends Task {
         mod.getBlockTracker().trackBlock(_containerBlock);
 
         // Protect container since we might place it.
-        mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(_containerBlock.asItem());
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(_containerBlock.asItem());
     }
 
     @Override
@@ -158,7 +158,7 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(_containerBlock);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

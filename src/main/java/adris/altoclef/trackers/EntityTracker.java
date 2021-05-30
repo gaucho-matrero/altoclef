@@ -21,7 +21,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -270,7 +269,7 @@ public class EntityTracker extends Tracker {
                 }
                  */
                 } else if (entity instanceof ProjectileEntity) {
-                    if (!_mod.getConfigState().shouldAvoidDodgingProjectile(entity)) {
+                    if (!_mod.getBehaviour().shouldAvoidDodgingProjectile(entity)) {
                         CachedProjectile proj = new CachedProjectile();
                         ProjectileEntity projEntity = (ProjectileEntity) entity;
 

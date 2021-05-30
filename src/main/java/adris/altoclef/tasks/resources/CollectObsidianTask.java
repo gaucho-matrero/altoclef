@@ -55,23 +55,23 @@ public class CollectObsidianTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getConfigState().push();
+        mod.getBehaviour().push();
 
-        mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-        mod.getConfigState().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
+        mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
+        mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
 
         mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
         mod.getBlockTracker().trackBlock(Blocks.WATER);
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
 
         // Avoid placing on the lava block we're trying to mine.
-        mod.getConfigState().avoidBlockPlacing(pos -> {
+        mod.getBehaviour().avoidBlockPlacing(pos -> {
             if (_lavaWaitCurrentPos != null) {
                 return pos.equals(_lavaWaitCurrentPos) || pos.equals(getLavaWaterPos(_lavaWaitCurrentPos));
             }
             return false;
         });
-        mod.getConfigState().avoidBlockBreaking(pos -> {
+        mod.getBehaviour().avoidBlockBreaking(pos -> {
             if (_lavaWaitCurrentPos != null) {
                 return pos.equals(getLavaStructurePos(_lavaWaitCurrentPos));
             }
@@ -194,7 +194,7 @@ public class CollectObsidianTask extends ResourceTask {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);
         mod.getBlockTracker().stopTracking(Blocks.WATER);
         mod.getBlockTracker().stopTracking(Blocks.OBSIDIAN);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

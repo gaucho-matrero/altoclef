@@ -9,29 +9,17 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.progresscheck.DistanceProgressChecker;
-import adris.altoclef.util.progresscheck.IProgressChecker;
-import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
-import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -82,14 +70,14 @@ public class CollectBucketLiquidTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         // Track fluids
-        mod.getConfigState().push();
-        mod.getConfigState().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-        mod.getConfigState().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
+        mod.getBehaviour().push();
+        mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
+        mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
         mod.getBlockTracker().trackBlock(_toCollect);
 
         // Avoid breaking / placing blocks at our liquid
-        mod.getConfigState().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
-        mod.getConfigState().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
+        mod.getBehaviour().avoidBlockBreaking((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
+        mod.getBehaviour().avoidBlockPlacing((pos) -> MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == _toCollect);
 
         //_blacklist.clear();
 
@@ -237,7 +225,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(_toCollect);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
         MinecraftClient.getInstance().options.keyUse.setPressed(false);
         mod.getExtraBaritoneSettings().setInteractionPaused(false);

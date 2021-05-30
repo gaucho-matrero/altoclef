@@ -21,8 +21,8 @@ public class ExampleTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(Items.COBBLESTONE);
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(Items.COBBLESTONE);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ExampleTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

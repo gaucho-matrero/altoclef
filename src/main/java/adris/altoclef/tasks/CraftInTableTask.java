@@ -13,7 +13,6 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,8 +125,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         super.onStart(mod);
         _craftCount = 0;
         mod.getPlayer().closeHandledScreen();
-        mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(getMaterialsArray());
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(getMaterialsArray());
         _fullCheckFailed = false;
 
         // Reset our "finished" value in the collect recipe thing.
@@ -137,7 +136,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         if (mod.inGame()) {
             mod.getPlayer().closeHandledScreen();
         }

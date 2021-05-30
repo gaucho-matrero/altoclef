@@ -1,13 +1,10 @@
 package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {
@@ -30,11 +27,11 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {
-            mod.getConfigState().allowWalkThroughLava(true);
+            mod.getBehaviour().allowWalkThroughLava(true);
             setTask(new EscapeFromLavaTask());
             return 100;
         }
-        mod.getConfigState().allowWalkThroughLava(false);
+        mod.getBehaviour().allowWalkThroughLava(false);
         return Float.NEGATIVE_INFINITY;
     }
 

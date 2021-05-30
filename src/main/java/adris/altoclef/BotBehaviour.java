@@ -14,16 +14,16 @@ import java.util.*;
 import java.util.function.Predicate;
 
 /**
- * Represents a state of global config. It can be copied and reset
+ * Represents the current behaviour of the bot. It can be copied and reset
  * so that behaviour across tasks is consistent.
  */
-public class ConfigState {
+public class BotBehaviour {
 
     private AltoClef _mod;
 
-    Stack<State> _states = new Stack<>();
+    Deque<State> _states = new ArrayDeque<>();
 
-    public ConfigState(AltoClef mod) {
+    public BotBehaviour(AltoClef mod) {
         _mod = mod;
 
         // Start with one state.
@@ -179,7 +179,7 @@ public class ConfigState {
 
     /// Stack management
     public void push() {
-        if (_states.empty()) {
+        if (_states.isEmpty()) {
             _states.push(new State());
         } else {
             // Make copy and push that
@@ -187,7 +187,7 @@ public class ConfigState {
         }
     }
     public void pop() {
-        if (_states.empty()) {
+        if (_states.isEmpty()) {
             Debug.logError("State stack is empty. This shouldn't be happening.");
             return;
         }
@@ -196,7 +196,7 @@ public class ConfigState {
     }
 
     private State current() {
-        if (_states.empty()) {
+        if (_states.isEmpty()) {
             Debug.logError("STATE EMPTY, UNEMPTIED!");
             push();
         }

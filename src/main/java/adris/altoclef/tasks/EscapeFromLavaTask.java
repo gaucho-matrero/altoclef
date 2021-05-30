@@ -18,8 +18,8 @@ public class EscapeFromLavaTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().allowWalkThroughLava(true);
+        mod.getBehaviour().push();
+        mod.getBehaviour().allowWalkThroughLava(true);
         target = null;
         _scanTimer.forceElapse();
     }
@@ -41,7 +41,7 @@ public class EscapeFromLavaTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

@@ -5,7 +5,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.EquipArmorTask;
-import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -61,12 +60,12 @@ public class KillEnderDragonTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().addThrowawayItems(Items.END_STONE);
+        mod.getBehaviour().push();
+        mod.getBehaviour().addThrowawayItems(Items.END_STONE);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Don't forcefield endermen.
-        mod.getConfigState().addForceFieldExclusion(entity -> entity instanceof EndermanEntity || entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart);
-        mod.getConfigState().setPreferredStairs(true);
+        mod.getBehaviour().addForceFieldExclusion(entity -> entity instanceof EndermanEntity || entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart);
+        mod.getBehaviour().setPreferredStairs(true);
     }
 
     @Override
@@ -131,12 +130,12 @@ public class KillEnderDragonTask extends Task {
         int MINIMUM_BUILDING_BLOCKS = 1;
         if (mod.getEntityTracker().entityFound(EndCrystalEntity.class) && mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK, Items.END_STONE) < MINIMUM_BUILDING_BLOCKS || (_collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod))) {
             if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
-                mod.getConfigState().addProtectedItems(Items.END_STONE);
+                mod.getBehaviour().addProtectedItems(Items.END_STONE);
                 setDebugState("Collecting building blocks to pillar to crystals");
                 return _collectBuildMaterialsTask;
             }
         } else {
-            mod.getConfigState().removeProtectedItems(Items.END_STONE);
+            mod.getBehaviour().removeProtectedItems(Items.END_STONE);
         }
 
         // Blow up the nearest end crystal
@@ -165,7 +164,7 @@ public class KillEnderDragonTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
 

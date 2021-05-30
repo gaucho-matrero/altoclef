@@ -39,7 +39,7 @@ public class AltoClef implements ModInitializer {
     private CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
-    private ConfigState _configState;
+    private BotBehaviour _botBehaviour;
     private BaritoneCustom _baritoneCustom;
     private PlayerExtraController _extraController;
 
@@ -95,7 +95,7 @@ public class AltoClef implements ModInitializer {
         _commandExecutor = new CommandExecutor(this, "@");
         _taskRunner = new TaskRunner(this);
         _trackerManager = new TrackerManager(this);
-        _configState = new ConfigState(this);
+        _botBehaviour = new BotBehaviour(this);
         _baritoneCustom = new BaritoneCustom(this, (Baritone)BaritoneAPI.getProvider().getPrimaryBaritone());
         _extraController = new PlayerExtraController(this);
 
@@ -218,7 +218,7 @@ public class AltoClef implements ModInitializer {
         return _taskRunner;
     }
     public UserTaskChain getUserTaskChain() { return _userTaskChain; }
-    public ConfigState getConfigState() { return _configState; }
+    public BotBehaviour getBehaviour() { return _botBehaviour; }
     public BaritoneCustom getCustomBaritone() {return _baritoneCustom; }
 
     // Trackers access

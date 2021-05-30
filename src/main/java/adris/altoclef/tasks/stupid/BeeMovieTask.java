@@ -19,7 +19,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -67,14 +66,14 @@ public class BeeMovieTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
+        mod.getBehaviour().push();
         // Prevent mineshaft garbage
-        mod.getConfigState().setExclusivelyMineLogs(true);
+        mod.getBehaviour().setExclusivelyMineLogs(true);
 
         // Avoid breaking the ground below the signs.
-        mod.getConfigState().avoidBlockBreaking(this::isOnPath);
+        mod.getBehaviour().avoidBlockBreaking(this::isOnPath);
         // Avoid placing blocks where the signs should be placed.
-        mod.getConfigState().avoidBlockPlacing(block -> isOnPath(block.down()));
+        mod.getBehaviour().avoidBlockPlacing(block -> isOnPath(block.down()));
     }
 
     // Whether a block pos is on the path of its signs.
@@ -181,7 +180,7 @@ public class BeeMovieTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

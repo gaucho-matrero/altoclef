@@ -296,7 +296,7 @@ public class MobDefenseChain extends SingleTaskChain {
         try {
             for (Entity entity : entities) {
                 boolean shouldForce = false;
-                if (mod.getConfigState().shouldExcludeFromForcefield(entity)) continue;
+                if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer(entity)) {
                         if (LookUtil.seesPlayer(entity, mod.getPlayer(), 10)) {
@@ -306,7 +306,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 } else if (entity instanceof FireballEntity) {
                     // Ghast ball
                     shouldForce = true;
-                } else if (entity instanceof PlayerEntity && mod.getConfigState().shouldForceFieldPlayers()) {
+                } else if (entity instanceof PlayerEntity && mod.getBehaviour().shouldForceFieldPlayers()) {
                     PlayerEntity player = (PlayerEntity) entity;
                     if (!player.equals(mod.getPlayer())) {
                         String name = player.getName().getString();
@@ -433,7 +433,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 for(HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getBehaviour().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
                         return true;
                     }
                 }

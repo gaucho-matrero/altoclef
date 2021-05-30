@@ -47,8 +47,8 @@ public class ReplaceBlocksTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getConfigState().push();
-        mod.getConfigState().addProtectedItems(_toReplace.getMatches());
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(_toReplace.getMatches());
         // TODO: Bug: We may want to replace a block that's considered a CONSTRUCTION block.
         // If that's the case, we are in trouble.
 
@@ -111,7 +111,7 @@ public class ReplaceBlocksTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getControllerExtras().onBlockBroken.removeListener(blockBrokenListener);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

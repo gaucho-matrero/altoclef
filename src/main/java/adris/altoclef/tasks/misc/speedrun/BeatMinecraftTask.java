@@ -104,20 +104,20 @@ public class BeatMinecraftTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _forceState = ForceState.NONE;
-        mod.getConfigState().push();
+        mod.getBehaviour().push();
         // Add some protections so we don't throw these away at any point.
-        mod.getConfigState().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
-        mod.getConfigState().addProtectedItems(ItemUtil.BED);
+        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
+        mod.getBehaviour().addProtectedItems(ItemUtil.BED);
 
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Allow walking on end portal
-        mod.getConfigState().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
+        mod.getBehaviour().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
 
         // Dodge ALL projectiles in the end.
-        mod.getConfigState().avoidDodgingProjectile(proj -> mod.getCurrentDimension() == Dimension.END);
+        mod.getBehaviour().avoidDodgingProjectile(proj -> mod.getCurrentDimension() == Dimension.END);
 
         // Don't break blocks around our bed, can lead to problems.
-        mod.getConfigState().avoidBlockBreaking(pos -> {
+        mod.getBehaviour().avoidBlockBreaking(pos -> {
             if (_endBedSpawnPos != null) {
                 return _endBedSpawnPos.isWithinDistance(pos, 2);
             }
@@ -144,9 +144,9 @@ public class BeatMinecraftTask extends Task {
         Dimension currentDimension = mod.getCurrentDimension();
         if (currentDimension != _prevDimension) {
             if (currentDimension == Dimension.NETHER) {
-                mod.getConfigState().setAllowDiagonalAscend(false);
+                mod.getBehaviour().setAllowDiagonalAscend(false);
             } else {
-                mod.getConfigState().setAllowDiagonalAscend(true);
+                mod.getBehaviour().setAllowDiagonalAscend(true);
             }
             _prevDimension = currentDimension;
         }
@@ -476,11 +476,11 @@ public class BeatMinecraftTask extends Task {
             // Make sure we have BUILDING supplies.
             int MINIMUM_BUILDING_BLOCKS = 32;
             if (mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK) < MINIMUM_BUILDING_BLOCKS && _collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod)) {
-                mod.getConfigState().addProtectedItems(Items.DIRT, Items.COBBLESTONE);
+                mod.getBehaviour().addProtectedItems(Items.DIRT, Items.COBBLESTONE);
                 setDebugState("Getting building materials before going to end.");
                 return _collectBuildMaterialsTask;
             } else {
-                mod.getConfigState().removeProtectedItems(Items.DIRT, Items.COBBLESTONE);
+                mod.getBehaviour().removeProtectedItems(Items.DIRT, Items.COBBLESTONE);
             }
         }
 
@@ -542,7 +542,7 @@ public class BeatMinecraftTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Most likely we have failed or cancelled at this point.
         // But one day this will actually trigger after the game is completed. Just you wait.
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
 

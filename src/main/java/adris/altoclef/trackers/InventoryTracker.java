@@ -1,6 +1,5 @@
 package adris.altoclef.trackers;
 
-import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.CraftingRecipe;
@@ -19,9 +18,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.Pair;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -199,7 +196,7 @@ public class InventoryTracker extends Tracker {
             double total = 0;
             for (Item item : _itemCounts.keySet()) {
                 boolean normalGood = (includeNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
-                if (normalGood || includeThrowawayProtected || !_mod.getConfigState().isProtected(item)) {
+                if (normalGood || includeThrowawayProtected || !_mod.getBehaviour().isProtected(item)) {
                     total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
@@ -233,7 +230,7 @@ public class InventoryTracker extends Tracker {
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             List<Item> fuel = new ArrayList<>();
             for (Item item : _itemCounts.keySet()) {
-                if (!_mod.getConfigState().isProtected(item)) {
+                if (!_mod.getBehaviour().isProtected(item)) {
                     if (isFuel(item)) {
                         fuel.add(item);
                     }
@@ -384,7 +381,7 @@ public class InventoryTracker extends Tracker {
                 if (check != currentReq && miningRequirementMet(check)) {
                     // Throw away if we have this item since we already have a BETTER one.
                     Item item = check.getMinimumPickaxe();
-                    if (!_mod.getConfigState().isProtected(item)) {
+                    if (!_mod.getBehaviour().isProtected(item)) {
                         if (hasItem(item)) {
                             //Debug.logInternal("Throwing away: " + item.getTranslationKey());
                             return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
@@ -398,7 +395,7 @@ public class InventoryTracker extends Tracker {
                 // Get the first non-important item. For now there is no measure of value.
                 List<Integer> possibleSlots = new ArrayList<>();
                 for (Item item : this._itemSlots.keySet()) {
-                    if (!_mod.getConfigState().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
+                    if (!_mod.getBehaviour().isProtected(item) && !_mod.getModSettings().isImportant(item)) {
                         possibleSlots.addAll(this._itemSlots.get(item));
                     }
                 }

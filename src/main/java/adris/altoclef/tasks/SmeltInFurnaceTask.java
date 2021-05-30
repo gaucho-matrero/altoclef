@@ -185,8 +185,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
             if (needsNewFurnace) {
                 // Special case: Allocate 4 wood for the crafting of the table,
                 // and 2 sticks if we want to make a wooden pickaxe.
-                boolean planksProtected = mod.getConfigState().isProtected(Items.OAK_PLANKS);
-                boolean sticksProtected = mod.getConfigState().isProtected(Items.STICK);
+                boolean planksProtected = mod.getBehaviour().isProtected(Items.OAK_PLANKS);
+                boolean sticksProtected = mod.getBehaviour().isProtected(Items.STICK);
                 int plankCount = planksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.PLANKS), 4);
                 int stickCount = sticksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCountIncludingTable(Items.STICK), 2);
                 hasFuel -= InventoryTracker.getFuelAmount(Items.OAK_PLANKS) * plankCount;

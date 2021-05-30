@@ -16,7 +16,6 @@ import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -28,7 +27,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
@@ -69,8 +67,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
         _currentBedRegion = null;
 
         // Don't break our bed thing.
-        mod.getConfigState().push();
-        mod.getConfigState().avoidBlockPlacing(pos -> {
+        mod.getBehaviour().push();
+        mod.getBehaviour().avoidBlockPlacing(pos -> {
             if (_currentBedRegion != null) {
                 BlockPos start = _currentBedRegion,
                         end = _currentBedRegion.add(BED_CLEAR_SIZE);
@@ -80,7 +78,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }
             return false;
         });
-        mod.getConfigState().avoidBlockBreaking(pos -> {
+        mod.getBehaviour().avoidBlockBreaking(pos -> {
             if (_currentBedRegion != null) {
                 for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
                     BlockPos base = _currentBedRegion.add(baseOffs);
@@ -269,7 +267,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(BEDS);
         mod.onGameMessage.removeListener(onCheckGameMessage);
         mod.onGameOverlayMessage.removeListener(onOverlayMessage);

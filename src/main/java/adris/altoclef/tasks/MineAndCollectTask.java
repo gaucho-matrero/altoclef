@@ -66,11 +66,11 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getConfigState().push();
+        mod.getBehaviour().push();
         mod.getBlockTracker().trackBlock(_blocksToMine);
 
         // We're mining, so don't throw away pickaxes.
-        mod.getConfigState().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
+        mod.getBehaviour().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
 
         _subtask.resetSearch();
     }
@@ -103,7 +103,7 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(_blocksToMine);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override

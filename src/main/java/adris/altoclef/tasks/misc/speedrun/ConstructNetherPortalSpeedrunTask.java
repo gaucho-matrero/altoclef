@@ -124,11 +124,11 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         _isPlacingLiquid = false;
         _portalFrameBuilt = false;
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
-        mod.getConfigState().push();
-        mod.getConfigState().setSearchAnywhereFlag(true);
+        mod.getBehaviour().push();
+        mod.getBehaviour().setSearchAnywhereFlag(true);
         //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
         // Avoid breaking frame.
-        mod.getConfigState().avoidBlockBreaking((block) -> {
+        mod.getBehaviour().avoidBlockBreaking((block) -> {
             if (_portalOrigin != null) {
 
                 for (Vec3i framePosRelative : PORTAL_CONSTRUCTION_FRAME) {
@@ -152,7 +152,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     protected adris.altoclef.tasksystem.Task onTick(AltoClef mod) {
 
         // Pre-affirmed thing
-        mod.getConfigState().setAllowWalkThroughFlowingWater(false);
+        mod.getBehaviour().setAllowWalkThroughFlowingWater(false);
 
         // Get bucket if we don't have one.
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
@@ -258,7 +258,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
                 }
                 _portalFrameBuilt = false;
                 // Walk through water to get to the bottom, we have to get there to further guarantee placement.
-                mod.getConfigState().setAllowWalkThroughFlowingWater(lavaTarget.isBelow());
+                mod.getBehaviour().setAllowWalkThroughFlowingWater(lavaTarget.isBelow());
 
                 // Special case: Get close enough to our base if we're placing in the bad zone
                 if (lavaTarget.isBelow()) {
@@ -282,7 +282,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
                 return lavaTarget.placeTask(_portalOrigin, lavaTarget.isBelow());
             }
         }
-        mod.getConfigState().setAllowWalkThroughFlowingWater(false);
+        mod.getBehaviour().setAllowWalkThroughFlowingWater(false);
 
         _portalFrameBuilt = true;
 
@@ -331,7 +331,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     @Override
     protected void onStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.LAVA);
-        mod.getConfigState().pop();
+        mod.getBehaviour().pop();
     }
 
     @Override
