@@ -3,7 +3,7 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
@@ -62,7 +62,7 @@ public class PlaceSignTask extends Task {
                 return new DestroyBlockTask(_target);
             }
 
-            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down(), true);
+            return new InteractWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down(), true);
         }
     }
 

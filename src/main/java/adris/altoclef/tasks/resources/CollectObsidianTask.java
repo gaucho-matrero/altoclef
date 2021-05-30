@@ -3,7 +3,7 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
@@ -174,7 +174,7 @@ public class CollectObsidianTask extends ResourceTask {
             }
 
             //_placeWaterTimeout.reset();
-            return new InteractItemWithBlockTask(TaskCatalogue.getItemTarget("water_bucket", 1), Direction.WEST, placeOnPos, true);
+            return new InteractWithBlockTask(TaskCatalogue.getItemTarget("water_bucket", 1), Direction.WEST, placeOnPos, true);
         } else {
             _lavaTimeout.reset();
         }

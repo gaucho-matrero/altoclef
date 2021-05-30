@@ -2,7 +2,7 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.misc.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -53,7 +53,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                     //Debug.logInternal("PLACED: " + placed);
                     if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5)) {
                         BlockPos toInteract = placed.down();
-                        Optional<Rotation> reach = InteractItemWithBlockTask.getReach(toInteract, Direction.UP);
+                        Optional<Rotation> reach = InteractWithBlockTask.getReach(toInteract, Direction.UP);
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {

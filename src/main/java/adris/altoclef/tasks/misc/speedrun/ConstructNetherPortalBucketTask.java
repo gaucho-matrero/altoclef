@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -318,7 +318,7 @@ public class ConstructNetherPortalBucketTask extends Task {
 
                 setDebugState("Placing lava for cast");
 
-                return new InteractItemWithBlockTask(new ItemTarget("lava_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 0, 0), false);
+                return new InteractWithBlockTask(new ItemTarget("lava_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 0, 0), false);
             }
             // Lava placed, Now, place water.
             BlockPos waterCheck = framePos.up();
@@ -344,7 +344,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                     return new GetToBlockTask(targetPos, false);
                 }
 
-                return new InteractItemWithBlockTask(new ItemTarget("water_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 1, 0), true);
+                return new InteractWithBlockTask(new ItemTarget("water_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 1, 0), true);
             }
         }
         // No more obsidian targets necessary.
@@ -365,7 +365,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractItemWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
     }
 
     @Override

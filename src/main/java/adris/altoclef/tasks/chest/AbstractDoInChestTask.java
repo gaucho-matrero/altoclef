@@ -2,6 +2,7 @@ package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.GetToBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.util.math.BlockPos;
@@ -24,7 +25,7 @@ public abstract class AbstractDoInChestTask extends Task {
         if (_targetChest.isWithinDistance(mod.getPlayer().getPos(), 8) && mod.getPlayer().currentScreenHandler instanceof GenericContainerScreenHandler) {
             return doToOpenChestTask(mod, (GenericContainerScreenHandler) mod.getPlayer().currentScreenHandler);
         }
-        return new GetToBlockTask(_targetChest, true);
+        return new InteractWithBlockTask(_targetChest);
     }
 
     @Override

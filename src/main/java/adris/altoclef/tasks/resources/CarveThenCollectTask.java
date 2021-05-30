@@ -3,7 +3,7 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
@@ -67,7 +67,7 @@ public class CarveThenCollectTask extends ResourceTask {
         // If our carve block is spotted, carve it.
         if (mod.getBlockTracker().anyFound(_toCarveBlocks)) {
             setDebugState("Carving block");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new InteractItemWithBlockTask(_carveWith, blockPos, false), pos -> mod.getBlockTracker().getNearestTracking(pos, _toCarveBlocks), _toCarveBlocks);
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new InteractWithBlockTask(_carveWith, blockPos, false), pos -> mod.getBlockTracker().getNearestTracking(pos, _toCarveBlocks), _toCarveBlocks);
         }
         // Collect carve blocks if we don't have enough, or place them down if we do.
         int neededCarveItems = _target.getTargetCount() - mod.getInventoryTracker().getItemCount(_target);

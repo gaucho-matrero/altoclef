@@ -1,9 +1,8 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -20,9 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -104,7 +101,7 @@ public class CollectCropTask extends ResourceTask {
             assert !_emptyCropland.isEmpty();
             return new DoToClosestBlockTask(
                     () -> mod.getPlayer().getPos(),
-                    blockPos -> new InteractItemWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
+                    blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
                     pos -> Util.minItem(_emptyCropland, (block) -> block.getSquaredDistance(pos, false)), Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }
 

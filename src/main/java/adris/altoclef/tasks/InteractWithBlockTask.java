@@ -30,7 +30,7 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.Optional;
 
-public class InteractItemWithBlockTask extends Task {
+public class InteractWithBlockTask extends Task {
 
     private static final int MAX_REACH = 7;
 
@@ -55,7 +55,7 @@ public class InteractItemWithBlockTask extends Task {
 
     private int reachDistance = 0;
 
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
         _direction = direction;
         _target = target;
@@ -64,18 +64,24 @@ public class InteractItemWithBlockTask extends Task {
         _interactOffset = interactOffset;
         _shiftClick = shiftClick;
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
         this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shiftClick);
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
         this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         // null means any side is OK
         this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
     }
-    public InteractItemWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
         this(toUse, target, walkInto, Vec3i.ZERO);
+    }
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target) {
+        this(toUse, target, false);
+    }
+    public InteractWithBlockTask(BlockPos target) {
+        this(null, null, target, Input.CLICK_RIGHT, false, false);
     }
 
     @Override
@@ -154,8 +160,8 @@ public class InteractItemWithBlockTask extends Task {
 
     @Override
     protected boolean isEqual(Task obj) {
-        if (obj instanceof InteractItemWithBlockTask) {
-            InteractItemWithBlockTask task = (InteractItemWithBlockTask) obj;
+        if (obj instanceof InteractWithBlockTask) {
+            InteractWithBlockTask task = (InteractWithBlockTask) obj;
             if ((task._direction == null) != (_direction == null)) return false;
             if (task._direction != null && !task._direction.equals(_direction)) return false;
             if ((task._toUse == null) != (_toUse == null)) return false;

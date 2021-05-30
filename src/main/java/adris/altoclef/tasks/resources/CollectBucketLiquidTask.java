@@ -14,7 +14,6 @@ import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -27,7 +26,6 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.function.Function;
 
 public class CollectBucketLiquidTask extends ResourceTask {
@@ -170,7 +168,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     }
                 }
 
-                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
+                InteractWithBlockTask task = new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 // noinspection rawtypes
                 task.TimedOut.addListener(
                         new ActionListener() {

@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
@@ -27,7 +27,7 @@ public class PutOutFireTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        return new InteractItemWithBlockTask(null, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false, false);
+        return new InteractWithBlockTask(null, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false, false);
     }
 
     @Override

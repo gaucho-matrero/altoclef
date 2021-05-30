@@ -6,7 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.CollectBedTask;
@@ -86,8 +86,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 }
             }
             // Don't ever break beds. If one exists, we will sleep in it.
-            if (mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock) return true;
-            return false;
+            return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
         });
 
         mod.getBlockTracker().trackBlock(BEDS);
@@ -181,7 +180,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 _bedForSpawnPoint = WorldUtil.getBedHead(mod, toSleepIn);
                 //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
                 _progressChecker.reset();
-                return new GetToBlockTask(targetMove, closeEnough);
+                return new InteractWithBlockTask(targetMove);
             }, pos -> mod.getBlockTracker().getNearestTracking(pos, BEDS), BEDS);
         }
 
@@ -246,7 +245,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         BlockPos toStand = _currentBedRegion.add(BED_PLACE_STAND_POS);
         // Our bed region is READY TO BE PLACED
         if (!mod.getPlayer().getBlockPos().equals(toStand)) {
-            return new GetToBlockTask(toStand, false);
+            return new GetToBlockTask(toStand);
         }
 
         BlockPos toPlace = _currentBedRegion.add(BED_PLACE_POS);
@@ -262,7 +261,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             _progressChecker.reset();
             return _wanderTask;
         }
-        return new InteractItemWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
+        return new InteractWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 
     @Override

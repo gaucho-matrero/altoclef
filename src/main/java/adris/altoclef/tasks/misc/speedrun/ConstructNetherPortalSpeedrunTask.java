@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -234,7 +234,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
                 // Place water
                 // south corresponds to +z
                 Direction placeWaterFrom = Direction.SOUTH;
-                return new InteractItemWithBlockTask(new ItemTarget(Items.WATER_BUCKET, 1), placeWaterFrom, waterSourcePos.offset(placeWaterFrom.getOpposite()), true);
+                return new InteractWithBlockTask(new ItemTarget(Items.WATER_BUCKET, 1), placeWaterFrom, waterSourcePos.offset(placeWaterFrom.getOpposite()), true);
             }
         }
         //_isPlacingLiquid = false;
@@ -306,7 +306,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractItemWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1),  Direction.UP, _portalOrigin.down(), true);
 
         // Pick up water
         // Clear inner portal area
@@ -539,7 +539,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
             }
 
             // Place lava there
-            return new InteractItemWithBlockTask(new ItemTarget("lava_bucket", 1), fromWhere, placeOn, below);
+            return new InteractWithBlockTask(new ItemTarget("lava_bucket", 1), fromWhere, placeOn, below);
         }
         private boolean isSatisfied(BlockPos portalOrigin) {
             Block b = MinecraftClient.getInstance().world.getBlockState(portalOrigin.add(where)).getBlock();
