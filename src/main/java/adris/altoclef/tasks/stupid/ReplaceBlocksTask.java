@@ -15,6 +15,8 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Stack;
 
@@ -33,7 +35,7 @@ public class ReplaceBlocksTask extends Task {
 
     private Task _replaceTask;
 
-    private final Stack<BlockPos> _forceReplace = new Stack<>();
+    private final Deque<BlockPos> _forceReplace = new ArrayDeque<>();
 
     public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block ...toFind) {
         _toFind = toFind;
@@ -89,7 +91,7 @@ public class ReplaceBlocksTask extends Task {
         Block[] blocksToPlace = Util.itemsToBlocks(_toReplace.getMatches());
 
         // If we are forced to replace something we broke, do it now.
-        while (!_forceReplace.empty()) {
+        while (!_forceReplace.isEmpty()) {
             BlockPos toReplace = _forceReplace.pop();
             if (!Util.arrayContains(blocksToPlace, mod.getWorld().getBlockState(toReplace).getBlock())) {
                 _replaceTask = new PlaceBlockTask(toReplace, blocksToPlace);
