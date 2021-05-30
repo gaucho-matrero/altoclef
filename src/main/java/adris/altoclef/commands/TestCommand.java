@@ -2,6 +2,7 @@ package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.AltoClefCommands;
+import adris.altoclef.Playground;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
@@ -15,7 +16,7 @@ public class TestCommand extends Command {
 
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        AltoClefCommands.TEMP_TEST_FUNCTION(mod, parser.Get(String.class));
+        Playground.TEMP_TEST_FUNCTION(mod, parser.Get(String.class));
         finish();
     }
 }

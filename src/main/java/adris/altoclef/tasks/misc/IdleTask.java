@@ -2,6 +2,7 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.AltoClefCommands;
+import adris.altoclef.Playground;
 import adris.altoclef.tasksystem.Task;
 
 public class IdleTask extends Task {
@@ -13,7 +14,7 @@ public class IdleTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         // Do nothing except maybe test code
-        AltoClefCommands.IDLE_TEST_TICK_FUNCTION(mod);
+        Playground.IDLE_TEST_TICK_FUNCTION(mod);
         return null;
     }
 
