@@ -2,26 +2,19 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
 import adris.altoclef.tasks.misc.MLGBucketTask;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
-import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
 import adris.altoclef.util.csharpisbetter.Timer;
-import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.sql.Time;
 import java.util.Optional;
 
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
@@ -60,7 +53,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                     //Debug.logInternal("PLACED: " + placed);
                     if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5)) {
                         BlockPos toInteract = placed.down();
-                        Optional<Rotation> reach = InteractWithBlockPositionProcess.getReach(toInteract, Direction.UP);
+                        Optional<Rotation> reach = InteractItemWithBlockTask.getReach(toInteract, Direction.UP);
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
