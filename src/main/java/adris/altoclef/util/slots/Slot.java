@@ -16,6 +16,11 @@ import net.minecraft.screen.ScreenHandler;
 // Player Inventory Slots (used to grab inventory items only):
 //      https://minecraft.gamepedia.com/Inventory
 public abstract class Slot {
+
+    // -1 means cursor slot, the slot of the cursor when it holds an item.
+    public static final int CURSOR_SLOT_INDEX = -1;
+    private static final int UNDEFINED_SLOT_INDEX = -999;
+
     private final int _inventorySlot;
     private final int _windowSlot;
 
@@ -33,11 +38,11 @@ public abstract class Slot {
         _isInventory = inventory;
         if (inventory) {
             _inventorySlot = slot;
-            _windowSlot = -1;
+            _windowSlot = UNDEFINED_SLOT_INDEX;
             //_windowSlot = inventorySlotToWindowSlot(slot);
         } else {
             //_inventorySlot = windowSlotToInventorySlot(slot);
-            _inventorySlot = -1;
+            _inventorySlot = UNDEFINED_SLOT_INDEX;
             _windowSlot = slot;
         }
     }
@@ -69,7 +74,7 @@ public abstract class Slot {
 
     public static Slot getFromInventory(int inventorySlot) {
         // -1 means cursor.
-        if (inventorySlot == -1) {
+        if (inventorySlot == CURSOR_SLOT_INDEX) {
             return new CursorInventorySlot();
         }
         switch (getCurrentType()) {

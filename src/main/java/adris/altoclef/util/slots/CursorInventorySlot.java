@@ -2,17 +2,17 @@ package adris.altoclef.util.slots;
 
 public class CursorInventorySlot extends Slot {
     public CursorInventorySlot() {
-        super(-1, true);
+        super(Slot.CURSOR_SLOT_INDEX, true);
     }
 
     @Override
     protected int inventorySlotToWindowSlot(int inventorySlot) {
-        return -1;
+        return Slot.CURSOR_SLOT_INDEX;
     }
 
     @Override
     protected int windowSlotToInventorySlot(int windowSlot) {
-        return -1;
+        return Slot.CURSOR_SLOT_INDEX;
     }
 
     @Override
