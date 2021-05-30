@@ -1,21 +1,42 @@
 package adris.altoclef;
 
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.KillAura;
 import adris.altoclef.util.csharpisbetter.Util;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("ALL")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Settings {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";
@@ -222,22 +243,24 @@ public class Settings {
     /**
      * If we need to throw away something, throw away these items first.
      */
-    private int[] throwawayItems = new int[] {
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
+    private List<Item> throwawayItems = Arrays.asList(
             // Overworld junk
-            Item.getRawId(Items.DIORITE),
-            Item.getRawId(Items.ANDESITE),
-            Item.getRawId(Items.GRANITE),
-            Item.getRawId(Items.COBBLESTONE),
-            Item.getRawId(Items.DIRT),
-            Item.getRawId(Items.GRAVEL),
+            Items.DIORITE,
+            Items.ANDESITE,
+            Items.GRANITE,
+            Items.COBBLESTONE,
+            Items.DIRT,
+            Items.GRAVEL,
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
-            Item.getRawId(Items.NETHERRACK),
-            Item.getRawId(Items.MAGMA_BLOCK),
-            Item.getRawId(Items.SOUL_SOIL),
-            Item.getRawId(Items.SOUL_SAND),
-            Item.getRawId(Items.NETHER_BRICKS),
-            Item.getRawId(Items.NETHER_BRICK)
-    };
+            Items.NETHERRACK,
+            Items.MAGMA_BLOCK,
+            Items.SOUL_SOIL,
+            Items.SOUL_SAND,
+            Items.NETHER_BRICKS,
+            Items.NETHER_BRICK
+    );
 
     /**
      * If we need to throw away something but we don't have any "throwaway Items",
@@ -251,28 +274,30 @@ public class Settings {
      * We will NEVER throw away these items.
      * Even if "throwAwayUnusedItems" is true and one of these items is not used in a task.
      */
-    private int[] importantItems = new int[] {
-            Item.getRawId(Items.ENCHANTED_GOLDEN_APPLE),
-            Item.getRawId(Items.ENDER_EYE),
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
+    private List<Item> importantItems = Arrays.asList(
+            Items.ENCHANTED_GOLDEN_APPLE,
+            Items.ENDER_EYE,
             // Don't throw away shulker boxes that would be pretty bad lol
-            Item.getRawId(Items.SHULKER_BOX),
-            Item.getRawId(Items.BLACK_SHULKER_BOX),
-            Item.getRawId(Items.BLUE_SHULKER_BOX),
-            Item.getRawId(Items.BROWN_SHULKER_BOX),
-            Item.getRawId(Items.CYAN_SHULKER_BOX),
-            Item.getRawId(Items.GRAY_SHULKER_BOX),
-            Item.getRawId(Items.GREEN_SHULKER_BOX),
-            Item.getRawId(Items.LIGHT_BLUE_SHULKER_BOX),
-            Item.getRawId(Items.LIGHT_GRAY_SHULKER_BOX),
-            Item.getRawId(Items.LIME_SHULKER_BOX),
-            Item.getRawId(Items.MAGENTA_SHULKER_BOX),
-            Item.getRawId(Items.ORANGE_SHULKER_BOX),
-            Item.getRawId(Items.PINK_SHULKER_BOX),
-            Item.getRawId(Items.PURPLE_SHULKER_BOX),
-            Item.getRawId(Items.RED_SHULKER_BOX),
-            Item.getRawId(Items.WHITE_SHULKER_BOX),
-            Item.getRawId(Items.YELLOW_SHULKER_BOX)
-    };
+            Items.SHULKER_BOX,
+            Items.BLACK_SHULKER_BOX,
+            Items.BLUE_SHULKER_BOX,
+            Items.BROWN_SHULKER_BOX,
+            Items.CYAN_SHULKER_BOX,
+            Items.GRAY_SHULKER_BOX,
+            Items.GREEN_SHULKER_BOX,
+            Items.LIGHT_BLUE_SHULKER_BOX,
+            Items.LIGHT_GRAY_SHULKER_BOX,
+            Items.LIME_SHULKER_BOX,
+            Items.MAGENTA_SHULKER_BOX,
+            Items.ORANGE_SHULKER_BOX,
+            Items.PINK_SHULKER_BOX,
+            Items.PURPLE_SHULKER_BOX,
+            Items.RED_SHULKER_BOX,
+            Items.WHITE_SHULKER_BOX,
+            Items.YELLOW_SHULKER_BOX
+    );
 
     /**
      * These areas will not be mined.
@@ -281,34 +306,27 @@ public class Settings {
      * the bot doesn't keep trying to break spawn protected
      * blocks.
      */
-    private ProtectionRange[] areasToProtect = new ProtectionRange[] {
-
-    };
-
-    // Internal tracking of whether we're dirty or not.
-    private transient boolean _dirty;
+    private List<ProtectionRange> areasToProtect = Collections.emptyList();
 
     public static Settings load() {
 
         File loadFrom = new File(SETTINGS_PATH);
         if (!loadFrom.exists()) {
             Settings result = new Settings();
-            result.markDirty();
+            //result.markDirty();
             result.save();
             return result;
         }
 
-        String data;
+        ObjectMapper mapper = new ObjectMapper();
+        Settings result = null;
         try {
-            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
+            result = mapper.readValue(Paths.get(SETTINGS_PATH).toFile(), Settings.class);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
-        Gson gson = new Gson();
 
-        Settings result = gson.fromJson(data, Settings.class);
-        result.markDirty();
+        //result.markDirty();
         result.save();
 
         for (ProtectionRange protection : result.areasToProtect) {
@@ -319,39 +337,30 @@ public class Settings {
     }
 
     private static void save(Settings settings) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        String userJson = gson.toJson(settings);
-
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            // Pretty print and indent arrays too.
+            DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+            prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+
+            mapper.writer(prettyPrinter).writeValue(Paths.get(SETTINGS_PATH).toFile(), settings);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Dirty managing
-    private void markDirty() {
-        _dirty = true;
-    }
-    public boolean isDirty() {
-        return _dirty;
-    }
-
     public void save() {
-        if (!_dirty) return;
+        //if (!_dirty) return;
         save(this);
-        _dirty = false;
+        //_dirty = false;
     }
 
     public boolean shouldShowTaskChain() { return showTaskChains; }
-
-    public void setSpeedHack(float value) {
-        speedHack = value; markDirty();
-    }
     public float getSpeedHack() {
         return speedHack;
     }
-
     public float getResourcePickupRange() {return resourcePickupDropRange;}
 
     public float getResourceChestLocateRange() {return resourceChestLocateRange;}
@@ -361,99 +370,55 @@ public class Settings {
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
     }
-
     public boolean isMobDefense() {
         return mobDefense;
     }
-    public void setMobDefense(boolean mobDefense) {
-        this.mobDefense = mobDefense; markDirty();
-    }
-
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
     }
-    public void setDodgeProjectiles(boolean dodgeProjectiles) {
-        this.dodgeProjectiles = dodgeProjectiles; markDirty();
-    }
-
     public boolean isAutoEat() {
         return autoEat;
-    }
-    public void setAutoEat(boolean autoEat) {
-        this.autoEat = autoEat;
-        markDirty();
     }
     public boolean isAutoReconnect() {
         return autoReconnect;
     }
-    public void setAutoReconnect(boolean autoReconnect) {
-        this.autoReconnect = autoReconnect;
-    }
-
     public boolean isAutoRespawn() {
         return autoRespawn;
     }
-    public void setAutoRespawn(boolean autoRespawn) {
-        this.autoRespawn = autoRespawn;
-    }
-
     public boolean shouldReplantCrops() {return replantCrops;}
-
     public boolean isUseButlerBlacklist() {
         return useButlerBlacklist;
     }
-    public void setUseButlerBlacklist(boolean useButlerBlacklist) {
-        this.useButlerBlacklist = useButlerBlacklist;
-    }
-
     public boolean isUseButlerWhitelist() {
         return useButlerWhitelist;
     }
-    public void setUseButlerWhitelist(boolean useButlerWhitelist) {
-        this.useButlerWhitelist = useButlerWhitelist;
-    }
-
     public boolean shouldDealWithAnnoyingHostiles() {return killOrAvoidAnnoyingHostiles;}
-
     public KillAura.Strategy getForceFieldStrategy() {return forceFieldStrategy;}
-
     public boolean shouldIdleWhenNotActive() {return idleWhenNotActive;}
-
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
     }
-
     public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
-
     public boolean shouldAvoidDrowning() {return avoidDrowning;}
-
     public boolean shouldAvoidSearchingForDungeonChests() {return avoidSearchingDungeonChests;}
 
     public boolean isThrowaway(Item item) {
-        return idArrayContainsItem(item, throwawayItems);
+        return throwawayItems.contains(item);
     }
     public boolean isImportant(Item item) {
-        return idArrayContainsItem(item, importantItems);
+        return importantItems.contains(item);
     }
     public boolean shouldThrowawayUnusedItems() {
         return this.throwAwayUnusedItems;
     }
     public Item[] getThrowawayItems(AltoClef mod) {
         List<Item> result = new ArrayList<>();
-        for (int throwawayItem : throwawayItems) {
-            Item item = Item.byRawId(throwawayItem);
-            if (!mod.getBehaviour().isProtected(item)) {
-                result.add(item);
+        for (Item throwawayItem : throwawayItems) {
+            if (!mod.getBehaviour().isProtected(throwawayItem)) {
+                result.add(throwawayItem);
             }
         }
         return Util.toArray(Item.class, result);
-    }
-    public Item[] getThrowawayItemsRaw() {
-        Item[] result = new Item[throwawayItems.length];
-        for (int i = 0; i < throwawayItems.length; ++i) {
-            result[i] = Item.byRawId(throwawayItems[i]);
-        }
-        return result;
     }
 
     public String[] getWhisperFormats() {return whisperFormats;}
@@ -485,6 +450,57 @@ public class Settings {
 
         public String toString() {
             return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
+        }
+    }
+
+    static class ItemSerializer extends StdSerializer<Object> {
+        public ItemSerializer() {
+            this(null);
+        }
+        public ItemSerializer(Class<Object> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            List<Item> items = (List<Item>) value;
+            gen.writeStartArray();
+            for (Item item : items) {
+                String key = ItemUtil.trimItemName(item.getTranslationKey());
+                gen.writeString(key);
+            }
+            gen.writeEndArray();
+        }
+    }
+
+    static class ItemDeserializer extends StdDeserializer<Object> {
+        public ItemDeserializer() {
+            this(null);
+        }
+        public ItemDeserializer(Class<Object> vc) {
+            super(vc);
+        }
+
+        @Override
+        public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            List<Item> result = new ArrayList<>();
+
+            if (p.getCurrentToken() != JsonToken.START_ARRAY) {
+                throw new JsonParseException("Start array expected", p.getCurrentLocation());
+            }
+
+            while (p.getCurrentToken() != JsonToken.END_ARRAY) {
+                String itemKey = p.nextTextValue();
+                if (p.getCurrentToken() == JsonToken.END_ARRAY) {
+                    break;
+                }
+                itemKey = ItemUtil.trimItemName(itemKey);
+                Debug.logInternal("(KEY: " + itemKey + ")");
+                Item item = Registry.ITEM.get(new Identifier(itemKey));
+                result.add(item);
+            }
+
+            return result;
         }
     }
 }
