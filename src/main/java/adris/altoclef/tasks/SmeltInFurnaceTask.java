@@ -153,17 +153,18 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Check for materials.
             // If materials are already in the furnace, we need less of them.
             if (!_ignoreMaterials) {
-                ItemTarget neededMaterials = new ItemTarget(_target.getMaterial());
-                neededMaterials.targetCount -= mod.getInventoryTracker().getItemCount(_target.getItem());
+                int materialsNeeded = _target.getMaterial().getTargetCount();
+                materialsNeeded -= mod.getInventoryTracker().getItemCount(_target.getItem());
                 if (_currentFurnace != null) {
-                    if (neededMaterials.matches(_currentFurnace.materials.getItem())) {
-                        neededMaterials.targetCount -= _currentFurnace.materials.getCount();
+                    if (_target.getMaterial().matches(_currentFurnace.materials.getItem())) {
+                        materialsNeeded -= _currentFurnace.materials.getCount();
                     }// else {
                     //Debug.logMessage("Material does NOT match " + _currentFurnace.materials.getItem().getTranslationKey());
                     //}
                     //Debug.logMessage("Material Matches: %d - (%d + %d + %d)", neededMaterials.targetCount, _currentFurnace.materials.getCount(), _currentFurnace.output.getCount(), mod.getInventoryTracker().getItemCount(_target.getItem()));
-                    neededMaterials.targetCount -= _currentFurnace.output.getCount();
+                    materialsNeeded -= _currentFurnace.output.getCount();
                 }
+                ItemTarget neededMaterials = new ItemTarget(_target.getMaterial(), materialsNeeded);
                 if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
                     setDebugState("Collecting materials: " + neededMaterials);
                     _smeltProgressChecker.reset();
@@ -178,7 +179,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             boolean needsNewFurnace = getTargetContainerPosition() == null;
 
-            double fuelNeeded = _target.getMaterial().targetCount - mod.getInventoryTracker().getItemCount(_target.getItem());
+            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCount(_target.getItem());
 
             double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
 
@@ -215,7 +216,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // virtual
         protected Task getMaterialTask(ItemTarget target) {
             if (target.isCatalogueItem()) {
-                return TaskCatalogue.getItemTask(target.getCatalogueName(), target.targetCount);
+                return TaskCatalogue.getItemTask(target.getCatalogueName(), target.getTargetCount());
             } else {
                 Debug.logWarning("Smelt in furnace: material target is not catalogued: " + target + ". Override getMaterialTask or make sure the given material is catalogued!");
                 return null;
@@ -242,7 +243,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             int materialCount = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount();
 
             int currentlyHeld = mod.getInventoryTracker().getItemCount(_target.getItem());
-            int targetCount = _target.getItem().targetCount;
+            int targetCount = _target.getItem().getTargetCount();
             // How many MORE materials do we need in the slot to end up with the correct number of items?
             int toMove = targetCount - (outputCount + materialCount + currentlyHeld);
             if (_ignoreMaterials) {
@@ -257,8 +258,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 //Debug.logInternal("OOF: " + toMove + " : " + this._target.getMaterial().getMatches()[0].getTranslationKey());
             }
             if (toMove > 0) {
-                ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial());
-                toMoveTarget.targetCount = toMove;
+                ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial(), toMove);
                 int moved = mod.getInventoryTracker().moveItemToSlot(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
 
                 if (moved != toMove && !_ignoreMaterials) {

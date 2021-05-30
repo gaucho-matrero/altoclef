@@ -53,7 +53,7 @@ public class StoreInChestTask extends AbstractDoInChestTask {
                 for (Item match : target.getMatches()) {
                     has += data.getItemCount(match);
                 }
-                if (has < target.targetCount) {
+                if (has < target.getTargetCount()) {
                     // We need to store items!
                     // Get empty spot in chest
                     int start = 0;
@@ -70,7 +70,7 @@ public class StoreInChestTask extends AbstractDoInChestTask {
                         return null;
                     }
                     // Move at most (target.targetCount - has) of any one item to empty slot
-                    int maxToMove = target.targetCount - has;
+                    int maxToMove = target.getTargetCount() - has;
                     List<Integer> availableSlots = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches());
                     if (availableSlots.size() != 0) {
                         Slot slotFrom = Slot.getFromInventory(availableSlots.get(0));

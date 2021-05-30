@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.SlotActionType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -71,6 +72,7 @@ public class InventoryTracker extends Tracker {
     }
     public boolean hasItem(String catalogueName) {
         Item[] items = TaskCatalogue.getItemMatches(catalogueName);
+        assert items != null;
         return hasItem(items);
     }
     public int getItemCount(Item item) {
@@ -165,7 +167,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         for(ItemTarget target : targets) {
-            if (getItemCount(target) < target.targetCount) {
+            if (getItemCount(target) < target.getTargetCount()) {
                 return false;
             }
         }
@@ -265,6 +267,7 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
         ensureUpdated();
         HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
@@ -272,7 +275,7 @@ public class InventoryTracker extends Tracker {
             CraftingRecipe recipe = target.getRecipe();
             int need = 0;
             if (target.getItem() != null) {
-                need = target.getItem().targetCount;
+                need = target.getItem().getTargetCount();
                 if (target.getItem().getMatches() != null) {
                     need -= getItemCount(target.getItem());
                 }
@@ -667,8 +670,8 @@ public class InventoryTracker extends Tracker {
 
     public int moveItemToSlot(ItemTarget toMove, Slot moveTo) {
         for (Item item : toMove.getMatches()) {
-            if (getItemCount(item) >= toMove.targetCount) {
-                return moveItemToSlot(item, toMove.targetCount, moveTo);
+            if (getItemCount(item) >= toMove.getTargetCount()) {
+                return moveItemToSlot(item, toMove.getTargetCount(), moveTo);
             }
         }
         return 0;

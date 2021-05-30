@@ -482,7 +482,7 @@ public class TaskCatalogue {
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
-        return getItemTask(target.getCatalogueName(), target.targetCount);
+        return getItemTask(target.getCatalogueName(), target.getTargetCount());
     }
 
     public static boolean taskExists(String name) {

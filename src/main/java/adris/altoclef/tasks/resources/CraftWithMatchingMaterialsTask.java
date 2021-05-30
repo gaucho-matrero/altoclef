@@ -34,12 +34,11 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         for (int i = 0; i < recipe.getSlotCount(); ++i) {
             if (sameMask[i]) {
                 sameResourceRequiredCount++;
-                ItemTarget t = recipe.getSlot(i);
-                sameResourceTarget = t;
+                sameResourceTarget = recipe.getSlot(i);
             }
         }
         _sameResourceTarget = sameResourceTarget;
-        int craftsNeeded = (int)(1 + Math.floor((double)target.targetCount / recipe.outputCount() - 0.001));
+        int craftsNeeded = (int)(1 + Math.floor((double)target.getTargetCount() / recipe.outputCount() - 0.001));
         _sameResourcePerRecipe = sameResourceRequiredCount;
         _sameResourceRequiredCount = sameResourceRequiredCount * craftsNeeded;
     }
@@ -89,7 +88,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
         // If we already have some of our target, we need less "same" materials.
         int currentTargetCount = mod.getInventoryTracker().getItemCount(_target);
-        int currentTargetsRequired = _target.targetCount - currentTargetCount;
+        int currentTargetsRequired = _target.getTargetCount() - currentTargetCount;
 
         if (canCraftTotal >= currentTargetsRequired) {
             // We have enough of the same resource!!!
@@ -108,7 +107,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
-            toCraftTotal = Math.min(toCraftTotal, _target.targetCount);
+            toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
             return _recipe.isBig()? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
         }
         // Collect SAME resources first!!!
@@ -126,7 +125,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget.getCatalogueName());
             return TaskCatalogue.getItemTask(infinityVersion);
         }
-        Debug.logWarning("ItemTarget for same resource is not catalogued: " + _sameResourceTarget.toString());
+        Debug.logWarning("ItemTarget for same resource is not catalogued: " + _sameResourceTarget);
         return null;
     }
 

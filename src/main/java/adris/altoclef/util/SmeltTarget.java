@@ -12,7 +12,7 @@ public class SmeltTarget {
     public SmeltTarget(ItemTarget item, ItemTarget material) {
         _item = item;
         _material = material;
-        _material.targetCount = _item.targetCount;
+        _material = new ItemTarget(material, _item.getTargetCount());
     }
 
     public ItemTarget getItem() {

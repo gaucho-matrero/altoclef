@@ -70,7 +70,7 @@ public class CarveThenCollectTask extends ResourceTask {
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new InteractItemWithBlockTask(_carveWith, blockPos, false), pos -> mod.getBlockTracker().getNearestTracking(pos, _toCarveBlocks), _toCarveBlocks);
         }
         // Collect carve blocks if we don't have enough, or place them down if we do.
-        int neededCarveItems = _target.targetCount - mod.getInventoryTracker().getItemCount(_target);
+        int neededCarveItems = _target.getTargetCount() - mod.getInventoryTracker().getItemCount(_target);
         int currentCarveItems = mod.getInventoryTracker().getItemCount(_toCarve);
         if (neededCarveItems > currentCarveItems) {
             setDebugState("Collecting more blocks to carve");

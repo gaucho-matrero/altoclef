@@ -56,15 +56,16 @@ public class GiveItemToPlayerTask extends Task {
             // THROW ITEMS
             setDebugState("Throwing items");
             LookUtil.lookAt(mod, targetPos);
-            for (ItemTarget target : _throwTarget) {
-                if (target.targetCount > 0) {
+            for (int i = 0; i < _throwTarget.size(); ++i) {
+                ItemTarget target = _throwTarget.get(i);
+                if (target.getTargetCount() > 0) {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Debug.logMessage("THROWING: " + has.get());
                         ItemStack stack = mod.getInventoryTracker().throwSlot(Slot.getFromInventory(has.get()));
-                        //mod.getInventoryTracker().equipItem(target);
-                        //mod.getControllerExtras().dropCurrentStack(true);
-                        target.targetCount -= stack.getCount();
+                        // Update target
+                        target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
+                        _throwTarget.set(i, target);
                         return null;
                     }
                 }
