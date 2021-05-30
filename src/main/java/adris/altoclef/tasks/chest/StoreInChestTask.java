@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.chest;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
@@ -16,38 +16,39 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-
 public class StoreInChestTask extends AbstractDoInChestTask {
-    private final ItemTarget[] targets;
-    private final Timer actionTimer = new Timer(0);
-    private final BlockPos targetChest;
 
-    public StoreInChestTask(BlockPos targetChest, ItemTarget... targets) {
+    private final ItemTarget[] _targets;
+    private final Timer _actionTimer = new Timer(0);
+
+    private final BlockPos _targetChest;
+
+    public StoreInChestTask(BlockPos targetChest, ItemTarget ...targets) {
         super(targetChest);
-        this.targets = targets;
-        this.targetChest = targetChest;
+        _targets = targets;
+        _targetChest = targetChest;
     }
 
     @Override
     protected Task doToOpenChestTask(AltoClef mod, GenericContainerScreenHandler handler) {
-        actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
-        if (actionTimer.elapsed()) {
-            actionTimer.reset();
+        _actionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
+        if (_actionTimer.elapsed()) {
+            _actionTimer.reset();
 
-            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(targetChest);
+            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_targetChest);
             if (data == null) {
-                Debug.logWarning("Failed to find valid chest at " + targetChest + ", hopefully this is handled up the chain!!!");
+                Debug.logWarning("Failed to find valid chest at " + _targetChest + ", hopefully this is handled up the chain!!!");
                 return null;
             }
             if (data.isFull()) {
-                Debug.logWarning("Chest is full at " + targetChest + ", can't store here. Hopefully this is handled up the chain!!!");
+                Debug.logWarning("Chest is full at " + _targetChest + ", can't store here. Hopefully this is handled up the chain!!!");
                 return null;
             }
             if (data.isBig() != (handler.getRows() == 6)) {
                 Debug.logWarning("Chest was tracked as invalid size. Will wait for recache.");
                 return null;
             }
-            for (ItemTarget target : targets) {
+            for (ItemTarget target : _targets) {
                 int has = 0;
                 for (Item match : target.getMatches()) {
                     has += data.getItemCount(match);
@@ -91,13 +92,13 @@ public class StoreInChestTask extends AbstractDoInChestTask {
     protected boolean isSubEqual(AbstractDoInChestTask obj) {
         if (obj instanceof StoreInChestTask) {
             StoreInChestTask task = (StoreInChestTask) obj;
-            return Util.arraysEqual(task.targets, targets);
+            return Util.arraysEqual(task._targets, _targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Storing in chest: " + Util.arrayToString(targets);
+        return "Storing in chest: " + Util.arrayToString(_targets);
     }
 }

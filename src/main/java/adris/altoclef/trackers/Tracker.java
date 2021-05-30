@@ -1,26 +1,26 @@
 package adris.altoclef.trackers;
 
-
 import adris.altoclef.AltoClef;
 
-
 public abstract class Tracker {
-    protected AltoClef mod;
-    // Needs to update
-    private boolean dirty = true;
 
-    protected Tracker(TrackerManager manager) {
+    protected AltoClef _mod;
+
+    public Tracker(TrackerManager manager) {
         manager.addTracker(this);
     }
 
+    // Needs to update
+    private boolean _dirty = true;
+
     public void setDirty() {
-        dirty = true;
+        _dirty = true;
     }
 
     protected void ensureUpdated() {
-        if (dirty) {
+        if (_dirty) {
             updateState();
-            dirty = false;
+            _dirty = false;
         }
     }
 

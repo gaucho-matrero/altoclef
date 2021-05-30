@@ -1,99 +1,101 @@
 package adris.altoclef.tasksystem;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 
 import java.util.function.Predicate;
 
-
 public abstract class Task {
 
-    private String debugState = "";
-    private Task sub;
-    private boolean first = true;
-    private boolean stopped;
-    private boolean active;
+    private String _debugState = "";
+
+    private Task _sub = null;
+
+    private boolean _first = true;
+
+    private boolean _stopped = false;
+
+    private boolean _active = false;
 
     public void tick(AltoClef mod, TaskChain parentChain) {
         parentChain.addTaskToChain(this);
-        if (first) {
-            Debug.logInternal("Task START: " + this);
-            active = true;
+        if (_first) {
+            Debug.logInternal("Task START: " + this.toString());
+            _active = true;
             onStart(mod);
-            first = false;
-            stopped = false;
+            _first = false;
+            _stopped = false;
         }
-        if (stopped) return;
+        if (_stopped) return;
 
         Task newSub = onTick(mod);
         // We have a sub task
         if (newSub != null) {
-            if (!newSub.isEqual(sub)) {
-                if (canBeInterrupted(mod, sub, newSub)) {
+            if (!newSub.isEqual(_sub)) {
+                if (canBeInterrupted(mod, _sub, newSub)) {
                     // Our sub task is new
-                    if (sub != null) {
+                    if (_sub != null) {
                         // Our previous sub must be interrupted.
-                        sub.stop(mod, newSub);
+                        _sub.stop(mod, newSub);
                     }
 
-                    sub = newSub;
+                    _sub = newSub;
                 }
             }
 
             // Run our child
-            sub.tick(mod, parentChain);
+            _sub.tick(mod, parentChain);
         } else {
             // We are null
-            if (sub != null && canBeInterrupted(mod, sub, null)) {
+            if (_sub != null && canBeInterrupted(mod, _sub, null)) {
                 // Our previous sub must be interrupted.
-                sub.stop(mod);
-                sub = null;
+                _sub.stop(mod);
+                _sub = null;
             }
         }
     }
 
     public void reset() {
-        first = true;
-        active = false;
-        stopped = false;
+        _first = true;
+        _active = false;
+        _stopped = false;
     }
 
     protected void stop(AltoClef mod, Task interruptTask) {
-        if (!active) return;
+        if (!_active) return;
 
         onStop(mod, interruptTask);
-        Debug.logInternal("Task STOP: " + this + ", interrupted by " + interruptTask);
+        Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
 
-        if (sub != null && !sub.stopped()) {
-            sub.stop(mod, interruptTask);
+        if (_sub != null && !_sub.stopped()) {
+            _sub.stop(mod, interruptTask);
         }
 
-        first = true;
-        active = false;
-        stopped = true;
+        _first = true;
+        _active = false;
+        _stopped = true;
     }
 
     protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
-        if (!condition && !stopped) {
+        if (!condition && !_stopped) {
             Debug.logError("Task assertion failed: " + message);
             stop(mod);
-            stopped = true;
+            _stopped = true;
         }
         return condition;
     }
 
     public void stop(AltoClef mod) {
-        stop(mod, null);
+        stop(mod,null);
     }
 
     protected void setDebugState(String state) {
-        if (debugState.equals(state)) {
-            debugState = state;
-        } else {
-            debugState = state;
+        if (!_debugState.equals(state)) {
+            _debugState = state;
             Debug.logInternal(toString());
+        } else {
+            _debugState = state;
         }
     }
 
@@ -102,13 +104,9 @@ public abstract class Task {
         return false;
     }
 
-    public boolean isActive() {
-        return active;
-    }
+    public boolean isActive() {return _active;}
 
-    public boolean stopped() {
-        return stopped;
-    }
+    public boolean stopped() {return _stopped;}
 
     protected abstract void onStart(AltoClef mod);
 
@@ -121,42 +119,9 @@ public abstract class Task {
 
     protected abstract String toDebugString();
 
-    public boolean thisOrChildSatisfies(Predicate<? super Task> pred) {
-        Task t = this;
-        while (t != null) {
-            if (pred.test(t)) return true;
-            t = t.sub;
-        }
-        return false;
-    }
-
-    public boolean thisOrChildAreTimedOut() {
-        return thisOrChildSatisfies(TimeoutWanderTask.class::isInstance);
-    }
-
-    /**
-     * Sometimes a task just can NOT be bothered to be interrupted right now. For instance, if we're in mid air and MUST complete the
-     * parkour movement.
-     */
-    private boolean canBeInterrupted(AltoClef mod, Task subTask, Task toInterruptWith) {
-        if (subTask == null) return true;
-        if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
-            // This task (or any of its children) REQUIRES we be grounded or in water or something.
-            if (toInterruptWith instanceof ITaskOverridesGrounded) return true;
-            return (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() ||
-                    mod.getPlayer().isClimbing());
-        }
-        return true;
-    }
-
     @Override
-    public int hashCode() {
-        int result = debugState != null ? debugState.hashCode() : 0;
-        result = 31 * result + (sub != null ? sub.hashCode() : 0);
-        result = 31 * result + (first ? 1 : 0);
-        result = 31 * result + (stopped ? 1 : 0);
-        result = 31 * result + (active ? 1 : 0);
-        return result;
+    public String toString() {
+        return "<" + toDebugString() + "> " + _debugState;
     }
 
     @Override
@@ -167,8 +132,30 @@ public abstract class Task {
         return false;
     }
 
-    @Override
-    public String toString() {
-        return "<" + toDebugString() + "> " + debugState;
+    public boolean thisOrChildSatisfies(Predicate<Task> pred) {
+        Task t = this;
+        while (t != null) {
+            if (pred.test(t)) return true;
+            t = t._sub;
+        }
+        return false;
+    }
+
+    public boolean thisOrChildAreTimedOut() {
+        return thisOrChildSatisfies(task -> task instanceof TimeoutWanderTask);
+    }
+
+    /**
+     * Sometimes a task just can NOT be bothered to be interrupted right now.
+     * For instance, if we're in mid air and MUST complete the parkour movement.
+     */
+    private boolean canBeInterrupted(AltoClef mod, Task subTask, Task toInterruptWith) {
+        if (subTask == null) return true;
+        if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
+            // This task (or any of its children) REQUIRES we be grounded or in water or something.
+            if (toInterruptWith instanceof ITaskOverridesGrounded) return true;
+            return (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing());
+        }
+        return true;
     }
 }

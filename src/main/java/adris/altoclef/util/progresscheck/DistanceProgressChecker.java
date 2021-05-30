@@ -1,55 +1,53 @@
 package adris.altoclef.util.progresscheck;
 
-
 import net.minecraft.util.math.Vec3d;
-
 
 public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
-    private final IProgressChecker<? super Double> distanceChecker;
-    private final boolean reduceDistance;
-    private Vec3d start;
-    private Vec3d prevPos; // TODO: 2021-05-22 what is this for?
+    private Vec3d _start;
+    private Vec3d _prevPos;
 
-    public DistanceProgressChecker(IProgressChecker<? super Double> distanceChecker, boolean reduceDistance) {
-        this.distanceChecker = distanceChecker;
-        this.reduceDistance = reduceDistance;
+    private boolean _reduceDistance;
+
+    private final IProgressChecker<Double> _distanceChecker;
+
+    public DistanceProgressChecker(IProgressChecker<Double> distanceChecker, boolean reduceDistance) {
+        _distanceChecker = distanceChecker;
+        _reduceDistance = reduceDistance;
         if (reduceDistance) {
-            this.distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
+            _distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
         }
         reset();
     }
-
     public DistanceProgressChecker(double timeout, double minDistanceToMake, boolean reduceDistance) {
         this(new LinearProgressChecker(timeout, minDistanceToMake), reduceDistance);
     }
-
     public DistanceProgressChecker(double timeout, double minDistanceToMake) {
         this(timeout, minDistanceToMake, false);
     }
 
     @Override
     public void setProgress(Vec3d position) {
-        if (start == null) {
-            start = position;
+        if (_start == null) {
+            _start = position;
             return;
         }
-        double delta = position.distanceTo(start);
+        double delta = position.distanceTo(_start);
         // If we want to reduce distance, penalize distance.
-        if (reduceDistance) delta *= -1;
-        prevPos = position;
-        distanceChecker.setProgress(delta);
+        if (_reduceDistance) delta *= -1;
+        _prevPos = position;
+        _distanceChecker.setProgress(delta);
     }
 
     @Override
     public boolean failed() {
-        return distanceChecker.failed();
+        return _distanceChecker.failed();
     }
 
     @Override
     public void reset() {
-        start = null;//_prevPos;
-        distanceChecker.setProgress(0.0);
-        distanceChecker.reset();
+        _start = null;//_prevPos;
+        _distanceChecker.setProgress(0.0);
+        _distanceChecker.reset();
     }
 }

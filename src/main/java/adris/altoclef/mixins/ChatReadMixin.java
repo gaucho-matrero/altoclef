@@ -1,6 +1,5 @@
 package adris.altoclef.mixins;
 
-
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.hud.ChatHudListener;
 import net.minecraft.network.MessageType;
@@ -16,7 +15,10 @@ import java.util.UUID;
 @Mixin(ChatHudListener.class)
 public final class ChatReadMixin {
 
-    @Inject(method = "onChatMessage", at = @At("HEAD"))
+    @Inject(
+            method = "onChatMessage",
+            at = @At("HEAD")
+    )
     private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
         if (messageType == MessageType.SYSTEM) {
             StaticMixinHookups.onGameMessage(message.getString(), true);

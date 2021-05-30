@@ -1,57 +1,55 @@
 package adris.altoclef.util.progresscheck;
 
-
 import adris.altoclef.util.csharpisbetter.Timer;
-
 
 /**
  * Simple progress checker that requires we always make progress.
  */
 public class LinearProgressChecker implements IProgressChecker<Double> {
 
-    private final double minProgress;
-    private final Timer timer;
+    private final double _minProgress;
+    private final Timer _timer;
 
-    private double lastProgress;
-    private double currentProgress;
+    private double _lastProgress;
+    private double _currentProgress;
 
-    private boolean first;
+    private boolean _first;
 
-    private boolean failed;
+    private boolean _failed;
 
     public LinearProgressChecker(double timeout, double minProgress) {
-        this.minProgress = minProgress;
-        timer = new Timer(timeout);
+        _minProgress = minProgress;
+        _timer = new Timer(timeout);
         reset();
     }
 
     @Override
     public void setProgress(Double progress) {
-        currentProgress = progress;
-        if (first) {
-            lastProgress = progress;
-            first = false;
+        _currentProgress = progress;
+        if (_first) {
+            _lastProgress = progress;
+            _first = false;
         }
-        if (timer.elapsed()) {
-            double improvement = progress - lastProgress;
-            if (improvement < minProgress) {
-                failed = true;
+        if (_timer.elapsed()) {
+            double improvement = progress - _lastProgress;
+            if (improvement < _minProgress) {
+                _failed = true;
             }
-            first = false;
-            timer.reset();
-            lastProgress = progress;
+            _first = false;
+            _timer.reset();
+            _lastProgress = progress;
         }
     }
 
     @Override
     public boolean failed() {
-        return failed;
+        return _failed;
     }
 
     public void reset() {
-        //first = true;
-        failed = false;
-        timer.reset();
-        first = true;
+        //_first = true;
+        _failed = false;
+        _timer.reset();
+        _first = true;
     }
 }

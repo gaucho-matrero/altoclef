@@ -1,18 +1,17 @@
 package adris.altoclef;
 
-
+import net.fabricmc.loader.launch.common.FabricMixinBootstrap;
+import net.fabricmc.loom.util.FabricApiExtension;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
-
 public class Debug {
-    // TODO: 2021-05-22 please use a logger
 
     public static void logInternal(String message) {
         System.out.println("ALTO CLEF: " + message);
     }
 
-    public static void logInternal(String format, Object... args) {
+    public static void logInternal(String format, Object ...args) {
         logInternal(String.format(format, args));
     }
 
@@ -27,12 +26,11 @@ public class Debug {
             logInternal(message);
         }
     }
-
     public static void logMessage(String message) {
         logMessage(message, true);
     }
 
-    public static void logMessage(String format, Object... args) {
+    public static void logMessage(String format, Object ...args) {
         logMessage(String.format(format, args));
     }
 
@@ -45,7 +43,7 @@ public class Debug {
         }
     }
 
-    public static void logWarning(String format, Object... args) {
+    public static void logWarning(String format, Object ...args) {
         logWarning(String.format(format, args));
     }
 
@@ -61,7 +59,7 @@ public class Debug {
         }
     }
 
-    public static void logError(String format, Object... args) {
+    public static void logError(String format, Object ...args) {
         logError(String.format(format, args));
     }
 

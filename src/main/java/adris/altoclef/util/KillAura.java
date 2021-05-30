@@ -1,6 +1,5 @@
 package adris.altoclef.util;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -10,27 +9,33 @@ import net.minecraft.entity.projectile.FireballEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Controls and applies killaura
  */
 public class KillAura {
 
+    public enum Strategy {
+        OFF,
+        FASTEST,
+        SMART
+    }
+
+    private double _forceFieldRange = Double.POSITIVE_INFINITY;
+
     // Smart aura data
-    private final List<Entity> targets = new ArrayList<>();
-    private final Timer hitDelay = new Timer(0.2);
-    private double forceFieldRange = Double.POSITIVE_INFINITY;
-    private Entity forceHit;
+    private final List<Entity> _targets = new ArrayList<>();
+    private final Timer _hitDelay = new Timer(0.2);
+    private Entity _forceHit = null;
 
     public void tickStart(AltoClef mod) {
-        targets.clear();
-        forceHit = null;
+        _targets.clear();
+        _forceHit = null;
     }
 
     public void applyAura(AltoClef mod, Entity entity) {
-        targets.add(entity);
+        _targets.add(entity);
         // Always hit ghast balls.
-        if (entity instanceof FireballEntity) forceHit = entity;
+        if (entity instanceof FireballEntity) _forceHit = entity;
     }
 
     public void tickEnd(AltoClef mod) {
@@ -38,38 +43,36 @@ public class KillAura {
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
                 // Just attack whenever you can
-                for (Entity entity : targets) {
+                for (Entity entity : _targets) {
                     attack(mod, entity);
                 }
                 break;
             case SMART:
                 // Attack force mobs ALWAYS.
-                if (forceHit != null) {
-                    attack(mod, forceHit);
+                if (_forceHit != null) {
+                    attack(mod, _forceHit);
                     break;
                 }
-                if (hitDelay.elapsed()) {
-                    hitDelay.reset();
-                    Entity toHit = Util.minItem(targets, (left, right) -> {
+                if (_hitDelay.elapsed()) {
+                    _hitDelay.reset();
+                    Entity toHit = Util.minItem(_targets, (left, right) -> {
                         double distComp = right.squaredDistanceTo(mod.getPlayer()) - left.squaredDistanceTo(mod.getPlayer());
-                        return (int) Math.signum(distComp);
+                        return (int)Math.signum(distComp);
                     });
                     attack(mod, toHit);
                 }
                 break;
-            case OFF:
-                break;
+            case OFF: break;
         }
     }
 
     public void setRange(double range) {
-        forceFieldRange = range;
+        _forceFieldRange = range;
     }
 
     private boolean attack(AltoClef mod, Entity entity) {
-        if (entity == null)
-            return false;
-        if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange) {
+        if (entity == null) return false;
+        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
             // Equip non-tool
             mod.getInventoryTracker().deequipHitTool();
             mod.getControllerExtras().attack(entity);
@@ -78,10 +81,4 @@ public class KillAura {
         return false;
     }
 
-
-    public enum Strategy {
-        OFF,
-        FASTEST,
-        SMART
-    }
 }

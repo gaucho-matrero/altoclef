@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.construction;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
@@ -24,47 +23,46 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.function.Predicate;
 
-
 public class PlaceBlockNearbyTask extends Task {
-    private final Block[] toPlace;
-    private final MovementProgressChecker progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask wander = new TimeoutWanderTask(2);
-    private final Timer randomlookTimer = new Timer(0.25);
-    private final Predicate<BlockPos> _cantPlaceHere;
-    private BlockPos justPlaced; // Where we JUST placed a block.
-    private BlockPos tryPlace;   // Where we should TRY placing a block.
-    // Oof, necesarry for the onBlockPlaced action.
-    private AltoClef mod;
-    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced
-            = new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
-        @Override
-        public void invoke(PlayerExtraController.BlockPlaceEvent value) {
-            if (Util.arrayContains(toPlace, value.blockState.getBlock())) {
-                stopPlacing(mod);
-            }
-        }
-    };
 
-    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block... toPlace) {
-        this.toPlace = toPlace;
+    private final Block[] _toPlace;
+
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
+
+    private final Timer _randomlookTimer = new Timer(0.25);
+
+    private BlockPos _justPlaced; // Where we JUST placed a block.
+    private BlockPos _tryPlace;   // Where we should TRY placing a block.
+
+    private final Predicate<BlockPos> _cantPlaceHere;
+
+    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block ...toPlace) {
+        _toPlace = toPlace;
         _cantPlaceHere = cantPlaceHere;
     }
-
-    public PlaceBlockNearbyTask(Block... toPlace) {
+    public PlaceBlockNearbyTask(Block ...toPlace) {
         this(blockPos -> false, toPlace);
     }
 
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return justPlaced != null && Util.arrayContains(toPlace, mod.getWorld().getBlockState(justPlaced).getBlock());
-    }
+    // Oof, necesarry for the onBlockPlaced action.
+    private AltoClef _mod;
 
     @Override
     protected void onStart(AltoClef mod) {
-        this.mod = mod;
+        _mod = mod;
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
         mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
     }
+
+    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced = new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
+        @Override
+        public void invoke(PlayerExtraController.BlockPlaceEvent value) {
+            if (Util.arrayContains(_toPlace, value.blockState.getBlock())) {
+                stopPlacing(_mod);
+            }
+        }
+    };
 
     @Override
     protected Task onTick(AltoClef mod) {
@@ -88,35 +86,35 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         // Wander while we can.
-        if (wander.isActive() && !wander.isFinished(mod)) {
+        if (_wander.isActive() && !_wander.isFinished(mod)) {
             setDebugState("Wandering, will try to place again later.");
-            progressChecker.reset();
-            return wander;
+            _progressChecker.reset();
+            return _wander;
         }
         // Fail check
-        if (!progressChecker.check(mod)) {
+        if (!_progressChecker.check(mod)) {
             Debug.logMessage("Failed placing, wandering and trying again.");
             LookUtil.randomOrientation(mod);
-            if (tryPlace != null) {
-                mod.getBlockTracker().requestBlockUnreachable(tryPlace);
-                tryPlace = null;
+            if (_tryPlace != null) {
+                mod.getBlockTracker().requestBlockUnreachable(_tryPlace);
+                _tryPlace = null;
             }
-            return wander;
+            return _wander;
         }
 
         // Try to place at a particular spot.
-        if (tryPlace == null || mod.getBlockTracker().unreachable(tryPlace)) {
-            tryPlace = locateClosePlacePos(mod);
+        if (_tryPlace == null || mod.getBlockTracker().unreachable(_tryPlace)) {
+            _tryPlace = locateClosePlacePos(mod);
         }
-        if (tryPlace != null) {
-            setDebugState("Trying to place at " + tryPlace);
-            justPlaced = tryPlace;
-            return new PlaceBlockTask(tryPlace, toPlace);
+        if (_tryPlace != null) {
+            setDebugState("Trying to place at " + _tryPlace);
+            _justPlaced = _tryPlace;
+            return new PlaceBlockTask(_tryPlace, _toPlace);
         }
 
         // Look in random places to maybe get a random hit
-        if (randomlookTimer.elapsed()) {
-            randomlookTimer.reset();
+        if (_randomlookTimer.elapsed()) {
+            _randomlookTimer.reset();
             LookUtil.randomOrientation(mod);
         }
 
@@ -134,18 +132,23 @@ public class PlaceBlockNearbyTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockNearbyTask) {
             PlaceBlockNearbyTask task = (PlaceBlockNearbyTask) obj;
-            return Util.arraysEqual(task.toPlace, toPlace);
+            return Util.arraysEqual(task._toPlace, _toPlace);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Place " + Util.arrayToString(toPlace) + " nearby";
+        return "Place " + Util.arrayToString(_toPlace) + " nearby";
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return _justPlaced != null && Util.arrayContains(_toPlace, mod.getWorld().getBlockState(_justPlaced).getBlock());
     }
 
     public BlockPos getPlaced() {
-        return justPlaced;
+        return _justPlaced;
     }
 
     private BlockPos getCurrentlyLookingBlockPlace(AltoClef mod) {
@@ -171,7 +174,7 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     private boolean equipBlock(AltoClef mod) {
-        for (Block block : toPlace) {
+        for (Block block : _toPlace) {
             if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
                 if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
             }
@@ -185,7 +188,7 @@ public class PlaceBlockNearbyTask extends Task {
             MinecraftClient.getInstance().options.keySneak.setPressed(true);
             mod.getControllerExtras().mouseClickOverride(1, true);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-            justPlaced = targetPlace;
+            _justPlaced = targetPlace;
             return true;
         }
         return false;
@@ -212,7 +215,7 @@ public class PlaceBlockNearbyTask extends Task {
             boolean solid = WorldUtil.isSolid(mod, blockPos);
             boolean inside = WorldUtil.isInsidePlayer(mod, blockPos);
             // We can't break this block.
-            if (solid && !WorldUtil.canBreak(mod, blockPos)) {
+            if ( solid && !WorldUtil.canBreak(mod, blockPos)) {
                 continue;
             }
             // We can't place here as defined by user.
@@ -226,7 +229,7 @@ public class PlaceBlockNearbyTask extends Task {
             boolean hasBelow = WorldUtil.isSolid(mod, blockPos.down());
             double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos(), false);
 
-            double score = distSq + (solid ? 4 : 0) + (hasBelow ? 0 : 10) + (inside ? 3 : 0);
+            double score = distSq + (solid ? 4:0) + (hasBelow? 0 : 10) + (inside ? 3 : 0);
 
             if (score < smallestScore) {
                 best = blockPos;

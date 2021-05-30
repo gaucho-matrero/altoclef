@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.misc;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.AbstractDoToEntityTask;
 import adris.altoclef.tasks.AbstractKillEntityTask;
@@ -10,15 +9,15 @@ import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.progresscheck.ProgressCheckerRetry;
 import net.minecraft.entity.Entity;
 
-
 public class KillPlayerTask extends AbstractKillEntityTask {
-    private final String playerName;
+
+    private final String _playerName;
 
     private final IProgressChecker<Double> _distancePlayerCheck = new ProgressCheckerRetry<>(new LinearProgressChecker(5, -2), 3);
 
     public KillPlayerTask(String name) {
         super(5, 7, 1);
-        playerName = name;
+        _playerName = name;
     }
 
     @Override
@@ -29,12 +28,12 @@ public class KillPlayerTask extends AbstractKillEntityTask {
             _distancePlayerCheck.reset();
         } else {
             double distSq = player.squaredDistanceTo(mod.getPlayer());
-            if (distSq < 10 * 10) {
+            if (distSq < 10*10) {
                 _distancePlayerCheck.reset();
             }
             _distancePlayerCheck.setProgress(-1 * distSq);
             if (!_distancePlayerCheck.failed()) {
-                progress.reset();
+                _progress.reset();
             }
         }
         return super.onTick(mod);
@@ -43,16 +42,16 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
         if (other instanceof KillPlayerTask) {
-            return ((KillPlayerTask) other).playerName.equals(playerName);
+            return ((KillPlayerTask)other)._playerName.equals(_playerName);
         }
         return false;
     }
 
     @Override
     protected Entity getEntityTarget(AltoClef mod) {
-        if (mod.getEntityTracker().isPlayerLoaded(playerName)) {
+        if (mod.getEntityTracker().isPlayerLoaded(_playerName)) {
             setDebugState("Killing player...");
-            return mod.getEntityTracker().getPlayerEntity(playerName);
+            return mod.getEntityTracker().getPlayerEntity(_playerName);
         }
         setDebugState("Player not found");
         return null;
@@ -60,6 +59,6 @@ public class KillPlayerTask extends AbstractKillEntityTask {
 
     @Override
     protected String toDebugString() {
-        return "Punking " + playerName;
+        return "Punking " + _playerName;
     }
 }

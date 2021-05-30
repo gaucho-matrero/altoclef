@@ -1,80 +1,69 @@
 package adris.altoclef.util;
 
-
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.csharpisbetter.Util;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.item.Items;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import java.util.*;
 
 public class ItemTarget {
-    public static final ItemTarget EMPTY_ITEM = new ItemTarget(new Item[0], 0);
-    private final boolean infinite;
-    private final Item[] itemMatches;
-    public int targetCount; // TODO: 2021-05-22 make not public
-    private String catalogueName;
+    private Item[] _itemMatches;
+    public int targetCount;
 
-    private ItemTarget(Item[] items, int targetCount, boolean infinite) {
-        itemMatches = items;
-        this.targetCount = targetCount;
-        this.infinite = infinite;
-    }
+    private String _catalogueName = null;
+
+    private boolean _infinite = false;
 
     public ItemTarget(Item[] items, int targetCount) {
-        this(items, targetCount, false);
+        _itemMatches = items;
+        this.targetCount = targetCount;
     }
 
-    public ItemTarget(@NotNull String catalogueName, int targetCount) {
-        this(Objects.requireNonNull(TaskCatalogue.getItemMatches(catalogueName),
-                                    "Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!"),
-             targetCount, false);
+    public ItemTarget(String catalogueName, int targetCount) {
+        if (catalogueName == null) return;
+        _catalogueName = catalogueName;
+        _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
+        this.targetCount = targetCount;
+        if (_itemMatches == null) {
+            Debug.logError("Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!");
+        }
     }
 
     public ItemTarget(String catalogueName) {
-        this(Objects.requireNonNull(TaskCatalogue.getItemMatches(catalogueName),
-                                    "Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!"),
-             99999999, true);
+        this(catalogueName, 99999999); _infinite = true;
     }
 
     public ItemTarget(Item item, int targetCount) {
-        this(new Item[]{ item }, targetCount);
+        this(new Item[] {item}, targetCount);
     }
 
     public ItemTarget(Item[] items) {
-        this(items, 9999999, true);
+        this(items, 9999999);
+        _infinite = true;
     }
-
     public ItemTarget(Item item) {
-        this(new Item[]{ item });
+        this(item, 9999999);
+        _infinite = true;
     }
 
     public ItemTarget(ItemTarget toCopy) {
-        itemMatches = new Item[toCopy.itemMatches.length];
-        System.arraycopy(toCopy.itemMatches, 0, itemMatches, 0, toCopy.itemMatches.length);
-        catalogueName = toCopy.catalogueName;
+        _itemMatches = new Item[toCopy._itemMatches.length];
+        System.arraycopy(toCopy._itemMatches, 0, _itemMatches,  0, toCopy._itemMatches.length);
+        _catalogueName = toCopy._catalogueName;
         targetCount = toCopy.targetCount;
-        infinite = toCopy.infinite;
-    }
-
-    public static Item[] getMatches(ItemTarget... targets) {
-        Set<Item> result = new HashSet<>();
-        for (ItemTarget target : targets) {
-            result.addAll(Arrays.asList(target.getMatches()));
-        }
-        return Util.toArray(Item.class, result);
+        _infinite = toCopy._infinite;
     }
 
     public Item[] getMatches() {
-        return itemMatches;
+        return _itemMatches;
     }
 
     public boolean matches(Item item) {
-        for (Item match : itemMatches) {
+        for (Item match : _itemMatches) {
             if (match == null) continue;
             if (match.equals(item)) return true;
         }
@@ -82,42 +71,40 @@ public class ItemTarget {
     }
 
     public boolean isCatalogueItem() {
-        return catalogueName != null;
+        return _catalogueName != null;
+    }
+    public String getCatalogueName() {
+        return _catalogueName;
     }
 
-    public String getCatalogueName() {
-        return catalogueName;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ItemTarget) {
+            ItemTarget other = (ItemTarget) obj;
+            if (_infinite) {
+                if (!other._infinite) return false;
+            } else {
+                // Neither are infinite
+                if (targetCount != other.targetCount) return false;
+            }
+            if ((other._itemMatches == null) != (_itemMatches == null)) return false;
+            boolean isNull = (other._itemMatches == null);
+            if (isNull) return true;
+            if (_itemMatches.length != other._itemMatches.length) return false;
+            for (int i = 0; i < _itemMatches.length; ++i) {
+                if (other._itemMatches[i] == null) {
+                    if ((other._itemMatches[i] == null) != (_itemMatches[i] == null)) return false;
+                } else {
+                    if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     public boolean isEmpty() {
-        return itemMatches == null || itemMatches.length == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = targetCount;
-        result = 31 * result + Arrays.hashCode(itemMatches);
-        result = 31 * result + (catalogueName != null ? catalogueName.hashCode() : 0);
-        result = 31 * result + (infinite ? 1 : 0);
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ItemTarget target = (ItemTarget) o;
-
-        if (infinite) {
-            if (!target.infinite)
-                return false;
-        } else {
-            if (targetCount != target.targetCount)
-                return false;
-        }
-        if (!Arrays.equals(itemMatches, target.itemMatches)) return false;
-        return Objects.equals(catalogueName, target.catalogueName);
+        return _itemMatches == null || _itemMatches.length == 0;
     }
 
     @Override
@@ -127,26 +114,38 @@ public class ItemTarget {
         if (isEmpty()) {
             result.append("(empty)");
         } else if (isCatalogueItem()) {
-            result.append(catalogueName);
+            result.append(_catalogueName);
         } else {
             result.append("[");
             int counter = 0;
-            for (Item item : itemMatches) {
+            for (Item item : _itemMatches) {
                 if (item == null) {
                     result.append("(null??)");
                 } else {
                     result.append(ItemUtil.trimItemName(item.getTranslationKey()));
                 }
-                if (++counter != itemMatches.length) {
+                if (++counter != _itemMatches.length) {
                     result.append(",");
                 }
             }
             result.append("]");
         }
-        if (!infinite && !isEmpty()) {
+        if (!_infinite && !isEmpty()) {
             result.append(" x ").append(targetCount);
         }
 
         return result.toString();
     }
+
+    public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
+
+    public static Item[] getMatches(ItemTarget... targets) {
+        Set<Item> result = new HashSet<>();
+        for (ItemTarget target : targets) {
+            result.addAll(Arrays.asList(target.getMatches()));
+        }
+        return Util.toArray(Item.class, result);
+    }
+
+
 }

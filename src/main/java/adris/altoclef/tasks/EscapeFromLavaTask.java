@@ -1,6 +1,5 @@
 package adris.altoclef.tasks;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
@@ -11,24 +10,25 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
-
 public class EscapeFromLavaTask extends Task {
-    private final Timer scanTimer = new Timer(5);
+
     private BlockPos target;
+
+    private final Timer _scanTimer = new Timer(5);
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getConfigState().push();
         mod.getConfigState().allowWalkThroughLava(true);
         target = null;
-        scanTimer.forceElapse();
+        _scanTimer.forceElapse();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (scanTimer.elapsed() && target == null) {
+        if (_scanTimer.elapsed() && target == null) {
             target = findSafePos(mod);
-            scanTimer.reset();
+            _scanTimer.reset();
         }
         if (target != null) {
             setDebugState("Traveling to safe block at " + target);
@@ -49,11 +49,6 @@ public class EscapeFromLavaTask extends Task {
         return obj instanceof EscapeFromLavaTask;
     }
 
-    @Override
-    protected String toDebugString() {
-        return "Escaping lava";
-    }
-
     private BlockPos findSafePos(AltoClef mod) {
         // What constitutes a safe pos?
         // For each block within a 50 block radius:
@@ -68,9 +63,14 @@ public class EscapeFromLavaTask extends Task {
                     BlockPos check = new BlockPos(xx, yy, zz);
                     BlockState state = mod.getWorld().getBlockState(check);
                     // Below and above can't be lava.
-                    final Vec3i[] noLavaPls = {
-                            new Vec3i(0, 0, 0), new Vec3i(0, 1, 0), new Vec3i(0, -1, 0), new Vec3i(1, 0, 0), new Vec3i(-1, 0, 0), new Vec3i(
-                            0, 0, 1), new Vec3i(0, 0, -1)
+                    final Vec3i[] noLavaPls = new Vec3i[] {
+                            new Vec3i(0, 0, 0),
+                            new Vec3i(0, 1, 0),
+                            new Vec3i(0, -1, 0),
+                            new Vec3i(1, 0, 0),
+                            new Vec3i(-1, 0, 0),
+                            new Vec3i(0,0, 1),
+                            new Vec3i(0,0, -1)
                     };
                     for (Vec3i noLava : noLavaPls) {
                         if (mod.getWorld().getBlockState(check.add(noLava)).getBlock() == Blocks.LAVA) {
@@ -96,5 +96,10 @@ public class EscapeFromLavaTask extends Task {
             }
         }
         return best;
+    }
+
+    @Override
+    protected String toDebugString() {
+        return "Escaping lava";
     }
 }

@@ -1,37 +1,33 @@
 package adris.altoclef.util.csharpisbetter;
 
-
 // Simple timer
 public class Timer {
 
-    private double prevTime;
-    private double interval;
+    private double _prevTime = 0;
+    private double _interval;
 
     public Timer(double interval) {
-        this.interval = interval;
-    }
-
-    public static double currentTime() {
-        return System.currentTimeMillis() / 1000.0d;
+        _interval = interval;
     }
 
     public double getDuration() {
-        return currentTime() - prevTime;
+        return currentTime() - _prevTime;
     }
-
-    public void setInterval(double interval) {
-        this.interval = interval;
-    }
+    public void setInterval(double interval) {_interval = interval;}
 
     public boolean elapsed() {
-        return getDuration() > interval;
+        return getDuration() > _interval;
     }
 
     public void reset() {
-        prevTime = currentTime();
+        _prevTime = currentTime();
     }
 
     public void forceElapse() {
-        prevTime = 0;
+        _prevTime = 0;
+    }
+
+    public static double currentTime() {
+        return (double) System.currentTimeMillis() / 1000.0;
     }
 }

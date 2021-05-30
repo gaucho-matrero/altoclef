@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.misc.speedrun;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractItemWithBlockTask;
@@ -16,20 +15,15 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-
 public class FillStrongholdPortalTask extends Task {
-    private final boolean destroySilverfishSpawner;
-    private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(10);
-    private final MovementProgressChecker progressChecker = new MovementProgressChecker(3);
+
+    private final boolean _destroySilverfishSpawner;
+
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(3);
 
     public FillStrongholdPortalTask(boolean destroySilverfishSpawner) {
-        this.destroySilverfishSpawner = destroySilverfishSpawner;
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
-        return closest != null && mod.getChunkTracker().isChunkLoaded(closest);
+        _destroySilverfishSpawner = destroySilverfishSpawner;
     }
 
     @Override
@@ -37,7 +31,7 @@ public class FillStrongholdPortalTask extends Task {
         mod.getConfigState().push();
         mod.getConfigState().setPreferredStairs(false);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME, Blocks.END_PORTAL);
-        if (destroySilverfishSpawner) {
+        if (_destroySilverfishSpawner) {
             mod.getBlockTracker().trackBlock(Blocks.SPAWNER);
         }
     }
@@ -47,17 +41,14 @@ public class FillStrongholdPortalTask extends Task {
 
         // If we encounter that weird back+forth bug, this might fix.
         // Overkill, but it would REALLY suck if the run stopped here.
-        if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
-            progressChecker.reset();
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _progressChecker.reset();
             setDebugState("Wandering");
-            return wanderTask;
+            return _wanderTask;
         }
 
-        if (destroySilverfishSpawner) {
-            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
-                                                                                  test -> !(WorldUtil.getSpawnerEntity(mod,
-                                                                                                                       test) instanceof SilverfishEntity),
-                                                                                  Blocks.SPAWNER);
+        if (_destroySilverfishSpawner) {
+            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> !(WorldUtil.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
             if (silverfishSpawner != null) {
                 setDebugState("Destroy silverfish spawner");
                 return new DestroyBlockTask(silverfishSpawner);
@@ -65,32 +56,36 @@ public class FillStrongholdPortalTask extends Task {
         }
 
         setDebugState("Filling in Portal");
-        if (!progressChecker.check(mod)) {
-            progressChecker.reset();
-            return wanderTask;
+        if (!_progressChecker.check(mod)) {
+            _progressChecker.reset();
+            return _wanderTask;
         }
-        return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
-                                        pos -> new InteractItemWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
-                                        pos -> mod.getBlockTracker()
-                                                  .getNearestTracking(pos, test -> BeatMinecraftTask.isEndPortalFrameFilled(mod, test) ||
-                                                                                   !mod.getBlockTracker()
-                                                                                       .blockIsValid(test, Blocks.END_PORTAL_FRAME),
-                                                                      Blocks.END_PORTAL_FRAME));
+        return new DoToClosestBlockTask(
+            () -> mod.getPlayer().getPos(),
+            pos -> new InteractItemWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
+            pos -> mod.getBlockTracker().getNearestTracking(pos, test -> BeatMinecraftTask.isEndPortalFrameFilled(mod, test) || !mod.getBlockTracker().blockIsValid(test, Blocks.END_PORTAL_FRAME), Blocks.END_PORTAL_FRAME)
+        );
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL_FRAME, Blocks.END_PORTAL);
-        if (destroySilverfishSpawner) {
+        if (_destroySilverfishSpawner) {
             mod.getBlockTracker().stopTracking(Blocks.SPAWNER);
         }
         mod.getConfigState().pop();
     }
 
     @Override
+    public boolean isFinished(AltoClef mod) {
+        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
+        return closest != null && mod.getChunkTracker().isChunkLoaded(closest);
+    }
+
+    @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof FillStrongholdPortalTask) {
-            return ((FillStrongholdPortalTask) obj).destroySilverfishSpawner == destroySilverfishSpawner;
+            return ((FillStrongholdPortalTask) obj)._destroySilverfishSpawner == _destroySilverfishSpawner;
         }
         return false;
     }

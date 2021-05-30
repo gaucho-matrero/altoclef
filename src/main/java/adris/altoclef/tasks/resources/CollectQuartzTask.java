@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.resources;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -13,13 +12,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 
-
 public class CollectQuartzTask extends ResourceTask {
-    private final int count;
+
+    private final int _count;
 
     public CollectQuartzTask(int count) {
         super(Items.QUARTZ, count);
-        this.count = count;
+        _count = count;
     }
 
     @Override
@@ -40,7 +39,7 @@ public class CollectQuartzTask extends ResourceTask {
         }
 
         setDebugState("Mining");
-        return new MineAndCollectTask(new ItemTarget("quartz", count), new Block[]{ Blocks.NETHER_QUARTZ_ORE }, MiningRequirement.WOOD);
+        return new MineAndCollectTask(new ItemTarget("quartz", _count), new Block[]{Blocks.NETHER_QUARTZ_ORE}, MiningRequirement.WOOD);
     }
 
     @Override
@@ -55,6 +54,6 @@ public class CollectQuartzTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + count + " quartz";
+        return "Collecting " + _count + " quartz";
     }
 }

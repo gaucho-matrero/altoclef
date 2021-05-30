@@ -1,63 +1,83 @@
 package adris.altoclef.commandsystem;
 
-
 import java.util.HashMap;
-
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class Arg<T> extends ArgBase {
-    private final Class<T> tType;
-    public T defaultValue;
-    private boolean isArray;
-    private HashMap<String, T> enumValues;
-    private String name = "";
-    private boolean showDefault;
+    private Class<T> _tType;
+
+    public T Default;
+
+    private boolean _isArray = false;
+
+    // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
+    @Override
+    public boolean isArray (){
+        return _isArray;
+    }
+
+    private HashMap<String, T> _enumValues = null;
+    private boolean isEnum() { return _enumValues != null; }
+
+    private String _name = "";
+
+    private boolean _showDefault;
 
     // Regular Constructor
     public Arg(Class<T> type, String name) throws CommandException {
-        this.name = name;
+        _name = name;
         // I really hate java
-        tType = type;
+        _tType = type;
 
-        showDefault = true;
-        hasDefault = false;
+        _showDefault = true;
+        _hasDefault = false;
         // If enum, take action.
-        if (tType.isEnum()) {
-            enumValues = new HashMap<String, T>();
-            for (T v : tType.getEnumConstants()) {
-                enumValues.put(v.toString().toLowerCase(), v);
+        if ( _tType.isEnum() ) {
+            _enumValues = new HashMap<String, T>();
+            for ( T v : _tType.getEnumConstants() ) {
+                _enumValues.put(v.toString().toLowerCase(), v);
             }
         } else {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!IsInstancesOf(tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
-                throw new CommandException(
-                        "Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented " +
-                        "intentionally or by accident somehow.");
+            if ( !IsInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class) ) {
+                throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
             }
         }
-    }
+        }
 
-    // Constructor with default value
-    public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
-        this(type, name);
-        hasDefault = true;
-        this.defaultValue = defaultValue;
-        this.minArgCountToUseDefault = minArgCountToUseDefault;
-        this.showDefault = showDefault;
-    }
+        // Constructor with default value
+        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
+            this(type, name);
+            _hasDefault = true;
+            Default = defaultValue;
+            _minArgCountToUseDefault = minArgCountToUseDefault;
+            _showDefault = showDefault;
+        }
+        public Arg (Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
+            this(type, name, defaultValue, minArgCountToUseDefault, true);
+        }
 
-    public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
-        this(type, name, defaultValue, minArgCountToUseDefault, true);
-    }
+        // Horrendous chain syntax that I'm only using here.
+        public Arg<T> AsArray() {
+            _isArray = true;
+            return this;
+        }
 
-    private boolean isEnum() {
-        return enumValues != null;
-    }
-
-    // Horrendous chain syntax that I'm only using here.
-    public Arg<T> AsArray() {
-        isArray = true;
-        return this;
+/// <summary>
+///     Return the "help" command representation of this argument.
+///     For instance, in a "dialogue" command it looks like this:
+///         dialogue <name = ""> [text]
+///     name is optional and defaults to "", while text is non optional.
+/// </summary>
+    @Override
+    public String GetHelpRepresentation() {
+        if (hasDefault()) {
+            if ( _showDefault ) {
+                return "<" + _name + "=" + Default + ">";
+            }
+            return "<" + _name + ">";
+        }
+        return "[" + _name + "]";
     }
 
     @SuppressWarnings("unchecked")
@@ -65,10 +85,10 @@ public class Arg<T> extends ArgBase {
         return vType == t || vType.isAssignableFrom(t);
     }
 
-    private <V> boolean IsInstancesOf(Class<V> vType, Class<?>... types) {
+    private <V> boolean IsInstancesOf (Class<V> vType, Class<?> ...types ) {
         // I really hate java
 
-        for (Class<?> t : types) {
+        for(Class<?> t : types) {
             if (IsInstanceOf(vType, t)) {
                 return true;
             }
@@ -77,48 +97,50 @@ public class Arg<T> extends ArgBase {
     }
 
     private void ParseErrorCheck(boolean good, Object value, String type) throws CommandException {
-        if (!good) throw new CommandException("Failed to parse the following argument into type " + type + ": " + value + ".");
+        if (!good)
+            throw new CommandException("Failed to parse the following argument into type " +  type + ": " + value + ".");
     }
+
 
     private <V> V ParseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
         // If enum, check from our cached enum dictionary.
-        if (isEnum()) {
-            unit = unit.toLowerCase();
-            if (!enumValues.containsKey(unit)) {
-                StringBuilder res = new StringBuilder();
-                for (String type : enumValues.keySet()) {
-                    res.append(type);
-                    res.append("|");
-                }
-                res.delete(res.length() - 1, res.length()); // Remove the last "|"
-                throw new CommandException("Invalid argument found: {unit}. Accepted values are: {res}");
-            }
-            return GetConverted(vType, enumValues.get(unit));
+        if ( isEnum() ) {
+        unit = unit.toLowerCase();
+        if ( !_enumValues.containsKey(unit) ) {
+        StringBuilder res = new StringBuilder();
+        for ( String type : _enumValues.keySet() ) {
+            res.append(type);
+            res.append("|");
+        }
+        res.delete(res.length() - 1, res.length()); // Remove the last "|"
+        throw new CommandException("Invalid argument found: {unit}. Accepted values are: {res}");
+        }
+        return GetConverted(vType, _enumValues.get(unit));
         }
 
         // Do number parsing.
-        if (IsInstanceOf(vType, Float.class)) {
+        if ( IsInstanceOf(vType, Float.class) ) {
             try {
                 return GetConverted(vType, Float.parseFloat(unit));
             } catch (NumberFormatException e) {
                 ParseErrorCheck(false, unit, "float");
             }
         }
-        if (IsInstanceOf(vType, Double.class)) {
+        if ( IsInstanceOf(vType, Double.class) ) {
             try {
                 return GetConverted(vType, Double.parseDouble(unit));
             } catch (NumberFormatException e) {
                 ParseErrorCheck(false, unit, "double");
             }
         }
-        if (IsInstanceOf(vType, Integer.class)) {
+        if ( IsInstanceOf(vType, Integer.class) ) {
             try {
                 return GetConverted(vType, Integer.parseInt(unit));
             } catch (NumberFormatException e) {
                 ParseErrorCheck(false, unit, "int");
             }
         }
-        if (IsInstanceOf(vType, Long.class)) {
+        if ( IsInstanceOf(vType, Long.class) ) {
             try {
                 return GetConverted(vType, Long.parseLong(unit));
             } catch (NumberFormatException e) {
@@ -127,10 +149,10 @@ public class Arg<T> extends ArgBase {
         }
 
         // Now do String parsing.
-        if (IsInstanceOf(vType, String.class)) {
+        if ( IsInstanceOf(vType, String.class) ) {
             // Remove quotes
-            if (unit.length() >= 2) {
-                if (unit.charAt(0) == '\"' && unit.charAt(unit.length() - 1) == '\"') {
+            if ( unit.length() >= 2 ) {
+                if ( unit.charAt(0) == '\"' && unit.charAt(unit.length() - 1) == '\"' ) {
                     unit = unit.substring(1, unit.length() - 1);
                 }
             }
@@ -178,47 +200,25 @@ public class Arg<T> extends ArgBase {
         return GetConverted(vType,  result.ToArray() );
         }
          */
-        throw new CommandException(
-                "Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or " +
-                "by accident somehow.");
-    }
-
-    @Override
-    public Object ParseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
-        return ParseUnitUtil(tType, unit, unitPlusRemainder);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <V> V GetDefault(Class<V> vType) {
-        return GetConverted(vType, defaultValue);
-    }
-
-    /// <summary>
-    ///     Return the "help" command representation of this argument.
-    ///     For instance, in a "dialogue" command it looks like this:
-    ///         dialogue <name = ""> [text]
-    ///     name is optional and defaults to "", while text is non optional.
-    /// </summary>
-    @Override
-    public String GetHelpRepresentation() {
-        if (hasDefault()) {
-            if (showDefault) {
-                return "<" + name + "=" + defaultValue + ">";
-            }
-            return "<" + name + ">";
+        throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
         }
-        return "[" + name + "]";
-    }
 
-    // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
-    @Override
-    public boolean isArray() {
-        return isArray;
-    }
+        @Override
+        public Object ParseUnit ( String unit, String[] unitPlusRemainder ) throws CommandException
+        {
+            return ParseUnitUtil(_tType, unit, unitPlusRemainder);
+        }
 
-    public boolean CheckValidUnit(String arg, StringBuilder errorMsg) {
-        errorMsg.delete(0, errorMsg.length());
-        return true;
+        public boolean CheckValidUnit ( String arg, StringBuilder errorMsg )
+        {
+            errorMsg.delete(0, errorMsg.length());
+            return true;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <V> V GetDefault (Class<V> vType)
+        {
+            return GetConverted(vType, Default);
+        }
     }
-}

@@ -1,11 +1,13 @@
 package adris.altoclef.trackers;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.EmptyChunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,38 +17,39 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
 // Keeps track of currently loaded chunks. That's it.
 public class SimpleChunkTracker {
-    private final AltoClef mod;
-    private final Set<ChunkPos> loaded = new HashSet<>();
+
+    private final AltoClef _mod;
 
     public SimpleChunkTracker(AltoClef mod) {
-        this.mod = mod;
+        _mod = mod;
     }
+
+    private final Set<ChunkPos> _loaded = new HashSet<>();
 
     public void onLoad(ChunkPos pos) {
         //Debug.logInternal("LOADED: " + pos);
-        loaded.add(pos);
+        _loaded.add(pos);
     }
-
     public void onUnload(ChunkPos pos) {
         //Debug.logInternal("unloaded: " + pos);
-        loaded.remove(pos);
+        _loaded.remove(pos);
     }
 
     public boolean isChunkLoaded(ChunkPos pos) {
-        return !(mod.getWorld().getChunk(pos.x, pos.z) instanceof EmptyChunk);
+        return !(_mod.getWorld().getChunk(pos.x, pos.z) instanceof EmptyChunk);
     }
-
     public boolean isChunkLoaded(BlockPos pos) {
         return isChunkLoaded(new ChunkPos(pos));
     }
-
     public List<ChunkPos> getLoadedChunks() {
-        List<ChunkPos> result = new ArrayList<>(loaded);
+        List<ChunkPos> result = new ArrayList<>(_loaded);
         // Only show LOADED chunks.
-        result = result.stream().filter(this::isChunkLoaded).distinct().collect(Collectors.toList());
+        result = result.stream()
+                .filter(this::isChunkLoaded)
+                .distinct()
+        .collect(Collectors.toList());
         return result;
     }
 
@@ -65,7 +68,7 @@ public class SimpleChunkTracker {
 
     public void reset(AltoClef mod) {
         Debug.logInternal("CHUNKS RESET");
-        loaded.clear();
+        _loaded.clear();
     }
 
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {

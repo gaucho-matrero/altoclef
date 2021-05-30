@@ -1,10 +1,8 @@
 package adris.altoclef.commands;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
-
 
 public class StopCommand extends Command {
 

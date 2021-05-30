@@ -1,6 +1,5 @@
 package adris.altoclef.util.baritone;
 
-
 import adris.altoclef.Debug;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.utils.ToolSet;
@@ -10,30 +9,30 @@ import net.minecraft.tag.BlockTags;
 
 import java.util.List;
 
-
 //@Deprecated
 public class PlaceBlockSchematic extends AbstractSchematic {
 
     private static final int RANGE = 1;
-    private final Block[] blockToPlace;
-    private final boolean skipIfAlreadyThere;
-    private final boolean isDone;
-    private BlockState targetPlace;
+
+    private boolean _done;
+    private final Block[] _blockToPlace;
+    private BlockState _targetPlace;
+
+    private final boolean _skipIfAlreadyThere;
 
     public PlaceBlockSchematic(Block[] blocksToPlace, boolean skipIfAlreadyThere) {
         super(RANGE, RANGE, RANGE);
-        blockToPlace = blocksToPlace;
-        isDone = false;
-        targetPlace = null;
-        this.skipIfAlreadyThere = skipIfAlreadyThere;
+        _blockToPlace = blocksToPlace;
+        _done = false;
+        _targetPlace = null;
+        _skipIfAlreadyThere = skipIfAlreadyThere;
     }
-
     public PlaceBlockSchematic(Block[] blocksToPlace) {
         this(blocksToPlace, true);
     }
 
     public PlaceBlockSchematic(Block blockToPlace) {
-        this(new Block[]{ blockToPlace });
+        this(new Block[] {blockToPlace});
     }
 
     /*
@@ -43,7 +42,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
      */
 
     public boolean foundSpot() {
-        return targetPlace != null;
+        return _targetPlace != null;
     }
 
     // No restrictions.
@@ -59,18 +58,18 @@ public class PlaceBlockSchematic extends AbstractSchematic {
             return blockState;
         }
         // If a block already exists there, place it.
-        if (skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
+        if (_skipIfAlreadyThere && blockIsTarget(blockState.getBlock())) {
             //System.out.println("PlaceBlockNearbySchematic (already exists)");
-            targetPlace = blockState;
+            _targetPlace = blockState;
         }
-        boolean isDone = (targetPlace != null);
+        boolean isDone = (_targetPlace != null);
         if (isDone) {
-            return targetPlace;
+            return _targetPlace;
         }
         //System.out.print("oof: [");
         for (BlockState possible : list) {
             if (possible == null) {
-                if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock())) {
+                if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock()) ) {
                     // Sheering items/flowers results in this issue, but it works fine!
                 } else {
                     Debug.logWarning("Weird issue, given possible state is null. Will ignore.");
@@ -80,7 +79,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
             //System.out.print(possible.getBlock().getTranslationKey() + " ");
             if (blockIsTarget(possible.getBlock())) {
                 //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
-                targetPlace = possible;
+                _targetPlace = possible;
                 return possible;
             }
         }
@@ -90,7 +89,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
 
 
     private boolean blockIsTarget(Block block) {
-        for (Block check : blockToPlace) {
+        for (Block check : _blockToPlace) {
             if (check.is(block)) return true;
         }
         return false;

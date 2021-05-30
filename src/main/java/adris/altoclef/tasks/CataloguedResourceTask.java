@@ -1,7 +1,7 @@
 package adris.altoclef.tasks;
 
-
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -9,48 +9,35 @@ import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 public class CataloguedResourceTask extends Task {
-    private final TaskSquasher squasher;
-    private final ItemTarget[] targets;
-    private final List<ResourceTask> tasksToComplete;
 
-    public CataloguedResourceTask(boolean squash, ItemTarget... targets) {
-        squasher = new TaskSquasher();
-        this.targets = targets;
-        tasksToComplete = new ArrayList<>(targets.length);
 
-        for (ItemTarget target : targets) {
+    private ItemTarget[] _targets;
+
+    private List<ResourceTask> _tasksToComplete;
+
+    private final TaskSquasher _squasher;
+
+    public CataloguedResourceTask(boolean squash, ItemTarget ...targets) {
+        _squasher = new TaskSquasher();
+        _targets = targets;
+        _tasksToComplete = new ArrayList<>(targets.length);
+
+        for(ItemTarget target : targets) {
             if (target != null) {
-                tasksToComplete.add(TaskCatalogue.getItemTask(target));
+                _tasksToComplete.add(TaskCatalogue.getItemTask(target));
             }
         }
 
         if (squash) {
-            squashTasks(tasksToComplete);
+            squashTasks(_tasksToComplete);
         }
     }
 
-    public CataloguedResourceTask(ItemTarget... targets) {
+    public CataloguedResourceTask(ItemTarget ...targets) {
         this(true, targets);
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        for (ResourceTask task : tasksToComplete) {
-            for (ItemTarget target : task.itemTargets) {
-                if (!mod.getInventoryTracker().targetMet(target)) return false;
-            }
-        }
-        // All targets are met.
-        return true;
     }
 
     @Override
@@ -60,13 +47,24 @@ public class CataloguedResourceTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        for (ResourceTask task : tasksToComplete) {
-            for (ItemTarget target : task.itemTargets) {
+        for (ResourceTask task : _tasksToComplete) {
+            for (ItemTarget target : task._itemTargets) {
                 // If we failed to meet this task's targets, do the task.
                 if (!mod.getInventoryTracker().targetMet(target)) return task;
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        for (ResourceTask task : _tasksToComplete) {
+            for (ItemTarget target : task._itemTargets) {
+                if (!mod.getInventoryTracker().targetMet(target)) return false;
+            }
+        }
+        // All targets are met.
+        return true;
     }
 
     @Override
@@ -78,23 +76,23 @@ public class CataloguedResourceTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof CataloguedResourceTask) {
             CataloguedResourceTask other = (CataloguedResourceTask) obj;
-            return Util.arraysEqual(other.targets, targets);
+            return Util.arraysEqual(other._targets, _targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Get catalogued: " + ArrayUtils.toString(targets);
+        return "Get catalogued: " + ArrayUtils.toString(_targets);
     }
 
     private void squashTasks(List<ResourceTask> tasks) {
-        squasher.addTasks(tasks);
+        _squasher.addTasks(tasks);
         tasks.clear();
-        tasks.addAll(squasher.getSquashed());
+        tasks.addAll(_squasher.getSquashed());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     static class TaskSquasher {
 
         private final Map<Class, TypeSquasher> _squashMap = new HashMap<>();
@@ -115,7 +113,6 @@ public class CataloguedResourceTask extends Task {
                 _unSquashableTasks.add(t);
             }
         }
-
         public void addTasks(List<ResourceTask> tasks) {
             for (ResourceTask task : tasks) {
                 addTask(task);
@@ -134,7 +131,6 @@ public class CataloguedResourceTask extends Task {
         }
     }
 
-
     static class CraftSquasher extends TypeSquasher<CraftInTableTask> {
 
         @Override
@@ -142,7 +138,7 @@ public class CataloguedResourceTask extends Task {
 
             List<RecipeTarget> targetRecipies = new ArrayList<>();
 
-            for (CraftInTableTask task : tasks) {
+            for(CraftInTableTask task : tasks) {
                 targetRecipies.addAll(Arrays.asList(task.getRecipeTargets()));
             }
 
@@ -165,10 +161,9 @@ public class CataloguedResourceTask extends Task {
     }
      */
 
+    static abstract class TypeSquasher<T extends ResourceTask> {
 
-    abstract static class TypeSquasher<T extends ResourceTask> {
-
-        private final List<T> _tasks = new ArrayList<>();
+        private List<T> _tasks = new ArrayList<>();
 
         void add(T task) {
             _tasks.add(task);

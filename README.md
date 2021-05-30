@@ -1,11 +1,9 @@
 # altoclef
-
 Plays block game.
 
 Powered by Baritone.
 
-A client side bot that can accomplish any Minecraft task that is relatively simple and can be split into smaller tasks. "Relatively Simple"
-is a vague term, so check the list of current capabilities to see examples.
+A client side bot that can accomplish any Minecraft task that is relatively simple and can be split into smaller tasks. "Relatively Simple" is a vague term, so check the list of current capabilities to see examples.
 
 Video explaining how this bot can be used to beat Minecraft: https://www.youtube.com/watch?v=q5OmcinQ2ck
 
@@ -15,13 +13,11 @@ Will try to stream using this bot to beat the game with NO user input. Will be a
 
 ### How it works
 
-TODO: Fill this with some nerd stuff. Basically each task can run a smaller sub-task, which act recursively. By specifying the order you can
-have requirements and accomplish pretty large tasks by building them up from smaller bits.
+TODO: Fill this with some nerd stuff. Basically each task can run a smaller sub-task, which act recursively. By specifying the order you can have requirements and accomplish pretty large tasks by building them up from smaller bits.
 
 TODO: Image or something to make it easier to explain.
 
 Example pseudocode for getting a Wooden Pickaxe (not actual code):
-
 ```
 task CollectWoodenPickaxe:
     if we don't have 3 planks:
@@ -54,7 +50,6 @@ task OpenCraftingTable:
 ```
 
 ### Current capabilities, Examples:
-
 - Obtain 400+ Items from a fresh survival world, like diamond armor, cake, and nether brick stairs
 - Dodge mob projectiles and force field mobs away while accomplishing arbitrary tasks
 - Collect + smelt food from animals, hay, & crops
@@ -72,12 +67,10 @@ task OpenCraftingTable:
 - Become the terminator: Run away from players while unarmed, gather diamond gear in secret, then return and wreak havoc.
 
 ### TODO's/Future Features:
-
 - Given any schematic, COLLECT ALL RESOURCES and BUILD the schematic, ideally from a fresh survival world if possible.
-- (Currently delayed after 2b2t announced moving to 1.16) Port to Forge and develop a 1.12 version. I will need somebody's help for this, if
-  you know gradle + want to help me get baritone imported into forge hit me up.
-- "Travel" task for anarchy servers that travels in one direction or explores, automatically utilizing nether highways, setting bed respawn
-  points and collecting food for survival.
+- (Currently delayed after 2b2t announced moving to 1.16) Port to Forge and develop a 1.12 version. I will need somebody's help for this, if you know gradle + want to help me get baritone imported into forge hit me up.
+- "Travel" task for anarchy servers that travels in one direction or explores, automatically utilizing nether highways, setting bed respawn points and collecting food for survival.
+
 
 ### Installation
 
@@ -91,8 +84,6 @@ Currently no builds exist as many things are still in development. If you wish t
 
 3) run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
 
-4) for building a jar to use as a fabric mod, run `altoclef/Tasks/build/jar` I think. Haven't tested this yet since I'm still developing the
-   thing.
+4) for building a jar to use as a fabric mod, run `altoclef/Tasks/build/jar` I think. Haven't tested this yet since I'm still developing the thing.
 
-I'm aware these instructions are vague in some parts, so don't hesitate to contact me for questions/make a github issue, bug me all you want
-as long as it's not stuff you can't google in 5 seconds.
+I'm aware these instructions are vague in some parts, so don't hesitate to contact me for questions/make a github issue, bug me all you want as long as it's not stuff you can't google in 5 seconds.

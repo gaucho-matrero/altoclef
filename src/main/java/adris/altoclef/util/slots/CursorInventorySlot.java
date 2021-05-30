@@ -1,6 +1,5 @@
 package adris.altoclef.util.slots;
 
-
 public class CursorInventorySlot extends Slot {
     public CursorInventorySlot() {
         super(-1, true);

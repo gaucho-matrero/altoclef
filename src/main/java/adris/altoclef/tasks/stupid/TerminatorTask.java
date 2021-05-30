@@ -1,11 +1,11 @@
 package adris.altoclef.tasks.stupid;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.RunAwayFromEntitiesTask;
+import adris.altoclef.tasks.RunAwayFromPositionTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -19,21 +19,23 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 /**
  * Roams around the world to terminate Sarah Khaannah
@@ -47,32 +49,40 @@ public class TerminatorTask extends Task {
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
 
-    private static final String[] DIAMOND_ARMORS = {
-            "diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"
-    };
-    private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("diamond_chestplate", 1),
-                                                                                 new ItemTarget("diamond_leggings", 1),
-                                                                                 new ItemTarget("diamond_helmet", 1),
-                                                                                 new ItemTarget("diamond_boots", 1),
-                                                                                 new ItemTarget("diamond_pickaxe", 1),
-                                                                                 new ItemTarget("diamond_shovel", 1),
-                                                                                 new ItemTarget("diamond_sword", 1));
-    private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(new ItemTarget("iron_pickaxe", 3));
-    private final Task _foodTask = new CollectFoodTask(100);
-    private final Timer _runAwayExtraTime = new Timer(10);
-    private final Predicate<? super PlayerEntity> _ignoreTerminate;
-    private final ScanChunksInRadius _scanTask;
-    private final Timer _funnyMessageTimer = new Timer(10);
+    private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
+
     private Vec3d _closestPlayerLastPos;
     private Vec3d _closestPlayerLastObservePos;
-    private Task _runAwayTask;
-    private String _currentVisibleTarget;
 
-    public TerminatorTask(BlockPos center, double scanRadius, Predicate<? super PlayerEntity> ignorePredicate) {
+    private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("diamond_chestplate", 1),
+            new ItemTarget("diamond_leggings", 1),
+            new ItemTarget("diamond_helmet", 1),
+            new ItemTarget("diamond_boots", 1),
+            new ItemTarget("diamond_pickaxe", 1),
+            new ItemTarget("diamond_shovel", 1),
+            new ItemTarget("diamond_sword", 1)
+    );
+    private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(
+            new ItemTarget("iron_pickaxe", 3)
+    );
+
+    private final Task _foodTask = new CollectFoodTask(100);
+
+    private Task _runAwayTask;
+    private final Timer _runAwayExtraTime = new Timer(10);
+
+    private final Predicate<PlayerEntity> _ignoreTerminate;
+
+    private final ScanChunksInRadius _scanTask;
+
+    private String _currentVisibleTarget;
+    private final Timer _funnyMessageTimer = new Timer(10);
+
+    public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> ignorePredicate) {
         _ignoreTerminate = ignorePredicate;
         _scanTask = new ScanChunksInRadius(center, scanRadius);
     }
-
     public TerminatorTask(BlockPos center, double scanRadius) {
         this(center, scanRadius, ignore -> false);
     }
@@ -86,52 +96,14 @@ public class TerminatorTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        PlayerEntity closest = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                                                                                      toIgnore -> !shouldPunk(mod, (PlayerEntity) toIgnore),
-                                                                                      PlayerEntity.class);
+        PlayerEntity closest = (PlayerEntity)mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toIgnore -> !shouldPunk(mod, (PlayerEntity)toIgnore), PlayerEntity.class);
 
         if (closest != null) {
             _closestPlayerLastPos = closest.getPos();
             _closestPlayerLastObservePos = mod.getPlayer().getPos();
         }
 
-        if (isReadyToPunk(mod)) {
-            // We can totally punk
-            if (_runAwayTask != null) {
-                _runAwayTask = null;
-                Debug.logMessage("Stopped running away because we can now punk.");
-            }
-            // Get building materials if we don't have them.
-            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
-                setDebugState("Collecting building materials");
-                return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
-            }
-
-            // Get water to MLG if we are pushed off
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
-            }
-            // Get some food so we can last a little longer.
-            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) &&
-                mod.getInventoryTracker().totalFoodScore() <= 0) {
-                return _foodTask;
-            }
-
-            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                                                        entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe),
-                                                        PlayerEntity.class) != null) {
-                setDebugState("Punking.");
-                return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), entity -> {
-                    if (entity instanceof PlayerEntity) {
-                        tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
-                        return new KillPlayerTask(entity.getName().getString());
-                    }
-                    // Should never happen.
-                    Debug.logWarning("This should never happen.");
-                    return _scanTask;
-                }, ignore -> !shouldPunk(mod, (PlayerEntity) ignore), PlayerEntity.class);
-            }
-        } else {
+        if (!isReadyToPunk(mod)) {
 
             if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
                 // If our last "scare" was too long ago or there are no more nearby players...
@@ -159,8 +131,7 @@ public class TerminatorTask extends Task {
                     // We may be far and obstructed, check.
                     boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
 
-                    //Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " +
-                    // entityIgnoreMaybe.distanceTo(mod.getPlayer()));
+                    //Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
                     return !seesPlayer;
                 }
             }, PlayerEntity.class) != null) {
@@ -175,11 +146,12 @@ public class TerminatorTask extends Task {
                 _runAwayExtraTime.reset();
                 try {
                     _runAwayTask = new RunAwayFromPlayersTask(() -> {
-                        Stream<PlayerEntity> stream = mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream();
-                        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                            return stream.filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
+                            Stream<PlayerEntity> stream = mod.getEntityTracker().getTrackedEntities(PlayerEntity.class).stream();
+                            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                                return stream.filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
+                            }
                         }
-                    }, RUN_AWAY_DISTANCE);
+                            , RUN_AWAY_DISTANCE);
                 } catch (ConcurrentModificationException e) {
                     // oof
                     Debug.logWarning("Duct tape over ConcurrentModificationException (see log)");
@@ -187,6 +159,43 @@ public class TerminatorTask extends Task {
                 }
                 setDebugState("Running away from players.");
                 return _runAwayTask;
+            }
+        } else {
+            // We can totally punk
+            if (_runAwayTask != null) {
+                _runAwayTask = null;
+                Debug.logMessage("Stopped running away because we can now punk.");
+            }
+            // Get building materials if we don't have them.
+            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
+                setDebugState("Collecting building materials");
+                return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
+            }
+
+            // Get water to MLG if we are pushed off
+            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask("water_bucket", 1);
+            }
+            // Get some food so we can last a little longer.
+            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3*2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
+                return _foodTask;
+            }
+
+            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe), PlayerEntity.class) != null) {
+                setDebugState("Punking.");
+                return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
+                        entity -> {
+                            if (entity instanceof PlayerEntity) {
+                                tryDoFunnyMessageTo(mod, (PlayerEntity)entity);
+                                return new KillPlayerTask(entity.getName().getString());
+                            }
+                            // Should never happen.
+                            Debug.logWarning("This should never happen.");
+                            return _scanTask;
+                        },
+                        ignore -> !shouldPunk(mod, (PlayerEntity) ignore),
+                        PlayerEntity.class
+                );
             }
         }
 
@@ -196,10 +205,8 @@ public class TerminatorTask extends Task {
             return new EquipArmorTask(DIAMOND_ARMORS);
         }
         // Get diamond armor + gear first
-        if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) ||
-            !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-            if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) <= 1 ||
-                (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
+        if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
+            if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) <= 1 || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
                 setDebugState("Getting iron pickaxes to mine diamonds");
                 return _prepareDiamondMiningEquipmentTask;
             }
@@ -272,7 +279,7 @@ public class TerminatorTask extends Task {
         return "Prepare to get punked, kid";
     }
 
-    public class ScanChunksInRadius extends SearchChunksExploreTask {
+    private class ScanChunksInRadius extends SearchChunksExploreTask {
 
         private final BlockPos _center;
         private final double _radius;
@@ -283,24 +290,33 @@ public class TerminatorTask extends Task {
         }
 
         @Override
+        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
+            double cx = (pos.getStartX() + pos.getEndX()) / 2.0;
+            double cz = (pos.getStartZ() + pos.getEndZ()) / 2.0;
+            double dx = _center.getX() - cx,
+                   dz = _center.getZ() - cz;
+            return dx*dx + dz*dz < _radius*_radius;
+        }
+
+        @Override
         protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {
             // Prioritise the chunk we last saw a player in.
             if (_closestPlayerLastPos != null) {
                 double lowestScore = Double.POSITIVE_INFINITY;
                 ChunkPos bestChunk = null;
                 for (ChunkPos toSearch : chunks) {
-                    double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz =
-                            (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
+                    double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
                     double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
                     double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
                     double pdx = _closestPlayerLastPos.getX() - cx, pdz = _closestPlayerLastPos.getZ() - cz;
-                    double distanceToLastPlayerPos = pdx * pdx + pdz * pdz;
+                    double distanceToLastPlayerPos = pdx*pdx + pdz * pdz;
                     Vec3d direction = _closestPlayerLastPos.subtract(_closestPlayerLastObservePos).multiply(1, 0, 1).normalize();
                     double dirx = direction.x, dirz = direction.z;
                     double correctDistance = pdx * dirx + pdz * dirz;
-                    double tempX = dirx * correctDistance, tempZ = dirz * correctDistance;
+                    double tempX = dirx * correctDistance,
+                           tempZ = dirz * correctDistance;
                     double perpendicularDistance = ((pdx - tempX) * (pdx - tempX)) + ((pdz - tempZ) * (pdz - tempZ));
-                    double score = distanceSq + distanceToLastPlayerPos * 0.6 - correctDistance * 2 + perpendicularDistance * 0.5;
+                    double score = distanceSq + distanceToLastPlayerPos*0.6 - correctDistance*2 + perpendicularDistance*0.5;
                     if (score < lowestScore) {
                         lowestScore = score;
                         bestChunk = toSearch;
@@ -309,14 +325,6 @@ public class TerminatorTask extends Task {
                 return bestChunk;
             }
             return super.getBestChunkOverride(mod, chunks);
-        }
-
-        @Override
-        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
-            double cx = (pos.getStartX() + pos.getEndX()) / 2.0;
-            double cz = (pos.getStartZ() + pos.getEndZ()) / 2.0;
-            double dx = _center.getX() - cx, dz = _center.getZ() - cz;
-            return dx * dx + dz * dz < _radius * _radius;
         }
 
         @Override
@@ -334,13 +342,12 @@ public class TerminatorTask extends Task {
         }
     }
 
-
     private class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
 
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
             super(toRunAwayFrom, distanceToRun, true, 0.1);
             // More lenient progress checker
-            checker = new MovementProgressChecker(2);
+            _checker = new MovementProgressChecker(2);
         }
 
         @Override

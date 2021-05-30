@@ -1,6 +1,5 @@
 package adris.altoclef.tasksystem.chains;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.KillEntitiesTask;
@@ -25,22 +24,7 @@ import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.BlazeEntity;
-import net.minecraft.entity.mob.CaveSpiderEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.DrownedEntity;
-import net.minecraft.entity.mob.HoglinEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.mob.PiglinBruteEntity;
-import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.mob.PillagerEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.mob.SpiderEntity;
-import net.minecraft.entity.mob.WitchEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.mob.ZoglinEntity;
-import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -50,45 +34,32 @@ import net.minecraft.item.ToolItem;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
+import java.util.*;
 
 public class MobDefenseChain extends SingleTaskChain {
 
-    // Kind of a silly solution
-    @SuppressWarnings("rawtypes")
-    public static final Class[] HOSTILE_ANNOYING_CLASSES = {
-            SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class,
-            PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class,
-            PillagerEntity.class, DrownedEntity.class
-    };
-    private static final double CREEPER_KEEP_DISTANCE = 10; // TODO: 2021-05-22 move these to a config
+    private static final double CREEPER_KEEP_DISTANCE = 10;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
+
     private static final double DANGER_KEEP_DISTANCE = 15;
+
     private static final double SAFE_KEEP_DISTANCE = 8;
+
     private final KillAura _killAura = new KillAura();
+
+    private Entity _targetEntity;
+
+    private boolean _doingFunkyStuff = false;
+
+    private boolean _wasPuttingOutFire = false;
+
     private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
-    private Entity targetEntity;
-    private boolean doingFunkyStuff;
-    private boolean wasPuttingOutFire;
-    private Task runAwayTask;
+
+    private Task _runAwayTask;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
-    }
-
-    public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
-        double distance = creeper.squaredDistanceTo(pos);
-        float fuse = creeper.getClientFuseTime(1);
-
-        // Not fusing. We only get fusing crepers.
-        if (fuse <= 0.001f) return 0;
-        return distance * (1 - fuse * fuse);
     }
 
     @Override
@@ -112,10 +83,10 @@ public class MobDefenseChain extends SingleTaskChain {
         BlockPos fireBlock = isInsideFireAndOnFire(mod);
         if (fireBlock != null) {
             putOutFire(mod, fireBlock);
-        } else if (wasPuttingOutFire) {
+        } else if (_wasPuttingOutFire) {
             // Stop putting stuff out if we no longer need to put out a fire.
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
-            wasPuttingOutFire = false;
+            _wasPuttingOutFire = false;
         }
 
         if (prioritizeEating(mod)) {
@@ -133,25 +104,25 @@ public class MobDefenseChain extends SingleTaskChain {
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
         if (universallyDangerous != null) {
-            runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
-            setTask(runAwayTask);
+            _runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
+            setTask(_runAwayTask);
             return 70;
         }
 
-        doingFunkyStuff = false;
+        _doingFunkyStuff = false;
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
-            doingFunkyStuff = true;
+            _doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
-            runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
-            setTask(runAwayTask);
+            _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
+            setTask(_runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
 
         // Dodge projectiles
-        if (!mod.getFoodTaskChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
-            doingFunkyStuff = true;
+        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+            _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
@@ -159,10 +130,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod)) {
-            doingFunkyStuff = true;
-            if (targetEntity == null) {
-                runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
-                setTask(runAwayTask);
+            _doingFunkyStuff = true;
+            if (_targetEntity == null) {
+                _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
+                setTask(_runAwayTask);
                 return 70;
             }
         }
@@ -176,9 +147,7 @@ public class MobDefenseChain extends SingleTaskChain {
             }
 
             ToolItem bestSword = null;
-            Item[] SWORDS = {
-                    Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD
-            };
+            Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
             for (Item item : SWORDS) {
                 if (mod.getInventoryTracker().hasItem(item)) {
                     bestSword = (ToolItem) item;
@@ -191,7 +160,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity hostile : hostiles) {
-                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity) ? 18 : 2;
+                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity)? 18 : 2;
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
@@ -245,7 +214,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     // full diamond has 8 bonus toughness
                     // full netherite has 12 bonus toughness
                     int armor = mod.getPlayer().getArmor();
-                    float damage = bestSword == null ? 0 : (1 + bestSword.getMaterial().getAttackDamage());
+                    float damage = bestSword == null? 0 : (1 + bestSword.getMaterial().getAttackDamage());
 
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
 
@@ -253,14 +222,15 @@ public class MobDefenseChain extends SingleTaskChain {
                     if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
 
-                        setTask(new KillEntitiesTask(entity -> !toDealWith.contains(entity),
-                                                     // Oof
-                                                     HOSTILE_ANNOYING_CLASSES));
+                        setTask(new KillEntitiesTask(
+                                entity -> !toDealWith.contains(entity),
+                                // Oof
+                                HOSTILE_ANNOYING_CLASSES));
                         return 65;
                     } else {
                         // We can't deal with it
-                        runAwayTask = new RunAwayFromHostilesTask(30, true);
-                        setTask(runAwayTask);
+                        _runAwayTask = new RunAwayFromHostilesTask(30, true);
+                        setTask(_runAwayTask);
                         return 80;
                     }
                 }
@@ -269,25 +239,27 @@ public class MobDefenseChain extends SingleTaskChain {
 
 
         // By default if we aren't "immediately" in danger but were running away, keep running away until we're good.
-        if (runAwayTask != null && runAwayTask.isActive() && !runAwayTask.isFinished(mod)) {
-            setTask(runAwayTask);
+        if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
+            setTask(_runAwayTask);
             return 60;
         }
 
         return 0;
     }
 
-    @Override
-    public String getName() {
-        return "Mob Defense";
-    }
-
     private BlockPos isInsideFireAndOnFire(AltoClef mod) {
         boolean onFire = mod.getPlayer().isOnFire();
         if (!onFire) return null;
         BlockPos p = mod.getPlayer().getBlockPos();
-        BlockPos[] toCheck = {
-                p, p.add(1, 0, 0), p.add(1, 0, 1), p.add(1, 0, -1), p.add(0, 0, 1), p.add(0, 0, -1), p.add(-1, 0, 1), p.add(-1, 0, -1)
+        BlockPos[] toCheck = new BlockPos[] {
+            p,
+            p.add(1, 0, 0),
+                p.add(1, 0, 1),
+                p.add(1, 0, -1),
+                p.add(0, 0, 1),
+                p.add(0, 0, -1),
+                p.add(-1, 0, 1),
+                p.add(-1, 0, -1)
         };
         for (BlockPos check : toCheck) {
             Block b = mod.getWorld().getBlockState(check).getBlock();
@@ -301,20 +273,18 @@ public class MobDefenseChain extends SingleTaskChain {
     private void putOutFire(AltoClef mod, BlockPos pos) {
         Baritone b = mod.getClientBaritone();
         IPlayerContext ctx = b.getPlayerContext();
-        Optional<Rotation> reachable = RotationUtils.reachableOffset(ctx.player(), pos,
-                                                                     new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
-                                                                     ctx.playerController().getBlockReachDistance(), false);
+        Optional<Rotation> reachable = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) , ctx.playerController().getBlockReachDistance(), false);
         if (reachable.isPresent()) {
             b.getLookBehavior().updateTarget(reachable.get(), true);
             if (ctx.isLookingAt(pos)) {
-                wasPuttingOutFire = true;
+                _wasPuttingOutFire = true;
                 b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
         }
     }
 
     private boolean prioritizeEating(AltoClef mod) {
-        return mod.getFoodTaskChain().needsToEatCritical(mod);
+        return mod.getFoodChain().needsToEatCritical(mod);
     }
 
     private void doForceField(AltoClef mod) {
@@ -357,7 +327,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void applyForceField(AltoClef mod, Entity entity) {
-        if (targetEntity != null && targetEntity.equals(entity)) return;
+        if (_targetEntity != null && _targetEntity.equals(entity)) return;
         _killAura.applyAura(mod, entity);
     }
 
@@ -378,7 +348,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     target = creeper;
                 }
             }
-        } catch (ConcurrentModificationException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+        } catch (ConcurrentModificationException | ArrayIndexOutOfBoundsException | NullPointerException e ) {
             // IDK why but these exceptions happen sometimes. It's extremely bizarre and I have no idea why.
             Debug.logWarning("Weird Exception caught and ignored while scanning for creepers: " + e.getMessage());
             return target;
@@ -414,7 +384,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
-                double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+                double horizontalDistance = Math.sqrt(delta.x*delta.x + delta.z*delta.z);
                 double verticalDistance = delta.y;
 
                 if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) return true;
@@ -432,8 +402,7 @@ public class MobDefenseChain extends SingleTaskChain {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity != null) {
                 double range = SAFE_KEEP_DISTANCE - 2;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range &&
-                    EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
                     return entity;
                 }
             }
@@ -445,8 +414,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
                 if (entity != null) {
                     double range = SAFE_KEEP_DISTANCE - 1;
-                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range &&
-                        EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
                         return entity;
                     }
                 }
@@ -462,15 +430,14 @@ public class MobDefenseChain extends SingleTaskChain {
             try {
                 ClientPlayerEntity player = mod.getPlayer();
                 List<HostileEntity> hostiles = mod.getEntityTracker().getHostiles();
-                for (HostileEntity entity : hostiles) {
+                for(HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) &&
-                        EntityTracker.isHostileToPlayer(mod, entity)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getConfigState().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
                         return true;
                     }
                 }
-            } catch (Exception e) {
+            }catch (Exception e) {
                 Debug.logWarning("Weird multithread exception. Will fix later.");
             }
         }
@@ -483,23 +450,32 @@ public class MobDefenseChain extends SingleTaskChain {
         float health = mod.getPlayer().getHealth();
         if (armor <= 15 && health < 3) return true;
         if (armor < 10 && health < 10) return true;
-        return armor < 5 && health < 18;
+        if (armor < 5 && health < 18) return true;
+        return false;
+    }
+
+    public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
+        double distance = creeper.squaredDistanceTo(pos);
+        float fuse = creeper.getClientFuseTime(1);
+
+        // Not fusing. We only get fusing crepers.
+        if (fuse <= 0.001f) return 0;
+        return distance * (1 - fuse*fuse);
     }
 
     public void setTargetEntity(Entity entity) {
-        targetEntity = entity;
+        _targetEntity = entity;
     }
 
     public void setForceFieldRange(double range) {
         _killAura.setRange(range);
     }
-
     public void resetForceField() {
         _killAura.setRange(Double.POSITIVE_INFINITY);
     }
 
     public boolean isDoingAcrobatics() {
-        return doingFunkyStuff;
+        return _doingFunkyStuff;
     }
 
     @Override
@@ -512,4 +488,12 @@ public class MobDefenseChain extends SingleTaskChain {
     protected void onTaskFinish(AltoClef mod) {
         // Task is done, so I guess we move on?
     }
+
+    @Override
+    public String getName() {
+        return "Mob Defense";
+    }
+
+    // Kind of a silly solution
+    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[] {SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class, DrownedEntity.class};
 }

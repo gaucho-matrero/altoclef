@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.misc.speedrun;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.SearchChunksExploreTask;
@@ -8,7 +7,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.ChunkPos;
-
 
 public class SearchNetherFortressTask extends SearchChunksExploreTask {
 

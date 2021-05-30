@@ -1,13 +1,11 @@
 package adris.altoclef.commands;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.AltoClefCommands;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-
 
 public class TestCommand extends Command {
 

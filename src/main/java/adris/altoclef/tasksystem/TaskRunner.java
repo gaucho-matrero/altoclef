@@ -1,71 +1,70 @@
 package adris.altoclef.tasksystem;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
 import java.util.ArrayList;
 
-
 public class TaskRunner {
-    private final ArrayList<TaskChain> chains = new ArrayList<>();
-    private final AltoClef mod;
-    private boolean active;
-    private TaskChain cachedCurrentTaskChain;
+
+    private ArrayList<TaskChain> _chains = new ArrayList<>();
+    private AltoClef _mod;
+    private boolean _active;
+
+    private TaskChain _cachedCurrentTaskChain = null;
 
     public TaskRunner(AltoClef mod) {
-        this.mod = mod;
-        active = false;
+        _mod = mod;
+        _active = false;
     }
 
     public void tick() {
-        if (!active) return;
+        if (!_active) return;
         // Get highest priority chain and run
         TaskChain maxChain = null;
         float maxPriority = Float.NEGATIVE_INFINITY;
-        for (TaskChain chain : chains) {
+        for(TaskChain chain : _chains) {
             if (!chain.isActive()) continue;
-            float priority = chain.getPriority(mod);
+            float priority = chain.getPriority(_mod);
             if (priority > maxPriority) {
                 maxPriority = priority;
                 maxChain = chain;
             }
         }
-        if (cachedCurrentTaskChain != null && maxChain != cachedCurrentTaskChain) {
-            cachedCurrentTaskChain.onInterrupt(mod, maxChain);
+        if (_cachedCurrentTaskChain != null && maxChain != _cachedCurrentTaskChain) {
+            _cachedCurrentTaskChain.onInterrupt(_mod, maxChain);
         }
-        cachedCurrentTaskChain = maxChain;
+        _cachedCurrentTaskChain = maxChain;
         if (maxChain != null) {
-            maxChain.tick(mod);
+            maxChain.tick(_mod);
         }
     }
 
     public void addTaskChain(TaskChain chain) {
-        chains.add(chain);
+        _chains.add(chain);
     }
 
     public void enable() {
-        if (!active) {
-            mod.getConfigState().push();
-            mod.getConfigState().setPauseOnLostFocus(false);
+        if (!_active) {
+            _mod.getConfigState().push();
+            _mod.getConfigState().setPauseOnLostFocus(false);
         }
-        active = true;
+        _active = true;
     }
-
     public void disable() {
-        if (active) {
-            mod.getConfigState().pop();
+        if (_active) {
+            _mod.getConfigState().pop();
         }
-        for (TaskChain chain : chains) {
-            chain.stop(mod);
+        for (TaskChain chain : _chains) {
+            chain.stop(_mod);
         }
-        active = false;
+        _active = false;
 
         Debug.logMessage("Stopped");
     }
 
     public TaskChain getCurrentTaskChain() {
-        return cachedCurrentTaskChain;
+        return _cachedCurrentTaskChain;
     }
 
 }

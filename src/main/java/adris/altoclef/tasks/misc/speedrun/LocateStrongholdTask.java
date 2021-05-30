@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.misc.speedrun;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -11,6 +10,7 @@ import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -24,40 +24,27 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class LocateStrongholdTask extends Task {
 
     private static final int EYE_THROW_MINIMUM_Y_POSITION = 68;
 
     private static final int EYE_RETHROW_DISTANCE = 1000;
 
-    private final List<BlockPos> cachedPortalFrame = new ArrayList<>();
-    private final int targetEyes;
-    private final Timer throwTimer = new Timer(5);
-    private EyeDirection cachedEyeDirection;
-    private Entity currentThrownEye;
-    private Vec3d lastThrowPos;
-    private SearchStrongholdTask searchTask;
+    private final List<BlockPos> _cachedPortalFrame = new ArrayList<>();
+
+    private EyeDirection _cachedEyeDirection = null;
+    private Entity _currentThrownEye = null;
+
+    private Vec3d _lastThrowPos = null;
+
+    private final int _targetEyes;
+
+    private Timer _throwTimer = new Timer(5);
+
+    private SearchStrongholdTask _searchTask;
 
     public LocateStrongholdTask(int targetEyes) {
-        this.targetEyes = targetEyes;
-    }
-
-    public boolean isSearching() {
-        return cachedEyeDirection != null;
-    }
-
-    public boolean portalFound() {
-        return !cachedPortalFrame.isEmpty();
-    }
-
-    public List<BlockPos> getPortalFrame() {
-        return cachedPortalFrame;
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return portalFound();
+        _targetEyes = targetEyes;
     }
 
     @Override
@@ -65,51 +52,55 @@ public class LocateStrongholdTask extends Task {
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
     }
 
+    public boolean isSearching() {
+        return _cachedEyeDirection != null;
+    }
+
     @Override
     protected Task onTick(AltoClef mod) {
 
         // Pick up eye if we need to/want to.
-        if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
             setDebugState("Picking up dropped ender eye.");
-            return new PickupDroppedItemTask(Items.ENDER_EYE, targetEyes, true);
+            return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes, true);
         }
 
         // Handle thrown eye
         if (mod.getEntityTracker().entityFound(EyeOfEnderEntity.class)) {
-            if (currentThrownEye == null || !currentThrownEye.isAlive()) {
+            if (_currentThrownEye == null || !_currentThrownEye.isAlive()) {
                 Debug.logMessage("New eye direction");
-                currentThrownEye = mod.getEntityTracker().getTrackedEntities(EyeOfEnderEntity.class).get(0);
-                cachedEyeDirection = null;
+                _currentThrownEye = mod.getEntityTracker().getTrackedEntities(EyeOfEnderEntity.class).get(0);
+                _cachedEyeDirection = null;
             }
-            if (cachedEyeDirection == null) {
-                cachedEyeDirection = new EyeDirection(currentThrownEye.getPos());
+            if (_cachedEyeDirection == null) {
+                _cachedEyeDirection = new EyeDirection(_currentThrownEye.getPos());
             } else {
-                cachedEyeDirection.updateEyePos(currentThrownEye.getPos());
+                _cachedEyeDirection.updateEyePos(_currentThrownEye.getPos());
             }
             setDebugState("Waiting for eye to travel.");
-            lastThrowPos = mod.getPlayer().getPos();
+            _lastThrowPos = mod.getPlayer().getPos();
             return null;
         }
 
         // Re-throw the eye after traveling a bit to get a more accurate estimate of where the stronghold is.
-        if (lastThrowPos != null) {
-            double sqDist = mod.getPlayer().squaredDistanceTo(lastThrowPos);
+        if (_lastThrowPos != null) {
+            double sqDist = mod.getPlayer().squaredDistanceTo(_lastThrowPos);
             if (sqDist > EYE_RETHROW_DISTANCE * EYE_RETHROW_DISTANCE) {
-                cachedEyeDirection = null;
+                _cachedEyeDirection = null;
             }
         }
 
         // If we found our portal frame, we're good.
         if (mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).size() >= 12) {
             Debug.logMessage("FOUND PORTAL AT: " + mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME).get(0));
-            cachedPortalFrame.clear();
-            cachedPortalFrame.addAll(mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME));
+            _cachedPortalFrame.clear();
+            _cachedPortalFrame.addAll(mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME));
             // We're done.
             return null;
         }
 
         // Throw the eye since we don't have any eye info.
-        if (cachedEyeDirection == null) {
+        if (_cachedEyeDirection == null) {
 
             if (!mod.getInventoryTracker().hasItem(Items.ENDER_EYE)) {
                 setDebugState("Collecting eye of ender.");
@@ -124,11 +115,11 @@ public class LocateStrongholdTask extends Task {
             // Throw it
             if (mod.getInventoryTracker().equipItem(Items.ENDER_EYE)) {
                 assert MinecraftClient.getInstance().interactionManager != null;
-                if (throwTimer.elapsed()) {
+                if (_throwTimer.elapsed()) {
                     if (LookUtil.tryAvoidingInteractable(mod)) {
                         MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
                         //MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                        throwTimer.reset();
+                        _throwTimer.reset();
                     }
                 } else {
                     MinecraftClient.getInstance().interactionManager.stopUsingItem(mod.getPlayer());
@@ -141,13 +132,13 @@ public class LocateStrongholdTask extends Task {
         }
 
         // Travel to stronghold + search around stronghold if necessary.
-        SearchStrongholdTask tryNewSearch = new SearchStrongholdTask(cachedEyeDirection);
-        if (!tryNewSearch.equals(searchTask)) {
+        SearchStrongholdTask tryNewSearch = new SearchStrongholdTask(_cachedEyeDirection);
+        if (_searchTask == null || !_searchTask.equals(tryNewSearch)) {
             Debug.logMessage("New Stronghold search task");
-            searchTask = tryNewSearch;
+            _searchTask = tryNewSearch;
         }
         setDebugState("Searching for stronghold+portal");
-        return searchTask;
+        return _searchTask;
     }
 
     @Override
@@ -165,10 +156,22 @@ public class LocateStrongholdTask extends Task {
         return "Locating stronghold";
     }
 
+    public boolean portalFound() {
+        return _cachedPortalFrame.size() != 0;
+    }
+
+    public List<BlockPos> getPortalFrame() {
+        return _cachedPortalFrame;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return portalFound();
+    }
 
     // Represents the direction we need to travel to get to the stronghold.
     private static class EyeDirection {
-        private final Vec3d _start;
+        private Vec3d _start;
         private Vec3d _end;
 
         public EyeDirection(Vec3d startPos) {
@@ -182,12 +185,10 @@ public class LocateStrongholdTask extends Task {
         public Vec3d getOrigin() {
             return _start;
         }
-
         public Vec3d getDelta() {
             return _end.subtract(_start);
         }
     }
-
 
     private static class SearchStrongholdTask extends SearchChunksExploreTask {
 
@@ -195,6 +196,17 @@ public class LocateStrongholdTask extends Task {
 
         public SearchStrongholdTask(EyeDirection travelDirection) {
             _goTask = new GoInDirectionXZTask(travelDirection.getOrigin(), travelDirection.getDelta(), 3);
+        }
+
+        @Override
+        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
+            boolean found = mod.getChunkTracker().scanChunk(pos, (block) ->
+                    mod.getWorld().getBlockState(block).getBlock() == Blocks.STONE_BRICKS
+            );
+            if (found) {
+                Debug.logMessage("Scanned chunk FOUND!");
+            }
+            return found;
         }
 
         @Override
@@ -214,16 +226,6 @@ public class LocateStrongholdTask extends Task {
         @Override
         protected Task getWanderTask(AltoClef mod) {
             return _goTask;
-        }
-
-        @Override
-        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
-            boolean found = mod.getChunkTracker().scanChunk(pos, (block) -> mod.getWorld().getBlockState(block).getBlock() ==
-                                                                            Blocks.STONE_BRICKS);
-            if (found) {
-                Debug.logMessage("Scanned chunk FOUND!");
-            }
-            return found;
         }
     }
 }

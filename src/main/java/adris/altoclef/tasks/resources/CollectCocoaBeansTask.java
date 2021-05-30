@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.resources;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.SearchWithinBiomeTaks;
@@ -17,14 +17,13 @@ import net.minecraft.world.biome.Biome;
 import java.util.HashSet;
 import java.util.function.Predicate;
 
-
 public class CollectCocoaBeansTask extends ResourceTask {
-    private final int count;
-    private final HashSet<BlockPos> wasFullyGrown = new HashSet<>();
+    private final int _count;
+    private final HashSet<BlockPos> _wasFullyGrown = new HashSet<>();
 
     public CollectCocoaBeansTask(int targetCount) {
         super(Items.COCOA_BEANS, targetCount);
-        count = targetCount;
+        _count = targetCount;
     }
 
     @Override
@@ -42,15 +41,15 @@ public class CollectCocoaBeansTask extends ResourceTask {
 
         Predicate<BlockPos> invalidCocoaCheck = (blockPos) -> {
             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                return !wasFullyGrown.contains(blockPos);
+                return !_wasFullyGrown.contains(blockPos);
             }
 
             BlockState s = mod.getWorld().getBlockState(blockPos);
             boolean mature = s.get(CocoaBlock.AGE) == 2;
-            if (wasFullyGrown.contains(blockPos)) {
-                if (!mature) wasFullyGrown.remove(blockPos);
+            if (_wasFullyGrown.contains(blockPos)) {
+                if (!mature) _wasFullyGrown.remove(blockPos);
             } else {
-                if (mature) wasFullyGrown.add(blockPos);
+                if (mature) _wasFullyGrown.add(blockPos);
             }
             return !mature;
         };
@@ -58,8 +57,7 @@ public class CollectCocoaBeansTask extends ResourceTask {
         // Break mature cocoa blocks
         if (mod.getBlockTracker().anyFound(invalidCocoaCheck, Blocks.COCOA)) {
             setDebugState("Breaking cocoa blocks");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new,
-                                            pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck), Blocks.COCOA);
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck), Blocks.COCOA);
         }
 
         // Dimension
@@ -84,6 +82,6 @@ public class CollectCocoaBeansTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + count + " cocoa beans.";
+        return "Collecting " + _count + " cocoa beans.";
     }
 }

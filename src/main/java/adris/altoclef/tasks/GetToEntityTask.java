@@ -1,6 +1,5 @@
 package adris.altoclef.tasks;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
@@ -9,18 +8,19 @@ import adris.altoclef.util.baritone.GoalFollowEntity;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 
-
 public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
-    private final Entity entity;
-    private final double closeEnoughDistance;
-    private final MovementProgressChecker progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
-    private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(10);
+
+    private final Entity _entity;
+
+    private final double _closeEnoughDistance;
+
+    private final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
     public GetToEntityTask(Entity entity, double closeEnoughDistance) {
-        this.entity = entity;
-        this.closeEnoughDistance = closeEnoughDistance;
+        _entity = entity;
+        _closeEnoughDistance = closeEnoughDistance;
     }
-
     public GetToEntityTask(Entity entity) {
         this(entity, 1);
     }
@@ -28,28 +28,28 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-        wanderTask.resetWander();
+        _wanderTask.resetWander();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
-            progress.reset();
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            _progress.reset();
             setDebugState("Failed to get to target, wandering for a bit.");
-            return wanderTask;
+            return _wanderTask;
         }
 
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(entity, closeEnoughDistance));
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(_entity, _closeEnoughDistance));
         }
 
-        if (mod.getPlayer().isInRange(entity, closeEnoughDistance)) {
-            progress.reset();
+        if (mod.getPlayer().isInRange(_entity, _closeEnoughDistance)) {
+            _progress.reset();
         }
 
-        if (!progress.check(mod)) {
-            return wanderTask;
+        if (!_progress.check(mod)) {
+            return _wanderTask;
         }
 
         setDebugState("Going to entity");
@@ -65,13 +65,13 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToEntityTask) {
             GetToEntityTask task = (GetToEntityTask) obj;
-            return task.entity.equals(entity) && Math.abs(task.closeEnoughDistance - closeEnoughDistance) < 0.1;
+            return task._entity.equals(_entity) && Math.abs(task._closeEnoughDistance - _closeEnoughDistance) < 0.1;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Approach entity " + entity.getDisplayName().asString();
+        return "Approach entity " + _entity.getDisplayName().asString();
     }
 }

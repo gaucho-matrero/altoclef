@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.resources;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -11,19 +10,16 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-
 public class ShearAndCollectBlockTask extends MineAndCollectTask {
 
     public ShearAndCollectBlockTask(ItemTarget[] itemTargets, Block... blocksToMine) {
         super(itemTargets, blocksToMine, MiningRequirement.HAND);
     }
-
     public ShearAndCollectBlockTask(Item[] items, int count, Block... blocksToMine) {
-        this(new ItemTarget[]{ new ItemTarget(items, count) }, blocksToMine);
+        this(new ItemTarget[]{new ItemTarget(items, count)}, blocksToMine);
     }
-
     public ShearAndCollectBlockTask(Item item, int count, Block... blocksToMine) {
-        this(new Item[]{ item }, count, blocksToMine);
+        this(new Item[]{item}, count, blocksToMine);
     }
 
     @Override

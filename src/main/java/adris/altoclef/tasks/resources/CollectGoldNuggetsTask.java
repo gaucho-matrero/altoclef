@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.resources;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInInventoryTask;
@@ -14,15 +13,16 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-
 public class CollectGoldNuggetsTask extends ResourceTask {
-    private final int count;
+
+    private final int _count;
 
     public CollectGoldNuggetsTask(int count) {
         super(Items.GOLD_NUGGET, count);
-        this.count = count;
+        _count = count;
     }
 
     @Override
@@ -40,21 +40,17 @@ public class CollectGoldNuggetsTask extends ResourceTask {
         switch (mod.getCurrentDimension()) {
             case OVERWORLD:
                 setDebugState("Getting gold ingots to convert to nuggets");
-                int potentialNuggies = mod.getInventoryTracker().getItemCount(Items.GOLD_NUGGET) + mod.getInventoryTracker().getItemCount(
-                        Items.GOLD_INGOT) * 9;
-                if (potentialNuggies >= count && mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
+                int potentialNuggies = mod.getInventoryTracker().getItemCount(Items.GOLD_NUGGET) + mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) * 9;
+                if (potentialNuggies >= _count && mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
                     // Craft gold ingots to nuggets
-                    return new CraftInInventoryTask(new ItemTarget(Items.GOLD_NUGGET, count),
-                                                    CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{
-                                                            new ItemTarget(Items.GOLD_INGOT, 1), null, null, null
-                                                    }, 9));
+                    return new CraftInInventoryTask(new ItemTarget(Items.GOLD_NUGGET, _count), CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9));
                 }
                 // Get gold ingots
-                int nuggiesStillNeeded = count - potentialNuggies;
-                return TaskCatalogue.getItemTask("gold_ingot", (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
+                int nuggiesStillNeeded = _count - potentialNuggies;
+                return TaskCatalogue.getItemTask("gold_ingot", (int)Math.ceil((double)nuggiesStillNeeded / 9.0));
             case NETHER:
                 setDebugState("Mining nuggies");
-                return new MineAndCollectTask(Items.GOLD_NUGGET, count, new Block[]{ Blocks.NETHER_GOLD_ORE }, MiningRequirement.WOOD);
+                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
             case END:
                 setDebugState("Going to overworld");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
@@ -76,6 +72,6 @@ public class CollectGoldNuggetsTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + count + " nuggets";
+        return "Collecting " + _count + " nuggets";
     }
 }

@@ -1,6 +1,5 @@
 package adris.altoclef.commandsystem;
 
-
 import adris.altoclef.AltoClef;
 
 import java.security.InvalidKeyException;
@@ -8,69 +7,78 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-
 public class CommandExecutor {
-    private final HashMap<String, Command> commandSheet = new HashMap<>();
-    private final AltoClef mod;
-    private final String commandPrefix;
+
+    private AltoClef _mod;
+
+    private String _commandPrefix;
+
+    private final HashMap<String, Command> _commandSheet = new HashMap<>();
 
     public CommandExecutor(AltoClef mod, String commandPrefix) {
-        this.mod = mod;
-        this.commandPrefix = commandPrefix;
+        _mod = mod;
+        _commandPrefix = commandPrefix;
     }
 
     public void RegisterNewCommand(Command command) throws InvalidKeyException {
-        if (commandSheet.containsKey(command.getName())) {
+        if (_commandSheet.containsKey(command.getName())) {
             throw new InvalidKeyException("Command with name " + command.getName() + " already exists! Can't register that name twice.");
         }
-        commandSheet.put(command.getName(), command);
+        _commandSheet.put(command.getName(), command);
     }
 
     public boolean isClientCommand(String line) {
-        return line.startsWith(commandPrefix);
+        return line.startsWith(_commandPrefix);
     }
 
     public void Execute(String line, Consumer onFinish) throws CommandException {
         if (!isClientCommand(line)) return;
-        line = line.substring(commandPrefix.length());
+        line = line.substring(_commandPrefix.length());
         Command c = GetCommand(line);
-        if (c != null) {
-            try {
-                c.Run(mod, line, onFinish);
-            } catch (CommandException ae) {
+        if (c != null)
+        {
+            try
+            {
+                c.Run(_mod, line, onFinish);
+            }
+            catch (CommandException ae)
+            {
                 throw new CommandException(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
             }
         }
     }
-
     public void Execute(String line) throws CommandException {
         Execute(line, null);
     }
-
     private Command GetCommand(String line) throws CommandException {
 
-        if (line.length() != 0) {
+        if (line.length() != 0)
+        {
             String command = line;
             int firstSpace = line.indexOf(' ');
-            if (firstSpace != -1) {
+            if (firstSpace != -1)
+            {
                 command = line.substring(0, firstSpace);
             }
 
-            if (!commandSheet.containsKey(command)) {
+            if (!_commandSheet.containsKey(command))
+            {
                 throw new CommandException("Command " + command + " does not exist.");
             }
 
-            return commandSheet.get(command);
+            return _commandSheet.get(command);
         }
         return null;
 
     }
 
-    public Collection<Command> AllCommands() {
-        return commandSheet.values();
+    public Collection<Command> AllCommands()
+    {
+        return _commandSheet.values();
     }
 
-    public Command Get(String name) {
-        return (commandSheet.getOrDefault(name, null));
+    public Command Get(String name)
+    {
+        return (_commandSheet.getOrDefault(name, null));
     }
 }

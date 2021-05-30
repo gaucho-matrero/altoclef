@@ -1,39 +1,40 @@
 package adris.altoclef.trackers;
 
-
 import adris.altoclef.AltoClef;
 
 import java.util.ArrayList;
 
-
 public class TrackerManager {
-    private final ArrayList<Tracker> trackers = new ArrayList<>();
-    private final AltoClef mod;
-    private boolean wasInGame;
+
+    private ArrayList<Tracker> _trackers = new ArrayList<>();
+
+    private AltoClef _mod;
+
+    private boolean _wasInGame = false;
 
     public TrackerManager(AltoClef mod) {
-        this.mod = mod;
+        _mod = mod;
     }
 
     public void tick() {
-        boolean inGame = mod.inGame();
-        if (!inGame && wasInGame) {
+        boolean inGame = _mod.inGame();
+        if (!inGame && _wasInGame) {
             // Reset when we leave our world
-            for (Tracker tracker : trackers) {
+            for (Tracker tracker : _trackers) {
                 tracker.reset();
             }
             // This is a bit of a spaghetti dependency but it's ok for now.
-            mod.getChunkTracker().reset(mod);
+            _mod.getChunkTracker().reset(_mod);
         }
-        wasInGame = inGame;
+        _wasInGame = inGame;
 
-        for (Tracker tracker : trackers) {
+        for(Tracker tracker : _trackers) {
             tracker.setDirty();
         }
     }
 
     public void addTracker(Tracker tracker) {
-        tracker.mod = mod;
-        trackers.add(tracker);
+        tracker._mod =_mod;
+        _trackers.add(tracker);
     }
 }

@@ -1,6 +1,5 @@
 package adris.altoclef.tasks.resources;
 
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -13,13 +12,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 
-
 public class CollectNetherBricksTask extends ResourceTask {
-    private final int count;
+
+    private final int _count;
 
     public CollectNetherBricksTask(int count) {
         super(Items.NETHER_BRICKS, count);
-        this.count = count;
+        _count = count;
     }
 
     @Override
@@ -42,12 +41,11 @@ public class CollectNetherBricksTask extends ResourceTask {
          */
 
         if (mod.getBlockTracker().anyFound(Blocks.NETHER_BRICKS)) {
-            return new MineAndCollectTask(Items.NETHER_BRICKS, count, new Block[]{ Blocks.NETHER_BRICKS }, MiningRequirement.WOOD);
+            return new MineAndCollectTask(Items.NETHER_BRICKS, _count, new Block[]{Blocks.NETHER_BRICKS}, MiningRequirement.WOOD);
         }
 
         ItemTarget b = new ItemTarget("nether_brick", 1);
-        return new CraftInInventoryTask(new ItemTarget(Items.NETHER_BRICK, count),
-                                        CraftingRecipe.newShapedRecipe("nether_brick", new ItemTarget[]{ b, b, b, b }, 1));
+        return new CraftInInventoryTask(new ItemTarget(Items.NETHER_BRICK, _count), CraftingRecipe.newShapedRecipe("nether_brick", new ItemTarget[] {b,b,b,b}, 1));
     }
 
     @Override
@@ -62,6 +60,6 @@ public class CollectNetherBricksTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + count + " nether bricks.";
+        return "Collecting " + _count + " nether bricks.";
     }
 }
