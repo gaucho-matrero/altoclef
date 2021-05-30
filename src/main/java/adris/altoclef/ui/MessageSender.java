@@ -33,26 +33,11 @@ public class MessageSender {
     private int _slowCount;
 
     public void tick() {
-        if (_bigBigSendTimer.elapsed()) {
-            if (_bigSendTimer.elapsed()) {
-                if (_fastSendTimer.elapsed()) {
-                    if (!_whisperQueue.isEmpty()) {
-                        _fastSendTimer.reset();
-                        BaseMessage msg = _whisperQueue.poll();
-                        assert msg != null;
-                        sendChatInstant(msg.getChatInput());
-                        _fastCount++;
-                        if (_fastCount >= FAST_LIMIT) {
-                            _bigSendTimer.reset();
-                            _fastCount = 0;
-                            _slowCount++;
-                            if (_slowCount >= SLOW_LIMIT) {
-                                _bigBigSendTimer.reset();
-                                _slowCount = 0;
-                            }
-                        }
-                    }
-                }
+        if (canSendMessage()) {
+            if (!_whisperQueue.isEmpty()) {
+                BaseMessage msg = _whisperQueue.poll();
+                assert msg != null;
+                sendChatUpdateTimers(msg.getChatInput());
             }
         }
     }
@@ -63,6 +48,23 @@ public class MessageSender {
         _whisperQueue.add(new ChatMessage(message, priority, _messageCounter++));
     }
 
+    private boolean canSendMessage() {
+        return _bigBigSendTimer.elapsed() && _bigSendTimer.elapsed() && _fastSendTimer.elapsed();
+    }
+    private void sendChatUpdateTimers(String message) {
+        sendChatInstant(message);
+        _fastSendTimer.reset();
+        _fastCount++;
+        if (_fastCount >= FAST_LIMIT) {
+            _bigSendTimer.reset();
+            _fastCount = 0;
+            _slowCount++;
+            if (_slowCount >= SLOW_LIMIT) {
+                _bigBigSendTimer.reset();
+                _slowCount = 0;
+            }
+        }
+    }
 
     private void sendChatInstant(String message) {
         if (MinecraftClient.getInstance().player == null) {
