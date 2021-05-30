@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -17,53 +18,26 @@ import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+
 public class PlaceSignTask extends Task {
-
-    private final BlockPos _target;
-    private final String _message;
-
-    private boolean _finished;
+    private final BlockPos target;
+    private final String message;
+    private boolean finished;
 
     public PlaceSignTask(BlockPos pos, String message) {
-        _target = pos;
-        _message = message;
+        target = pos;
+        this.message = message;
     }
 
     public PlaceSignTask(String message) {
         this(null, message);
     }
 
-    @Override
-    protected void onStart(AltoClef mod) {
-        _finished = false;
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-
-        if (editingSign()) {
-            return editSign(mod);
+    private static boolean isSign(Block block) {
+        for (Block check : ItemUtil.WOOD_SIGNS_ALL) {
+            if (check == block) return true;
         }
-
-        // Make sure we have a sign to place
-        if (!mod.getInventoryTracker().hasItem("sign")) {
-            return TaskCatalogue.getItemTask("sign", 1);
-        }
-
-        // Place sign
-        if (placeAnywhere()) {
-            return new PlaceBlockNearbyTask(ItemUtil.WOOD_SIGNS_ALL);
-        } else {
-
-            assert MinecraftClient.getInstance().world != null;
-            BlockState b = MinecraftClient.getInstance().world.getBlockState(_target);
-
-            if (!isSign(b.getBlock()) && !b.isAir() && b.getBlock() != Blocks.WATER && b.getBlock() != Blocks.LAVA) {
-                return new DestroyBlockTask(_target);
-            }
-
-            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, _target.down(), true);
-        }
+        return false;
     }
 
     private Task editSign(AltoClef mod) {
@@ -76,10 +50,10 @@ public class PlaceSignTask extends Task {
 
         final int SIGN_TEXT_MAX_WIDTH = 90;
 
-        for (char c : _message.toCharArray()) {
+        for (char c : message.toCharArray()) {
             currentLine.append(c);
 
-            if ( c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(currentLine.toString()) > SIGN_TEXT_MAX_WIDTH) {
+            if (c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(currentLine.toString()) > SIGN_TEXT_MAX_WIDTH) {
                 currentLine.delete(0, currentLine.length());
                 if (c != '\n') {
                     currentLine.append(c);
@@ -100,9 +74,47 @@ public class PlaceSignTask extends Task {
             //screen.keyPressed(keyCode, -1, )
         }
         screen.onClose();
-        _finished = true;
+        finished = true;
 
         return null;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return finished;
+    }
+
+    @Override
+    protected void onStart(AltoClef mod) {
+        finished = false;
+    }
+
+    @Override
+    protected Task onTick(AltoClef mod) {
+
+        if (editingSign()) {
+            return editSign(mod);
+        }
+
+        // Make sure we have a sign to place
+        if (!mod.getInventoryTracker().hasItem("sign")) {
+            return TaskCatalogue.getItemTask("sign", 1);
+        }
+
+        // Place sign
+        if (placeAnywhere()) {
+            return new PlaceBlockNearbyTask(ItemUtil.WOOD_SIGNS_ALL);
+        } else {
+
+            assert MinecraftClient.getInstance().world != null;
+            BlockState b = MinecraftClient.getInstance().world.getBlockState(target);
+
+            if (!isSign(b.getBlock()) && !b.isAir() && b.getBlock() != Blocks.WATER && b.getBlock() != Blocks.LAVA) {
+                return new DestroyBlockTask(target);
+            }
+
+            return new InteractItemWithBlockTask(new ItemTarget("sign", 1), Direction.UP, target.down(), true);
+        }
     }
 
     @Override
@@ -111,18 +123,13 @@ public class PlaceSignTask extends Task {
     }
 
     @Override
-    public boolean isFinished(AltoClef mod) {
-        return _finished;
-    }
-
-    @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceSignTask) {
             PlaceSignTask task = (PlaceSignTask) obj;
-            if (!task._message.equals(_message)) return false;
-            if ((task._target == null) != (_target == null)) return false;
-            if (task._target != null) {
-                if (!task._target.equals(_target)) return false;
+            if (!task.message.equals(message)) return false;
+            if ((task.target == null) != (target == null)) return false;
+            if (task.target != null) {
+                return task.target.equals(target);
             }
             return true;
         }
@@ -134,21 +141,14 @@ public class PlaceSignTask extends Task {
         if (placeAnywhere()) {
             return "Place Sign Anywhere";
         }
-        return "Place Sign at " + _target.toShortString();
+        return "Place Sign at " + target.toShortString();
     }
 
     private boolean placeAnywhere() {
-        return _target == null;
+        return target == null;
     }
 
     private boolean editingSign() {
         return MinecraftClient.getInstance().currentScreen instanceof SignEditScreen;
-    }
-
-    private static boolean isSign(Block block) {
-        for(Block check : ItemUtil.WOOD_SIGNS_ALL) {
-            if (check == block) return true;
-        }
-        return false;
     }
 }

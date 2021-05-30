@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
@@ -13,24 +14,26 @@ import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
-public class CarveThenCollectTask extends ResourceTask {
 
-    private final ItemTarget _target;
-    private final Block[] _targetBlocks;
-    private final ItemTarget _toCarve;
-    private final Block[] _toCarveBlocks;
-    private final ItemTarget _carveWith;
+public class CarveThenCollectTask extends ResourceTask {
+    private final ItemTarget target;
+    private final Block[] targetBlocks;
+    private final ItemTarget toCarve;
+    private final Block[] toCarveBlocks;
+    private final ItemTarget carveWith;
 
     public CarveThenCollectTask(ItemTarget target, Block[] targetBlocks, ItemTarget toCarve, Block[] toCarveBlocks, ItemTarget carveWith) {
         super(target);
-        _target = target;
-        _targetBlocks = targetBlocks;
-        _toCarve = toCarve;
-        _toCarveBlocks = toCarveBlocks;
-        _carveWith = carveWith;
+        this.target = target;
+        this.targetBlocks = targetBlocks;
+        this.toCarve = toCarve;
+        this.toCarveBlocks = toCarveBlocks;
+        this.carveWith = carveWith;
     }
+
     public CarveThenCollectTask(Item target, int targetCount, Block targetBlock, Item toCarve, Block toCarveBlock, Item carveWith) {
-        this(new ItemTarget(target, targetCount), new Block[] {targetBlock}, new ItemTarget(toCarve, targetCount), new Block[]{toCarveBlock}, new ItemTarget(carveWith, 1));
+        this(new ItemTarget(target, targetCount), new Block[]{ targetBlock }, new ItemTarget(toCarve, targetCount),
+             new Block[]{ toCarveBlock }, new ItemTarget(carveWith, 1));
     }
 
     @Override
@@ -40,8 +43,8 @@ public class CarveThenCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(_targetBlocks);
-        mod.getBlockTracker().trackBlock(_toCarveBlocks);
+        mod.getBlockTracker().trackBlock(targetBlocks);
+        mod.getBlockTracker().trackBlock(toCarveBlocks);
     }
 
     @Override
@@ -55,49 +58,53 @@ public class CarveThenCollectTask extends ResourceTask {
         //      Place carved items down
 
         // If our target block is placed, break it!
-        if (mod.getBlockTracker().anyFound(_targetBlocks)) {
+        if (mod.getBlockTracker().anyFound(targetBlocks)) {
             setDebugState("Breaking carved/target block");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, _targetBlocks), _targetBlocks);
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new,
+                                            pos -> mod.getBlockTracker().getNearestTracking(pos, targetBlocks), targetBlocks);
         }
         // Collect our "carve with" item (can be shears, axe, whatever)
-        if (!mod.getInventoryTracker().targetMet(_carveWith)) {
+        if (!mod.getInventoryTracker().targetMet(carveWith)) {
             setDebugState("Collect our carve tool");
-            return TaskCatalogue.getItemTask(_carveWith);
+            return TaskCatalogue.getItemTask(carveWith);
         }
         // If our carve block is spotted, carve it.
-        if (mod.getBlockTracker().anyFound(_toCarveBlocks)) {
+        if (mod.getBlockTracker().anyFound(toCarveBlocks)) {
             setDebugState("Carving block");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), blockPos -> new InteractItemWithBlockTask(_carveWith, blockPos, false), pos -> mod.getBlockTracker().getNearestTracking(pos, _toCarveBlocks), _toCarveBlocks);
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
+                                            blockPos -> new InteractItemWithBlockTask(carveWith, blockPos, false),
+                                            pos -> mod.getBlockTracker().getNearestTracking(pos, toCarveBlocks), toCarveBlocks);
         }
         // Collect carve blocks if we don't have enough, or place them down if we do.
-        int neededCarveItems = _target.targetCount - mod.getInventoryTracker().getItemCount(_target);
-        int currentCarveItems = mod.getInventoryTracker().getItemCount(_toCarve);
+        int neededCarveItems = target.targetCount - mod.getInventoryTracker().getItemCount(target);
+        int currentCarveItems = mod.getInventoryTracker().getItemCount(toCarve);
         if (neededCarveItems > currentCarveItems) {
             setDebugState("Collecting more blocks to carve");
-            return TaskCatalogue.getItemTask(_toCarve);
+            return TaskCatalogue.getItemTask(toCarve);
         } else {
             setDebugState("Placing blocks to carve down");
-            return new PlaceBlockNearbyTask(_toCarveBlocks);
+            return new PlaceBlockNearbyTask(toCarveBlocks);
         }
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_targetBlocks);
-        mod.getBlockTracker().stopTracking(_toCarveBlocks);
+        mod.getBlockTracker().stopTracking(targetBlocks);
+        mod.getBlockTracker().stopTracking(toCarveBlocks);
     }
 
     @Override
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CarveThenCollectTask) {
             CarveThenCollectTask task = (CarveThenCollectTask) obj;
-            return (task._target.equals(_target) && task._toCarve.equals(_toCarve) && Util.arraysEqual(task._targetBlocks, _targetBlocks) && Util.arraysEqual(task._toCarveBlocks, _toCarveBlocks));
+            return (task.target.equals(target) && task.toCarve.equals(toCarve) && Util.arraysEqual(task.targetBlocks, targetBlocks) &&
+                    Util.arraysEqual(task.toCarveBlocks, toCarveBlocks));
         }
         return false;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Getting after carving: " + _target;
+        return "Getting after carving: " + target;
     }
 }

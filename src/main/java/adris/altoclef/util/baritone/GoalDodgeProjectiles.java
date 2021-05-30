@@ -1,32 +1,38 @@
 package adris.altoclef.util.baritone;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import baritone.api.pathing.goals.Goal;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class GoalDodgeProjectiles implements Goal {
+    private static final double Y_SCALE = 0.3f; // TODO: 2021-05-22 remove magic constant
 
-    private static final double Y_SCALE = 0.3f;
+    private final AltoClef mod;
 
-    private final AltoClef _mod;
+    private final double distanceHorizontal;
+    private final double distanceVertical;
 
-    private final double _distanceHorizontal;
-    private final double _distanceVertical;
-
-    private List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
+    private final List<CachedProjectile> cachedProjectiles = new ArrayList<>(); // unused
 
     public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
-        _mod = mod;
-        _distanceHorizontal = distanceHorizontal;
-        _distanceVertical = distanceVertical;
+        this.mod = mod;
+        this.distanceHorizontal = distanceHorizontal;
+        this.distanceVertical = distanceVertical;
+    }
+
+    private static boolean isInvalidProjectile(CachedProjectile projectile) {
+        //noinspection RedundantIfStatement
+        if (projectile == null) return true;
+        //if (projectile.getVelocity().lengthSquared() < 0.1) return false;
+        return false;
     }
 
     @Override
@@ -38,7 +44,7 @@ public class GoalDodgeProjectiles implements Goal {
             for (CachedProjectile projectile : projectiles) {
                 if (isInvalidProjectile(projectile)) continue;
                 try {
-                    if (projectile.needsToRecache()) {
+                    if (projectile.needsToReCache()) {
                         projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
                     }
                     Vec3d hit = projectile.getCachedHit();
@@ -68,12 +74,13 @@ public class GoalDodgeProjectiles implements Goal {
             for (CachedProjectile projectile : projectiles) {
                 if (isInvalidProjectile(projectile)) continue;
 
-                if (projectile.needsToRecache()) {
+                if (projectile.needsToReCache()) {
                     projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
                 }
                 Vec3d hit = projectile.getCachedHit();
 
-                double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
+                double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x,
+                                                                        projectile.velocity.z, p.x, p.z);
                 //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
 
                 if (isHitCloseEnough(hit, p)) {
@@ -84,21 +91,14 @@ public class GoalDodgeProjectiles implements Goal {
         return -1 * costFactor;
     }
 
-    private static boolean isInvalidProjectile(CachedProjectile projectile) {
-        //noinspection RedundantIfStatement
-        if (projectile == null) return true;
-        //if (projectile.getVelocity().lengthSquared() < 0.1) return false;
-        return false;
-    }
-
     private boolean isHitCloseEnough(Vec3d hit, Vec3d to) {
         Vec3d delta = to.subtract(hit);
-        double horizontalSquared = delta.x*delta.x + delta.z*delta.z;
+        double horizontalSquared = delta.x * delta.x + delta.z * delta.z;
         double vertical = Math.abs(delta.y);
-        return horizontalSquared < _distanceHorizontal*_distanceHorizontal && vertical < _distanceVertical;
+        return horizontalSquared < distanceHorizontal * distanceHorizontal && vertical < distanceVertical;
     }
 
     private List<CachedProjectile> getProjectiles() {
-        return _mod.getEntityTracker().getProjectiles();
+        return mod.getEntityTracker().getProjectiles();
     }
 }

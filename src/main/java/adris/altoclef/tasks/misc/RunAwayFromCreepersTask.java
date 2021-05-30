@@ -1,13 +1,12 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.chains.MobDefenseChain;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.util.math.Vec3d;
@@ -15,12 +14,12 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
-    private final double _distanceToRun;
+public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
+    private final double distanceToRun;
 
     public RunAwayFromCreepersTask(double distance) {
-        _distanceToRun = distance;
+        distanceToRun = distance;
     }
 
     @SuppressWarnings("RedundantIfStatement")
@@ -29,7 +28,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         if (obj instanceof RunAwayFromCreepersTask) {
             RunAwayFromCreepersTask task = (RunAwayFromCreepersTask) obj;
             //if (task._mob.getPos().squaredDistanceTo(_mob.getPos()) > 0.5) return false;
-            if (Math.abs(task._distanceToRun - _distanceToRun) > 1) return false;
+            if (Math.abs(task.distanceToRun - distanceToRun) > 1) return false;
             return true;
         }
         return false;
@@ -37,14 +36,14 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
     @Override
     protected String toDebugString() {
-        return "Run " + _distanceToRun + " blocks away from creepers";
+        return "Run " + distanceToRun + " blocks away from creepers";
     }
 
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
-        return new GoalRunAwayFromCreepers(mod, _distanceToRun);
+        return new GoalRunAwayFromCreepers(mod, distanceToRun);
     }
 
     private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {

@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.stupid;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.CataloguedResourceTask;
@@ -19,50 +20,69 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 
 /**
- * Takes a stream input, like from a file, and places signs in a line that say the contents
- * of that stream. Use for absurd bullshit like making a bot that prints out the ENTIRE bee movie script
- * with signs.
+ * Takes a stream input, like from a file, and places signs in a line that say the contents of that stream. Use for absurd bullshit like
+ * making a bot that prints out the ENTIRE bee movie script with signs. 😎
  */
 public class BeeMovieTask extends Task {
-
     // How many building materials to collect/buffer up
     private static final int STRUCTURE_MATERIALS_BUFFER = 64;
-
-    private final BlockPos _start;
-    private final BlockPos _direction = new BlockPos(0, 0, -1);
-
-    private final StreamedSignStringParser _textParser;
-
-    private final String _uniqueId;
-
-    private boolean _finished = false;
-
-    private List<String> _cachedStrings = new ArrayList<>();
-
-    private PlaceSignTask _currentPlace = null;
-
+    private final BlockPos start;
+    private final BlockPos direction = new BlockPos(0, 0, -1);
+    private final StreamedSignStringParser textParser;
+    private final String uniqueId;
+    private final Task extraSignAcquireTask;
+    private final Task structureMaterialsTask;
+    private final List<String> cachedStrings = new ArrayList<>();
     // Grab extra resources and acquire extra tools for speed
-    private boolean _sharpenTheAxe = true;
-
-    private final Task _extraSignAcquireTask;
-    private final Task _structureMaterialsTask;
+    private final boolean sharpenTheAxe = true;
+    private boolean finished;
+    private PlaceSignTask currentPlace;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
-        _uniqueId = uniqueId;
-        _start = start;
-        _textParser = new StreamedSignStringParser(input);
+        this.uniqueId = uniqueId;
+        this.start = start;
+        textParser = new StreamedSignStringParser(input);
 
-        _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
-        _structureMaterialsTask =new MineAndCollectTask(new ItemTarget(new Item[] {Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[] {Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
+        extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
+        structureMaterialsTask = new MineAndCollectTask(
+                new ItemTarget(new Item[]{ Items.DIRT, Items.COBBLESTONE }, STRUCTURE_MATERIALS_BUFFER),
+                new Block[]{ Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK }, MiningRequirement.WOOD);
+    }
+
+    private static int sign(int num) {
+        return Integer.compare(num, 0);
+    }
+
+    private static boolean isSign(Block block) {
+        if (block == null) return false;
+        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
+        for (Block candidate : candidates) {
+            if (block.is(candidate)) return true;
+        }
+        return false;
+    }
+
+    // Whether a block pos is on the path of its signs.
+    private boolean isOnPath(BlockPos pos) {
+        BlockPos bottomStart = start.down();
+        BlockPos delta = pos.subtract(bottomStart);
+        return sign(delta.getX()) == sign(direction.getX()) && sign(delta.getY()) == sign(direction.getY()) && sign(delta.getZ()) == sign(
+                direction.getZ());
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return finished;
     }
 
     @Override
@@ -77,54 +97,42 @@ public class BeeMovieTask extends Task {
         mod.getConfigState().avoidBlockPlacing(block -> isOnPath(block.down()));
     }
 
-    // Whether a block pos is on the path of its signs.
-    private boolean isOnPath(BlockPos pos) {
-        BlockPos bottomStart = _start.down();
-        BlockPos delta = pos.subtract(bottomStart);
-        return sign(delta.getX()) == sign(_direction.getX())
-                && sign(delta.getY()) == sign(_direction.getY())
-                && sign(delta.getZ()) == sign(_direction.getZ());
-    }
-
-    private static int sign(int num) {
-        return Integer.compare(num, 0);
-    }
-
     @Override
     protected Task onTick(AltoClef mod) {
 
-        if (_currentPlace != null && _currentPlace.isActive() && !_currentPlace.isFinished(mod)) {
+        if (currentPlace != null && currentPlace.isActive() && !currentPlace.isFinished(mod)) {
             setDebugState("Placing...");
-            return _currentPlace;
+            return currentPlace;
         }
 
-        if (_sharpenTheAxe) {
-            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
+        if (sharpenTheAxe) {
+            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL) ||
+                !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                 setDebugState("Sharpening the axe: Tools");
-                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1), new ItemTarget("diamond_pickaxe", 1));
+                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1),
+                                                  new ItemTarget("diamond_pickaxe", 1));
             }
-            if (_extraSignAcquireTask.isActive() && !_extraSignAcquireTask.isFinished(mod)) {
+            if (extraSignAcquireTask.isActive() && !extraSignAcquireTask.isFinished(mod)) {
                 setDebugState("Sharpening the axe: Signs");
-                return _extraSignAcquireTask;
+                return extraSignAcquireTask;
             }
             if (!mod.getInventoryTracker().hasItem(ItemUtil.WOOD_SIGN)) {
                 // Get a bunch of signs in bulk
-                return _extraSignAcquireTask;
+                return extraSignAcquireTask;
             }
         }
 
         // Get building blocks
         int buildCount = mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE);
-        if (buildCount < STRUCTURE_MATERIALS_BUFFER && (buildCount == 0 || _structureMaterialsTask.isActive())) {
+        if (buildCount < STRUCTURE_MATERIALS_BUFFER && (buildCount == 0 || structureMaterialsTask.isActive())) {
             setDebugState("Collecting structure blocks...");
-            return _structureMaterialsTask;
+            return structureMaterialsTask;
         }
 
         int signCounter = 0;
         // NOTE: This only checks for the EXISTANCE of signs, NOT that they have the proper text.
-        BlockPos currentSignPos = _start;
+        BlockPos currentSignPos = start;
         while (true) {
-            assert MinecraftClient.getInstance().world != null;
 
             /*
             //noinspection deprecation
@@ -137,7 +145,7 @@ public class BeeMovieTask extends Task {
             boolean loaded = mod.getChunkTracker().isChunkLoaded(currentSignPos);
 
             // Clear above
-            BlockState above = MinecraftClient.getInstance().world.getBlockState(currentSignPos.up());
+            BlockState above = Objects.requireNonNull(MinecraftClient.getInstance().world).getBlockState(currentSignPos.up());
             if (loaded && !above.isAir() && above.getBlock() != Blocks.WATER) {
                 setDebugState("Clearing block above to prevent hanging...");
                 return new DestroyBlockTask(currentSignPos.up());
@@ -145,23 +153,24 @@ public class BeeMovieTask extends Task {
 
             // Fortify below
             //BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
-            boolean canPlace = WorldUtil.isSolid(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
-            if (loaded && !canPlace) {
+            boolean cannotPlace = !WorldUtil.isSolid(mod, currentSignPos.down());
+            //isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
+            if (loaded && cannotPlace) {
                 setDebugState("Placing block below for sign placement...");
                 return new PlaceStructureBlockTask(currentSignPos.down());
             }
 
             // Need a sign at this point.
-            while (_cachedStrings.size() <= signCounter) {
+            while (cachedStrings.size() <= signCounter) {
                 // Load up if we're at a new index.
-                if (!_textParser.hasNextSign()) {
+                if (!textParser.hasNextSign()) {
                     Debug.logMessage("DONE!!!!");
-                    _finished = true;
+                    finished = true;
                     return null;
                 }
-                String next = _textParser.getNextSignString();
+                String next = textParser.getNextSignString();
                 Debug.logMessage("NEXT SIGN: " + next);
-                _cachedStrings.add(next);
+                cachedStrings.add(next);
             }
 
 
@@ -170,11 +179,11 @@ public class BeeMovieTask extends Task {
 
             if (loaded && !isSign(blockAt.getBlock())) {
                 // INVALID! place.
-                _currentPlace = new PlaceSignTask(currentSignPos, _cachedStrings.get(signCounter));
-                return _currentPlace;
+                currentPlace = new PlaceSignTask(currentSignPos, cachedStrings.get(signCounter));
+                return currentPlace;
             }
 
-            currentSignPos = currentSignPos.add(_direction);
+            currentSignPos = currentSignPos.add(direction);
             signCounter++;
         }
     }
@@ -187,43 +196,29 @@ public class BeeMovieTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof BeeMovieTask) {
-            return ((BeeMovieTask)obj)._uniqueId.equals(_uniqueId);
+            return ((BeeMovieTask) obj).uniqueId.equals(uniqueId);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Dead Meme \"" + _uniqueId + "\" at " + _start;
+        return "Dead Meme \"" + uniqueId + "\" at " + start;
     }
 
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return _finished;
-    }
 
-    private static boolean isSign(Block block) {
-        if (block == null) return false;
-        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
-        for(Block candidate : candidates) {
-            if (block.is(candidate)) return true;
-        }
-        return false;
-    }
-
-    static class StreamedSignStringParser {
+    public static class StreamedSignStringParser {
         private final BufferedReader _reader;
+        private boolean notDone = true;
 
-        private boolean _done = false;
-
-        public StreamedSignStringParser(InputStreamReader source) {
+        StreamedSignStringParser(InputStreamReader source) {
             _reader = new BufferedReader(source);
         }
 
         public void open() {
             try {
                 _reader.reset();
-                _done = false;
+                notDone = true;
             } catch (IOException e) {
                 // Failed.
                 e.printStackTrace();
@@ -231,7 +226,7 @@ public class BeeMovieTask extends Task {
         }
 
         public boolean hasNextSign() {
-            return !_done;
+            return notDone;
         }
 
         public String getNextSignString() {
@@ -249,11 +244,11 @@ public class BeeMovieTask extends Task {
                     in = _reader.read();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    _done = true;
+                    notDone = false;
                     break;
                 }
                 if (in == -1) {
-                    _done = true;
+                    notDone = false;
                     break;
                 }
                 char c = (char) in;
@@ -261,12 +256,11 @@ public class BeeMovieTask extends Task {
 
                 line.append(c);
 
-                boolean done = false;
+                boolean done = c == '\0';
 
                 // Can be a special delimiter for a new sign.
-                if (c == '\0') done = true;
 
-                if ( c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(line.toString()) > SIGN_TEXT_MAX_WIDTH) {
+                if (c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(line.toString()) > SIGN_TEXT_MAX_WIDTH) {
                     line.delete(0, line.length());
                     line.append(c);
                     lineCount++;

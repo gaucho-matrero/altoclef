@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -12,14 +13,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 
+
 // TODO: This can technically be removed, as it's a mine task followed by a collect task.
 public class CollectHayBlockTask extends ResourceTask {
-
-    private final int _count;
+    private final int count;
 
     public CollectHayBlockTask(int count) {
         super(Items.HAY_BLOCK, count);
-        _count = count;
+        this.count = count;
     }
 
     @Override
@@ -36,11 +37,12 @@ public class CollectHayBlockTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         if (mod.getBlockTracker().anyFound(Blocks.HAY_BLOCK)) {
-            return new MineAndCollectTask(Items.HAY_BLOCK, _count, new Block[]{Blocks.HAY_BLOCK}, MiningRequirement.HAND);
+            return new MineAndCollectTask(Items.HAY_BLOCK, count, new Block[]{ Blocks.HAY_BLOCK }, MiningRequirement.HAND);
         }
 
         ItemTarget w = new ItemTarget("wheat", 1);
-        return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, _count), CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w,w,w,w,w,w,w,w,w}, 1));
+        return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, count),
+                                    CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{ w, w, w, w, w, w, w, w, w }, 1));
     }
 
     @Override
@@ -55,6 +57,6 @@ public class CollectHayBlockTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " hay blocks.";
+        return "Collecting " + count + " hay blocks.";
     }
 }

@@ -1,5 +1,5 @@
-
 package adris.altoclef.tasks;
+
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -9,7 +9,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -18,45 +17,42 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+
 public class GiveItemToPlayerTask extends Task {
+    private final String playerName;
+    private final ItemTarget[] targets;
+    private final CataloguedResourceTask resourceTask;
+    private final List<ItemTarget> throwTarget = new ArrayList<>();
+    private boolean droppingItems;
 
-    private final String _playerName;
-    private final ItemTarget[] _targets;
-
-    private final CataloguedResourceTask _resourceTask;
-
-    private boolean _droppingItems;
-
-    private final List<ItemTarget> _throwTarget = new ArrayList<>();
-
-    public GiveItemToPlayerTask(String player, ItemTarget ...targets) {
-        _playerName = player;
-        _targets = targets;
+    public GiveItemToPlayerTask(String player, ItemTarget... targets) {
+        playerName = player;
+        this.targets = targets;
 
         // Some targets may not exist, so ignore the resources for them!
         List<ItemTarget> result = new ArrayList<>();
         for (ItemTarget target : targets) {
             if (target.isCatalogueItem()) result.add(target);
         }
-        _resourceTask = TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, result));
+        resourceTask = TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, result));
     }
 
     @Override
     protected void onStart(AltoClef mod) {
-        _droppingItems = false;
-        _throwTarget.clear();
+        droppingItems = false;
+        throwTarget.clear();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
 
-        if (_droppingItems) {
+        if (droppingItems) {
             // THROW ITEMS
             setDebugState("Throwing items");
             LookUtil.lookAt(mod, targetPos);
-            for (ItemTarget target : _throwTarget) {
+            for (ItemTarget target : throwTarget) {
                 if (target.targetCount > 0) {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
@@ -74,29 +70,30 @@ public class GiveItemToPlayerTask extends Task {
             return null;
         }
 
-        if (!mod.getInventoryTracker().targetMet(_targets)) {
+        if (!mod.getInventoryTracker().targetMet(targets)) {
             setDebugState("Collecting resources...");
-            return _resourceTask;
+            return resourceTask;
         }
 
         if (targetPos == null) {
-            mod.logWarning("Failed to get to player \"" + _playerName + "\" because we have no idea where they are.");
+            mod.logWarning("Failed to get to player \"" + playerName + "\" because we have no idea where they are.");
             stop(mod);
             return null;
         }
 
         if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
-            if (!mod.getEntityTracker().isPlayerLoaded(_playerName)) {
-                mod.logWarning("Failed to get to player \"" + _playerName + "\". We moved to where we last saw them but now have no idea where they are.");
+            if (!mod.getEntityTracker().isPlayerLoaded(playerName)) {
+                mod.logWarning("Failed to get to player \"" + playerName +
+                               "\". We moved to where we last saw them but now have no idea where they are.");
                 stop(mod);
                 return null;
             }
-            _droppingItems = true;
-            _throwTarget.addAll(Arrays.asList(_targets));
+            droppingItems = true;
+            throwTarget.addAll(Arrays.asList(targets));
         }
 
         setDebugState("Going to player...");
-        return new FollowPlayerTask(_playerName);
+        return new FollowPlayerTask(playerName);
     }
 
     @Override
@@ -108,14 +105,14 @@ public class GiveItemToPlayerTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof GiveItemToPlayerTask) {
             GiveItemToPlayerTask task = (GiveItemToPlayerTask) obj;
-            if (!task._playerName.equals(_playerName)) return false;
-            return Util.arraysEqual(task._targets, _targets);
+            if (!task.playerName.equals(playerName)) return false;
+            return Util.arraysEqual(task.targets, targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Giving items to " + _playerName;
+        return "Giving items to " + playerName;
     }
 }

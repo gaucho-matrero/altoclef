@@ -1,15 +1,27 @@
 package adris.altoclef;
 
+
 import adris.altoclef.butler.Butler;
+import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.tasks.misc.IdleTask;
-import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.tasksystem.chains.*;
-import adris.altoclef.trackers.*;
+import adris.altoclef.tasksystem.chains.DeathMenuChain;
+import adris.altoclef.tasksystem.chains.FoodChain;
+import adris.altoclef.tasksystem.chains.MLGBucketFallChain;
+import adris.altoclef.tasksystem.chains.MobDefenseChain;
+import adris.altoclef.tasksystem.chains.PlayerInteractionFixChain;
+import adris.altoclef.tasksystem.chains.UserTaskChain;
+import adris.altoclef.tasksystem.chains.WorldSurvivalChain;
+import adris.altoclef.trackers.BlockTracker;
+import adris.altoclef.trackers.ContainerTracker;
+import adris.altoclef.trackers.EntityTracker;
+import adris.altoclef.trackers.InventoryTracker;
+import adris.altoclef.trackers.SimpleChunkTracker;
+import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.ui.CommandStatusOverlay;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.PlayerExtraController;
@@ -19,7 +31,6 @@ import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
-import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -33,46 +44,39 @@ import net.minecraft.world.chunk.WorldChunk;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+
 public class AltoClef implements ModInitializer {
-
-    // Central Managers
-    private CommandExecutor _commandExecutor;
-    private TaskRunner _taskRunner;
-    private TrackerManager _trackerManager;
-    private ConfigState _configState;
-    private BaritoneCustom _baritoneCustom;
-    private PlayerExtraController _extraController;
-
-    // Task chains
-    private UserTaskChain _userTaskChain;
-    private FoodChain _foodChain;
-    private MobDefenseChain _mobDefenseChain;
-    private MLGBucketFallChain _mlgBucketChain;
-
-    // Trackers
-    private InventoryTracker _inventoryTracker;
-    private EntityTracker _entityTracker;
-    private BlockTracker _blockTracker;
-    private ContainerTracker _containerTracker;
-    private SimpleChunkTracker _chunkTracker;
-
-    // Renderers
-    private CommandStatusOverlay _commandStatusOverlay;
-
-    // Settings
-    private adris.altoclef.Settings _settings;
-
-    // Misc managers
-    private MessageSender _messageSender;
-
-    // Butler
-    private Butler _butler;
-
-    // I forget why this is here somebody help
-    private final Action<WorldChunk> _onChunkLoad = new Action<>();
 
     public final Action<String> onGameMessage = new Action<>();
     public final Action<String> onGameOverlayMessage = new Action<>();
+    // I forget why this is here somebody help
+    private final Action<WorldChunk> onChunkLoad = new Action<>();
+    // Central Managers
+    private CommandExecutor commandExecutor;
+    private TaskRunner taskRunner;
+    private TrackerManager trackerManager;
+    private ConfigState configState;
+    private BaritoneCustom baritoneCustom;
+    private PlayerExtraController playerExtraController;
+    // Task chains
+    private UserTaskChain userTaskChain;
+    private FoodChain foodTaskChain;
+    private MobDefenseChain mobDefenseTaskChain;
+    private MLGBucketFallChain mlgBucketTaskChain;
+    // Trackers
+    private InventoryTracker inventoryTracker;
+    private EntityTracker entityTracker;
+    private BlockTracker blockTracker;
+    private ContainerTracker containerTracker;
+    private SimpleChunkTracker chunkTracker;
+    // Renderers
+    private CommandStatusOverlay commandStatusOverlay;
+    // Settings
+    private Settings altoClefSettings;
+    // Misc managers
+    private MessageSender messageSender;
+    // Butler
+    private Butler butler;
 
     @Override
     public void onInitialize() {
@@ -89,46 +93,46 @@ public class AltoClef implements ModInitializer {
         initializeBaritoneSettings();
 
         // Load settings
-        _settings = adris.altoclef.Settings.load();
+        altoClefSettings = Settings.load();
 
         // Central Managers
-        _commandExecutor = new CommandExecutor(this, "@");
-        _taskRunner = new TaskRunner(this);
-        _trackerManager = new TrackerManager(this);
-        _configState = new ConfigState(this);
-        _baritoneCustom = new BaritoneCustom(this, (Baritone)BaritoneAPI.getProvider().getPrimaryBaritone());
-        _extraController = new PlayerExtraController(this);
+        commandExecutor = new CommandExecutor(this, "@");
+        taskRunner = new TaskRunner(this);
+        trackerManager = new TrackerManager(this);
+        configState = new ConfigState(this);
+        baritoneCustom = new BaritoneCustom(this, (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone());
+        playerExtraController = new PlayerExtraController(this);
 
         // Task chains
-        _userTaskChain = new UserTaskChain(_taskRunner);
-        _mobDefenseChain = new MobDefenseChain(_taskRunner);
-        new DeathMenuChain(_taskRunner);
-        new PlayerInteractionFixChain(_taskRunner);
-        _mlgBucketChain = new MLGBucketFallChain(_taskRunner);
-        new WorldSurvivalChain(_taskRunner);
-        _foodChain = new FoodChain(_taskRunner);
+        userTaskChain = new UserTaskChain(taskRunner);
+        mobDefenseTaskChain = new MobDefenseChain(taskRunner);
+        new DeathMenuChain(taskRunner);
+        new PlayerInteractionFixChain(taskRunner);
+        mlgBucketTaskChain = new MLGBucketFallChain(taskRunner);
+        new WorldSurvivalChain(taskRunner);
+        foodTaskChain = new FoodChain(taskRunner);
 
         // Trackers
-        _inventoryTracker = new InventoryTracker(_trackerManager);
-        _entityTracker = new EntityTracker(_trackerManager);
-        _blockTracker = new BlockTracker(this, _trackerManager);
-        _containerTracker = new ContainerTracker(this, _trackerManager);
-        _chunkTracker = new SimpleChunkTracker(this);
+        inventoryTracker = new InventoryTracker(trackerManager);
+        entityTracker = new EntityTracker(trackerManager);
+        blockTracker = new BlockTracker(this, trackerManager);
+        containerTracker = new ContainerTracker(this, trackerManager);
+        chunkTracker = new SimpleChunkTracker(this);
 
         // Renderers
-        _commandStatusOverlay = new CommandStatusOverlay();
+        commandStatusOverlay = new CommandStatusOverlay();
 
         // Misc managers
-        _messageSender = new MessageSender();
+        messageSender = new MessageSender();
 
-        _butler = new Butler(this);
+        butler = new Butler(this);
 
         // Misc wiring
         // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
+        playerExtraController.onBlockPlaced.addListener(new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
             @Override
             public void invoke(PlayerExtraController.BlockPlaceEvent value) {
-                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
+                blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
             }
         });
 
@@ -141,25 +145,26 @@ public class AltoClef implements ModInitializer {
     // Client tick
     public void onClientTick() {
         // TODO: should this go here?
-        _containerTracker.onServerTick();
+        containerTracker.onServerTick();
 
-        _trackerManager.tick();
-        _taskRunner.tick();
+        trackerManager.tick();
+        taskRunner.tick();
 
-        _butler.tick();
-        _messageSender.tick();
+        butler.tick();
+        messageSender.tick();
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
-        _commandStatusOverlay.render(this, matrixStack);
+        commandStatusOverlay.render(this, matrixStack);
     }
 
     public void onChunkLoad(WorldChunk chunk) {
-        _chunkTracker.onLoad(chunk.getPos());
-        _onChunkLoad.invoke(chunk);
+        chunkTracker.onLoad(chunk.getPos());
+        onChunkLoad.invoke(chunk);
     }
+
     public void onChunkUnload(ChunkPos chunkPos) {
-        _chunkTracker.onUnload(chunkPos);
+        chunkTracker.onUnload(chunkPos);
     }
 
     private void initializeBaritoneSettings() {
@@ -179,8 +184,8 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
 
         // Don't break blocks or place blocks where we are explicitly protected.
-        getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
-        getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+        getExtraBaritoneSettings().avoidBlockBreak(blockPos -> altoClefSettings.isPositionExplicitelyProtected(blockPos));
+        getExtraBaritoneSettings().avoidBlockPlace(blockPos -> altoClefSettings.isPositionExplicitelyProtected(blockPos));
 
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
@@ -201,7 +206,7 @@ public class AltoClef implements ModInitializer {
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
-            new AltoClefCommands(_commandExecutor);
+            new AltoClefCommands(commandExecutor);
         } catch (Exception e) {
             /// ppppbbbbttt
             e.printStackTrace();
@@ -212,21 +217,45 @@ public class AltoClef implements ModInitializer {
 
     // Main handlers access
     public CommandExecutor getCommandExecutor() {
-        return _commandExecutor;
+        return commandExecutor;
     }
+
     public TaskRunner getTaskRunner() {
-        return _taskRunner;
+        return taskRunner;
     }
-    public UserTaskChain getUserTaskChain() { return _userTaskChain; }
-    public ConfigState getConfigState() { return _configState; }
-    public BaritoneCustom getCustomBaritone() {return _baritoneCustom; }
+
+    public UserTaskChain getUserTaskChain() {
+        return userTaskChain;
+    }
+
+    public ConfigState getConfigState() {
+        return configState;
+    }
+
+    public BaritoneCustom getCustomBaritone() {
+        return baritoneCustom;
+    }
 
     // Trackers access
-    public InventoryTracker getInventoryTracker() { return _inventoryTracker; }
-    public EntityTracker getEntityTracker() { return _entityTracker; }
-    public BlockTracker getBlockTracker() { return _blockTracker; }
-    public ContainerTracker getContainerTracker() {return _containerTracker;}
-    public SimpleChunkTracker getChunkTracker() {return _chunkTracker;}
+    public InventoryTracker getInventoryTracker() {
+        return inventoryTracker;
+    }
+
+    public EntityTracker getEntityTracker() {
+        return entityTracker;
+    }
+
+    public BlockTracker getBlockTracker() {
+        return blockTracker;
+    }
+
+    public ContainerTracker getContainerTracker() {
+        return containerTracker;
+    }
+
+    public SimpleChunkTracker getChunkTracker() {
+        return chunkTracker;
+    }
 
     // Baritone access
     public Baritone getClientBaritone() {
@@ -235,7 +264,8 @@ public class AltoClef implements ModInitializer {
         }
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
-    public Settings getClientBaritoneSettings() {
+
+    public baritone.api.Settings getClientBaritoneSettings() {
         return Baritone.settings();
     }
 
@@ -243,15 +273,17 @@ public class AltoClef implements ModInitializer {
         return Baritone.getAltoClefSettings();
     }
 
-    public adris.altoclef.Settings getModSettings() {return _settings; }
+    public Settings getModSettings() {
+        return altoClefSettings;
+    }
 
-    public adris.altoclef.Settings reloadModSettings() {
-        adris.altoclef.Settings result = adris.altoclef.Settings.load();
+    public Settings reloadModSettings() {
+        Settings result = Settings.load();
         if (result != null) {
-            _settings = result;
+            altoClefSettings = result;
         }
         // If we weren't running anything and are now "idling", idle.
-        if (getModSettings().shouldIdleWhenNotActive()) {
+        if (altoClefSettings.shouldIdleWhenNotActive()) {
             runUserTask(new IdleTask());
         }
 
@@ -259,43 +291,64 @@ public class AltoClef implements ModInitializer {
     }
 
     public Butler getButler() {
-        return _butler;
+        return butler;
     }
 
-    public MessageSender getMessageSender() {return _messageSender;}
+    public MessageSender getMessageSender() {
+        return messageSender;
+    }
 
+    @SuppressWarnings("CastToIncompatibleInterface")
     public int getTicks() {
         ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
-        return ((ClientConnectionAccessor)con).getTicks();
+        return ((ClientConnectionAccessor) con).getTicks();
     }
 
     // Minecraft access
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
-    public ClientWorld getWorld() {return MinecraftClient.getInstance().world; }
-    public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
-    public PlayerExtraController getControllerExtras() {return _extraController; }
+
+    public ClientWorld getWorld() {
+        return MinecraftClient.getInstance().world;
+    }
+
+    public ClientPlayerInteractionManager getController() {
+        return MinecraftClient.getInstance().interactionManager;
+    }
+
+    public PlayerExtraController getControllerExtras() {
+        return playerExtraController;
+    }
 
 
     // Extra control
     public void runUserTask(Task task) {
-        runUserTask(task, (nothing) -> {});
+        runUserTask(task, (nothing) -> {
+        });
     }
+
     @SuppressWarnings("rawtypes")
     public void runUserTask(Task task, Consumer onFinish) {
-        _userTaskChain.runTask(this, task, onFinish);
+        userTaskChain.runTask(this, task, onFinish);
     }
-    public void cancelUserTask() {_userTaskChain.cancel(this);}
+
+    public void cancelUserTask() {
+        userTaskChain.cancel(this);
+    }
 
     // Chains
-    public FoodChain getFoodChain() {
-        return _foodChain;
+    public FoodChain getFoodTaskChain() {
+        return foodTaskChain;
     }
+
     public MobDefenseChain getMobDefenseChain() {
-        return _mobDefenseChain;
+        return mobDefenseTaskChain;
     }
-    public MLGBucketFallChain getMLGBucketChain() {return _mlgBucketChain;}
+
+    public MLGBucketFallChain getMLGBucketChain() {
+        return mlgBucketTaskChain;
+    }
 
 
     // Are we in game (playing in a server/world)
@@ -304,29 +357,35 @@ public class AltoClef implements ModInitializer {
     }
 
     public Dimension getCurrentDimension() {
-        if (!inGame()) return Dimension.OVERWORLD;
-        if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
+        if (!inGame())
+            return Dimension.OVERWORLD;
+        if (getWorld().getDimension().isUltrawarm())
+            return Dimension.NETHER;
+        if (getWorld().getDimension().isNatural())
+            return Dimension.OVERWORLD;
         return Dimension.END;
     }
 
     public void log(String message) {
         log(message, MessagePriority.TIMELY);
     }
+
     public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
-        _butler.onLog(message, priority);
+        butler.onLog(message, priority);
     }
+
     public void logWarning(String message) {
         logWarning(message, MessagePriority.TIMELY);
     }
+
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
-        _butler.onLogWarning(message, priority);
+        butler.onLogWarning(message, priority);
     }
 
     public Action<WorldChunk> getOnChunkLoad() {
-        return _onChunkLoad;
+        return onChunkLoad;
     }
 
 }

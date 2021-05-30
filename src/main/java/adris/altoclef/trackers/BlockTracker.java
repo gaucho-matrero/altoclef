@@ -1,9 +1,8 @@
-
 package adris.altoclef.trackers;
+
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
@@ -21,43 +20,44 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+
 /**
- *
  * Blocks tracks the way I want it, When I want it.
- *
  */
 public class BlockTracker extends Tracker {
-
     private static final int DEFAULT_REACH_ATTEMPTS_ALLOWED = 4;
-
     // This should be moved to an instance variable
     // but if set to true, block scanning will happen
     // asynchronously to spread out the expensive cost of scanning.
     private static final boolean ASYNC_SCANNING = true;
 
-    private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
+    private final Map<Dimension, PosCache> caches = new HashMap<>();
 
     //private final PosCache _cache = new PosCache(100, 64*1.5);
 
-    private final Timer _timer = new Timer(7.0);
+    private final Timer timer = new Timer(7.0);
 
-    private final Timer _forceElapseTimer = new Timer(2.0);
+    private final Timer forceElapseTimer = new Timer(2.0);
 
-    private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
+    private final Map<Block, Integer> trackingBlocks = new HashMap<>();
 
-    private final Object _scanMutex = new Object();
-
-    private boolean _scanning = false;
-
+    private final Object scanMutex = new Object();
     //private Block _currentlyTracking = null;
-    private AltoClef _mod;
+    private final AltoClef mod;
+    private boolean scanning;
 
     public BlockTracker(AltoClef mod, TrackerManager manager) {
-        super(manager); _mod = mod;
+        super(manager);
+        this.mod = mod;
     }
 
     @Override
@@ -69,42 +69,43 @@ public class BlockTracker extends Tracker {
 
     @Override
     protected void reset() {
-        _trackingBlocks.clear();
-        for (PosCache cache : _caches.values()) {
+        trackingBlocks.clear();
+        for (PosCache cache : caches.values()) {
             cache.clear();
         }
     }
 
     public boolean isTracking(Block block) {
-        return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
+        return trackingBlocks.containsKey(block) && trackingBlocks.get(block) > 0;
     }
 
-    public void trackBlock(Block ...blocks) {
+    public void trackBlock(Block... blocks) {
         for (Block block : blocks) {
-            if (!_trackingBlocks.containsKey(block)) {
+            if (!trackingBlocks.containsKey(block)) {
                 // We're tracking a new block, so we're not updated.
                 setDirty();
-                _trackingBlocks.put(block, 0);
+                trackingBlocks.put(block, 0);
                 // Force a rescan if these are new blocks and we aren't doing this like every frame.
-                if (_forceElapseTimer.elapsed()) {
-                    _timer.forceElapse();
-                    _forceElapseTimer.reset();
+                if (forceElapseTimer.elapsed()) {
+                    timer.forceElapse();
+                    forceElapseTimer.reset();
                 }
             }
-            _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
+            trackingBlocks.put(block, trackingBlocks.get(block) + 1);
         }
     }
 
-    public void stopTracking(Block ...blocks) {
+    public void stopTracking(Block... blocks) {
         for (Block block : blocks) {
-            if (_trackingBlocks.containsKey(block)) {
-                int current = _trackingBlocks.get(block);
+            if (trackingBlocks.containsKey(block)) {
+                int current = trackingBlocks.get(block);
                 if (current == 0) {
-                    Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
+                    Debug.logWarning("Untracked block " + block +
+                                     " more times than necessary. BlockTracker stack is unreliable from this point on.");
                 } else {
-                    _trackingBlocks.put(block, current - 1);
-                    if (_trackingBlocks.get(block) <= 0) {
-                        _trackingBlocks.remove(block);
+                    trackingBlocks.put(block, current - 1);
+                    if (trackingBlocks.get(block) <= 0) {
+                        trackingBlocks.remove(block);
                     }
                 }
             }
@@ -113,81 +114,80 @@ public class BlockTracker extends Tracker {
 
     public void addBlock(Block block, BlockPos pos) {
         if (blockIsValid(pos, block)) {
-            synchronized (_scanMutex) {
+            synchronized (scanMutex) {
                 currentCache().addBlock(block, pos);
             }
         } else {
             Debug.logInternal("INVALID SET: " + block + " " + pos);
         }
     }
-    public boolean anyFound(Block ...blocks) {
+
+    public boolean anyFound(Block... blocks) {
         updateState();
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             return currentCache().anyFound(blocks);
         }
     }
 
-    public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block ...blocks) {
+    public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
         updateState();
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             return currentCache().anyFound(isInvalidTest, blocks);
         }
     }
 
-    public BlockPos getNearestTracking(Vec3d pos, Block ...blocks) {
+    public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, (p) -> false, blocks);
     }
+
     public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isInvalidTest, Block... blocks) {
         for (Block block : blocks) {
-            if (!_trackingBlocks.containsKey(block)) {
+            if (!trackingBlocks.containsKey(block)) {
                 Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
                 return null;
             }
         }
         // Make sure we've scanned the first time if we need to.
         updateState();
-        synchronized (_scanMutex) {
-            return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
+        synchronized (scanMutex) {
+            return currentCache().getNearest(mod, pos, isInvalidTest, blocks);
         }
     }
 
-    public List<BlockPos> getKnownLocations(Block ...blocks) {
+    public List<BlockPos> getKnownLocations(Block... blocks) {
         updateState();
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             return currentCache().getKnownLocations(blocks);
         }
     }
 
-    public BlockPos getNearestWithinRange(BlockPos pos, double range, Block ...blocks) {
+    public BlockPos getNearestWithinRange(BlockPos pos, double range, Block... blocks) {
         return getNearestWithinRange(new Vec3d(pos.getX(), pos.getY(), pos.getZ()), range, blocks);
     }
-    public BlockPos getNearestWithinRange(Vec3d pos, double range, Block ...blocks) {
-        int minX = (int)Math.round(pos.x - range),
-            maxX = (int)Math.round(pos.x + range),
-            minY = (int)Math.round(pos.y - range),
-            maxY = (int)Math.round(pos.y + range),
-            minZ = (int)Math.round(pos.z - range),
-            maxZ = (int)Math.round(pos.z + range);
+
+    public BlockPos getNearestWithinRange(Vec3d pos, double range, Block... blocks) {
+        int minX = (int) Math.round(pos.x - range), maxX = (int) Math.round(pos.x + range), minY = (int) Math.round(pos.y - range), maxY
+                = (int) Math.round(pos.y + range), minZ = (int) Math.round(pos.z - range), maxZ = (int) Math.round(pos.z + range);
         double closestDistance = Float.POSITIVE_INFINITY;
         BlockPos nearest = null;
         for (int x = minX; x <= maxX; ++x) {
             for (int y = minY; y <= maxY; ++y) {
                 for (int z = minZ; z <= maxZ; ++z) {
                     BlockPos check = new BlockPos(x, y, z);
-                    synchronized (_scanMutex) {
+                    synchronized (scanMutex) {
                         if (currentCache().blockUnreachable(check)) continue;
                     }
 
-                    assert MinecraftClient.getInstance().world != null;
-                    Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
-                    boolean valid = false;
+                    Block b = Objects.requireNonNull(MinecraftClient.getInstance().world).getBlockState(check).getBlock();
+                    boolean invalid = true;
                     for (Block type : blocks) {
                         if (type.is(b)) {
-                            valid = true;
+                            invalid = false;
                             break;
                         }
                     }
-                    if (!valid) continue;
+                    if (invalid)
+                        continue;
                     if (check.isWithinDistance(pos, range)) {
                         double sq = check.getSquaredDistance(pos, false);
                         if (sq < closestDistance) {
@@ -202,18 +202,19 @@ public class BlockTracker extends Tracker {
     }
 
     private boolean shouldUpdate() {
-        return _timer.elapsed();
+        return timer.elapsed();
     }
+
     private void update() {
         // Perform a baritone scan
-        _timer.reset();
-        CalculationContext ctx = new CalculationContext(_mod.getClientBaritone(), ASYNC_SCANNING);
+        timer.reset();
+        CalculationContext ctx = new CalculationContext(mod.getClientBaritone(), ASYNC_SCANNING);
         if (ASYNC_SCANNING) {
-            if (!_scanning) {
-                _scanning = true;
+            if (!scanning) {
+                scanning = true;
                 Baritone.getExecutor().execute(() -> {
                     rescanWorld(ctx);
-                    _scanning = false;
+                    scanning = false;
                 });
             }
         } else {
@@ -223,12 +224,12 @@ public class BlockTracker extends Tracker {
     }
 
     private void rescanWorld(CalculationContext ctx) {
-        Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
-        Block[] blocksToScan = new Block[_trackingBlocks.size()];
-        _trackingBlocks.keySet().toArray(blocksToScan);
+        Debug.logInternal("Rescanning world for " + trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
+        Block[] blocksToScan = new Block[trackingBlocks.size()];
+        trackingBlocks.keySet().toArray(blocksToScan);
 
         List<BlockPos> knownBlocks;
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             knownBlocks = currentCache().getKnownLocations(blocksToScan);
         }
 
@@ -236,7 +237,7 @@ public class BlockTracker extends Tracker {
         for (BlockPos check : knownBlocks) {
             if (!blockIsValid(check, blocksToScan)) {
                 //Debug.logInternal("Removed at " + check);
-                synchronized (_scanMutex) {
+                synchronized (scanMutex) {
                     currentCache().removeBlock(check, blocksToScan);
                 }
             }
@@ -244,14 +245,15 @@ public class BlockTracker extends Tracker {
 
         // The scanning may run asynchronously.
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
-        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, Collections.emptyList(), Collections.emptyList(),
+                                                       Collections.emptyList());
 
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             if (MinecraftClient.getInstance().world != null) {
                 for (BlockPos pos : found) {
                     Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
 
-                    if (_trackingBlocks.containsKey(block)) {
+                    if (trackingBlocks.containsKey(block)) {
                         //Debug.logInternal("Good: " + block + " at " + pos);
                         currentCache().addBlock(block, pos);
                     } else {
@@ -260,22 +262,22 @@ public class BlockTracker extends Tracker {
                 }
 
                 // Purge if we have too many blocks tracked at once.
-                currentCache().smartPurge(_mod, _mod.getPlayer().getPos());
+                currentCache().smartPurge(mod, mod.getPlayer().getPos());
             }
         }
     }
 
     // Checks whether it would be WRONG to say "at pos the block is block"
     // Returns true if wrong, false if correct OR undetermined/unsure.
-    public boolean blockIsValid(BlockPos pos, Block ...blocks) {
-        synchronized (_scanMutex) {
+    public boolean blockIsValid(BlockPos pos, Block... blocks) {
+        synchronized (scanMutex) {
             // We can't reach it, don't even try.
             if (currentCache().blockUnreachable(pos)) {
                 return false;
             }
         }
         // It might be OK to remove this. Will have to test.
-        if (!_mod.getChunkTracker().isChunkLoaded(pos)) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos)) {
             //Debug.logInternal("(failed chunkcheck: " + new ChunkPos(pos) + ")");
             //Debug.logStack();
             return true;
@@ -304,14 +306,14 @@ public class BlockTracker extends Tracker {
     }
 
     public boolean unreachable(BlockPos pos) {
-        synchronized (_scanMutex) {
+        synchronized (scanMutex) {
             return currentCache().blockUnreachable(pos);
         }
     }
 
     public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {
-        synchronized (_scanMutex) {
-            currentCache().blacklistBlockUnreachable(_mod, pos, allowedFailures);
+        synchronized (scanMutex) {
+            currentCache().blacklistBlockUnreachable(mod, pos, allowedFailures);
         }
     }
 
@@ -320,15 +322,15 @@ public class BlockTracker extends Tracker {
     }
 
     private PosCache currentCache() {
-        Dimension dimension = _mod.getCurrentDimension();
-        if (!_caches.containsKey(dimension)) {
-            _caches.put(dimension, new PosCache(100, 64*1.5));
+        Dimension dimension = mod.getCurrentDimension();
+        if (!caches.containsKey(dimension)) {
+            caches.put(dimension, new PosCache(100, 64 * 1.5));
         }
-        return _caches.get(dimension);
+        return caches.get(dimension);
     }
 
 
-    static class PosCache {
+    public static class PosCache {
         private final HashMap<Block, List<BlockPos>> _cachedBlocks = new HashMap<>();
 
         private final HashMap<BlockPos, Block> _cachedByPosition = new HashMap<>();
@@ -339,18 +341,19 @@ public class BlockTracker extends Tracker {
         private final double _cutoffRadius;
         private final int _cutoffSize;
 
-        public PosCache(int cutoffSize, double cutoffRadius) {
+        PosCache(int cutoffSize, double cutoffRadius) {
             _cutoffSize = cutoffSize;
             _cutoffRadius = cutoffRadius;
         }
 
-        public boolean anyFound(Block ...blocks) {
+        public boolean anyFound(Block... blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) return true;
             }
             return false;
         }
-        public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block ...blocks) {
+
+        public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) {
                     for (BlockPos pos : _cachedBlocks.get(block)) {
@@ -363,7 +366,7 @@ public class BlockTracker extends Tracker {
             return false;
         }
 
-        public List<BlockPos> getKnownLocations(Block ...blocks) {
+        public List<BlockPos> getKnownLocations(Block... blocks) {
             List<BlockPos> result = new ArrayList<>();
             for (Block block : blocks) {
                 List<BlockPos> found = _cachedBlocks.get(block);
@@ -374,7 +377,7 @@ public class BlockTracker extends Tracker {
             return result;
         }
 
-        public void removeBlock(BlockPos pos, Block ...blocks) {
+        public void removeBlock(BlockPos pos, Block... blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) {
                     _cachedBlocks.get(block).remove(pos);
@@ -423,12 +426,13 @@ public class BlockTracker extends Tracker {
         public void blacklistBlockUnreachable(AltoClef mod, BlockPos pos, int allowedFailures) {
             _blacklist.blackListItem(mod, pos, allowedFailures);
         }
+
         public boolean blockUnreachable(BlockPos pos) {
             return _blacklist.unreachable(pos);
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isInvalid, Block ...blocks) {
+        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isInvalid, Block... blocks) {
             if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
@@ -465,14 +469,14 @@ public class BlockTracker extends Tracker {
 
                 if (toPurge > 0) {
                     double sqDist = position.squaredDistanceTo(Util.toVec3d(pos));
-                    if (sqDist > _cutoffRadius*_cutoffRadius) {
+                    if (sqDist > _cutoffRadius * _cutoffRadius) {
                         // cut this one off.
                         for (Block block : blocks) {
                             if (_cachedBlocks.containsKey(block)) {
                                 removeBlock(pos, block);
                             }
                         }
-                        toPurge --;
+                        toPurge--;
                         purged = true;
                     }
                 }
@@ -489,7 +493,7 @@ public class BlockTracker extends Tracker {
                     break;
                 }
                 blockList.remove(blockList.size() - 1);
-                toPurge --;
+                toPurge--;
             }
 
             // Special case: Our closest was purged. Add us back.
@@ -534,12 +538,10 @@ public class BlockTracker extends Tracker {
 
                 // Clear blacklisted blocks
                 try {
-                    tracking = tracking.stream()
-                            .filter(pos -> !_blacklist.unreachable(pos))
-                            // This is invalid, because some blocks we may want to GO TO not BREAK.
-                            //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
-                            .distinct()
-                            .sorted((BlockPos left, BlockPos right) -> {
+                    tracking = tracking.stream().filter(pos -> !_blacklist.unreachable(pos))
+                                       // This is invalid, because some blocks we may want to GO TO not BREAK.
+                                       //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
+                                       .distinct().sorted((BlockPos left, BlockPos right) -> {
                                 double leftDist = left.getSquaredDistance(playerPos, false);
                                 double rightDist = right.getSquaredDistance(playerPos, false);
                                 // 1 if left is further
@@ -550,9 +552,7 @@ public class BlockTracker extends Tracker {
                                     return -1;
                                 }
                                 return 0;
-                            })
-                            .limit(_cutoffSize)
-                            .collect(Collectors.toList());
+                            }).limit(_cutoffSize).collect(Collectors.toList());
                     // This won't update otherwise.
                     _cachedBlocks.put(block, tracking);
                 } catch (IllegalArgumentException e) {

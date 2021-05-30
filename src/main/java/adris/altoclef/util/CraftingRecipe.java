@@ -1,56 +1,95 @@
 package adris.altoclef.util;
 
-import adris.altoclef.Debug;
-import adris.altoclef.trackers.InventoryTracker;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 
-import java.util.*;
+import adris.altoclef.Debug;
+import net.minecraft.item.Item;
+
+import java.util.Arrays;
+
 
 public class CraftingRecipe {
 
-    private ItemTarget[] _slots;
+    private ItemTarget[] slots;
 
-    private int _width, _height;
+    private int width;
+    private int height;
 
-    private boolean _shapeless;
+    private boolean shapeless;
 
-    private String _shortName;
+    private String shortName;
 
-    private int _outputCount;
+    private int outputCount;
 
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
     // but the wool MUST be the same color.
     //private final Set<Integer> _mustMatch = new HashSet<>();
 
-    private CraftingRecipe() {}
+    private CraftingRecipe() {
+    }
+
+    public static CraftingRecipe newShapedRecipe(Item[][] items, int outputCount) {
+        return newShapedRecipe(null, items, outputCount);
+    }
+
+    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots, int outputCount) {
+        return newShapedRecipe(null, slots, outputCount);
+    }
+
+    public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items, int outputCount) {
+        return newShapedRecipe(shortName, createSlots(items), outputCount);
+    }
+
+    public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots, int outputCount) {
+        if (slots.length != 4 && slots.length != 9) {
+            Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
+            return null;
+        }
+        /*
+        for (ItemTarget slot : slots) {
+            if (slot == null) {
+                Debug.logError("Null crafting slot detected. Use ItemTarget.EMPTY!");
+            }
+        }
+         */
+        CraftingRecipe result = new CraftingRecipe(); // what the fuck
+        result.shortName = shortName;
+        result.slots = slots;
+        result.outputCount = outputCount;
+        if (slots.length == 4) {
+            result.width = 2;
+            result.height = 2;
+        } else {
+            result.width = 3;
+            result.height = 3;
+        }
+        result.shapeless = false;
+
+        return result;
+    }
+
+    private static ItemTarget[] createSlots(ItemTarget[] slots) {
+        ItemTarget[] result = new ItemTarget[slots.length];
+        System.arraycopy(slots, 0, result, 0, slots.length);
+        return result;
+    }
+
+    private static ItemTarget[] createSlots(Item[][] slots) {
+        ItemTarget[] result = new ItemTarget[slots.length];
+        for (int i = 0; i < slots.length; ++i) {
+            if (slots[i] == null) {
+                result[i] = ItemTarget.EMPTY_ITEM;
+            } else {
+                result[i] = new ItemTarget(slots[i]);
+            }
+        }
+        return result;
+    }
 
     public ItemTarget getSlot(int index) {
 
-        return _slots[index];
+        return slots[index];
     }
-
-    public int getSlotCount() {
-        return _slots.length;
-    }
-
-    public int getWidth() {
-        return _width;
-    }
-    public int getHeight() {
-        return _height;
-    }
-
-    public boolean isShapeless() {
-        return _shapeless;
-    }
-
-    public boolean isBig() {
-        return _slots.length > 4;
-    }
-
-    public int outputCount() {return _outputCount; }
 
 
     /*
@@ -92,42 +131,20 @@ public class CraftingRecipe {
     }
      */
 
-    public static CraftingRecipe newShapedRecipe(Item[][] items, int outputCount) {
-        return newShapedRecipe(null, items, outputCount);
-    }
-    public static CraftingRecipe newShapedRecipe(ItemTarget[] slots, int outputCount) {
-        return newShapedRecipe(null, slots, outputCount);
-    }
-    public static CraftingRecipe newShapedRecipe(String shortName, Item[][] items, int outputCount) {
-        return newShapedRecipe(shortName, createSlots(items), outputCount);
+    public int getSlotCount() {
+        return slots.length;
     }
 
-    public static CraftingRecipe newShapedRecipe(String shortName, ItemTarget[] slots, int outputCount) {
-        if (slots.length != 4 && slots.length != 9) {
-            Debug.logError("Invalid shaped crafting recipe, must be either size 4 or 9. Size given: " + slots.length);
-            return null;
-        }
-        /*
-        for (ItemTarget slot : slots) {
-            if (slot == null) {
-                Debug.logError("Null crafting slot detected. Use ItemTarget.EMPTY!");
-            }
-        }
-         */
-        CraftingRecipe result = new CraftingRecipe();
-        result._shortName = shortName;
-        result._slots = slots;
-        result._outputCount = outputCount;
-        if (slots.length == 4) {
-            result._width = 2;
-            result._height = 2;
-        } else {
-            result._width = 3;
-            result._height = 3;
-        }
-        result._shapeless = false;
+    public int getWidth() {
+        return width;
+    }
 
-        return result;
+    public int getHeight() {
+        return height;
+    }
+
+    public boolean isShapeless() {
+        return shapeless;
     }
 
     /*
@@ -144,20 +161,22 @@ public class CraftingRecipe {
     }
      */
 
-    private static ItemTarget[] createSlots(ItemTarget[] slots) {
-        ItemTarget[] result = new ItemTarget[slots.length];
-        System.arraycopy(slots, 0, result, 0, slots.length);
-        return result;
+    public boolean isBig() {
+        return slots.length > 4;
     }
-    private static ItemTarget[] createSlots(Item[][] slots) {
-        ItemTarget[] result = new ItemTarget[slots.length];
-        for (int i = 0; i < slots.length; ++i) {
-            if (slots[i] == null) {
-                result[i] = ItemTarget.EMPTY;
-            } else {
-                result[i] = new ItemTarget(slots[i]);
-            }
-        }
+
+    public int outputCount() {
+        return outputCount;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(slots);
+        result = 31 * result + width;
+        result = 31 * result + height;
+        result = 31 * result + (shapeless ? 1 : 0);
+        result = 31 * result + (shortName != null ? shortName.hashCode() : 0);
+        result = 31 * result + outputCount;
         return result;
     }
 
@@ -165,35 +184,28 @@ public class CraftingRecipe {
     public boolean equals(Object o) {
         if (o instanceof CraftingRecipe) {
             CraftingRecipe other = (CraftingRecipe) o;
-            if (other._shapeless != _shapeless) return false;
-            if (other._outputCount != _outputCount) return false;
-            if (other._height != _height) return false;
-            if (other._width != _width) return false;
+            if (other.shapeless != shapeless) return false;
+            if (other.outputCount != outputCount) return false;
+            if (other.height != height) return false;
+            if (other.width != width) return false;
             //if (other._mustMatch.size() != _mustMatch.size()) return false;
-            if (other._slots.length != _slots.length) return false;
-            for (int i = 0; i < _slots.length; ++i) {
-                if ( (other._slots[i] == null) != (_slots[i] == null) ) return false;
-                if (other._slots[i] != null && !other._slots[i].equals(_slots[i])) return false;
-            }
-            return true;
+            return Arrays.equals(slots, other.slots);
         }
         return false;
     }
 
     @Override
     public String toString() {
-        String name = "CraftingRecipe{";
-            if (_shortName != null) {
-                name += "craft " + _shortName;
-            } else {
-                name += "_slots=" + Arrays.toString(_slots) +
-                        ", _width=" + _width +
-                        ", _height=" + _height +
-                        ", _shapeless=" + _shapeless;
-            }
-            name += "}";
-            return name;
+        return "CraftingRecipe{" +
+               "slots=" + Arrays.toString(slots) +
+               ", width=" + width +
+               ", height=" + height +
+               ", shapeless=" + shapeless +
+               ", shortName='" + shortName + '\'' +
+               ", outputCount=" + outputCount +
+               '}';
     }
+
 
     /*
     public static class ItemTarget {

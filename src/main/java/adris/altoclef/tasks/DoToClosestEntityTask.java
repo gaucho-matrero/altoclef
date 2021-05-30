@@ -1,5 +1,6 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -10,24 +11,23 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+
 @SuppressWarnings("ALL")
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
+    private final Class[] targetEntities;
+    private final Supplier<Vec3d> getOriginPos;
+    private final Function<Entity, Task> getTargetTask;
+    private final Predicate<Entity> ignorePredicate;
 
-    private final Class[] _targetEntities;
-
-    private final Supplier<Vec3d> _getOriginPos;
-
-    private final Function<Entity, Task> _getTargetTask;
-
-    private final Predicate<Entity> _ignorePredicate;
-
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class ...entities) {
-        _getOriginPos = getOriginSupplier;
-        _getTargetTask = getTargetTask;
-        _ignorePredicate = ignorePredicate;
-        _targetEntities = entities;
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate,
+                                 Class... entities) {
+        getOriginPos = getOriginSupplier;
+        this.getTargetTask = getTargetTask;
+        this.ignorePredicate = ignorePredicate;
+        targetEntities = entities;
     }
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class ...entities) {
+
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class... entities) {
         this(getOriginSupplier, getTargetTask, entity -> false, entities);
     }
 
@@ -38,18 +38,18 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected Entity getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
-        return mod.getEntityTracker().getClosestEntity(pos, _ignorePredicate, _targetEntities);
+        if (!mod.getEntityTracker().entityFound(targetEntities)) return null;
+        return mod.getEntityTracker().getClosestEntity(pos, ignorePredicate, targetEntities);
     }
 
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
-        return _getOriginPos.get();
+        return getOriginPos.get();
     }
 
     @Override
     protected Task getGoalTask(Entity obj) {
-        return _getTargetTask.apply(obj);
+        return getTargetTask.apply(obj);
     }
 
     @Override
@@ -58,16 +58,18 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     }
 
     @Override
-    protected void onStart(AltoClef mod) { }
+    protected void onStart(AltoClef mod) {
+    }
 
     @Override
-    protected void onStop(AltoClef mod, Task interruptTask) { }
+    protected void onStop(AltoClef mod, Task interruptTask) {
+    }
 
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof DoToClosestEntityTask) {
             DoToClosestEntityTask task = (DoToClosestEntityTask) obj;
-            return Util.arraysEqual(task._targetEntities, _targetEntities);
+            return Util.arraysEqual(task.targetEntities, targetEntities);
         }
         return false;
     }

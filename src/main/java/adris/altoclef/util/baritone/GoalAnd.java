@@ -1,8 +1,10 @@
 package adris.altoclef.util.baritone;
 
+
 import baritone.api.pathing.goals.Goal;
 
 import java.util.Arrays;
+
 
 public class GoalAnd implements Goal {
     private final Goal[] goals;

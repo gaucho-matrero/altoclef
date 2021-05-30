@@ -1,54 +1,53 @@
 package adris.altoclef.ui;
 
+
 import adris.altoclef.Debug;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.client.MinecraftClient;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
+
 /**
- * We can't send messages immediately as the server will kick us.
- * As such, we will send messages in a delayed queued fashion.
+ * We can't send messages immediately as the server will kick us. As such, we will send messages in a delayed queued fashion.
  */
 public class MessageSender {
-
+    // TODO: 2021-05-22 god, this class is horrible (no offense)
     // How many messages can we send quickly before giving a little pause?
     private static final int FAST_LIMIT = 6;
     private static final int SLOW_LIMIT = 3;
 
-    private final PriorityQueue<BaseMessage> _whisperQueue = new PriorityQueue<>(
-            Comparator.comparingInt((BaseMessage msg) -> msg.priority.getImportance())
-                    .thenComparingInt(msg -> msg.index)
-    );
+    private final PriorityQueue<BaseMessage> whisperQueue = new PriorityQueue<>(
+            Comparator.comparingInt((BaseMessage msg) -> msg.priority.getImportance()).thenComparingInt(msg -> msg.index));
     //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
-    private final Timer _fastSendTimer = new Timer(0.3f);
-    private final Timer _bigSendTimer = new Timer(3.5);
-    private final Timer _bigBigSendTimer = new Timer(10);
+    private final Timer fastSendTimer = new Timer(0.3f);
+    private final Timer bigSendTimer = new Timer(3.5);
+    private final Timer bigBigSendTimer = new Timer(10);
 
-    private int _messageCounter = 0;
+    private int messageCounter;
 
-    private int _fastCount;
-    private int _slowCount;
+    private int fastCount;
+    private int slowCount;
 
     public void tick() {
-        if (_bigBigSendTimer.elapsed()) {
-            if (_bigSendTimer.elapsed()) {
-                if (_fastSendTimer.elapsed()) {
-                    if (!_whisperQueue.isEmpty()) {
-                        _fastSendTimer.reset();
-                        BaseMessage msg = _whisperQueue.poll();
-                        assert msg != null;
-                        sendChatInstant(msg.getChatInput());
-                        _fastCount++;
-                        if (_fastCount >= FAST_LIMIT) {
-                            _bigSendTimer.reset();
-                            _fastCount = 0;
-                            _slowCount++;
-                            if (_slowCount >= SLOW_LIMIT) {
-                                _bigBigSendTimer.reset();
-                                _slowCount = 0;
+        if (bigBigSendTimer.elapsed()) { // what the fuck
+            if (bigSendTimer.elapsed()) {
+                if (fastSendTimer.elapsed()) {
+                    if (!whisperQueue.isEmpty()) {
+                        fastSendTimer.reset();
+                        BaseMessage msg = whisperQueue.poll();
+                        sendChatInstant(Objects.requireNonNull(msg).getChatInput());
+                        fastCount++;
+                        if (fastCount >= FAST_LIMIT) {
+                            bigSendTimer.reset();
+                            fastCount = 0;
+                            slowCount++;
+                            if (slowCount >= SLOW_LIMIT) {
+                                bigBigSendTimer.reset();
+                                slowCount = 0;
                             }
                         }
                     }
@@ -56,11 +55,13 @@ public class MessageSender {
             }
         }
     }
+
     public void enqueueWhisper(String username, String message, MessagePriority priority) {
-        _whisperQueue.add(new Whisper(username, message, priority, _messageCounter++));
+        whisperQueue.add(new Whisper(username, message, priority, messageCounter++));
     }
+
     public void enqueueChat(String message, MessagePriority priority) {
-        _whisperQueue.add(new ChatMessage(message, priority, _messageCounter++));
+        whisperQueue.add(new ChatMessage(message, priority, messageCounter++));
     }
 
 
@@ -72,7 +73,7 @@ public class MessageSender {
         MinecraftClient.getInstance().player.sendChatMessage(message);
     }
 
-    private static abstract class BaseMessage {
+    private abstract static class BaseMessage {
         public MessagePriority priority;
         public int index;
 
@@ -83,6 +84,7 @@ public class MessageSender {
 
         public abstract String getChatInput();
     }
+
 
     private static class Whisper extends BaseMessage {
         public String username;
@@ -99,6 +101,8 @@ public class MessageSender {
             return "/msg " + username + " " + message;
         }
     }
+
+
     private static class ChatMessage extends BaseMessage {
 
         public String message;
@@ -108,6 +112,7 @@ public class MessageSender {
             this.message = message;
 
         }
+
         @Override
         public String getChatInput() {
             return message;

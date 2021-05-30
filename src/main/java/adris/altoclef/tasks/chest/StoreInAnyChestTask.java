@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.chest;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -19,25 +20,24 @@ import net.minecraft.util.math.BlockPos;
 import java.util.HashSet;
 import java.util.function.Predicate;
 
+
 public class StoreInAnyChestTask extends Task {
-
-    private final HashSet<BlockPos> _dungeonChests = new HashSet<>();
-    private final HashSet<BlockPos> _nonDungeonChests = new HashSet<>();
-
-    private final ItemTarget[] _targets;
+    private final HashSet<BlockPos> dungeonChests = new HashSet<>();
+    private final HashSet<BlockPos> nonDungeonChests = new HashSet<>();
+    private final ItemTarget[] targets;
 
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
-    private BlockPos _currentChestTry = null;
+    private BlockPos _currentChestTry;
 
-    public StoreInAnyChestTask(ItemTarget ...targets) {
-        _targets = targets;
+    public StoreInAnyChestTask(ItemTarget... targets) {
+        this.targets = targets;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(Blocks.CHEST);
-        _dungeonChests.clear();
-        _nonDungeonChests.clear();
+        dungeonChests.clear();
+        nonDungeonChests.clear();
     }
 
     @Override
@@ -51,20 +51,20 @@ public class StoreInAnyChestTask extends Task {
             if (data != null && data.isFull()) return true;
 
             if (mod.getModSettings().shouldAvoidSearchingForDungeonChests()) {
-                if (_dungeonChests.contains(chest)) return true;
-                if (_nonDungeonChests.contains(chest)) return false;
+                if (dungeonChests.contains(chest)) return true;
+                if (nonDungeonChests.contains(chest)) return false;
                 // Spawner
                 int range = 6;
                 for (int dx = -range; dx <= range; ++dx) {
                     for (int dz = -range; dz <= range; ++dz) {
                         BlockPos offset = chest.add(dx, 0, dz);
                         if (mod.getWorld().getBlockState(offset).getBlock() == Blocks.SPAWNER) {
-                            _dungeonChests.add(chest);
+                            dungeonChests.add(chest);
                             return true;
                         }
                     }
                 }
-                _nonDungeonChests.add(chest);
+                nonDungeonChests.add(chest);
             }
             return false;
         };
@@ -81,19 +81,18 @@ public class StoreInAnyChestTask extends Task {
             }
 
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
-                    blockPos -> {
-                        if (_currentChestTry != blockPos) {
-                            _progressChecker.reset();
-                        }
-                        _currentChestTry = blockPos;
-                        // If block above is solid, break it.
-                        if (WorldUtil.isSolid(mod, blockPos.up())) {
-                            return new DestroyBlockTask(blockPos.up());
-                        }
-                        return new StoreInChestTask(blockPos, _targets);
-                    },
-                    pos -> mod.getBlockTracker().getNearestTracking(pos, invalidChest, Blocks.CHEST),
-                    Blocks.CHEST);
+                                            blockPos -> {
+                                                if (_currentChestTry != blockPos) {
+                                                    _progressChecker.reset();
+                                                }
+                                                _currentChestTry = blockPos;
+                                                // If block above is solid, break it.
+                                                if (WorldUtil.isSolid(mod, blockPos.up())) {
+                                                    return new DestroyBlockTask(blockPos.up());
+                                                }
+                                                return new StoreInChestTask(blockPos, targets);
+                                            },
+                                            pos -> mod.getBlockTracker().getNearestTracking(pos, invalidChest, Blocks.CHEST), Blocks.CHEST);
         }
 
         _progressChecker.reset();
@@ -118,13 +117,13 @@ public class StoreInAnyChestTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof StoreInAnyChestTask) {
             StoreInAnyChestTask task = (StoreInAnyChestTask) obj;
-            return Util.arraysEqual(task._targets, _targets);
+            return Util.arraysEqual(task.targets, targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Storing in any chest: " + Util.arrayToString(_targets);
+        return "Storing in any chest: " + Util.arrayToString(targets);
     }
 }

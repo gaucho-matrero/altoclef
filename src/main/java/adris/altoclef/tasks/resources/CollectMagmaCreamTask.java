@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
@@ -10,12 +11,13 @@ import adris.altoclef.util.ItemTarget;
 import net.minecraft.entity.mob.MagmaCubeEntity;
 import net.minecraft.item.Items;
 
+
 public class CollectMagmaCreamTask extends ResourceTask {
-    private final int _count;
+    private final int count;
 
     public CollectMagmaCreamTask(int count) {
         super(Items.MAGMA_CREAM, count);
-        _count = count;
+        this.count = count;
     }
 
     @Override
@@ -41,14 +43,15 @@ public class CollectMagmaCreamTask extends ResourceTask {
          *      Go to overworld lol
          */
         int currentCream = mod.getInventoryTracker().getItemCount(Items.MAGMA_CREAM);
-        int neededCream = _count - currentCream;
+        int neededCream = count - currentCream;
         switch (mod.getCurrentDimension()) {
             case NETHER:
                 if (mod.getEntityTracker().entityFound(MagmaCubeEntity.class)) {
                     setDebugState("Killing Magma cube");
                     return new KillAndLootTask(MagmaCubeEntity.class, new ItemTarget(Items.MAGMA_CREAM));
                 }
-                int currentBlazePowderPotential = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
+                int currentBlazePowderPotential = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) +
+                                                  mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
                 if (neededCream > currentBlazePowderPotential) {
                     // Kill blazes as no magma cube was found.
                     setDebugState("Getting blaze powder");
@@ -85,6 +88,6 @@ public class CollectMagmaCreamTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " Magma cream.";
+        return "Collecting " + count + " Magma cream.";
     }
 }

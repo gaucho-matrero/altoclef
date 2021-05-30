@@ -1,7 +1,7 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.Vec3d;
@@ -9,38 +9,42 @@ import net.minecraft.util.math.Vec3d;
 import java.util.HashMap;
 import java.util.Optional;
 
+
 /**
  * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- *
+ * <p>
  * Use this whenever you want to travel to a target position that may change.
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
-
-    private T _currentlyPursuing = null;
-
-    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
+    private final HashMap<T, Double> heuristicMap = new HashMap<>();
+    private T currentlyPursuing;
+    private boolean wasWandering;
+    private Task goalTask;
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
-    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
-    protected abstract Vec3d getOriginPos(AltoClef mod);
-    protected abstract Task getGoalTask(T obj);
-    protected abstract boolean isValid(AltoClef mod, T obj);
 
-    private boolean _wasWandering;
+    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
+
+    protected abstract Vec3d getOriginPos(AltoClef mod);
+
+    protected abstract Task getGoalTask(T obj);
+
+    protected abstract boolean isValid(AltoClef mod, T obj);
 
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
     }
 
-    private Task _goalTask = null;
-
     public void resetSearch() {
-        _currentlyPursuing = null;
-        _heuristicMap.clear();
-        _goalTask = null;
+        currentlyPursuing = null;
+        heuristicMap.clear();
+        goalTask = null;
     }
-    public boolean wasWandering() {return _wasWandering;}
+
+    public boolean wasWandering() {
+        return wasWandering;
+    }
 
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();
@@ -48,47 +52,47 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
     }
 
     private boolean isMovingToClosestPos(AltoClef mod) {
-        return _goalTask != null;// && _goalTask.isActive() && !_goalTask.isFinished(mod);
+        return goalTask != null;// && _goalTask.isActive() && !_goalTask.isFinished(mod);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        _wasWandering = false;
+        wasWandering = false;
 
         // Reset our pursuit if our pursuing object no longer is pursuable.
-        if (_currentlyPursuing != null && !isValid(mod, _currentlyPursuing)) {
+        if (currentlyPursuing != null && !isValid(mod, currentlyPursuing)) {
             // This is probably a good idea, no?
-            _heuristicMap.remove(_currentlyPursuing);
-            _currentlyPursuing = null;
+            heuristicMap.remove(currentlyPursuing);
+            currentlyPursuing = null;
         }
 
         // Get closest object
         T newClosest = getClosestTo(mod, getOriginPos(mod));
 
         // Receive closest object and position
-        if (newClosest != null && !newClosest.equals(_currentlyPursuing)) {
+        if (newClosest != null && !newClosest.equals(currentlyPursuing)) {
             // Different closest object
-            if (_currentlyPursuing == null) {
+            if (currentlyPursuing == null) {
                 // We don't have a closest object
-                _currentlyPursuing = newClosest;
+                currentlyPursuing = newClosest;
             } else {
                 if (isMovingToClosestPos(mod)) {
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
-                    _heuristicMap.put(_currentlyPursuing, currentHeuristic);
-                    if (_heuristicMap.containsKey(newClosest)) {
+                    heuristicMap.put(currentlyPursuing, currentHeuristic);
+                    if (heuristicMap.containsKey(newClosest)) {
                         //Debug.logInternal("OVERKILL: " + _heuristicMap.get(newClosest) + " ?< " + currentHeuristic);
                         // Our new object has a past potential heuristic calculated, if it's better try it out.
-                        if (_heuristicMap.get(newClosest) < currentHeuristic) {
+                        if (heuristicMap.get(newClosest) < currentHeuristic) {
                             setDebugState("Found closer!");
                             // The currently closest previously calculated heuristic is better, move towards it!
-                            _currentlyPursuing = newClosest;
+                            currentlyPursuing = newClosest;
                         }
                     } else {
                         setDebugState("Trying out NEW pursuit");
                         // Our new object does not have a heuristic, TRY IT OUT!
-                        _currentlyPursuing = newClosest;
+                        currentlyPursuing = newClosest;
                     }
                 } else {
                     setDebugState("Waiting for move task to kick in...");
@@ -97,17 +101,17 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
             }
         }
 
-        if (_currentlyPursuing != null) {
-            _goalTask = getGoalTask(_currentlyPursuing);
-            return _goalTask;
+        if (currentlyPursuing != null) {
+            goalTask = getGoalTask(currentlyPursuing);
+            return goalTask;
         } else {
-            _goalTask = null;
+            goalTask = null;
         }
 
         //noinspection ConstantConditions
-        if (newClosest == null && _currentlyPursuing == null) {
+        if (newClosest == null && currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
-            _wasWandering = true;
+            wasWandering = true;
             return getWanderTask(mod);
         }
 

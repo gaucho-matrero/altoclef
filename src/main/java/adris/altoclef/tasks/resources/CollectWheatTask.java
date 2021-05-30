@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -12,13 +13,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 
-public class CollectWheatTask extends ResourceTask {
 
-    private final int _count;
+public class CollectWheatTask extends ResourceTask {
+    private final int count;
 
     public CollectWheatTask(int targetCount) {
         super(Items.WHEAT, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
 
     @Override
@@ -34,16 +35,19 @@ public class CollectWheatTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // We may have enough hay blocks to meet our needs.
-        int potentialCount = mod.getInventoryTracker().getItemCount(Items.WHEAT) + 9*mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK);
-        if (potentialCount >= _count) {
+        int potentialCount = mod.getInventoryTracker().getItemCount(Items.WHEAT) + 9 * mod.getInventoryTracker().getItemCount(
+                Items.HAY_BLOCK);
+        if (potentialCount >= count) {
             setDebugState("Crafting wheat");
-            return new CraftInInventoryTask(new ItemTarget(Items.WHEAT, _count), CraftingRecipe.newShapedRecipe("wheat", new ItemTarget[]{new ItemTarget(Items.HAY_BLOCK, 1), null, null, null}, 9));
+            return new CraftInInventoryTask(new ItemTarget(Items.WHEAT, count), CraftingRecipe.newShapedRecipe("wheat", new ItemTarget[]{
+                    new ItemTarget(Items.HAY_BLOCK, 1), null, null, null
+            }, 9));
         }
         if (mod.getBlockTracker().anyFound(Blocks.HAY_BLOCK) || mod.getEntityTracker().itemDropped(Items.HAY_BLOCK)) {
-            return new MineAndCollectTask(Items.HAY_BLOCK, 99999999, new Block[]{Blocks.HAY_BLOCK}, MiningRequirement.HAND);
+            return new MineAndCollectTask(Items.HAY_BLOCK, 99999999, new Block[]{ Blocks.HAY_BLOCK }, MiningRequirement.HAND);
         }
         // Collect wheat
-        return new CollectCropTask(new ItemTarget(Items.WHEAT, _count), new Block[]{Blocks.WHEAT}, Items.WHEAT_SEEDS);
+        return new CollectCropTask(new ItemTarget(Items.WHEAT, count), new Block[]{ Blocks.WHEAT }, Items.WHEAT_SEEDS);
     }
 
     @Override
@@ -58,7 +62,7 @@ public class CollectWheatTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " wheat.";
+        return "Collecting " + count + " wheat.";
     }
 
 }

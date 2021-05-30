@@ -1,12 +1,33 @@
-
 package adris.altoclef.util.slots;
 
+
 public class CraftingTableSlot extends Slot {
+    public static final CraftingTableSlot OUTPUT_SLOT = new CraftingTableSlot(0);
+
     public CraftingTableSlot(int windowSlot) {
         this(windowSlot, false);
     }
+
     protected CraftingTableSlot(int slot, boolean inventory) {
         super(slot, inventory);
+    }
+
+    public static CraftingTableSlot getInputSlot(int x, int y) {
+        return getInputSlot(y * 3 + x, true);
+    }
+
+    public static CraftingTableSlot getInputSlot(int index, boolean big) {
+        //noinspection AssignmentToMethodParameter
+        index += 1;
+        if (big) {
+            // Default
+            return new CraftingTableSlot(index);
+        } else {
+            // Small recipe in big window
+            int x = index % 2;
+            int y = index / 2;
+            return getInputSlot(x, y);
+        }
     }
 
     @Override
@@ -29,23 +50,4 @@ public class CraftingTableSlot extends Slot {
     protected String getName() {
         return "CraftingTable";
     }
-
-
-    public static CraftingTableSlot getInputSlot(int x, int y) {
-        return getInputSlot(y * 3 + x, true);
-    }
-    public static CraftingTableSlot getInputSlot(int index, boolean big) {
-        index += 1;
-        if (big) {
-            // Default
-            return new CraftingTableSlot(index);
-        } else {
-            // Small recipe in big window
-            int x = index % 2;
-            int y = index / 2;
-            return getInputSlot(x, y);
-        }
-    }
-
-    public static final CraftingTableSlot OUTPUT_SLOT = new CraftingTableSlot(0);
 }

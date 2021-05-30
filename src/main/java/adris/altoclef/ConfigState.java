@@ -1,30 +1,36 @@
 package adris.altoclef;
 
+
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
-import baritone.process.MineProcess;
 import baritone.api.utils.RayTraceUtils;
+import baritone.process.MineProcess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Stack;
 import java.util.function.Predicate;
 
+
 /**
- * Represents a state of global config. It can be copied and reset
- * so that behaviour across tasks is consistent.
+ * Represents a state of global config. It can be copied and reset so that behaviour across tasks is consistent.
  */
 public class ConfigState {
 
-    private AltoClef _mod;
-
-    Stack<State> _states = new Stack<>();
+    private final AltoClef mod;
+    // TODO: 2021-05-22 remove stack
+    Stack<State> states = new Stack<>();
 
     public ConfigState(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
 
         // Start with one state.
         push();
@@ -42,7 +48,7 @@ public class ConfigState {
         current().applyState();
     }
 
-    public void addThrowawayItems(Item ...items) {
+    public void addThrowawayItems(Item... items) {
         Collections.addAll(current().throwawayItems, items);
         current().applyState();
     }
@@ -67,6 +73,7 @@ public class ConfigState {
     public boolean exclusivelyMineLogs() {
         return current().exclusivelyMineLogs;
     }
+
     public void setExclusivelyMineLogs(boolean value) {
         current().exclusivelyMineLogs = value;
         current().applyState();
@@ -74,10 +81,12 @@ public class ConfigState {
 
     public boolean shouldExcludeFromForcefield(Entity entity) {
         for (Predicate<Entity> pred : current().excludeFromForceField) {
-            if (pred.test(entity)) return true;
+            if (pred.test(entity))
+                return true;
         }
         return false;
     }
+
     public void addForceFieldExclusion(Predicate<Entity> pred) {
         current().excludeFromForceField.add(pred);
         // Not needed, as excludeFromForceField isn't applied anywhere else.
@@ -88,6 +97,7 @@ public class ConfigState {
         current().blocksToAvoidBreaking.add(pos);
         current().applyState();
     }
+
     public void avoidBlockBreaking(Predicate<BlockPos> pred) {
         current().toAvoidBreaking.add(pred);
         current().applyState();
@@ -115,7 +125,7 @@ public class ConfigState {
     }
 
     public void setAllowWalkThroughFlowingWater(boolean value) {
-        current()._allowWalkThroughFlowingWater = value;
+        current().allowWalkThroughFlowingWater = value;
         current().applyState();
     }
 
@@ -124,11 +134,12 @@ public class ConfigState {
         current().applyState();
     }
 
-    public void addProtectedItems(Item ...items) {
+    public void addProtectedItems(Item... items) {
         Collections.addAll(current().protectedItems, items);
         current().applyState();
     }
-    public void removeProtectedItems(Item ...items) {
+
+    public void removeProtectedItems(Item... items) {
         current().protectedItems.removeAll(Arrays.asList(items));
         current().applyState();
     }
@@ -141,19 +152,23 @@ public class ConfigState {
     public boolean shouldForceFieldPlayers() {
         return current().forceFieldPlayers;
     }
+
     public void setForceFieldPlayers(boolean forceFieldPlayers) {
         current().forceFieldPlayers = forceFieldPlayers;
         // Not needed, nothing changes.
         // current.applyState()
     }
+
     public void allowWalkThroughLava(boolean allow) {
         current().walkThroughLava = allow;
         current().applyState();
     }
+
     public void setPreferredStairs(boolean allow) {
         current().preferredStairs = allow;
         current().applyState();
     }
+
     public void setAllowDiagonalAscend(boolean allow) {
         current().allowDiagonalAscend = allow;
         current().applyState();
@@ -167,7 +182,8 @@ public class ConfigState {
 
     public boolean shouldAvoidDodgingProjectile(Entity entity) {
         for (Predicate<Entity> test : current().avoidDodgingProjectile) {
-            if (test.test(entity)) return true;
+            if (test.test(entity))
+                return true;
         }
         return false;
     }
@@ -179,31 +195,33 @@ public class ConfigState {
 
     /// Stack management
     public void push() {
-        if (_states.empty()) {
-            _states.push(new State());
+        if (states.empty()) {
+            states.push(new State());
         } else {
             // Make copy and push that
-            _states.push(new State(current()));
+            states.push(new State(current()));
         }
     }
+
     public void pop() {
-        if (_states.empty()) {
+        if (states.empty()) {
             Debug.logError("State stack is empty. This shouldn't be happening.");
             return;
         }
-        State s = _states.pop();
+        State s = states.pop();
         s.applyState();
     }
 
     private State current() {
-        if (_states.empty()) {
+        if (states.empty()) {
             Debug.logError("STATE EMPTY, UNEMPTIED!");
             push();
         }
-        return _states.peek();
+        return states.peek();
     }
 
-    class State {
+    public class State {
+        // TODO: 2021-05-22 public bad
         /// Baritone Params
         public double followOffsetDistance;
         public List<Item> throwawayItems = new ArrayList<>();
@@ -225,7 +243,7 @@ public class ConfigState {
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
-        public boolean _allowWalkThroughFlowingWater = false;
+        public boolean allowWalkThroughFlowingWater;
         public boolean allowShears;
 
         // Minecraft config
@@ -241,9 +259,9 @@ public class ConfigState {
 
         public State(State toCopy) {
             // Read in current state
-            readState(_mod.getClientBaritoneSettings());
+            readState(mod.getClientBaritoneSettings());
 
-            readExtraState(_mod.getExtraBaritoneSettings());
+            readExtraState(mod.getExtraBaritoneSettings());
 
             readMinecraftState();
 
@@ -260,7 +278,7 @@ public class ConfigState {
          * Make the current state match our copy
          */
         public void applyState() {
-            applyState(_mod.getClientBaritoneSettings(), _mod.getExtraBaritoneSettings());
+            applyState(mod.getClientBaritoneSettings(), mod.getExtraBaritoneSettings());
         }
 
         /**
@@ -277,7 +295,7 @@ public class ConfigState {
         }
 
         private void readExtraState(AltoClefSettings settings) {
-            synchronized (settings.getBreakMutex()) {
+            synchronized (settings.getBreakMutex()) { // TODO: 2021-05-22 why is there synchronized nesting here?
                 synchronized (settings.getPlaceMutex()) {
                     blocksToAvoidBreaking = new HashSet<>(settings.getBlocksToAvoidBreaking());
                     toAvoidBreaking = new ArrayList<>(settings.getBreakAvoiders());
@@ -288,7 +306,7 @@ public class ConfigState {
                     }
                 }
             }
-            _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
+            allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
             allowShears = settings.areShearsAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
@@ -316,7 +334,7 @@ public class ConfigState {
 
             // Kinda jank but it works.
             synchronized (sa.getBreakMutex()) {
-                synchronized (sa.getPlaceMutex()) {
+                synchronized (sa.getPlaceMutex()) { // TODO: 2021-05-22 why is there synchronized nesting here?
                     sa.getBreakAvoiders().clear();
                     sa.getBreakAvoiders().addAll(toAvoidBreaking);
                     sa.getBlocksToAvoidBreaking().clear();
@@ -332,11 +350,11 @@ public class ConfigState {
                 }
             }
 
-            sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
+            sa.setFlowingWaterPass(allowWalkThroughFlowingWater);
             sa.allowShears(allowShears);
 
             // Extra / hard coded
-            RayTraceUtils.fluidHandling = rayFluidHandling;
+            RayTraceUtils.fluidHandling = rayFluidHandling; // ?
             MineProcess.searchAnyFlag = mineProcSearchAnyFlag;
 
             // Minecraft

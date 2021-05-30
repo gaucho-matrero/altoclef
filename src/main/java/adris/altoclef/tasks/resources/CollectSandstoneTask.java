@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.MineAndCollectTask;
@@ -14,13 +15,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-public class CollectSandstoneTask extends ResourceTask {
 
-    private final int _count;
+public class CollectSandstoneTask extends ResourceTask {
+    private final int count;
 
     public CollectSandstoneTask(int targetCount) {
         super(Items.SANDSTONE, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
 
     @Override
@@ -38,9 +39,12 @@ public class CollectSandstoneTask extends ResourceTask {
         if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.SAND) >= 4) {
             int target = mod.getInventoryTracker().getItemCount(Items.SANDSTONE) + 1;
             ItemTarget s = new ItemTarget("sand", 1);
-            return new CraftInInventoryTask(new ItemTarget(Items.SANDSTONE, target), CraftingRecipe.newShapedRecipe("sandstone", new ItemTarget[]{s,s,s,s}, 1));
+            return new CraftInInventoryTask(new ItemTarget(Items.SANDSTONE, target),
+                                            CraftingRecipe.newShapedRecipe("sandstone", new ItemTarget[]{ s, s, s, s }, 1));
         }
-        return new MineAndCollectTask(new ItemTarget(new Item[]{Items.SANDSTONE, Items.SAND}), new Block[]{Blocks.SANDSTONE, Blocks.SAND}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);
+        return new MineAndCollectTask(new ItemTarget(new Item[]{ Items.SANDSTONE, Items.SAND }),
+                                      new Block[]{ Blocks.SANDSTONE, Blocks.SAND }, MiningRequirement.WOOD).forceDimension(
+                Dimension.OVERWORLD);
     }
 
     @Override
@@ -55,6 +59,6 @@ public class CollectSandstoneTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " sandstone.";
+        return "Collecting " + count + " sandstone.";
     }
 }

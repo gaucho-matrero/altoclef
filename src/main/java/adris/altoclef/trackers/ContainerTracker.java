@@ -1,5 +1,6 @@
 package adris.altoclef.trackers;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
@@ -20,62 +21,63 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * Keeps track of items that are in containers. Uses the blocktracker to verify container existance.
- *
  */
 
 public class ContainerTracker extends Tracker {
-
-    private final ChestMap _chestMap;
-    private final FurnaceMap _furnaceMap;
-
-    private final Timer _updateTimer = new Timer(10);
-
+    private final ChestMap chestMap;
+    private final FurnaceMap furnaceMap;
+    private final Timer updateTimer = new Timer(10);
     // We can't get the contents of the screen until the server ticks once.
-    private Screen _awaitingScreen = null;
+    private Screen awaitingScreen;
 
     public ContainerTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
-        _chestMap = new ChestMap(mod);
-        _furnaceMap = new FurnaceMap(mod);
+        chestMap = new ChestMap(mod);
+        furnaceMap = new FurnaceMap(mod);
     }
 
     @Override
     protected void updateState() {
-        if (_updateTimer.elapsed()) {
-            _updateTimer.reset();
-            _chestMap.updateBlocks();
-            _furnaceMap.updateBlocks();
+        if (updateTimer.elapsed()) {
+            updateTimer.reset();
+            chestMap.updateBlocks();
+            furnaceMap.updateBlocks();
         }
     }
 
     @Override
     protected void reset() {
-        _chestMap.clear();
-        _furnaceMap.clear();
+        chestMap.clear();
+        furnaceMap.clear();
     }
 
     public void onBlockInteract(BlockPos pos, Block block) {
         if (block.is(Blocks.CHEST) || block.is(Blocks.TRAPPED_CHEST)) {
-            _chestMap.setInteractBlock(pos);
+            chestMap.setInteractBlock(pos);
         } else if (block.is(Blocks.FURNACE)) {
-            _furnaceMap.setInteractBlock(pos);
+            furnaceMap.setInteractBlock(pos);
         }
     }
 
     public void onScreenOpenFirstTick(Screen screen) {
-        _awaitingScreen = screen;
+        awaitingScreen = screen;
     }
 
     public void onServerTick() {
-        if (_awaitingScreen != null) {
-            if (_awaitingScreen instanceof FurnaceScreen) {
-                onFurnaceScreenOpen(((FurnaceScreen) _awaitingScreen).getScreenHandler());
-            } else if (_awaitingScreen instanceof GenericContainerScreen) {
-                onChestScreenOpen(((GenericContainerScreen) _awaitingScreen).getScreenHandler());
+        if (awaitingScreen != null) {
+            if (awaitingScreen instanceof FurnaceScreen) {
+                onFurnaceScreenOpen(((FurnaceScreen) awaitingScreen).getScreenHandler());
+            } else if (awaitingScreen instanceof GenericContainerScreen) {
+                onChestScreenOpen(((GenericContainerScreen) awaitingScreen).getScreenHandler());
             }
             //_awaitingScreen = null;
         }
@@ -83,35 +85,40 @@ public class ContainerTracker extends Tracker {
     }
 
     public void onScreenClose() {
-        _chestMap.onScreenClose();
-        _furnaceMap.onScreenClose();
-        _awaitingScreen = null;
+        chestMap.onScreenClose();
+        furnaceMap.onScreenClose();
+        awaitingScreen = null;
     }
 
     public void onFurnaceScreenOpen(FurnaceScreenHandler screenHandler) {
-        if (_furnaceMap.getBlockPos() != null) {
-            onFurnaceOpen(_furnaceMap.getBlockPos(), screenHandler);
+        if (furnaceMap.getBlockPos() != null) {
+            onFurnaceOpen(furnaceMap.getBlockPos(), screenHandler);
         }
     }
+
     public void onChestScreenOpen(GenericContainerScreenHandler screenHandler) {
-        if (_chestMap.getBlockPos() != null) {
-            onChestOpen(_chestMap.getBlockPos(), screenHandler);
+        if (chestMap.getBlockPos() != null) {
+            onChestOpen(chestMap.getBlockPos(), screenHandler);
         }
     }
 
     public void onFurnaceOpen(BlockPos pos, FurnaceScreenHandler screenHandler) {
-        _furnaceMap.setInteractBlock(pos);
-        _furnaceMap.openContainer(screenHandler);
+        furnaceMap.setInteractBlock(pos);
+        furnaceMap.openContainer(screenHandler);
     }
+
     public void onChestOpen(BlockPos pos, GenericContainerScreenHandler screenHandler) {
-        _chestMap.setInteractBlock(pos);
-        _chestMap.openContainer(screenHandler);
+        chestMap.setInteractBlock(pos);
+        chestMap.openContainer(screenHandler);
     }
 
     public FurnaceMap getFurnaceMap() {
-        return _furnaceMap;
+        return furnaceMap;
     }
-    public ChestMap getChestMap() { return _chestMap; }
+
+    public ChestMap getChestMap() {
+        return chestMap;
+    }
 
     abstract static class ContainerMap<T extends ScreenHandler> {
 
@@ -140,10 +147,14 @@ public class ContainerTracker extends Tracker {
         }
 
         protected abstract void updateContainer(BlockPos pos, T screenHandler);
+
         public abstract void updateBlocks();
+
         public abstract void deleteBlock(BlockPos pos);
+
         public abstract void clear();
     }
+
 
     public static class ChestMap extends ContainerMap<GenericContainerScreenHandler> {
 
@@ -178,7 +189,7 @@ public class ContainerTracker extends Tracker {
                 ItemStack stack = screenHandler.getInventory().getStack(slotIndex);
                 if (!stack.isEmpty()) {
                     data.addItem(stack.getItem(), stack.getCount(), slotIndex);
-                    occupied ++;
+                    occupied++;
                 }
             }
             data.setOccupiedSlots(occupied);
@@ -187,14 +198,16 @@ public class ContainerTracker extends Tracker {
         @Override
         public void updateBlocks() {
             // Check for deleted blocks and delete if they no longer exist
-            for (BlockPos blockToCheck : _blockData.keySet()) {
+            for (final Map.Entry<BlockPos, ChestData> entry : _blockData.entrySet()) {
+                BlockPos blockToCheck = entry.getKey();
                 if (!_mod.getBlockTracker().blockIsValid(blockToCheck, Blocks.CHEST)) {
                     deleteBlock(blockToCheck);
                 }
                 if (_mod.getChunkTracker().isChunkLoaded(blockToCheck)) {
-                    ChestData data = _blockData.get(blockToCheck);
+                    ChestData data = entry.getValue();
                     if (data._big && !WorldUtil.isChestBig(_mod, blockToCheck)) {
-                        Debug.logMessage("Cached chest size at " + blockToCheck.toShortString() + " reduced, will delete chest info/uncache.");
+                        Debug.logMessage(
+                                "Cached chest size at " + blockToCheck.toShortString() + " reduced, will delete chest info/uncache.");
                         deleteBlock(blockToCheck);
                     }
                 }
@@ -214,7 +227,7 @@ public class ContainerTracker extends Tracker {
 
         private void validateItemChestMap(Item item) {
             //if (_chestsWithItem.containsKey(item)) {
-                // Remove if we're not tracking this block anymore.
+            // Remove if we're not tracking this block anymore.
             //    _chestsWithItem.get(item).removeIf(blockPos -> !_blockData.containsKey(blockPos));
             //}
         }
@@ -240,18 +253,21 @@ public class ContainerTracker extends Tracker {
             return result;
             //return new ArrayList<>();
         }
-        public List<BlockPos> getBlocksWithItem(ItemTarget ...targets) {
+
+        public List<BlockPos> getBlocksWithItem(ItemTarget... targets) {
             return getBlocksWithItem(targets, false);
         }
-        public List<BlockPos> getBlocksWithItem(Item ...items) { return getBlocksWithItem(new ItemTarget(items));}
+
+        public List<BlockPos> getBlocksWithItem(Item... items) {
+            return getBlocksWithItem(new ItemTarget(items));
+        }
     }
 
+
     public static class ChestData {
+        private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
+        private final HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
         public Instant _lastOpened;
-
-        private HashMap<Item, Integer> _itemCounts = new HashMap<>();
-        private HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
-
         private boolean _big;
 
         private int _occupiedSlots;
@@ -263,28 +279,37 @@ public class ContainerTracker extends Tracker {
         public boolean isBig() {
             return _big;
         }
+
+        public void setBig(boolean big) {
+            _big = big;
+        }
+
         public void onOpen() {
             _lastOpened = Instant.now();
         }
+
         public long openedHowManyMillisecondsAgo() {
             return Instant.now().toEpochMilli() - _lastOpened.toEpochMilli();
         }
 
-        public boolean hasItem(Item ...items) {
+        public boolean hasItem(Item... items) {
             for (Item item : items) {
                 if (_itemCounts.containsKey(item)) return true;
             }
             return false;
         }
-        public boolean hasItem(ItemTarget ...targets) {
+
+        public boolean hasItem(ItemTarget... targets) {
             for (ItemTarget target : targets) {
                 if (hasItem(target.getMatches())) return true;
             }
             return false;
         }
+
         public int getItemCount(Item item) {
             return _itemCounts.getOrDefault(item, 0);
         }
+
         public List<Slot> getItemSlotsWithItem(Item item) {
             return _itemSlots.getOrDefault(item, new ArrayList<>());
         }
@@ -294,6 +319,7 @@ public class ContainerTracker extends Tracker {
             _itemSlots.clear();
             _occupiedSlots = 0;
         }
+
         public void addItem(Item item, int count, int slotIndex) {
             _itemCounts.putIfAbsent(item, 0);
             _itemCounts.put(item, _itemCounts.get(item) + count);
@@ -301,23 +327,25 @@ public class ContainerTracker extends Tracker {
             _itemSlots.get(item).add(new ChestSlot(slotIndex, _big));
         }
 
-        public int getOccupiedSlots() {return _occupiedSlots;}
-        public void setOccupiedSlots(int slotCount) { _occupiedSlots = slotCount; }
+        public int getOccupiedSlots() {
+            return _occupiedSlots;
+        }
 
-        public void setBig(boolean big) {
-            _big = big;
+        public void setOccupiedSlots(int slotCount) {
+            _occupiedSlots = slotCount;
         }
 
         public boolean isFull() {
-            return _occupiedSlots >= (_big? 9*3*2 : 9*3);
+            return _occupiedSlots >= (_big ? 9 * 3 * 2 : 9 * 3);
         }
     }
 
-    public static class FurnaceMap extends ContainerMap<FurnaceScreenHandler> {
-        private HashMap<BlockPos, FurnaceData> _blockData = new HashMap<>();
-        private HashMap<Item, List<BlockPos>> _materialMap = new HashMap<>();
 
-        private AltoClef _mod;
+    public static class FurnaceMap extends ContainerMap<FurnaceScreenHandler> {
+        private final HashMap<BlockPos, FurnaceData> _blockData = new HashMap<>();
+        private final HashMap<Item, List<BlockPos>> _materialMap = new HashMap<>();
+
+        private final AltoClef _mod;
 
         public FurnaceMap(AltoClef mod) {
             _mod = mod;
@@ -327,7 +355,9 @@ public class ContainerTracker extends Tracker {
             return _blockData.containsKey(pos);
         }
 
-        public FurnaceData getFurnaceData(BlockPos pos) { return _blockData.get(pos); }
+        public FurnaceData getFurnaceData(BlockPos pos) {
+            return _blockData.get(pos);
+        }
 
         public List<BlockPos> getFurnacesWithMaterial(Item item) {
             if (_materialMap.containsKey(item)) {
@@ -346,13 +376,10 @@ public class ContainerTracker extends Tracker {
             }
             FurnaceData dat = _blockData.get(pos);
 
-            int materialSlot = 0,
-                    fuelSlot = 1,
-                    outputSlot = 2;
+            int materialSlot = 0, fuelSlot = 1, outputSlot = 2;
 
-            ItemStack materials = screenHandler.getSlot(materialSlot).getStack(),
-                    fuel = screenHandler.getSlot(fuelSlot).getStack(),
-                    output = screenHandler.getSlot(outputSlot).getStack();
+            ItemStack materials = screenHandler.getSlot(materialSlot).getStack(), fuel = screenHandler.getSlot(fuelSlot).getStack(), output
+                    = screenHandler.getSlot(outputSlot).getStack();
 
             //Debug.logMessage("CONTAINER UPDATE: " + materials.getItem().getTranslationKey() + " x " + materials.getCount());
 
@@ -365,14 +392,15 @@ public class ContainerTracker extends Tracker {
             // Get when we expect the furnace to finish cooking.
 
             int remaining = materials.getCount();
-            int remainingTicks = (int) ((double)remaining - InventoryTracker.getFurnaceCookPercent(screenHandler) ) * 200;
+            int remainingTicks = (int) (remaining - InventoryTracker.getFurnaceCookPercent(screenHandler)) * 200;
 
 
             int currentTicks = _mod.getTicks();
             dat._tickExpectedEnd = currentTicks + remainingTicks;
 
             double fuelNeededToBurnAll = dat.materials.getCount() - dat.fuelStored;
-            // This Considers: Fuel in the hood + progress (progress aka "da arrow" should be considered as stored fuel, so it's ADDED to the total and not added)
+            // This Considers: Fuel in the hood + progress (progress aka "da arrow" should be considered as stored fuel, so it's ADDED to
+            // the total and not added)
             fuelNeededToBurnAll -= InventoryTracker.getFurnaceFuel(screenHandler) - InventoryTracker.getFurnaceCookPercent(screenHandler);
             dat._fuelNeededToBurnMaterials = fuelNeededToBurnAll;
 
@@ -399,7 +427,8 @@ public class ContainerTracker extends Tracker {
                         //Debug.logMessage("CONTAINER DELETE: " + pos);
                         _materialMap.get(item).remove(pos);
                     } else {
-                        Debug.logWarning("Inconsistent tracking of FurnaceMap for item " + item.getTranslationKey() + ". Please report this bug!");
+                        Debug.logWarning(
+                                "Inconsistent tracking of FurnaceMap for item " + item.getTranslationKey() + ". Please report this bug!");
                         Debug.logStack();
                     }
                 }
@@ -412,6 +441,7 @@ public class ContainerTracker extends Tracker {
             _materialMap.clear();
         }
     }
+
 
     public static class FurnaceData {
         public double fuelStored;
@@ -434,6 +464,7 @@ public class ContainerTracker extends Tracker {
         public int getExpectedTicksRemaining(int currentTick) {
             return _tickExpectedEnd - currentTick;
         }
+
         public double getExpectedSecondsRemaining(int currentTick, double tps) {
             return getExpectedTicksRemaining(currentTick) * tps;
         }

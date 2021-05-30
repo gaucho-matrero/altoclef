@@ -1,17 +1,17 @@
 package adris.altoclef.util.csharpisbetter;
 
-public class Stopwatch {
 
-    private double _startTime = 0;
-    boolean _running = false;
+public class Stopwatch {
+    private boolean running;
+    private double startTime;
 
     public void begin() {
-        _startTime = Timer.currentTime();
-        _running = true;
+        startTime = Timer.currentTime();
+        running = true;
     }
 
     public double time() {
-        if (!_running) return 0;
-        return Timer.currentTime() - _startTime;
+        if (!running) return 0;
+        return Timer.currentTime() - startTime;
     }
 }

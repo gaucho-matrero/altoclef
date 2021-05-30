@@ -1,5 +1,6 @@
 package adris.altoclef.tasks.misc.speedrun;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -12,7 +13,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.Hoglin;
 import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.item.Item;
@@ -20,36 +20,31 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 
 import java.util.HashSet;
-import java.util.List;
+
 
 public class TradeWithPiglinsTask extends ResourceTask {
-
     // TODO: Settings? Custom parameter?
     private static final boolean AVOID_HOGLINS = true;
     private static final double HOGLIN_AVOID_TRADE_RADIUS = 64;
-
-    private final int _goldBuffer;
-
-    private Task _goldTask = null;
-
-    private final Task _tradeTask = new PerformTradeWithPiglin();
-
     // If we're too far away from a trading piglin, we risk deloading them and losing the trade.
     private static final double TRADING_PIGLIN_TOO_FAR_AWAY = 64 + 8;
+    private final int goldBuffer;
+    private final Task tradeTask = new PerformTradeWithPiglin();
+    private Task goldTask;
 
     public TradeWithPiglinsTask(int goldBuffer, ItemTarget[] itemTargets) {
         super(itemTargets);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     public TradeWithPiglinsTask(int goldBuffer, ItemTarget target) {
         super(target);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     public TradeWithPiglinsTask(int goldBuffer, Item item, int targetCount) {
         super(item, targetCount);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     @Override
@@ -65,13 +60,13 @@ public class TradeWithPiglinsTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Collect gold if we don't have it.
-        if (_goldTask != null && _goldTask.isActive() && !_goldTask.isFinished(mod)) {
+        if (goldTask != null && goldTask.isActive() && !goldTask.isFinished(mod)) {
             setDebugState("Collecting gold");
-            return _goldTask;
+            return goldTask;
         }
         if (!mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
-            if (_goldTask == null) _goldTask = TaskCatalogue.getItemTask("gold_ingot", _goldBuffer);
-            return _goldTask;
+            if (goldTask == null) goldTask = TaskCatalogue.getItemTask("gold_ingot", goldBuffer);
+            return goldTask;
         }
 
         // If we have no piglin nearby, explore until we find piglin.
@@ -84,7 +79,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         // Find gold and trade with a piglin
         setDebugState("Trading with Piglin");
-        return _tradeTask;
+        return tradeTask;
     }
 
     @Override
@@ -105,12 +100,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
     static class PerformTradeWithPiglin extends AbstractDoToEntityTask {
 
         private static final double PIGLIN_NEARBY_RADIUS = 10;
-
-        private Entity _currentlyBartering = null;
         private final Timer _barterTimeout = new Timer(2);
         private final Timer _intervalTimeout = new Timer(10);
-
         private final HashSet<Entity> _blacklisted = new HashSet<>();
+        private Entity _currentlyBartering;
 
         public PerformTradeWithPiglin() {
             super(3);
@@ -197,26 +190,20 @@ public class TradeWithPiglinsTask extends ResourceTask {
         @Override
         protected Entity getEntityTarget(AltoClef mod) {
             // Ignore trading piglins
-            Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                    (entity) -> {
-                        if (_blacklisted.contains(entity)
-                                || EntityTracker.isTradingPiglin(entity)
-                                || (entity instanceof LivingEntity && ((LivingEntity) entity).isBaby())
-                                || (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
-                            return true;
-                        }
+            Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), (entity) -> {
+                if (_blacklisted.contains(entity) || EntityTracker.isTradingPiglin(entity) ||
+                    (entity instanceof LivingEntity && ((LivingEntity) entity).isBaby()) ||
+                    (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
+                    return true;
+                }
 
-                        if (AVOID_HOGLINS) {
-                            // Avoid trading if hoglin is anywhere remotely nearby.
-                            Entity closestHoglin = mod.getEntityTracker().getClosestEntity(entity.getPos(), HoglinEntity.class);
-                            if (closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS)) {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    }, PiglinEntity.class
-            );
+                if (AVOID_HOGLINS) {
+                    // Avoid trading if hoglin is anywhere remotely nearby.
+                    Entity closestHoglin = mod.getEntityTracker().getClosestEntity(entity.getPos(), HoglinEntity.class);
+                    return closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS);
+                }
+                return false;
+            }, PiglinEntity.class);
             if (found == null) {
                 if (_currentlyBartering != null && (_blacklisted.contains(_currentlyBartering) || !_currentlyBartering.isAlive())) {
                     _currentlyBartering = null;

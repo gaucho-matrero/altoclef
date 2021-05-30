@@ -1,11 +1,13 @@
 package adris.altoclef.commands;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.tasksystem.Task;
 
 import java.util.List;
+
 
 public class StatusCommand extends Command {
     public StatusCommand() {

@@ -1,10 +1,18 @@
 package adris.altoclef.tasks.misc;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.AltoClefCommands;
 import adris.altoclef.tasksystem.Task;
 
+
 public class IdleTask extends Task {
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        // Never finish
+        return false;
+    }
+
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -20,12 +28,6 @@ public class IdleTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
 
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        // Never finish
-        return false;
     }
 
     @Override

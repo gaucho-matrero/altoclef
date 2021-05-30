@@ -1,22 +1,27 @@
 package adris.altoclef.tasks;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 
+
 /**
  * Some generic tasks require us to go to the nether.
- *
- * The user should be able to specify how this should be done in settings
- * (ex, craft a new portal from scratch or check particular portal areas first or highway or whatever)
- *
+ * <p>
+ * The user should be able to specify how this should be done in settings (ex, craft a new portal from scratch or check particular portal
+ * areas first or highway or whatever)
  */
 public class DefaultGoToDimensionTask extends Task {
-
-    private final Dimension _target;
+    private final Dimension target;
 
     public DefaultGoToDimensionTask(Dimension target) {
-        _target = target;
+        this.target = target;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getCurrentDimension() == target;
     }
 
     @Override
@@ -39,18 +44,13 @@ public class DefaultGoToDimensionTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof DefaultGoToDimensionTask) {
             DefaultGoToDimensionTask task = (DefaultGoToDimensionTask) obj;
-            return task._target == _target;
+            return task.target == target;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Going to dimension: " + _target + " (default version)";
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return mod.getCurrentDimension() == _target;
+        return "Going to dimension: " + target + " (default version)";
     }
 }

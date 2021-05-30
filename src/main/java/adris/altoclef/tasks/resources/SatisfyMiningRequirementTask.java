@@ -1,16 +1,22 @@
 package adris.altoclef.tasks.resources;
 
+
 import adris.altoclef.AltoClef;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.TaskCatalogue;
+
 
 public class SatisfyMiningRequirementTask extends Task {
-
-    private MiningRequirement _requirement;
+    private final MiningRequirement requirement;
 
     public SatisfyMiningRequirementTask(MiningRequirement requirement) {
-        _requirement = requirement;
+        this.requirement = requirement;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getInventoryTracker().miningRequirementMet(requirement);
     }
 
     @Override
@@ -20,7 +26,7 @@ public class SatisfyMiningRequirementTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        switch (_requirement) {
+        switch (requirement) {
             case HAND:
                 // Will never happen if you program this right
                 break;
@@ -45,18 +51,13 @@ public class SatisfyMiningRequirementTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof SatisfyMiningRequirementTask) {
             SatisfyMiningRequirementTask other = (SatisfyMiningRequirementTask) obj;
-            return other._requirement == _requirement;
+            return other.requirement == requirement;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Satisfy Mining Req: " + _requirement;
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().miningRequirementMet(_requirement);
+        return "Satisfy Mining Req: " + requirement;
     }
 }
