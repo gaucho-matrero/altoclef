@@ -6,11 +6,10 @@ import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.Vec3d;
 
 public class GoalDirectionXZ implements Goal {
-    public final double originx;
-    //public final double y;
-    public final double originz;
-    public final double dirx;
-    public final double dirz;
+    private final double originx;
+    private final double originz;
+    private final double dirx;
+    private final double dirz;
 
     private final double _sidePenalty;
 
