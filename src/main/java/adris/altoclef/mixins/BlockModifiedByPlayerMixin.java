@@ -1,6 +1,5 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

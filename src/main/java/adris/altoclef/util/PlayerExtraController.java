@@ -1,7 +1,6 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import adris.altoclef.mixins.MinecraftMouseInputAccessor;
 import adris.altoclef.util.csharpisbetter.Action;
@@ -9,7 +8,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.math.BlockPos;

@@ -2,7 +2,10 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.DefaultGoToDimensionTask;
+import adris.altoclef.tasks.GetToBlockTask;
+import adris.altoclef.tasks.KillEntitiesTask;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.misc.PutOutFireTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;

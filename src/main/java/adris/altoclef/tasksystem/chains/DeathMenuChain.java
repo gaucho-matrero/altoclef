@@ -10,8 +10,6 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
 
-import java.lang.reflect.Type;
-
 public class DeathMenuChain extends TaskChain {
 
     private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }

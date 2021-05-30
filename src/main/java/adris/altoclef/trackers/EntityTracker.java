@@ -5,9 +5,9 @@ import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.ItemTarget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -21,7 +21,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")

@@ -1,11 +1,9 @@
 package adris.altoclef.tasks.stupid;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.AbstractKillEntityTask;
 import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.GetToEntityTask;
-import adris.altoclef.tasks.KillEntityTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
 import net.minecraft.entity.player.PlayerEntity;

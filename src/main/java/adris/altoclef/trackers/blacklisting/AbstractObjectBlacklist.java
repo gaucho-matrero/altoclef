@@ -3,7 +3,6 @@ package adris.altoclef.trackers.blacklisting;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.MiningRequirement;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;

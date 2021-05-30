@@ -10,7 +10,6 @@ import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;

@@ -12,8 +12,6 @@ import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.input.Input;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;

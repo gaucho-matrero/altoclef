@@ -1,7 +1,6 @@
 package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.screen.GenericContainerScreenHandler;

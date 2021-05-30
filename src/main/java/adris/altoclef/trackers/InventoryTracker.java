@@ -1,15 +1,15 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
-import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -18,7 +18,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.SlotActionType;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;

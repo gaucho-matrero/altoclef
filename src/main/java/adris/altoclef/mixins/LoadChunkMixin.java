@@ -1,6 +1,5 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.nbt.CompoundTag;

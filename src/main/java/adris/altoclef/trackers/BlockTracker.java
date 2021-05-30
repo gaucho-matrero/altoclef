@@ -3,7 +3,6 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;

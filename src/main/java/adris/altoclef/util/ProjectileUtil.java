@@ -3,8 +3,6 @@ package adris.altoclef.util;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
 public class ProjectileUtil {

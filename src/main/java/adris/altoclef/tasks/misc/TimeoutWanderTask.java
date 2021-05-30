@@ -2,23 +2,15 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.progresscheck.DistanceProgressChecker;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Call this when the place you're currently at is bad for some reason and you just wanna get away.

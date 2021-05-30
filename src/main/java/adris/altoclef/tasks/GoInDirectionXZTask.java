@@ -4,9 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalDirectionXZ;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalAxis;
-import baritone.api.pathing.goals.GoalStrictDirection;
-import baritone.api.pathing.goals.GoalXZ;
 import net.minecraft.util.math.Vec3d;
 
 public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
