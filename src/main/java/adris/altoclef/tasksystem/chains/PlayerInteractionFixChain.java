@@ -9,6 +9,7 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
+import baritone.api.utils.input.Input;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -89,10 +90,10 @@ public class PlayerInteractionFixChain extends TaskChain {
         }
 
         // Unpress shift (it gets stuck for some reason???)
-        if (MinecraftClient.getInstance().options.keySneak.isPressed()) {
+        if (mod.getInputControls().isHeldDown(Input.SNEAK)) {
             if (_shiftDepressTimeout.elapsed()) {
                 Debug.logMessage("Unpressing shift/sneak");
-                MinecraftClient.getInstance().options.keySneak.setPressed(false);
+                mod.getInputControls().release(Input.SNEAK);
             }
         } else {
             _shiftDepressTimeout.reset();

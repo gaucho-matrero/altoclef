@@ -15,6 +15,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -43,8 +44,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
     private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
 
     private final HashSet<BlockPos> _blacklist = new HashSet<>();
-
-    private final Timer _reachTimer = new Timer(2);
 
     private BlockPos _targetLiquid;
 
@@ -84,7 +83,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         _wanderTask.resetWander();
 
         _progressChecker.reset();
-        _reachTimer.reset();
     }
 
 
@@ -99,14 +97,15 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (_tryImmediatePickupTimer.elapsed()) {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
             if (standingInside == _toCollect) {
-                mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
+                setDebugState("Trying to collect (we are in it)");
+                mod.getInputControls().forceLook(0, 90);
+                //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
                 //Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
                 _tryImmediatePickupTimer.reset();
                 if (!mod.getInventoryTracker().equipItem(Items.BUCKET)) {
                     Debug.logWarning("Failed to equip bucket.");
                 } else {
-                    //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                    MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                    mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                     mod.getExtraBaritoneSettings().setInteractionPaused(true);
                     _pickedUpTimer.reset();
                     _progressChecker.reset();
@@ -116,7 +115,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         if (!_pickedUpTimer.elapsed()) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
             _progressChecker.reset();
             // Wait for force pickup
@@ -125,7 +123,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
-            _reachTimer.reset();
             _progressChecker.reset();
             return _wanderTask;
         }
@@ -134,7 +131,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
-            _reachTimer.reset();
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
@@ -158,25 +154,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
             // We want to MINIMIZE this distance to liquid.
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
-
-            // If we're able to reach the block but we fail...
-            if (mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive()) {
-                Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getCurrentReach();
-                if (reach.isPresent()) {
-                    if (_reachTimer.elapsed()) {
-                        _reachTimer.reset();
-                        Debug.logMessage("Failed to collect liquid at " + nearestLiquid + ", probably an invalid source block. blacklisting and trying another one.");
-                        _blacklist.add(nearestLiquid);
-                        mod.getBlockTracker().requestBlockUnreachable(nearestLiquid);
-                        // Try again.
-                        return null;
-                    }
-                } else {
-                    _reachTimer.reset();
-                }
-            } else {
-                _reachTimer.reset();
-            }
 
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
 
@@ -227,7 +204,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         mod.getBlockTracker().stopTracking(_toCollect);
         mod.getBehaviour().pop();
         //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        MinecraftClient.getInstance().options.keyUse.setPressed(false);
         mod.getExtraBaritoneSettings().setInteractionPaused(false);
     }
 

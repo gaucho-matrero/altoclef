@@ -185,7 +185,7 @@ public class PlaceBlockNearbyTask extends Task {
     private boolean place(AltoClef mod, BlockPos targetPlace) {
         if (equipBlock(mod)) {
             // Shift click just for 100% container security.
-            MinecraftClient.getInstance().options.keySneak.setPressed(true);
+            mod.getInputControls().hold(Input.SNEAK);
             mod.getControllerExtras().mouseClickOverride(1, true);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             _justPlaced = targetPlace;
@@ -195,13 +195,10 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     private void stopPlacing(AltoClef mod) {
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+        mod.getInputControls().release(Input.SNEAK);
         mod.getControllerExtras().mouseClickOverride(1, false);
-        MinecraftClient.getInstance().options.keySneak.setPressed(false);
         // Oof, these sometimes cause issues so this is a bit of a duct tape fix.
         mod.getClientBaritone().getBuilderProcess().onLostControl();
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
     }
 
     private BlockPos locateClosePlacePos(AltoClef mod) {

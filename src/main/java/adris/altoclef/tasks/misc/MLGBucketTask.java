@@ -35,7 +35,6 @@ public class MLGBucketTask extends Task {
         _clicked = false;
         _placedPos = null;
         // hold shift while falling.
-        //MinecraftClient.getInstance().options.keySneak.setPressed(true);
         // Look down at first, usually does the trick.
         mod.getPlayer().pitch = 90;
     }
@@ -88,13 +87,7 @@ public class MLGBucketTask extends Task {
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
                     Debug.logMessage("HIT: " + willLandIn);
                     _placedPos = willLandIn;
-                    if (!_clicked) {
-                        MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                        _clicked = true;
-                    } else {
-                        MinecraftClient.getInstance().options.keyUse.setPressed(false);
-                    }
-                    _clicked = false;
+                    mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             } else {
@@ -119,8 +112,6 @@ public class MLGBucketTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        MinecraftClient.getInstance().options.keyUse.setPressed(false);
-        //MinecraftClient.getInstance().options.keySneak.setPressed(false);
     }
 
     @Override

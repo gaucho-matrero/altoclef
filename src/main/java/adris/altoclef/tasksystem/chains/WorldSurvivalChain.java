@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
+import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
 
@@ -42,7 +43,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
             if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
                 if (mod.getPlayer().isTouchingWater() && mod.getPlayer().getAir() < mod.getPlayer().getMaxAir()) {
                     // Swim up!
-                    MinecraftClient.getInstance().options.keyJump.setPressed(true);
+                    mod.getInputControls().hold(Input.JUMP);
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                     avoidedDrowning = true;
                     _wasAvoidingDrowning = true;
@@ -52,7 +53,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
         // Stop swimming up if we just swam.
         if (_wasAvoidingDrowning && !avoidedDrowning) {
             _wasAvoidingDrowning = false;
-            MinecraftClient.getInstance().options.keyJump.setPressed(false);
+            mod.getInputControls().release(Input.JUMP);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
     }

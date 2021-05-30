@@ -12,8 +12,8 @@ import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.InputControls;
 import adris.altoclef.util.PlayerExtraController;
-import adris.altoclef.util.baritone.BaritoneCustom;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
@@ -40,7 +40,6 @@ public class AltoClef implements ModInitializer {
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
     private BotBehaviour _botBehaviour;
-    private BaritoneCustom _baritoneCustom;
     private PlayerExtraController _extraController;
 
     // Task chains
@@ -62,8 +61,9 @@ public class AltoClef implements ModInitializer {
     // Settings
     private adris.altoclef.Settings _settings;
 
-    // Misc managers
+    // Misc managers/input
     private MessageSender _messageSender;
+    private InputControls _inputControls;
 
     // Butler
     private Butler _butler;
@@ -96,7 +96,6 @@ public class AltoClef implements ModInitializer {
         _taskRunner = new TaskRunner(this);
         _trackerManager = new TrackerManager(this);
         _botBehaviour = new BotBehaviour(this);
-        _baritoneCustom = new BaritoneCustom(this, (Baritone)BaritoneAPI.getProvider().getPrimaryBaritone());
         _extraController = new PlayerExtraController(this);
 
         // Task chains
@@ -120,6 +119,7 @@ public class AltoClef implements ModInitializer {
 
         // Misc managers
         _messageSender = new MessageSender();
+        _inputControls = new InputControls();
 
         _butler = new Butler(this);
 
@@ -140,6 +140,8 @@ public class AltoClef implements ModInitializer {
 
     // Client tick
     public void onClientTick() {
+        _inputControls.onTickPre();
+
         // TODO: should this go here?
         _containerTracker.onServerTick();
 
@@ -148,6 +150,8 @@ public class AltoClef implements ModInitializer {
 
         _butler.tick();
         _messageSender.tick();
+
+        _inputControls.onTickPost();
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
@@ -219,7 +223,6 @@ public class AltoClef implements ModInitializer {
     }
     public UserTaskChain getUserTaskChain() { return _userTaskChain; }
     public BotBehaviour getBehaviour() { return _botBehaviour; }
-    public BaritoneCustom getCustomBaritone() {return _baritoneCustom; }
 
     // Trackers access
     public InventoryTracker getInventoryTracker() { return _inventoryTracker; }
@@ -276,6 +279,8 @@ public class AltoClef implements ModInitializer {
     public ClientWorld getWorld() {return MinecraftClient.getInstance().world; }
     public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
     public PlayerExtraController getControllerExtras() {return _extraController; }
+
+    public InputControls getInputControls() { return _inputControls; }
 
 
     // Extra control

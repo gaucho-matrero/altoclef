@@ -91,6 +91,8 @@ public class PlayerExtraController {
         _mod.getInventoryTracker().setDirty();
     }
 
+    // This is really dumb and should be handled in "InputControls"
+    @Deprecated
     public void mouseClickOverride(int button, boolean down) {
         MinecraftMouseInputAccessor mouse = (MinecraftMouseInputAccessor)MinecraftClient.getInstance().mouse;
         mouse.mouseClick(MinecraftClient.getInstance().getWindow().getHandle(), button, down? 1 : 0, 0);

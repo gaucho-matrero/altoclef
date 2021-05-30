@@ -1,7 +1,4 @@
-package adris.altoclef.util.baritone;//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
+package adris.altoclef.util.baritone;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -28,6 +25,7 @@ import net.minecraft.util.math.Vec3i;
 
 // Literally a copy of baritone's GetToBlockProcess but we pass a position instead of a BOM
 
+@Deprecated
 public class InteractWithBlockPositionProcess extends BaritoneProcessHelper {
     private BlockPos _target = null;
     //private boolean _rightClickOnArrival;

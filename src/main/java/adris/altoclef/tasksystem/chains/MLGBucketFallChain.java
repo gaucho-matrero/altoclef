@@ -15,6 +15,7 @@ import adris.altoclef.util.baritone.InteractWithBlockPositionProcess;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.utils.Rotation;
+import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -70,12 +71,11 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                                         // Pick up
                                         //Debug.logMessage("PICK");
                                         _pickupRepeatTimer.reset();
-                                        MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                                        mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                                         _wasPickingUp = true;
                                     } else if (_wasPickingUp) {
                                         // Stop picking up, wait and try again.
                                         _wasPickingUp = false;
-                                        MinecraftClient.getInstance().options.keyUse.setPressed(false);
                                     }
                                 }
                             }
@@ -87,7 +87,6 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             }
         }
         if (_wasPickingUp) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
             _wasPickingUp = false;
             _lastMLG = null;
         }

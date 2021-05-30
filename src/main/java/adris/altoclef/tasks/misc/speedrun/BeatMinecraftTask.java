@@ -493,7 +493,7 @@ public class BeatMinecraftTask extends Task {
             setDebugState("ENTERING PORTAL");
             return new DoToClosestBlockTask(
                     () -> mod.getPlayer().getPos(),
-                    blockPos -> new GetToBlockTask(blockPos.up(), false, true),
+                    blockPos -> new GetToBlockTask(blockPos.up(), true),
                     pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL),
                     Blocks.END_PORTAL
             );
