@@ -26,7 +26,7 @@ public class GetCommand extends Command {
         int count = parser.Get(Integer.class);
 
         if (TaskCatalogue.taskExists(resourceName)) {
-            Task targetTask = new GetResourceTask(resourceName, count);
+            Task targetTask = TaskCatalogue.getItemTask(resourceName, count);
             mod.runUserTask(targetTask, nothing -> finish());
         } else {
             mod.log("\"" + resourceName + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);

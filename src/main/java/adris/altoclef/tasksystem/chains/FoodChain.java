@@ -1,44 +1,26 @@
 package adris.altoclef.tasksystem.chains;
 
-import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
-import adris.altoclef.tasksystem.TaskChain;
-import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.Input;
-import adris.altoclef.util.LookUtil;
-import baritone.Baritone;
-import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.RayTraceUtils;
-import baritone.api.utils.Rotation;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.mixin.client.keybinding.KeyCodeAccessor;
-import net.java.games.input.Component;
-import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.Mouse;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.options.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import org.lwjgl.glfw.GLFW;
+
+import adris.altoclef.AltoClef;
+import adris.altoclef.Settings;
+import adris.altoclef.tasks.resources.CollectFoodTask;
+import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.LookUtil;
 
 public class FoodChain extends SingleTaskChain {
 
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
+
+    private boolean _needsFood = false;
+
 
     private static final int RIGHT_CLICK_KEY = 1 - 100;
 
@@ -58,11 +40,7 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
-        if (mod.getInventoryTracker().totalFoodScore() <= 0) {
-            // Do nothing if we have no food.
-            stopEat(mod);
-            return Float.NEGATIVE_INFINITY;
-        }
+
 
         /*
         - Eats if:
@@ -102,6 +80,19 @@ public class FoodChain extends SingleTaskChain {
             }
         } else if (_isTryingToEat) {
             stopEat(mod);
+        }
+
+        Settings settings = mod.getModSettings();
+
+        int foodScore = mod.getInventoryTracker().totalFoodScore();
+
+        if (_needsFood || foodScore <= settings.getFoodUnitsThreshold())
+        {
+
+            _needsFood = foodScore < settings.getFoodUnitsToCollect();
+
+            setTask(new CollectFoodTask(settings.getFoodUnitsToCollect()));
+            return 55f;
         }
 
 
