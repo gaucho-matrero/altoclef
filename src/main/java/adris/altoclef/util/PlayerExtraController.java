@@ -16,13 +16,19 @@ import net.minecraft.world.World;
 
 public class PlayerExtraController {
 
-    private static final double INTERACT_RANGE = 6;
-    public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
-    public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
-    private final AltoClef _mod;
+    private AltoClef _mod;
+
     private ClientPlayNetworkHandler _networkHandler;
+
     private BlockPos _blockBreakPos;
     private double _blockBreakProgress;
+
+    private static final double INTERACT_RANGE = 6;
+
+    public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
+    public static class BlockBrokenEvent {public BlockPos blockPos; public BlockState blockState; public PlayerEntity player;}
+    public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
+    public static class BlockPlaceEvent {public BlockPos blockPos; public BlockState blockState;}
 
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
@@ -32,7 +38,6 @@ public class PlayerExtraController {
         _blockBreakPos = pos;
         _blockBreakProgress = progress;
     }
-
     public void onBlockStopBreaking() {
         _blockBreakPos = null;
         _blockBreakProgress = 0;
@@ -47,7 +52,6 @@ public class PlayerExtraController {
             onBlockBroken.invoke(evt);
         }
     }
-
     public void onBlockPlaced(BlockPos pos, BlockState state) {
         BlockPlaceEvent evt = new BlockPlaceEvent();
         evt.blockPos = pos;
@@ -62,7 +66,6 @@ public class PlayerExtraController {
     public boolean isBreakingBlock() {
         return _blockBreakPos != null;
     }
-
     public double getBreakingBlockProgress() {
         return _blockBreakProgress;
     }
@@ -79,8 +82,8 @@ public class PlayerExtraController {
 
     public void dropCurrentStack(boolean single) {
         assert MinecraftClient.getInstance().interactionManager != null;
-        ((ClientPlayerInteractionAccessor) MinecraftClient.getInstance().interactionManager).doSendPlayerAction(
-                single ? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS,
+        ((ClientPlayerInteractionAccessor)MinecraftClient.getInstance().interactionManager).doSendPlayerAction(
+                single? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS,
                 new BlockPos(0, 0, 0), Direction.fromRotation(0)
         );
         _mod.getInventoryTracker().setDirty();
@@ -89,18 +92,7 @@ public class PlayerExtraController {
     // This is really dumb and should be handled in "InputControls"
     @Deprecated
     public void mouseClickOverride(int button, boolean down) {
-        MinecraftMouseInputAccessor mouse = (MinecraftMouseInputAccessor) MinecraftClient.getInstance().mouse;
-        mouse.mouseClick(MinecraftClient.getInstance().getWindow().getHandle(), button, down ? 1 : 0, 0);
-    }
-
-    public static class BlockBrokenEvent {
-        public BlockPos blockPos;
-        public BlockState blockState;
-        public PlayerEntity player;
-    }
-
-    public static class BlockPlaceEvent {
-        public BlockPos blockPos;
-        public BlockState blockState;
+        MinecraftMouseInputAccessor mouse = (MinecraftMouseInputAccessor)MinecraftClient.getInstance().mouse;
+        mouse.mouseClick(MinecraftClient.getInstance().getWindow().getHandle(), button, down? 1 : 0, 0);
     }
 }

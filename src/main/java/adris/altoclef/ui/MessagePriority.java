@@ -7,7 +7,6 @@ public enum MessagePriority {
     UNAUTHORIZED(0);
 
     private final int _importance;
-
     MessagePriority(int importance) {
         _importance = importance;
     }

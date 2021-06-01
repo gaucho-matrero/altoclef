@@ -45,15 +45,12 @@ public class CollectCropTask extends ResourceTask {
         _cropBlock = cropBlock;
         _collectSeedTask = new PickupDroppedItemTask(new ItemTarget(cropSeed, 1), true);
     }
-
     public CollectCropTask(ItemTarget cropToCollect, Block[] cropBlock, Item... cropSeed) {
         this(cropToCollect, cropBlock, cropSeed, ignore -> false);
     }
-
     public CollectCropTask(ItemTarget cropToCollect, Block cropBlock, Item... cropSeed) {
         this(cropToCollect, new Block[]{cropBlock}, cropSeed);
     }
-
     public CollectCropTask(Item cropItem, int count, Block cropBlock, Item... cropSeed) {
         this(new ItemTarget(cropItem, count), cropBlock, cropSeed);
     }
@@ -113,7 +110,8 @@ public class CollectCropTask extends ResourceTask {
             // Breaking immature crops will only yield one output! This is a bad move.
             if (mod.getModSettings().shouldReplantCrops() && !isMature(mod, ignoreBlock)) return true;
             // Wheat must be mature always.
-            return mod.getWorld().getBlockState(ignoreBlock).getBlock() == Blocks.WHEAT && !isMature(mod, ignoreBlock);
+            if (mod.getWorld().getBlockState(ignoreBlock).getBlock() == Blocks.WHEAT && !isMature(mod, ignoreBlock)) return true;
+            return false;
         };
 
         // Dimension
@@ -127,7 +125,7 @@ public class CollectCropTask extends ResourceTask {
                 () -> mod.getPlayer().getPos(),
                 blockPos -> {
                     _emptyCropland.add(blockPos);
-                    return new DestroyBlockTask(blockPos);
+                   return new DestroyBlockTask(blockPos);
                 }, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCrop, _cropBlock)
         );
     }
@@ -149,14 +147,12 @@ public class CollectCropTask extends ResourceTask {
     private boolean shouldReplantNow(AltoClef mod) {
         return mod.getModSettings().shouldReplantCrops() && hasEmptyCrops(mod) && mod.getInventoryTracker().hasItem(_cropSeed);
     }
-
     private boolean hasEmptyCrops(AltoClef mod) {
         for (BlockPos pos : _emptyCropland) {
             if (isEmptyCrop(mod, pos)) return true;
         }
         return false;
     }
-
     private boolean isEmptyCrop(AltoClef mod, BlockPos pos) {
         return WorldUtil.isAir(mod, pos);
     }

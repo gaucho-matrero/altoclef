@@ -28,7 +28,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
             _distancePlayerCheck.reset();
         } else {
             double distSq = player.squaredDistanceTo(mod.getPlayer());
-            if (distSq < 10 * 10) {
+            if (distSq < 10*10) {
                 _distancePlayerCheck.reset();
             }
             _distancePlayerCheck.setProgress(-1 * distSq);
@@ -42,7 +42,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
         if (other instanceof KillPlayerTask) {
-            return ((KillPlayerTask) other)._playerName.equals(_playerName);
+            return ((KillPlayerTask)other)._playerName.equals(_playerName);
         }
         return false;
     }

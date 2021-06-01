@@ -40,7 +40,7 @@ public class GiveCommand extends Command {
             for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
                 ItemStack stack = mod.getPlayer().inventory.getStack(i);
                 if (!stack.isEmpty()) {
-                    String name = Util.stripItemName(stack.getItem());
+                    String name =  Util.stripItemName(stack.getItem());
                     if (name.equals(item)) {
                         target = new ItemTarget(stack.getItem(), count);
                         break;

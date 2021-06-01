@@ -15,14 +15,13 @@ public class EnterNetherPortalTask extends Task {
     private final Task _getPortalTask;
     private final Dimension _targetDimension;
 
-    private final Timer _portalTimeout = new Timer(10);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
+    private Timer _portalTimeout = new Timer(10);
+    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
 
     private boolean _leftPortal;
 
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
-        if (targetDimension == Dimension.END)
-            throw new IllegalArgumentException("Can't build a nether portal to the end.");
+        if (targetDimension == Dimension.END) throw new IllegalArgumentException("Can't build a nether portal to the end.");
         _getPortalTask = getPortalTask;
         _targetDimension = targetDimension;
     }
@@ -67,7 +66,7 @@ public class EnterNetherPortalTask extends Task {
                 Blocks.NETHER_PORTAL);
         if (portal != null) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(),  (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;

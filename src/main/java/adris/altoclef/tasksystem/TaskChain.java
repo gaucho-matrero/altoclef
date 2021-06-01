@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class TaskChain {
 
-    private final List<Task> _cachedTaskChain = new ArrayList<>();
+    private List<Task> _cachedTaskChain = new ArrayList<>();
 
     public TaskChain(TaskRunner runner) {
         runner.addTaskChain(this);

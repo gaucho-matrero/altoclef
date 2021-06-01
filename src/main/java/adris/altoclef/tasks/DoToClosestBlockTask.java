@@ -20,11 +20,10 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     private final Function<BlockPos, Task> _getTargetTask;
 
 
-    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block... blocks) {
+    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block ...blocks) {
         this(getOriginSupplier, getTargetTask, (origin) -> mod.getBlockTracker().getNearestTracking(origin, blocks), blocks);
     }
-
-    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
+    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block ...blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _targetBlocks = blocks;

@@ -15,11 +15,9 @@ public class ShearAndCollectBlockTask extends MineAndCollectTask {
     public ShearAndCollectBlockTask(ItemTarget[] itemTargets, Block... blocksToMine) {
         super(itemTargets, blocksToMine, MiningRequirement.HAND);
     }
-
     public ShearAndCollectBlockTask(Item[] items, int count, Block... blocksToMine) {
         this(new ItemTarget[]{new ItemTarget(items, count)}, blocksToMine);
     }
-
     public ShearAndCollectBlockTask(Item item, int count, Block... blocksToMine) {
         this(new Item[]{item}, count, blocksToMine);
     }

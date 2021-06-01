@@ -20,9 +20,9 @@ import java.util.Optional;
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
     private final Timer _tryCollectWaterTimer = new Timer(4);
-    private final Timer _pickupRepeatTimer = new Timer(1);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
+    private final Timer _pickupRepeatTimer = new Timer(1);
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -42,7 +42,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
-            _lastMLG = (MLGBucketTask) _mainTask;
+            _lastMLG = (MLGBucketTask)_mainTask;
             return 100;
         } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.

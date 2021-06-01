@@ -23,7 +23,6 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         _distanceToRun = distance;
         _includeSkeletons = includeSkeletons;
     }
-
     public RunAwayFromHostilesTask(double distance) {
         this(distance, false);
     }

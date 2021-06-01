@@ -2,8 +2,8 @@ package adris.altoclef.util.csharpisbetter;
 
 public class Stopwatch {
 
-    boolean _running = false;
     private double _startTime = 0;
+    boolean _running = false;
 
     public void begin() {
         _startTime = Timer.currentTime();

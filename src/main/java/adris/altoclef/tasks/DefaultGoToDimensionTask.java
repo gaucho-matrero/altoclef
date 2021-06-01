@@ -6,9 +6,10 @@ import adris.altoclef.util.Dimension;
 
 /**
  * Some generic tasks require us to go to the nether.
- * <p>
+ *
  * The user should be able to specify how this should be done in settings
  * (ex, craft a new portal from scratch or check particular portal areas first or highway or whatever)
+ *
  */
 public class DefaultGoToDimensionTask extends Task {
 

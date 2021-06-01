@@ -13,10 +13,11 @@ public class ItemTarget {
 
     // Want to avoid int max to prevent overflow or something
     private static final int BASICALLY_INFINITY = 99999999;
-    public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
+
     private Item[] _itemMatches;
     private int _targetCount;
     private String _catalogueName = null;
+
     private boolean _infinite = false;
 
     public ItemTarget(Item[] items, int targetCount) {
@@ -40,14 +41,13 @@ public class ItemTarget {
     }
 
     public ItemTarget(Item item, int targetCount) {
-        this(new Item[]{item}, targetCount);
+        this(new Item[] {item}, targetCount);
     }
 
     public ItemTarget(Item[] items) {
         this(items, BASICALLY_INFINITY);
         _infinite = true;
     }
-
     public ItemTarget(Item item) {
         this(item, BASICALLY_INFINITY);
         _infinite = true;
@@ -55,27 +55,16 @@ public class ItemTarget {
 
     public ItemTarget(ItemTarget toCopy, int newCount) {
         _itemMatches = new Item[toCopy._itemMatches.length];
-        System.arraycopy(toCopy._itemMatches, 0, _itemMatches, 0, toCopy._itemMatches.length);
+        System.arraycopy(toCopy._itemMatches, 0, _itemMatches,  0, toCopy._itemMatches.length);
         _catalogueName = toCopy._catalogueName;
         _targetCount = newCount;
         _infinite = toCopy._infinite;
     }
 
-    public static Item[] getMatches(ItemTarget... targets) {
-        Set<Item> result = new HashSet<>();
-        for (ItemTarget target : targets) {
-            result.addAll(Arrays.asList(target.getMatches()));
-        }
-        return Util.toArray(Item.class, result);
-    }
-
     public Item[] getMatches() {
         return _itemMatches;
     }
-
-    public int getTargetCount() {
-        return _targetCount;
-    }
+    public int getTargetCount() { return _targetCount; }
 
     public boolean matches(Item item) {
         for (Item match : _itemMatches) {
@@ -88,7 +77,6 @@ public class ItemTarget {
     public boolean isCatalogueItem() {
         return _catalogueName != null;
     }
-
     public String getCatalogueName() {
         return _catalogueName;
     }
@@ -151,6 +139,16 @@ public class ItemTarget {
         }
 
         return result.toString();
+    }
+
+    public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
+
+    public static Item[] getMatches(ItemTarget... targets) {
+        Set<Item> result = new HashSet<>();
+        for (ItemTarget target : targets) {
+            result.addAll(Arrays.asList(target.getMatches()));
+        }
+        return Util.toArray(Item.class, result);
     }
 
 

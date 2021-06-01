@@ -12,8 +12,9 @@ import net.minecraft.util.math.Vec3i;
 
 public class EscapeFromLavaTask extends Task {
 
-    private final Timer _scanTimer = new Timer(5);
     private BlockPos target;
+
+    private final Timer _scanTimer = new Timer(5);
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -62,14 +63,14 @@ public class EscapeFromLavaTask extends Task {
                     BlockPos check = new BlockPos(xx, yy, zz);
                     BlockState state = mod.getWorld().getBlockState(check);
                     // Below and above can't be lava.
-                    final Vec3i[] noLavaPls = new Vec3i[]{
+                    final Vec3i[] noLavaPls = new Vec3i[] {
                             new Vec3i(0, 0, 0),
                             new Vec3i(0, 1, 0),
                             new Vec3i(0, -1, 0),
                             new Vec3i(1, 0, 0),
                             new Vec3i(-1, 0, 0),
-                            new Vec3i(0, 0, 1),
-                            new Vec3i(0, 0, -1)
+                            new Vec3i(0,0, 1),
+                            new Vec3i(0,0, -1)
                     };
                     for (Vec3i noLava : noLavaPls) {
                         if (mod.getWorld().getBlockState(check.add(noLava)).getBlock() == Blocks.LAVA) {

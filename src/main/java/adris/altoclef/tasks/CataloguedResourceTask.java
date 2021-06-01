@@ -13,16 +13,18 @@ import java.util.*;
 public class CataloguedResourceTask extends Task {
 
 
-    private final TaskSquasher _squasher;
-    private final ItemTarget[] _targets;
-    private final List<ResourceTask> _tasksToComplete;
+    private ItemTarget[] _targets;
 
-    public CataloguedResourceTask(boolean squash, ItemTarget... targets) {
+    private List<ResourceTask> _tasksToComplete;
+
+    private final TaskSquasher _squasher;
+
+    public CataloguedResourceTask(boolean squash, ItemTarget ...targets) {
         _squasher = new TaskSquasher();
         _targets = targets;
         _tasksToComplete = new ArrayList<>(targets.length);
 
-        for (ItemTarget target : targets) {
+        for(ItemTarget target : targets) {
             if (target != null) {
                 _tasksToComplete.add(TaskCatalogue.getItemTask(target));
             }
@@ -33,7 +35,7 @@ public class CataloguedResourceTask extends Task {
         }
     }
 
-    public CataloguedResourceTask(ItemTarget... targets) {
+    public CataloguedResourceTask(ItemTarget ...targets) {
         this(true, targets);
     }
 
@@ -110,7 +112,6 @@ public class CataloguedResourceTask extends Task {
                 _unSquashableTasks.add(t);
             }
         }
-
         public void addTasks(List<ResourceTask> tasks) {
             for (ResourceTask task : tasks) {
                 addTask(task);
@@ -136,7 +137,7 @@ public class CataloguedResourceTask extends Task {
 
             List<RecipeTarget> targetRecipies = new ArrayList<>();
 
-            for (CraftInTableTask task : tasks) {
+            for(CraftInTableTask task : tasks) {
                 targetRecipies.addAll(Arrays.asList(task.getRecipeTargets()));
             }
 
@@ -161,7 +162,7 @@ public class CataloguedResourceTask extends Task {
 
     static abstract class TypeSquasher<T extends ResourceTask> {
 
-        private final List<T> _tasks = new ArrayList<>();
+        private List<T> _tasks = new ArrayList<>();
 
         void add(T task) {
             _tasks.add(task);

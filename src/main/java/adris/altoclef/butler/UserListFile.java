@@ -14,6 +14,10 @@ public class UserListFile {
 
     private final HashSet<String> _users = new HashSet<>();
 
+    public boolean containsUser(String username) {
+        return _users.contains(username);
+    }
+
     public static UserListFile load(String path) {
         UserListFile result = new UserListFile();
 
@@ -25,16 +29,16 @@ public class UserListFile {
         }
 
         try {
-            FileInputStream fis = new FileInputStream(loadFrom);
+            FileInputStream fis=new FileInputStream(loadFrom);
             Scanner sc = new Scanner(fis);    //file to be scanned
             //returns true if there is another line to read
-            while (sc.hasNextLine()) {
+            while(sc.hasNextLine()) {
                 String line = trimComment(sc.nextLine()).trim();
                 if (line.length() == 0) continue;
                 result._users.add(line);
             }
             sc.close();
-        } catch (IOException e) {
+        } catch(IOException e) {
             e.printStackTrace();
             return null;
         }
@@ -67,9 +71,5 @@ public class UserListFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean containsUser(String username) {
-        return _users.contains(username);
     }
 }

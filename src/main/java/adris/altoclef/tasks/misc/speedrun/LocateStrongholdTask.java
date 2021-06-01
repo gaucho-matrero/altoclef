@@ -30,11 +30,15 @@ public class LocateStrongholdTask extends Task {
     private static final int EYE_RETHROW_DISTANCE = 1000;
 
     private final List<BlockPos> _cachedPortalFrame = new ArrayList<>();
-    private final int _targetEyes;
+
     private EyeDirection _cachedEyeDirection = null;
     private Entity _currentThrownEye = null;
+
     private Vec3d _lastThrowPos = null;
-    private final Timer _throwTimer = new Timer(5);
+
+    private final int _targetEyes;
+
+    private Timer _throwTimer = new Timer(5);
 
     private SearchStrongholdTask _searchTask;
 
@@ -166,7 +170,7 @@ public class LocateStrongholdTask extends Task {
 
     // Represents the direction we need to travel to get to the stronghold.
     private static class EyeDirection {
-        private final Vec3d _start;
+        private Vec3d _start;
         private Vec3d _end;
 
         public EyeDirection(Vec3d startPos) {
@@ -180,7 +184,6 @@ public class LocateStrongholdTask extends Task {
         public Vec3d getOrigin() {
             return _start;
         }
-
         public Vec3d getDelta() {
             return _end.subtract(_start);
         }

@@ -13,10 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(World.class)
 public class WorldBlockModifiedMixin {
 
-    private static boolean hasBlock(BlockState state, BlockPos pos) {
-        return !state.isAir() && state.isSolidBlock(MinecraftClient.getInstance().world, pos);
-    }
-
     @Inject(
             method = "onBlockChanged",
             at = @At("HEAD")
@@ -25,6 +21,10 @@ public class WorldBlockModifiedMixin {
         if (!hasBlock(oldBlock, pos) && hasBlock(newBlock, pos)) {
             StaticMixinHookups.onBlockPlaced(pos, newBlock);
         }
+    }
+
+    private static boolean hasBlock(BlockState state, BlockPos pos) {
+        return !state.isAir() && state.isSolidBlock(MinecraftClient.getInstance().world, pos);
     }
     //onBlockChanged
 }

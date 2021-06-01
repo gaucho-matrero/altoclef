@@ -29,9 +29,8 @@ public class CarveThenCollectTask extends ResourceTask {
         _toCarveBlocks = toCarveBlocks;
         _carveWith = carveWith;
     }
-
     public CarveThenCollectTask(Item target, int targetCount, Block targetBlock, Item toCarve, Block toCarveBlock, Item carveWith) {
-        this(new ItemTarget(target, targetCount), new Block[]{targetBlock}, new ItemTarget(toCarve, targetCount), new Block[]{toCarveBlock}, new ItemTarget(carveWith, 1));
+        this(new ItemTarget(target, targetCount), new Block[] {targetBlock}, new ItemTarget(toCarve, targetCount), new Block[]{toCarveBlock}, new ItemTarget(carveWith, 1));
     }
 
     @Override

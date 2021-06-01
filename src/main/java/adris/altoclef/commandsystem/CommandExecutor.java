@@ -9,9 +9,11 @@ import java.util.function.Consumer;
 
 public class CommandExecutor {
 
+    private AltoClef _mod;
+
+    private String _commandPrefix;
+
     private final HashMap<String, Command> _commandSheet = new HashMap<>();
-    private final AltoClef _mod;
-    private final String _commandPrefix;
 
     public CommandExecutor(AltoClef mod, String commandPrefix) {
         _mod = mod;
@@ -33,29 +35,34 @@ public class CommandExecutor {
         if (!isClientCommand(line)) return;
         line = line.substring(_commandPrefix.length());
         Command c = GetCommand(line);
-        if (c != null) {
-            try {
+        if (c != null)
+        {
+            try
+            {
                 c.Run(_mod, line, onFinish);
-            } catch (CommandException ae) {
+            }
+            catch (CommandException ae)
+            {
                 throw new CommandException(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
             }
         }
     }
-
     public void Execute(String line) throws CommandException {
         Execute(line, null);
     }
-
     private Command GetCommand(String line) throws CommandException {
 
-        if (line.length() != 0) {
+        if (line.length() != 0)
+        {
             String command = line;
             int firstSpace = line.indexOf(' ');
-            if (firstSpace != -1) {
+            if (firstSpace != -1)
+            {
                 command = line.substring(0, firstSpace);
             }
 
-            if (!_commandSheet.containsKey(command)) {
+            if (!_commandSheet.containsKey(command))
+            {
                 throw new CommandException("Command " + command + " does not exist.");
             }
 
@@ -65,11 +72,13 @@ public class CommandExecutor {
 
     }
 
-    public Collection<Command> AllCommands() {
+    public Collection<Command> AllCommands()
+    {
         return _commandSheet.values();
     }
 
-    public Command Get(String name) {
+    public Command Get(String name)
+    {
         return (_commandSheet.getOrDefault(name, null));
     }
 }

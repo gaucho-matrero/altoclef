@@ -16,10 +16,11 @@ import java.util.HashMap;
 public class CollectRecipeCataloguedResourcesTask extends Task {
 
     private final RecipeTarget[] _targets;
-    private final boolean _ignoreUncataloguedSlots;
-    private boolean _finished = false;
 
-    public CollectRecipeCataloguedResourcesTask(boolean ignoreUncataloguedSlots, RecipeTarget... targets) {
+    private boolean _finished = false;
+    private final boolean _ignoreUncataloguedSlots;
+
+    public CollectRecipeCataloguedResourcesTask(boolean ignoreUncataloguedSlots, RecipeTarget ...targets) {
         _targets = targets;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }

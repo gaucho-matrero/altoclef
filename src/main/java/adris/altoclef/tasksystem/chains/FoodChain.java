@@ -14,9 +14,10 @@ import net.minecraft.item.Items;
 
 public class FoodChain extends SingleTaskChain {
 
-    private static final int RIGHT_CLICK_KEY = 1 - 100;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
+
+    private static final int RIGHT_CLICK_KEY = 1 - 100;
 
     public FoodChain(TaskRunner runner) {
         super(runner);
@@ -94,7 +95,6 @@ public class FoodChain extends SingleTaskChain {
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
-
     private void stopEat(AltoClef mod) {
         if (_isTryingToEat) {
             mod.getInputControls().release(Input.CLICK_RIGHT);
@@ -134,8 +134,8 @@ public class FoodChain extends SingleTaskChain {
         if (foodLevel < 20 - 5) {
             int need = 20 - foodLevel;
             Item best = getBestItemToEat(mod);
-            int fills = (best != null && best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : 0;
-            return fills == need;
+            int fills = (best != null && best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            if (fills == need) return true;
         }
 
         return false;
@@ -194,6 +194,7 @@ public class FoodChain extends SingleTaskChain {
     }
 
 
+
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {
         // Don't do this if we have no food
@@ -202,6 +203,7 @@ public class FoodChain extends SingleTaskChain {
         float health = mod.getPlayer().getHealth();
         int armor = mod.getPlayer().getArmor();
         if (health < 3 && foodLevel < 3) return false; // RUN NOT EAT
-        return armor >= 15 && foodLevel < 3; // EAT WE CAN TAKE A FEW HITS
+        if (armor >= 15 && foodLevel < 3) return true; // EAT WE CAN TAKE A FEW HITS
+        return false;
     }
 }

@@ -33,18 +33,25 @@ import java.util.function.Function;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
-    private final HashSet<BlockPos> _blacklist = new HashSet<>();
-    private final Timer _tryImmediatePickupTimer = new Timer(3);
-    private final Timer _pickedUpTimer = new Timer(0.5);
-    private final int _count;
+    private int _count;
+
+    private Item _target;
+    private Block _toCollect;
+
+    private String _liquidName;
 
     //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
-    private final Item _target;
-    private final Block _toCollect;
-    private final String _liquidName;
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+
+    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
+
+    private final HashSet<BlockPos> _blacklist = new HashSet<>();
+
     private BlockPos _targetLiquid;
+
+    private final Timer _tryImmediatePickupTimer = new Timer(3);
+    private final Timer _pickedUpTimer = new Timer(0.5);
+
+    private MovementProgressChecker _progressChecker = new MovementProgressChecker();
 
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
@@ -78,6 +85,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         _progressChecker.reset();
     }
+
+
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
@@ -128,8 +137,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
-            if (mod.getBlockTracker().unreachable(blockPos))
-                return true; // I think there was a bug here? Doesn't hurt to include though.
+            if (mod.getBlockTracker().unreachable(blockPos)) return true; // I think there was a bug here? Doesn't hurt to include though.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
@@ -220,7 +228,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
             super("water", Items.WATER_BUCKET, targetCount, Blocks.WATER);
         }
     }
-
     public static class CollectLavaBucketTask extends CollectBucketLiquidTask {
         public CollectLavaBucketTask(int targetCount) {
             super("lava", Items.LAVA_BUCKET, targetCount, Blocks.LAVA);

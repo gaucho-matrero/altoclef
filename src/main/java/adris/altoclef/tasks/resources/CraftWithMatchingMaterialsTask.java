@@ -38,21 +38,9 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             }
         }
         _sameResourceTarget = sameResourceTarget;
-        int craftsNeeded = (int) (1 + Math.floor((double) target.getTargetCount() / recipe.outputCount() - 0.001));
+        int craftsNeeded = (int)(1 + Math.floor((double)target.getTargetCount() / recipe.outputCount() - 0.001));
         _sameResourcePerRecipe = sameResourceRequiredCount;
         _sameResourceRequiredCount = sameResourceRequiredCount * craftsNeeded;
-    }
-
-    private static CraftingRecipe generateSamedRecipe(CraftingRecipe diverseRecipe, Item sameItem, boolean[] sameMask) {
-        ItemTarget[] result = new ItemTarget[diverseRecipe.getSlotCount()];
-        for (int i = 0; i < result.length; ++i) {
-            if (sameMask[i]) {
-                result[i] = new ItemTarget(sameItem, 1);
-            } else {
-                result[i] = diverseRecipe.getSlot(i);
-            }
-        }
-        return CraftingRecipe.newShapedRecipe(result, diverseRecipe.outputCount());
     }
 
     @Override
@@ -120,7 +108,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
-            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
+            return _recipe.isBig()? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
         }
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);
@@ -150,5 +138,17 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
     protected Task getSpecificSameResourceTask(AltoClef mod, Item[] toGet) {
         Debug.logError("Uh oh!!! getSpecificSameResourceTask should be implemented!!!! Now we're stuck.");
         return null;
+    }
+
+    private static CraftingRecipe generateSamedRecipe(CraftingRecipe diverseRecipe, Item sameItem, boolean[] sameMask) {
+        ItemTarget[] result = new ItemTarget[diverseRecipe.getSlotCount()];
+        for (int i = 0; i < result.length; ++i) {
+            if (sameMask[i]) {
+                result[i] = new ItemTarget(sameItem, 1);
+            } else {
+                result[i] = diverseRecipe.getSlot(i);
+            }
+        }
+        return CraftingRecipe.newShapedRecipe(result, diverseRecipe.outputCount());
     }
 }

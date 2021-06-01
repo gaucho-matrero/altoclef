@@ -13,13 +13,13 @@ import java.util.HashMap;
 
 /**
  * Thought this might be fun to program.
- * <p>
+ *
  * Attacks closest player, but stands still when anyone has direct line of sight on the bot.
- * <p>
+ *
  * Works well but isn't perfect, since turning around quickly results in movement delay.
- * <p>
+ *
  * Potential fix:
- * - Have a "last velocity" of the change of a player's closeness. If the velocity is high in one direction, stop early.
+ *      - Have a "last velocity" of the change of a player's closeness. If the velocity is high in one direction, stop early.
  */
 public class SCP173Task extends Task {
 
@@ -27,8 +27,11 @@ public class SCP173Task extends Task {
     private static final double LOOK_CLOSENESS_THRESHOLD = 0.2;
     private static final double HIT_RANGE = 2.5;
     private static final double WALK_THRESHOLD = 0.1;
-    private final HashMap<PlayerEntity, Double> _lastLookCloseness = new HashMap<>();
+
     private PlayerEntity _lastTarget = null;
+
+    private final HashMap<PlayerEntity, Double> _lastLookCloseness = new HashMap<>();
+
     private Vec3d _lastWalkVelocity = Vec3d.ZERO;
 
     @Override
@@ -43,10 +46,10 @@ public class SCP173Task extends Task {
         boolean seen = isSeenByPlayer(mod);
 
         Vec3d currentVelocity = mod.getPlayer().getVelocity();
-        if (currentVelocity.lengthSquared() > WALK_THRESHOLD * WALK_THRESHOLD) {
+        if (currentVelocity.lengthSquared() > WALK_THRESHOLD*WALK_THRESHOLD) {
             _lastWalkVelocity = currentVelocity;
         }
-
+        
         if (seen) {
             setDebugState("Standing still and being menacing");
         } else {
@@ -118,7 +121,6 @@ public class SCP173Task extends Task {
         _lastLookCloseness.put(other, lookCloseness);
         return lookCloseness > LOOK_CLOSENESS_THRESHOLD || predicted > LOOK_CLOSENESS_THRESHOLD;
     }
-
     private boolean entityHasLineOfSightToUs(AltoClef mod, PlayerEntity other) {
         if (LookUtil.seesPlayer(mod.getPlayer(), other, MAX_RANGE)) {
             return true;

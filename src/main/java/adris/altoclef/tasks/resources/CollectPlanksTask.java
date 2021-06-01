@@ -21,28 +21,14 @@ public class CollectPlanksTask extends CraftInInventoryTask {
         super(new ItemTarget(planks, count), generatePlankRecipe(logs));
         _logs = logs;
     }
-
     public CollectPlanksTask(int count) {
         this(ItemUtil.PLANKS, ItemUtil.LOG, count);
     }
-
     public CollectPlanksTask(Item plank, Item log, int count) {
         this(new Item[]{plank}, new Item[]{log}, count);
     }
-
     public CollectPlanksTask(Item plank, int count) {
         this(plank, ItemUtil.planksToLog(plank), count);
-    }
-
-    private static CraftingRecipe generatePlankRecipe(Item[] logs) {
-        return CraftingRecipe.newShapedRecipe(
-                "planks",
-                new Item[][]{
-                        logs, null,
-                        null, null
-                },
-                4
-        );
     }
 
     @Override
@@ -55,5 +41,16 @@ public class CollectPlanksTask extends CraftInInventoryTask {
             //blocksTomine.add(new ItemTarget(ItemUtil.PLANKS));
         }
         return new MineAndCollectTask(Util.toArray(ItemTarget.class, blocksTomine), MiningRequirement.HAND);
+    }
+
+    private static CraftingRecipe generatePlankRecipe(Item[] logs) {
+        return CraftingRecipe.newShapedRecipe(
+                "planks",
+                new Item[][]{
+                        logs, null,
+                        null, null
+                },
+                4
+        );
     }
 }

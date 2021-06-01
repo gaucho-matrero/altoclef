@@ -21,7 +21,7 @@ public abstract class Task {
     public void tick(AltoClef mod, TaskChain parentChain) {
         parentChain.addTaskToChain(this);
         if (_first) {
-            Debug.logInternal("Task START: " + this);
+            Debug.logInternal("Task START: " + this.toString());
             _active = true;
             onStart(mod);
             _first = false;
@@ -66,7 +66,7 @@ public abstract class Task {
         if (!_active) return;
 
         onStop(mod, interruptTask);
-        Debug.logInternal("Task STOP: " + this + ", interrupted by " + interruptTask);
+        Debug.logInternal("Task STOP: " + this.toString() + ", interrupted by " + interruptTask);
 
         if (_sub != null && !_sub.stopped()) {
             _sub.stop(mod, interruptTask);
@@ -87,7 +87,7 @@ public abstract class Task {
     }
 
     public void stop(AltoClef mod) {
-        stop(mod, null);
+        stop(mod,null);
     }
 
     protected void setDebugState(String state) {
@@ -104,13 +104,9 @@ public abstract class Task {
         return false;
     }
 
-    public boolean isActive() {
-        return _active;
-    }
+    public boolean isActive() {return _active;}
 
-    public boolean stopped() {
-        return _stopped;
-    }
+    public boolean stopped() {return _stopped;}
 
     protected abstract void onStart(AltoClef mod);
 

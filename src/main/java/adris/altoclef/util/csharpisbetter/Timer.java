@@ -10,17 +10,10 @@ public class Timer {
         _interval = interval;
     }
 
-    public static double currentTime() {
-        return (double) System.currentTimeMillis() / 1000.0;
-    }
-
     public double getDuration() {
         return currentTime() - _prevTime;
     }
-
-    public void setInterval(double interval) {
-        _interval = interval;
-    }
+    public void setInterval(double interval) {_interval = interval;}
 
     public boolean elapsed() {
         return getDuration() > _interval;
@@ -32,5 +25,9 @@ public class Timer {
 
     public void forceElapse() {
         _prevTime = 0;
+    }
+
+    public static double currentTime() {
+        return (double) System.currentTimeMillis() / 1000.0;
     }
 }

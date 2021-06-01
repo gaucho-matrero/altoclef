@@ -17,7 +17,6 @@ public class InventoryCommand extends Command {
     public InventoryCommand() throws CommandException {
         super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg(String.class, "item", null, 1));
     }
-
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String item = parser.Get(String.class);

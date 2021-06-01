@@ -7,7 +7,7 @@ import adris.altoclef.util.MiningRequirement;
 
 public class SatisfyMiningRequirementTask extends Task {
 
-    private final MiningRequirement _requirement;
+    private MiningRequirement _requirement;
 
     public SatisfyMiningRequirementTask(MiningRequirement requirement) {
         _requirement = requirement;

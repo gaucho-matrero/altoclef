@@ -40,7 +40,7 @@ public class CollectHayBlockTask extends ResourceTask {
         }
 
         ItemTarget w = new ItemTarget("wheat", 1);
-        return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, _count), CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w, w, w, w, w, w, w, w, w}, 1));
+        return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, _count), CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w,w,w,w,w,w,w,w,w}, 1));
     }
 
     @Override

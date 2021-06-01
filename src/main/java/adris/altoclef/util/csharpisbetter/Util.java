@@ -29,7 +29,7 @@ public interface Util {
 
 
     static String stripItemName(Item item) {
-        String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
+        String[] possibilities = new String[] {"item.minecraft.", "block.minecraft."};
         for (String possible : possibilities) {
             if (item.getTranslationKey().startsWith(possible)) {
                 return item.getTranslationKey().substring(possible.length());
@@ -45,7 +45,6 @@ public interface Util {
         }
         return true;
     }
-
     static <T> boolean arraysEqual(T[] a1, T[] a2) {
         return arraysEqual(a1, a2, (left, right) -> {
             if (left == null) {
@@ -61,7 +60,6 @@ public interface Util {
         }
         return false;
     }
-
     static <T> boolean arrayContains(T[] array, T item) {
         return arrayContains(array, item, (left, right) -> {
             if (left == null) {
@@ -77,7 +75,6 @@ public interface Util {
         }
         return false;
     }
-
     static <T> boolean arrayContainsAny(T[] array, T[] items) {
         for (T item : items) {
             if (arrayContains(array, item)) return true;
@@ -98,15 +95,13 @@ public interface Util {
         }
         return Util.toArray(Block.class, result);
     }
-
     static Item[] blocksToItems(Block[] blocks) {
         Item[] result = new Item[blocks.length];
-        for (int i = 0; i < blocks.length; ++i) {
+        for(int i = 0; i < blocks.length; ++i) {
             result[i] = blocks[i].asItem();
         }
         return result;
     }
-
     static <T> T maxItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
         if (items.size() == 0) return null;
         T best = items.stream().findFirst().get();
@@ -119,11 +114,9 @@ public interface Util {
         }
         return best;
     }
-
     static <T> T minItem(Collection<T> items, Comparator<T> comparatorRightMinusLeft) {
         return maxItem(items, (left, right) -> -comparatorRightMinusLeft.compare(left, right));
     }
-
     static <T> T maxItem(Collection<T> items, Function<T, Double> conversionValue) {
         return maxItem(items, (left, right) -> {
             double leftVal = conversionValue.apply(left),
@@ -131,19 +124,17 @@ public interface Util {
             return (int) (rightVal - leftVal);
         });
     }
-
     static <T> T minItem(Collection<T> items, Function<T, Double> conversionValue) {
-        return maxItem(items, toConvert -> -1 * conversionValue.apply(toConvert));
+        return maxItem(items, toConvert -> -1* conversionValue.apply(toConvert));
     }
 
     static <T> String arrayToString(T[] arr) {
-        return arrayToString(arr, elem -> elem == null ? "(null)" : elem.toString());
+        return arrayToString(arr, elem -> elem == null? "(null)" : elem.toString());
     }
-
     static <T> String arrayToString(T[] arr, Function<T, String> toString) {
         StringBuilder result = new StringBuilder();
         result.append("[");
-        for (int i = 0; i < arr.length; ++i) {
+        for(int i = 0; i < arr.length; ++i) {
             result.append(toString.apply(arr[i]));
             if (i != arr.length - 1) {
                 result.append(",");

@@ -41,27 +41,22 @@ import java.util.List;
 /**
  * Here we go
  * the final stretch
- * <p>
+ *
  * Until something inevitably fucks up and I gotta go back here to fix it
  * in which case this'll be pretty ironic.
  */
 public class KillEnderDragonTask extends Task {
 
-    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
     // Don't accidentally anger endermen lol
     private final Timer _lookDownTimer = new Timer(0.5);
-    private final Task _collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100), new Block[]{Blocks.END_STONE}, MiningRequirement.WOOD);
+
+    private final Task _collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100), new Block[] {Blocks.END_STONE}, MiningRequirement.WOOD);
+
     private final PunkEnderDragonTask _punkTask = new PunkEnderDragonTask();
+
     private BlockPos _exitPortalTop;
 
-    private static Task getPickupTaskIfAny(AltoClef mod, Item... itemsToPickup) {
-        for (Item check : itemsToPickup) {
-            if (mod.getEntityTracker().itemDropped(check)) {
-                return new PickupDroppedItemTask(new ItemTarget(check), true);
-            }
-        }
-        return null;
-    }
+    private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -166,6 +161,7 @@ public class KillEnderDragonTask extends Task {
         //return new KillEntitiesTask(EnderDragonEntity.class);
     }
 
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
@@ -201,17 +197,18 @@ public class KillEnderDragonTask extends Task {
     private class PunkEnderDragonTask extends Task {
 
         private final HashMap<BlockPos, Double> _breathCostMap = new HashMap<>();
+
+        private Mode _mode = Mode.WAITING_FOR_PERCH;
+
         private final Timer _hitHoldTimer = new Timer(0.1);
         private final Timer _hitResetTimer = new Timer(2);
+
         private final Timer _randomWanderChangeTimeout = new Timer(20);
-        private Mode _mode = Mode.WAITING_FOR_PERCH;
         /*
         private final Timer _dragonPerchChecker = new Timer(3);
         private static final double DRAGON_PERCH_ORBIT_RADIUS = 10;
          */
         private BlockPos _randomWanderPos;
-        private boolean _wasHitting;
-        private boolean _wasReleased;
 
         private PunkEnderDragonTask() {
         }
@@ -219,6 +216,9 @@ public class KillEnderDragonTask extends Task {
         public Mode getMode() {
             return _mode;
         }
+
+        private boolean _wasHitting;
+        private boolean _wasReleased;
 
         private void hit(AltoClef mod) {
             mod.getExtraBaritoneSettings().setInteractionPaused(true);
@@ -244,7 +244,6 @@ public class KillEnderDragonTask extends Task {
                 mod.getExtraBaritoneSettings().setInteractionPaused(false);
             }
         }
-
         private void stopHitting(AltoClef mod) {
             if (_wasHitting) {
                 //MinecraftClient.getInstance().options.keyAttack.setPressed(false);
@@ -315,7 +314,7 @@ public class KillEnderDragonTask extends Task {
                     if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                         // Set goal to closest block within the pillar that's by the head.
                         if (_exitPortalTop != null) {
-                            int bottomYDelta = -3;
+                            int bottomYDelta = - 3;
                             BlockPos closest = null;
                             double closestDist = Double.POSITIVE_INFINITY;
                             for (int dx = -2; dx <= 2; ++dx) {
@@ -403,8 +402,8 @@ public class KillEnderDragonTask extends Task {
                 }
                 double radius = MIN_RADIUS + (RADIUS_RANGE - MIN_RADIUS) * Math.random();
                 double angle = Math.PI * 2 * Math.random();
-                int x = (int) (radius * Math.cos(angle)),
-                        z = (int) (radius * Math.sin(angle));
+                int x = (int)(radius*Math.cos(angle)),
+                        z = (int)(radius*Math.sin(angle));
                 int y = WorldUtil.getGroundHeight(mod, x, z);
                 if (y == -1) continue;
                 BlockPos check = new BlockPos(x, y, z);
@@ -422,8 +421,8 @@ public class KillEnderDragonTask extends Task {
             double radius = 4;
             for (AreaEffectCloudEntity cloud : mod.getEntityTracker().getTrackedEntities(AreaEffectCloudEntity.class)) {
                 Vec3d c = cloud.getPos();
-                for (int x = (int) (c.getX() - radius); x <= (int) (c.getX() + radius); ++x) {
-                    for (int z = (int) (c.getZ() - radius); z <= (int) (c.getZ() + radius); ++z) {
+                for (int x = (int)(c.getX() - radius); x <= (int)(c.getX() + radius); ++x) {
+                    for (int z = (int)(c.getZ() - radius); z <= (int)(c.getZ() + radius); ++z) {
                         BlockPos p = new BlockPos(x, cloud.getBlockPos().getY(), z);
                         double sqDist = p.getSquaredDistance(c, false);
                         if (sqDist < radius) {
@@ -451,5 +450,14 @@ public class KillEnderDragonTask extends Task {
                 return _breathCostMap.getOrDefault(pos, 0.0);
             }
         }
+    }
+
+    private static Task getPickupTaskIfAny(AltoClef mod, Item...itemsToPickup) {
+        for (Item check : itemsToPickup) {
+            if (mod.getEntityTracker().itemDropped(check)) {
+                return new PickupDroppedItemTask(new ItemTarget(check), true);
+            }
+        }
+        return null;
     }
 }

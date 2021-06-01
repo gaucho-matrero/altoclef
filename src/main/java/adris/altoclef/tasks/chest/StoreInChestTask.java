@@ -22,7 +22,7 @@ public class StoreInChestTask extends AbstractDoInChestTask {
 
     private final BlockPos _targetChest;
 
-    public StoreInChestTask(BlockPos targetChest, ItemTarget... targets) {
+    public StoreInChestTask(BlockPos targetChest, ItemTarget ...targets) {
         super(targetChest);
         _targets = targets;
         _targetChest = targetChest;

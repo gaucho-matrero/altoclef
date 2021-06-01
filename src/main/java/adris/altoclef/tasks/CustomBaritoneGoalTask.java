@@ -10,15 +10,15 @@ import baritone.api.pathing.goals.Goal;
 
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
 
+    protected Goal _cachedGoal = null;
+
     private final boolean _wander;
     private final Task _wanderTask = new TimeoutWanderTask(10);
-    protected Goal _cachedGoal = null;
     protected MovementProgressChecker _checker = new MovementProgressChecker();
 
     public CustomBaritoneGoalTask(boolean wander) {
         _wander = wander;
     }
-
     public CustomBaritoneGoalTask() {
         this(true);
     }

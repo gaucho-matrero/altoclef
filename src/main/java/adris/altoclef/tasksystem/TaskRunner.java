@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public class TaskRunner {
 
-    private final ArrayList<TaskChain> _chains = new ArrayList<>();
-    private final AltoClef _mod;
+    private ArrayList<TaskChain> _chains = new ArrayList<>();
+    private AltoClef _mod;
     private boolean _active;
 
     private TaskChain _cachedCurrentTaskChain = null;
@@ -23,7 +23,7 @@ public class TaskRunner {
         // Get highest priority chain and run
         TaskChain maxChain = null;
         float maxPriority = Float.NEGATIVE_INFINITY;
-        for (TaskChain chain : _chains) {
+        for(TaskChain chain : _chains) {
             if (!chain.isActive()) continue;
             float priority = chain.getPriority(_mod);
             if (priority > maxPriority) {
@@ -51,7 +51,6 @@ public class TaskRunner {
         }
         _active = true;
     }
-
     public void disable() {
         if (_active) {
             _mod.getBehaviour().pop();

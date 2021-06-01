@@ -6,6 +6,6 @@ import net.minecraft.util.math.BlockPos;
 public class PlaceStructureBlockTask extends PlaceBlockTask {
 
     public PlaceStructureBlockTask(BlockPos target) {
-        super(target, new Block[]{}, true, true);
+        super(target, new Block[] {}, true, true);
     }
 }

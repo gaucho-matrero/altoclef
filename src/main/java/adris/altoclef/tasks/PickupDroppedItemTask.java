@@ -19,37 +19,38 @@ import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
 
-    private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
     // Not clean practice, but it helps keep things self contained I think.
     private static boolean isGettingPickaxeFirstFlag = false;
+    public static boolean isIsGettingPickaxeFirst(AltoClef mod) {return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();}
+
+    private boolean _collectingPickaxeForThisResource = false;
+    public boolean isCollectingPickaxeForThis() {return _collectingPickaxeForThisResource; }
+
     private final ItemTarget[] _itemTargets;
+
     private final Set<ItemEntity> _blacklist = new HashSet<>();
+
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(3);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(20);
-    private final boolean _freeInventoryIfFull;
-    private boolean _collectingPickaxeForThisResource = false;
+
     private ItemEntity _currentDrop = null;
+
+    private final boolean _freeInventoryIfFull;
+
     private boolean _fullCheckFailed = false;
+
+    private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
 
     public PickupDroppedItemTask(ItemTarget[] itemTargets, boolean freeInventoryIfFull) {
         _itemTargets = itemTargets;
         _freeInventoryIfFull = freeInventoryIfFull;
     }
-
     public PickupDroppedItemTask(ItemTarget target, boolean freeInventoryIfFull) {
-        this(new ItemTarget[]{target}, freeInventoryIfFull);
+        this(new ItemTarget[] {target}, freeInventoryIfFull);
     }
 
     public PickupDroppedItemTask(Item item, int targetCount, boolean freeInventoryIfFull) {
         this(new ItemTarget(item, targetCount), freeInventoryIfFull);
-    }
-
-    public static boolean isIsGettingPickaxeFirst(AltoClef mod) {
-        return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();
-    }
-
-    public boolean isCollectingPickaxeForThis() {
-        return _collectingPickaxeForThisResource;
     }
 
     @Override
@@ -92,7 +93,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                     isGettingPickaxeFirstFlag = true;
                     return getPickaxeFirstTask;
                 }
-                Debug.logMessage(Util.arrayToString(Util.toArray(ItemEntity.class, _blacklist), element -> element == null ? "(null)" : element.getStack().getItem().getTranslationKey()));
+                Debug.logMessage(Util.arrayToString(Util.toArray(ItemEntity.class, _blacklist), element -> element == null? "(null)" : element.getStack().getItem().getTranslationKey()));
                 Debug.logMessage("Failed to pick up drop, suggesting it's unreachable.");
                 _blacklist.add(_currentDrop);
                 mod.getEntityTracker().requestEntityUnreachable(_currentDrop);

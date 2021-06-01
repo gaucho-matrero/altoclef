@@ -20,11 +20,14 @@ import java.util.List;
 
 public class PlayerInteractionFixChain extends TaskChain {
 
-    private final Timer _stackHeldTimeout = new Timer(8);
-    private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
-    private final Timer _shiftDepressTimeout = new Timer(10);
-    private final Timer _betterToolTimer = new Timer(0.5);
     private ItemStack _lastHandStack = null;
+    private final Timer _stackHeldTimeout = new Timer(8);
+
+    private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
+
+    private final Timer _shiftDepressTimeout = new Timer(10);
+
+    private final Timer _betterToolTimer = new Timer(0.5);
 
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);

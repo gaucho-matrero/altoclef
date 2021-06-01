@@ -16,35 +16,29 @@ import java.util.Set;
 
 /**
  * Use to walk through and search interconnected structures or biomes.
- * <p>
+ *
  * Example use cases:
- * - Search a dark forest for a woodland mansion and avoid going to different biomes
- * - Search a nether fortress for blaze spawners
- * - Search a stronghold for the portal
+ *  - Search a dark forest for a woodland mansion and avoid going to different biomes
+ *  - Search a nether fortress for blaze spawners
+ *  - Search a stronghold for the portal
  */
 public abstract class ChunkSearchTask extends Task {
 
     private final BlockPos _startPoint;
-    private final Object _searchMutex = new Object();
+
     // We're either searched or will be searched later.
-    private final Set<ChunkPos> _consideredAlready = new HashSet<>();
+    private Set<ChunkPos> _consideredAlready = new HashSet<>();
     // We definitely were searched before.
-    private final Set<ChunkPos> _searchedAlready = new HashSet<>();
-    private final ArrayList<ChunkPos> _searchLater = new ArrayList<>();
-    private final ArrayList<ChunkPos> _justLoaded = new ArrayList<>();
-    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
-        @Override
-        public void invoke(WorldChunk value) {
-            onChunkLoad(value);
-        }
-    };
-    private boolean _first = true;
-    private boolean _finished = false;
+    private Set<ChunkPos> _searchedAlready = new HashSet<>();
+    private ArrayList<ChunkPos> _searchLater = new ArrayList<>();
+
+    private ArrayList<ChunkPos> _justLoaded = new ArrayList<>();
+
+    private final Object _searchMutex = new Object();
 
     public ChunkSearchTask(BlockPos startPoint) {
         _startPoint = startPoint;
     }
-
     public ChunkSearchTask(ChunkPos chunkPos) {
         this(chunkPos.getStartPos().add(1, 1, 1));
     }
@@ -53,9 +47,18 @@ public abstract class ChunkSearchTask extends Task {
         return _searchedAlready;
     }
 
-    public boolean finished() {
-        return _finished;
-    }
+    private ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
+        @Override
+        public void invoke(WorldChunk value) {
+            onChunkLoad(value);
+        }
+    };
+
+    private boolean _first = true;
+
+    private boolean _finished = false;
+
+    public boolean finished() {return _finished;}
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -119,7 +122,7 @@ public abstract class ChunkSearchTask extends Task {
             double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
             double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
             double distanceToCenterSq = new Vec3d(_startPoint.getX() - cx, 0, _startPoint.getZ() - cz).lengthSquared();
-            double score = distanceSq + distanceToCenterSq * 0.8;
+            double score = distanceSq + distanceToCenterSq*0.8;
             if (score < lowestScore) {
                 lowestScore = score;
                 bestChunk = toSearch;
@@ -165,10 +168,9 @@ public abstract class ChunkSearchTask extends Task {
 
     /**
      * Try to search the chunk.
-     *
      * @param pos chunk to search
      * @return true if we're DONE searching this chunk
-     * false if we need to SEARCH IT IN PERSON
+     *         false if we need to SEARCH IT IN PERSON
      */
     private boolean trySearchChunk(AltoClef mod, ChunkPos pos) {
         // Do NOT search later.
@@ -199,6 +201,5 @@ public abstract class ChunkSearchTask extends Task {
     }
 
     protected abstract boolean isChunkPartOfSearchSpace(AltoClef mod, ChunkPos pos);
-
     protected abstract boolean isChunkSearchEqual(ChunkSearchTask other);
 }

@@ -33,13 +33,6 @@ public class PlaceSignTask extends Task {
         this(null, message);
     }
 
-    private static boolean isSign(Block block) {
-        for (Block check : ItemUtil.WOOD_SIGNS_ALL) {
-            if (check == block) return true;
-        }
-        return false;
-    }
-
     @Override
     protected void onStart(AltoClef mod) {
         _finished = false;
@@ -86,7 +79,7 @@ public class PlaceSignTask extends Task {
         for (char c : _message.toCharArray()) {
             currentLine.append(c);
 
-            if (c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(currentLine.toString()) > SIGN_TEXT_MAX_WIDTH) {
+            if ( c == '\n' || MinecraftClient.getInstance().textRenderer.getWidth(currentLine.toString()) > SIGN_TEXT_MAX_WIDTH) {
                 currentLine.delete(0, currentLine.length());
                 if (c != '\n') {
                     currentLine.append(c);
@@ -129,7 +122,7 @@ public class PlaceSignTask extends Task {
             if (!task._message.equals(_message)) return false;
             if ((task._target == null) != (_target == null)) return false;
             if (task._target != null) {
-                return task._target.equals(_target);
+                if (!task._target.equals(_target)) return false;
             }
             return true;
         }
@@ -150,5 +143,12 @@ public class PlaceSignTask extends Task {
 
     private boolean editingSign() {
         return MinecraftClient.getInstance().currentScreen instanceof SignEditScreen;
+    }
+
+    private static boolean isSign(Block block) {
+        for(Block check : ItemUtil.WOOD_SIGNS_ALL) {
+            if (check == block) return true;
+        }
+        return false;
     }
 }

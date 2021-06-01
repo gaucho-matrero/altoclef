@@ -10,14 +10,14 @@ public abstract class Command {
 
     private AltoClef _mod;
 
-    private final ArgParser parser;
+    private ArgParser parser;
 
-    private final String _name;
-    private final String _description;
+    private String _name;
+    private String _description;
 
     private Consumer _onFinish = null;
 
-    public Command(String name, String description, ArgBase... args) {
+    public Command(String name, String description, ArgBase ...args) {
         _name = name;
         _description = description;
         parser = new ArgParser(args);
@@ -37,7 +37,8 @@ public abstract class Command {
         _onFinish = null;
     }
 
-    public String GetHelpRepresentation() {
+    public String GetHelpRepresentation()
+    {
         StringBuilder sb = new StringBuilder(_name);
         for (ArgBase arg : parser.getArgs()) {
             sb.append(" ");
@@ -46,11 +47,13 @@ public abstract class Command {
         return sb.toString();
     }
 
-    protected void Log(Object message) {
+    protected void Log(Object message)
+    {
         Debug.logMessage(message.toString());
     }
 
-    protected void LogError(Object message) {
+    protected void LogError(Object message)
+    {
         Debug.logError(message.toString());
     }
 
@@ -60,7 +63,5 @@ public abstract class Command {
         return _name;
     }
 
-    public String getDescription() {
-        return _description;
-    }
+    public String getDescription() { return _description; }
 }

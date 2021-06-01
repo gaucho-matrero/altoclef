@@ -16,7 +16,6 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
         _position = position;
         _preferStairs = preferStairs;
     }
-
     public GetToBlockTask(BlockPos position) {
         this(position, false);
     }

@@ -23,7 +23,6 @@ public abstract class RunAwayFromEntitiesTask extends CustomBaritoneGoalTask {
         _xz = xz;
         _penalty = penalty;
     }
-
     public RunAwayFromEntitiesTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun, double penalty) {
         this(toRunAwayFrom, distanceToRun, false, penalty);
     }

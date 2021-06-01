@@ -6,8 +6,6 @@ package adris.altoclef.util.progresscheck;
 
 public interface IProgressChecker<T> {
     void setProgress(T progress);
-
     boolean failed();
-
     void reset();
 }

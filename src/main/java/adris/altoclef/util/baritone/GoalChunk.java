@@ -7,7 +7,6 @@ import net.minecraft.util.math.ChunkPos;
 public class GoalChunk implements Goal {
 
     private final ChunkPos _pos;
-
     public GoalChunk(ChunkPos pos) {
         _pos = pos;
     }
@@ -15,7 +14,7 @@ public class GoalChunk implements Goal {
     @Override
     public boolean isInGoal(int x, int y, int z) {
         return _pos.getStartX() <= x && x <= _pos.getEndX() &&
-                _pos.getStartZ() <= z && z <= _pos.getEndZ();
+               _pos.getStartZ() <= z && z <= _pos.getEndZ();
     }
 
     @Override

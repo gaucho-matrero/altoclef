@@ -13,7 +13,7 @@ public class RunAwayFromPositionTask extends CustomBaritoneGoalTask {
 
     private final double _distance;
 
-    public RunAwayFromPositionTask(double distance, BlockPos... toRunAwayFrom) {
+    public RunAwayFromPositionTask(double distance, BlockPos ...toRunAwayFrom) {
         _distance = distance;
         _dangerBlocks = toRunAwayFrom;
     }
@@ -26,7 +26,7 @@ public class RunAwayFromPositionTask extends CustomBaritoneGoalTask {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof RunAwayFromPositionTask) {
-            return Util.arraysEqual(((RunAwayFromPositionTask) obj)._dangerBlocks, _dangerBlocks);
+            return Util.arraysEqual(((RunAwayFromPositionTask)obj)._dangerBlocks, _dangerBlocks);
         }
         return false;
     }

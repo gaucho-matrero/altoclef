@@ -17,12 +17,12 @@ public class ProjectileUtil {
     // If we shoot on a 2d plane, what is the 2d point on that trajectory closest to our player pos?
     private static Vec3d getClosestPointOnFlatLine(double shootX, double shootZ, double velX, double velZ, double playerX, double playerZ) {
         double deltaX = playerX - shootX,
-                deltaZ = playerZ - shootZ;
+               deltaZ = playerZ - shootZ;
         // Did da math I am smurt boi who knows basic calculus
-        double t = ((velX * deltaX) + (velZ * deltaZ)) / (velX * velX + velZ * velZ);
+        double t = ( (velX * deltaX) + (velZ * deltaZ) ) / (velX*velX + velZ*velZ);
 
         double hitX = shootX + velX * t,
-                hitZ = shootZ + velZ * t;
+               hitZ = shootZ + velZ * t;
 
         return new Vec3d(hitX, 0, hitZ);
     }
@@ -45,7 +45,7 @@ public class ProjectileUtil {
         Vec3d flatEncounter = getClosestPointOnFlatLine(shootOrigin.x, shootOrigin.z, shootVelocity.x, shootVelocity.z, playerOrigin.x, playerOrigin.z);
         double encounterDistanceTraveled = (flatEncounter.subtract(shootOrigin.x, flatEncounter.y, shootOrigin.z)).length();
 
-        double horizontalVel = Math.sqrt(shootVelocity.x * shootVelocity.x + shootVelocity.z * shootVelocity.z);
+        double horizontalVel = Math.sqrt(shootVelocity.x*shootVelocity.x + shootVelocity.z*shootVelocity.z);
         double verticalVel = shootVelocity.y;
         double initialHeight = shootOrigin.y;
 
@@ -57,7 +57,6 @@ public class ProjectileUtil {
     public static Vec3d calculateArrowClosestApproach(CachedProjectile projectile, Vec3d pos) {
         return calculateArrowClosestApproach(projectile.position, projectile.velocity, projectile.gravity, pos);
     }
-
     public static Vec3d calculateArrowClosestApproach(CachedProjectile projectile, ClientPlayerEntity player) {
         return calculateArrowClosestApproach(projectile, player.getPos());
     }
@@ -72,7 +71,7 @@ public class ProjectileUtil {
         double g = yGravity;
 
         // Cubic terms
-        double a = (g * g) / 2.0;
+        double a = (g*g) / 2.0;
         double b = -(3.0 * g * V.y) / 2.0;
         double c = V.lengthSquared() + (g * V.y);
         double d = -1 * V.dotProduct(D);
@@ -82,17 +81,18 @@ public class ProjectileUtil {
         // This will only happen when we reach either a local minimum or a local maximum.
 
         // Solution stuff, thanks https://math.vanderbilt.edu/schectex/courses/cubic/
-        double p = -b / (3.0 * a);
-        double q = (p * p * p) + (((b * c) - (3.0 * a * d)) / (6.0 * a * a));
-        double r = c / (3.0 * a);
+        double p = -b / (3.0*a);
+        double q = (p*p*p) + (((b*c) - (3.0*a*d)) / (6.0*a*a));
+        double r = c / (3.0*a);
 
-        double rootInner = (q * q) + Math.pow(r - p * p, 3);
+        double rootInner = (q*q) + Math.pow(r - p*p, 3);
 
         // Theoretically there could exist imaginary roots that will cancel themselves out, but that ought to be rare.
         // We will get an imaginary root somewhere so ignore it.
         if (rootInner < 0) return -1;
 
         rootInner = Math.sqrt(rootInner);
+
 
 
         double outerPreCubeLeft = q + rootInner;

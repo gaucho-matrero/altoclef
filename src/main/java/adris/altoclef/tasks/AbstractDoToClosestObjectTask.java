@@ -10,40 +10,36 @@ import java.util.Optional;
 
 /**
  * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- * <p>
+ *
  * Use this whenever you want to travel to a target position that may change.
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
-    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
     private T _currentlyPursuing = null;
-    private boolean _wasWandering;
-    private Task _goalTask = null;
+
+    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
-
     protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
-
     protected abstract Vec3d getOriginPos(AltoClef mod);
-
     protected abstract Task getGoalTask(T obj);
-
     protected abstract boolean isValid(AltoClef mod, T obj);
+
+    private boolean _wasWandering;
 
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
     }
 
+    private Task _goalTask = null;
+
     public void resetSearch() {
         _currentlyPursuing = null;
         _heuristicMap.clear();
         _goalTask = null;
     }
-
-    public boolean wasWandering() {
-        return _wasWandering;
-    }
+    public boolean wasWandering() {return _wasWandering;}
 
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();

@@ -1,3 +1,4 @@
+
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
@@ -22,10 +23,12 @@ public class GiveItemToPlayerTask extends Task {
     private final ItemTarget[] _targets;
 
     private final CataloguedResourceTask _resourceTask;
-    private final List<ItemTarget> _throwTarget = new ArrayList<>();
+
     private boolean _droppingItems;
 
-    public GiveItemToPlayerTask(String player, ItemTarget... targets) {
+    private final List<ItemTarget> _throwTarget = new ArrayList<>();
+
+    public GiveItemToPlayerTask(String player, ItemTarget ...targets) {
         _playerName = player;
         _targets = targets;
 

@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Keeps track of items that are in containers. Uses the blocktracker to verify container existance.
+ *
  */
 
 public class ContainerTracker extends Tracker {
@@ -95,7 +96,6 @@ public class ContainerTracker extends Tracker {
             onFurnaceOpen(_furnaceMap.getBlockPos(), screenHandler);
         }
     }
-
     public void onChestScreenOpen(GenericContainerScreenHandler screenHandler) {
         if (_chestMap.getBlockPos() != null) {
             onChestOpen(_chestMap.getBlockPos(), screenHandler);
@@ -106,7 +106,6 @@ public class ContainerTracker extends Tracker {
         _furnaceMap.setInteractBlock(pos);
         _furnaceMap.openContainer(screenHandler);
     }
-
     public void onChestOpen(BlockPos pos, GenericContainerScreenHandler screenHandler) {
         _chestMap.setInteractBlock(pos);
         _chestMap.openContainer(screenHandler);
@@ -115,10 +114,7 @@ public class ContainerTracker extends Tracker {
     public FurnaceMap getFurnaceMap() {
         return _furnaceMap;
     }
-
-    public ChestMap getChestMap() {
-        return _chestMap;
-    }
+    public ChestMap getChestMap() { return _chestMap; }
 
     abstract static class ContainerMap<T extends ScreenHandler> {
 
@@ -147,11 +143,8 @@ public class ContainerTracker extends Tracker {
         }
 
         protected abstract void updateContainer(BlockPos pos, T screenHandler);
-
         public abstract void updateBlocks();
-
         public abstract void deleteBlock(BlockPos pos);
-
         public abstract void clear();
     }
 
@@ -188,7 +181,7 @@ public class ContainerTracker extends Tracker {
                 ItemStack stack = screenHandler.getInventory().getStack(slotIndex);
                 if (!stack.isEmpty()) {
                     data.addItem(stack.getItem(), stack.getCount(), slotIndex);
-                    occupied++;
+                    occupied ++;
                 }
             }
             data.setOccupiedSlots(occupied);
@@ -224,7 +217,7 @@ public class ContainerTracker extends Tracker {
 
         private void validateItemChestMap(Item item) {
             //if (_chestsWithItem.containsKey(item)) {
-            // Remove if we're not tracking this block anymore.
+                // Remove if we're not tracking this block anymore.
             //    _chestsWithItem.get(item).removeIf(blockPos -> !_blockData.containsKey(blockPos));
             //}
         }
@@ -250,21 +243,17 @@ public class ContainerTracker extends Tracker {
             return result;
             //return new ArrayList<>();
         }
-
-        public List<BlockPos> getBlocksWithItem(ItemTarget... targets) {
+        public List<BlockPos> getBlocksWithItem(ItemTarget ...targets) {
             return getBlocksWithItem(targets, false);
         }
-
-        public List<BlockPos> getBlocksWithItem(Item... items) {
-            return getBlocksWithItem(new ItemTarget(items));
-        }
+        public List<BlockPos> getBlocksWithItem(Item ...items) { return getBlocksWithItem(new ItemTarget(items));}
     }
 
     public static class ChestData {
         public Instant _lastOpened;
 
-        private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
-        private final HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
+        private HashMap<Item, Integer> _itemCounts = new HashMap<>();
+        private HashMap<Item, List<Slot>> _itemSlots = new HashMap<>();
 
         private boolean _big;
 
@@ -277,37 +266,28 @@ public class ContainerTracker extends Tracker {
         public boolean isBig() {
             return _big;
         }
-
-        public void setBig(boolean big) {
-            _big = big;
-        }
-
         public void onOpen() {
             _lastOpened = Instant.now();
         }
-
         public long openedHowManyMillisecondsAgo() {
             return Instant.now().toEpochMilli() - _lastOpened.toEpochMilli();
         }
 
-        public boolean hasItem(Item... items) {
+        public boolean hasItem(Item ...items) {
             for (Item item : items) {
                 if (_itemCounts.containsKey(item)) return true;
             }
             return false;
         }
-
-        public boolean hasItem(ItemTarget... targets) {
+        public boolean hasItem(ItemTarget ...targets) {
             for (ItemTarget target : targets) {
                 if (hasItem(target.getMatches())) return true;
             }
             return false;
         }
-
         public int getItemCount(Item item) {
             return _itemCounts.getOrDefault(item, 0);
         }
-
         public List<Slot> getItemSlotsWithItem(Item item) {
             return _itemSlots.getOrDefault(item, new ArrayList<>());
         }
@@ -317,7 +297,6 @@ public class ContainerTracker extends Tracker {
             _itemSlots.clear();
             _occupiedSlots = 0;
         }
-
         public void addItem(Item item, int count, int slotIndex) {
             _itemCounts.putIfAbsent(item, 0);
             _itemCounts.put(item, _itemCounts.get(item) + count);
@@ -325,24 +304,23 @@ public class ContainerTracker extends Tracker {
             _itemSlots.get(item).add(new ChestSlot(slotIndex, _big));
         }
 
-        public int getOccupiedSlots() {
-            return _occupiedSlots;
-        }
+        public int getOccupiedSlots() {return _occupiedSlots;}
+        public void setOccupiedSlots(int slotCount) { _occupiedSlots = slotCount; }
 
-        public void setOccupiedSlots(int slotCount) {
-            _occupiedSlots = slotCount;
+        public void setBig(boolean big) {
+            _big = big;
         }
 
         public boolean isFull() {
-            return _occupiedSlots >= (_big ? 9 * 3 * 2 : 9 * 3);
+            return _occupiedSlots >= (_big? 9*3*2 : 9*3);
         }
     }
 
     public static class FurnaceMap extends ContainerMap<FurnaceScreenHandler> {
-        private final HashMap<BlockPos, FurnaceData> _blockData = new HashMap<>();
-        private final HashMap<Item, List<BlockPos>> _materialMap = new HashMap<>();
+        private HashMap<BlockPos, FurnaceData> _blockData = new HashMap<>();
+        private HashMap<Item, List<BlockPos>> _materialMap = new HashMap<>();
 
-        private final AltoClef _mod;
+        private AltoClef _mod;
 
         public FurnaceMap(AltoClef mod) {
             _mod = mod;
@@ -352,9 +330,7 @@ public class ContainerTracker extends Tracker {
             return _blockData.containsKey(pos);
         }
 
-        public FurnaceData getFurnaceData(BlockPos pos) {
-            return _blockData.get(pos);
-        }
+        public FurnaceData getFurnaceData(BlockPos pos) { return _blockData.get(pos); }
 
         public List<BlockPos> getFurnacesWithMaterial(Item item) {
             if (_materialMap.containsKey(item)) {
@@ -392,7 +368,7 @@ public class ContainerTracker extends Tracker {
             // Get when we expect the furnace to finish cooking.
 
             int remaining = materials.getCount();
-            int remainingTicks = (int) ((double) remaining - InventoryTracker.getFurnaceCookPercent(screenHandler)) * 200;
+            int remainingTicks = (int) ((double)remaining - InventoryTracker.getFurnaceCookPercent(screenHandler) ) * 200;
 
 
             int currentTicks = _mod.getTicks();
@@ -461,7 +437,6 @@ public class ContainerTracker extends Tracker {
         public int getExpectedTicksRemaining(int currentTick) {
             return _tickExpectedEnd - currentTick;
         }
-
         public double getExpectedSecondsRemaining(int currentTick, double tps) {
             return getExpectedTicksRemaining(currentTick) * tps;
         }

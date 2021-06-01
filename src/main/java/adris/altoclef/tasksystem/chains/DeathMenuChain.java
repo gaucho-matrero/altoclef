@@ -12,25 +12,27 @@ import net.minecraft.client.network.ServerInfo;
 
 public class DeathMenuChain extends TaskChain {
 
-    // Sometimes we fuck up, so we might want to retry considering the death screen.
-    private final Timer _deathRetryTimer = new Timer(8);
-    ServerInfo _prevServerEntry = null;
-    private final Timer _reconnectTimer = new Timer(1);
-    private boolean _reconnecting = false;
-    private int _deathCount = 0;
-    private Class _prevScreen = null;
+    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
+    private boolean shouldAutoReconnect(AltoClef mod) {
+        return mod.getModSettings().isAutoReconnect();
+    }
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
 
-    private boolean shouldAutoRespawn(AltoClef mod) {
-        return mod.getModSettings().isAutoRespawn();
-    }
+    private boolean _reconnecting = false;
 
-    private boolean shouldAutoReconnect(AltoClef mod) {
-        return mod.getModSettings().isAutoReconnect();
-    }
+    ServerInfo _prevServerEntry = null;
+
+    private Timer _reconnectTimer = new Timer(1);
+
+    private int _deathCount = 0;
+
+    private Class _prevScreen = null;
+
+    // Sometimes we fuck up, so we might want to retry considering the death screen.
+    private final Timer _deathRetryTimer = new Timer(8);
 
     @Override
     protected void onStop(AltoClef mod) {
