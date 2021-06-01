@@ -16,7 +16,10 @@ import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.SCP173Task;
 import adris.altoclef.tasks.stupid.TerminatorTask;
-import adris.altoclef.util.*;
+import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -348,7 +351,9 @@ public class AltoClefCommands extends CommandList {
             case "example":
                 mod.runUserTask(new ExampleTask2());
                 break;
+
         }
+
     }
 
     public AltoClefCommands(CommandExecutor executor) throws CommandException {
@@ -369,7 +374,8 @@ public class AltoClefCommands extends CommandList {
             new FoodCommand(),
             new ReloadSettingsCommand(),
             new GamerCommand(),
-            new PunkCommand()
+            new PunkCommand(),
+                new SetGammaCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );
