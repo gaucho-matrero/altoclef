@@ -174,7 +174,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         for(ItemTarget target : targets) {
-            if (getItemCount(target) < target.targetCount) {
+            if (getItemCountIncludingTable(false, target.getMatches()) < target.targetCount) {
                 return false;
             }
         }
