@@ -46,6 +46,26 @@ public class Settings {
      */
     private float resourcePickupDropRange = -1;
 
+
+
+
+    /**
+     * minumum amount of food to have in the inventory.
+     * if we have less food than this value the bot will go pickup some more.
+     */
+
+    private int minimumFoodAllowed = 0;
+
+
+
+    /**
+     *  amount of food to collect when the food in inventory
+     *  is lower than the value of foodUnitsThreshold
+     */
+
+    private int foodUnitsToCollect = 0;
+
+
     /**
      * Chests are cached for their contents.
      *
@@ -354,19 +374,34 @@ public class Settings {
 
     public float getResourcePickupRange() {return resourcePickupDropRange;}
 
-    public float getResourceChestLocateRange() {return resourceChestLocateRange;}
+    public float getResourceChestLocateRange() {
+        return resourceChestLocateRange;
+    }
 
-    public float getResourceMineRange() {return resourceMineRange;}
+    public float getResourceMineRange() {
+        return resourceMineRange;
+    }
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
     }
 
+    public int getFoodUnitsToCollect() {
+        return foodUnitsToCollect;
+    }
+
+    public int getMinimumFoodAllowed() {
+        return minimumFoodAllowed;
+    }
+
+
     public boolean isMobDefense() {
         return mobDefense;
     }
+
     public void setMobDefense(boolean mobDefense) {
-        this.mobDefense = mobDefense; markDirty();
+        this.mobDefense = mobDefense;
+        markDirty();
     }
 
     public boolean isDodgeProjectiles() {
