@@ -1,5 +1,10 @@
 package adris.altoclef.tasksystem.chains;
 
+import adris.altoclef.AltoClef;
+import adris.altoclef.Settings;
+import adris.altoclef.tasks.resources.CollectFoodTask;
+import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.LookUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.effect.StatusEffects;
@@ -7,12 +12,6 @@ import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-
-import adris.altoclef.AltoClef;
-import adris.altoclef.Settings;
-import adris.altoclef.tasks.resources.CollectFoodTask;
-import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.LookUtil;
 
 public class FoodChain extends SingleTaskChain {
 
@@ -40,8 +39,6 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
-
-
         /*
         - Eats if:
         - We're hungry and have food that fits
@@ -56,12 +53,18 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
+        boolean hasFood = mod.getInventoryTracker().totalFoodScore() != 0;
+
         // If we requested a fillup but we're full, stop.
         if (_requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() == 20) {
             _requestFillup = false;
         }
+        // If we no longer have food, we no longer can eat.
+        if (!hasFood) {
+            _requestFillup = false;
+        }
 
-        if (needsToEat(mod) || _requestFillup) {
+        if (hasFood && (needsToEat(mod) || _requestFillup)) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
                 //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
@@ -86,13 +89,15 @@ public class FoodChain extends SingleTaskChain {
 
         int foodScore = mod.getInventoryTracker().totalFoodScore();
 
-        if (_needsFood || foodScore <= settings.getFoodUnitsThreshold())
-        {
-
+        if (_needsFood || foodScore < settings.getMinimumFoodAllowed()) {
             _needsFood = foodScore < settings.getFoodUnitsToCollect();
 
-            setTask(new CollectFoodTask(settings.getFoodUnitsToCollect()));
-            return 55f;
+            // Only collect if we don't have enough food.
+            // If the user inputs invalid settings, the bot would get stuck here.
+            if (foodScore < settings.getFoodUnitsToCollect()) {
+                setTask(new CollectFoodTask(settings.getFoodUnitsToCollect()));
+                return 55f;
+            }
         }
 
 
@@ -149,7 +154,7 @@ public class FoodChain extends SingleTaskChain {
             int need = 20 - foodLevel;
             Item best = getBestItemToEat(mod);
             int fills = (best != null && best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
-            if (fills == need) return true;
+            return fills == need;
         }
 
         return false;
@@ -217,7 +222,6 @@ public class FoodChain extends SingleTaskChain {
         float health = mod.getPlayer().getHealth();
         int armor = mod.getPlayer().getArmor();
         if (health < 3 && foodLevel < 3) return false; // RUN NOT EAT
-        if (armor >= 15 && foodLevel < 3) return true; // EAT WE CAN TAKE A FEW HITS
-        return false;
+        return armor >= 15 && foodLevel < 3; // EAT WE CAN TAKE A FEW HITS
     }
 }

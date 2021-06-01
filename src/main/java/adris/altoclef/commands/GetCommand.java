@@ -6,7 +6,6 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.tasks.GetResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 

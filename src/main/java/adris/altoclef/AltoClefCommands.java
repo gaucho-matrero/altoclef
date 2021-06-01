@@ -16,7 +16,10 @@ import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.SCP173Task;
 import adris.altoclef.tasks.stupid.TerminatorTask;
-import adris.altoclef.util.*;
+import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -372,7 +375,7 @@ public class AltoClefCommands extends CommandList {
             new ReloadSettingsCommand(),
             new GamerCommand(),
             new PunkCommand(),
-            new FullBrightCommand()
+                new SetGammaCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );

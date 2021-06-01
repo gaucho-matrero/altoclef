@@ -54,7 +54,7 @@ public class Settings {
      * if we have less food than this value the bot will go pickup some more.
      */
 
-    private int foodUnitsThreshold = -1;
+    private int minimumFoodAllowed = 0;
 
 
 
@@ -374,24 +374,34 @@ public class Settings {
 
     public float getResourcePickupRange() {return resourcePickupDropRange;}
 
-    public float getResourceChestLocateRange() {return resourceChestLocateRange;}
+    public float getResourceChestLocateRange() {
+        return resourceChestLocateRange;
+    }
 
-    public float getResourceMineRange() {return resourceMineRange;}
+    public float getResourceMineRange() {
+        return resourceMineRange;
+    }
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
     }
 
-    public int getFoodUnitsToCollect() {return foodUnitsToCollect;}
+    public int getFoodUnitsToCollect() {
+        return foodUnitsToCollect;
+    }
 
-    public int getFoodUnitsThreshold() {return foodUnitsThreshold;}
+    public int getMinimumFoodAllowed() {
+        return minimumFoodAllowed;
+    }
 
 
     public boolean isMobDefense() {
         return mobDefense;
     }
+
     public void setMobDefense(boolean mobDefense) {
-        this.mobDefense = mobDefense; markDirty();
+        this.mobDefense = mobDefense;
+        markDirty();
     }
 
     public boolean isDodgeProjectiles() {
