@@ -6,18 +6,13 @@ import adris.altoclef.util.csharpisbetter.Util;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -27,7 +22,6 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +34,11 @@ import java.util.List;
 public class Settings {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";
+
+    // Internal only.
+    // If settings failed to load, this will be set to warn the user.
+    @JsonIgnore
+    private transient boolean _failedToLoad = false;
 
     /**
      * If true, text will appear on the top left showing the current
@@ -337,15 +336,24 @@ public class Settings {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        Settings result = null;
+        Settings result = new Settings(); // Defaults
         try {
             result = mapper.readValue(Paths.get(SETTINGS_PATH).toFile(), Settings.class);
+        } catch (JsonMappingException ex) {
+            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". JSON Error Message: " + ex.getMessage() + ".\n JSON Error STACK TRACE:\n\n");
+            result._failedToLoad = true;
+            ex.printStackTrace();
         } catch (IOException e) {
+            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". IOException.");
+            result._failedToLoad = true;
             e.printStackTrace();
         }
 
-        //result.markDirty();
-        result.save();
+        // Save over to include NEW settings
+        // but only if a load was successful. Don't want to override user settings!
+        if (!result.failedToLoad()) {
+            result.save();
+        }
 
         for (ProtectionRange protection : result.areasToProtect) {
             Debug.logInternal("Debug: Protection range: " + protection);
@@ -374,6 +382,8 @@ public class Settings {
         save(this);
         //_dirty = false;
     }
+
+    public boolean failedToLoad() { return _failedToLoad; }
 
     public boolean shouldShowTaskChain() { return showTaskChains; }
     public float getSpeedHack() {
@@ -516,15 +526,18 @@ public class Settings {
             if (p.getCurrentToken() != JsonToken.START_ARRAY) {
                 throw new JsonParseException("Start array expected", p.getCurrentLocation());
             }
-
-            while (p.getCurrentToken() != JsonToken.END_ARRAY) {
-                String itemKey = p.nextTextValue();
-                if (p.getCurrentToken() == JsonToken.END_ARRAY) {
-                    break;
+            while (p.nextToken() != JsonToken.END_ARRAY) {
+                Item item;
+                if (p.getCurrentToken() == JsonToken.VALUE_NUMBER_INT) {
+                    // Old raw id (ew stinky)
+                    int rawId = p.getIntValue();
+                    item = Item.byRawId(rawId);
+                } else {
+                    // Translation key (the proper way)
+                    String itemKey = p.getText();
+                    itemKey = ItemUtil.trimItemName(itemKey);
+                    item = Registry.ITEM.get(new Identifier(itemKey));
                 }
-                itemKey = ItemUtil.trimItemName(itemKey);
-                Debug.logInternal("(KEY: " + itemKey + ")");
-                Item item = Registry.ITEM.get(new Identifier(itemKey));
                 result.add(item);
             }
 
