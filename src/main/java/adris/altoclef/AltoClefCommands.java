@@ -55,7 +55,8 @@ public class AltoClefCommands extends CommandList {
             new FoodCommand(),
             new ReloadSettingsCommand(),
             new GamerCommand(),
-            new PunkCommand()
+            new PunkCommand(),
+                new SetGammaCommand()
             //new TestMoveInventoryCommand(),
             //    new TestSwapInventoryCommand()
         );

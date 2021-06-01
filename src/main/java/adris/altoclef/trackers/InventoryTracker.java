@@ -1,15 +1,15 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
-import adris.altoclef.util.ItemTarget;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -29,11 +29,11 @@ public class InventoryTracker extends Tracker {
     // inventory.size goes to 40, including armor + shield slot which we will ignore.
     public static final int INVENTORY_SIZE = 36;
 
-    private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[] {Items.COAL, Items.CHARCOAL};
+    private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[]{Items.COAL, Items.CHARCOAL};
 
-    private HashMap<Item, Integer> _itemCounts = new HashMap<>();
-    private HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
-    private List<Integer> _foodSlots = new ArrayList<>();
+    private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
+    private final HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
+    private final List<Integer> _foodSlots = new ArrayList<>();
 
     private static Map<Item, Integer> _fuelTimeMap = null;
 
@@ -108,10 +108,19 @@ public class InventoryTracker extends Tracker {
         return getItemCount(target.getMatches());
     }
 
-    public int getItemCountIncludingTable(Item ...items) {
+    public int getItemCountIncludingTable(ItemTarget... targets) {
+        int sum = 0;
+        for (ItemTarget target : targets) {
+            sum += getItemCountIncludingTable(target.getMatches());
+        }
+        return sum;
+    }
+
+    public int getItemCountIncludingTable(Item... items) {
         return getItemCountIncludingTable(true, items);
     }
-    public int getItemCountIncludingTable(boolean includeOutput, Item ...items) {
+
+    public int getItemCountIncludingTable(boolean includeOutput, Item... items) {
         int result = getItemCount(items);
         ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
         if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
@@ -167,7 +176,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         for(ItemTarget target : targets) {
-            if (getItemCount(target) < target.getTargetCount()) {
+            if (getItemCountIncludingTable(false, target.getMatches()) < target.getTargetCount()) {
                 return false;
             }
         }

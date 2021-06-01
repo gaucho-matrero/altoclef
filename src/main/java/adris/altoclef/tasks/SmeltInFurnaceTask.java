@@ -9,7 +9,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -154,7 +153,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // If materials are already in the furnace, we need less of them.
             if (!_ignoreMaterials) {
                 int materialsNeeded = _target.getMaterial().getTargetCount();
-                materialsNeeded -= mod.getInventoryTracker().getItemCount(_target.getItem());
+                materialsNeeded -= mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
                 if (_currentFurnace != null) {
                     if (_target.getMaterial().matches(_currentFurnace.materials.getItem())) {
                         materialsNeeded -= _currentFurnace.materials.getCount();
@@ -179,20 +178,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             boolean needsNewFurnace = getTargetContainerPosition() == null;
 
-            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCount(_target.getItem());
+            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
 
             double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
-
-            if (needsNewFurnace) {
-                // Special case: Allocate 4 wood for the crafting of the table,
-                // and 2 sticks if we want to make a wooden pickaxe.
-                boolean planksProtected = mod.getBehaviour().isProtected(Items.OAK_PLANKS);
-                boolean sticksProtected = mod.getBehaviour().isProtected(Items.STICK);
-                int plankCount = planksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.PLANKS), 4);
-                int stickCount = sticksProtected ? 0 : Math.min(mod.getInventoryTracker().getItemCountIncludingTable(Items.STICK), 2);
-                hasFuel -= InventoryTracker.getFuelAmount(Items.OAK_PLANKS) * plankCount;
-                hasFuel -= InventoryTracker.getFuelAmount(Items.STICK) * stickCount;
-            }
 
             if (_ignoreMaterials) {
                 // Start our fuel off at just one until we find our furnace.
