@@ -1,5 +1,7 @@
 package adris.altoclef.util;
 
+import net.minecraft.item.Item;
+
 import java.util.Objects;
 
 public class SmeltTarget {

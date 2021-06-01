@@ -11,6 +11,7 @@ import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.Item;
@@ -20,6 +21,7 @@ import net.minecraft.util.Hand;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 public class CollectWoolTask extends ResourceTask {
 

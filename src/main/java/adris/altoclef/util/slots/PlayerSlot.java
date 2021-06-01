@@ -1,6 +1,7 @@
 
 package adris.altoclef.util.slots;
 
+import adris.altoclef.Debug;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 

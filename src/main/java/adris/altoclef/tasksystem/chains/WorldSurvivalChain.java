@@ -5,6 +5,7 @@ import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Timer;
 import baritone.api.utils.input.Input;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {

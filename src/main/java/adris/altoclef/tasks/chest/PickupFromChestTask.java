@@ -8,6 +8,7 @@ import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.screen.GenericContainerScreenHandler;

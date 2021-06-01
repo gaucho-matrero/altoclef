@@ -2,6 +2,7 @@ package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;

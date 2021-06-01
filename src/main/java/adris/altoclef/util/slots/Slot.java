@@ -1,12 +1,14 @@
 package adris.altoclef.util.slots;
 
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.MineAndCollectTask;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 
 // Very helpful links
 // Container Window Slots (used to move stuff around all containers, including player):

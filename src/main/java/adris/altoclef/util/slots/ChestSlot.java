@@ -1,5 +1,7 @@
 package adris.altoclef.util.slots;
 
+import adris.altoclef.Debug;
+
 public class ChestSlot extends Slot {
 
     private final boolean _big;

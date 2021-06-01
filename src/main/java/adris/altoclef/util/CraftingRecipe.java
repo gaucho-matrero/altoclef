@@ -1,9 +1,11 @@
 package adris.altoclef.util;
 
 import adris.altoclef.Debug;
+import adris.altoclef.trackers.InventoryTracker;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class CraftingRecipe {
 

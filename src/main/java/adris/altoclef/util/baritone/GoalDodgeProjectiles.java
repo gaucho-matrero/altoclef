@@ -5,6 +5,8 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import baritone.api.pathing.goals.Goal;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;

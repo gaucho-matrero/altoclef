@@ -5,9 +5,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.Item;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ItemTarget {
 

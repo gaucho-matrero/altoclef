@@ -1,7 +1,9 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasksystem.Task;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 
 public class KillEntityTask extends AbstractKillEntityTask {
 

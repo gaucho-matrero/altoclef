@@ -1,6 +1,7 @@
 package adris.altoclef.util;
 
 import adris.altoclef.Debug;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;

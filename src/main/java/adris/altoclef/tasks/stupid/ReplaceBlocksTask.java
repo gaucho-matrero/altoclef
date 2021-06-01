@@ -18,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Stack;
 
 public class ReplaceBlocksTask extends Task {
 

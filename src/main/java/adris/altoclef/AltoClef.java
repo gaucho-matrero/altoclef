@@ -1,15 +1,15 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
-import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.tasks.misc.IdleTask;
+import adris.altoclef.ui.MessagePriority;
+import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.tasksystem.chains.*;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
-import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;

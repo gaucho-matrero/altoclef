@@ -6,15 +6,21 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Pair;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class CraftGenericTask extends Task {
