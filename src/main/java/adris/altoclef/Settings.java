@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -23,10 +24,7 @@ import net.minecraft.util.registry.Registry;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("ALL")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -336,6 +334,10 @@ public class Settings {
         }
 
         ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(BlockPos.class, new BlockPosDeserializer());
+        mapper.registerModule(module);
+
         Settings result = new Settings(); // Defaults
         try {
             result = mapper.readValue(Paths.get(SETTINGS_PATH).toFile(), Settings.class);
@@ -364,6 +366,10 @@ public class Settings {
 
     private static void save(Settings settings) {
         ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(BlockPos.class, new BlockPosSerializer());
+        mapper.registerModule(module);
+
         try {
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
@@ -544,4 +550,79 @@ public class Settings {
             return result;
         }
     }
-}
+
+    static class BlockPosSerializer extends StdSerializer<BlockPos> {
+        public BlockPosSerializer() {
+            this(null);
+        }
+        public BlockPosSerializer(Class<BlockPos> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(BlockPos value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeString(value.getX() + ", " + value.getY() + ", " + value.getZ());
+        }
+    }
+    static class BlockPosDeserializer extends StdDeserializer<BlockPos> {
+        public BlockPosDeserializer() {
+            this(null);
+        }
+        public BlockPosDeserializer(Class<BlockPos> vc) {
+            super(vc);
+        }
+
+        int trySet(JsonParser p, Map<String, Integer> map, String key) throws JsonParseException {
+            if (map.containsKey(key)) {
+                return map.get(key);
+            }
+            throw new JsonParseException(p, "Blockpos should have key for " + key + " key, but one was not found.");
+        }
+        int tryParse(JsonParser p, String whole, String part) throws JsonParseException {
+            try {
+                return Integer.parseInt(part.trim());
+            } catch (NumberFormatException e) {
+                throw new JsonParseException(p, "Failed to parse blockpos string \""
+                        + whole + "\", specificaly part \"" + part + "\".");
+            }
+        }
+
+        @Override
+        public BlockPos deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            if (p.getCurrentToken() == JsonToken.VALUE_STRING) {
+                String bposString = p.getValueAsString();
+                String[] parts = bposString.split(",");
+                if (parts.length != 3) {
+                    throw new JsonParseException(p, "Invalid blockpos string: \"" + bposString + "\", must be in form \"x, y, z\".");
+                }
+                int x = tryParse(p, bposString, parts[0]);
+                int y = tryParse(p, bposString, parts[1]);
+                int z = tryParse(p, bposString, parts[2]);
+                return new BlockPos(x, y, z);
+            } else if (p.getCurrentToken() == JsonToken.START_OBJECT) {
+                Map<String, Integer> parts = new HashMap<>();
+                p.nextToken();
+                while (p.getCurrentToken() != JsonToken.END_OBJECT) {
+                    if (p.getCurrentToken() == JsonToken.FIELD_NAME) {
+                        String fName = p.getCurrentName();
+                        p.nextToken();
+                        if (p.getCurrentToken() != JsonToken.VALUE_NUMBER_INT) {
+                            throw new JsonParseException(p, "Expecting integer token for blockpos. Got: " + p.getCurrentToken());
+                        }
+                        parts.put(p.getCurrentName(), p.getIntValue());
+                        p.nextToken();
+                    } else {
+                        throw new JsonParseException(p, "Invalid structure, expected field name (like x, y or z)");
+                    }
+                }
+                if (parts.size() != 3) {
+                    throw new JsonParseException(p, "Expected [x, y, z] keys to be part of a blockpos object. Got " + Util.arrayToString(Util.toArray(String.class, parts.keySet())));
+                }
+                int x = trySet(p, parts, "x");
+                int y = trySet(p, parts, "y");
+                int z = trySet(p, parts, "z");
+                return new BlockPos(x, y, z);
+            }
+            throw new JsonParseException(p, "Invalid token: " + p.getCurrentToken());
+        }
+    }}
