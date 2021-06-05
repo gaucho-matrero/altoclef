@@ -17,7 +17,7 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -66,14 +66,14 @@ public class TerminatorTask extends Task {
     private final Task _foodTask = new CollectFoodTask(100);
 
     private Task _runAwayTask;
-    private final Timer _runAwayExtraTime = new Timer(10);
+    private final TimerGame _runAwayExtraTime = new TimerGame(10);
 
     private final Predicate<PlayerEntity> _ignoreTerminate;
 
     private final ScanChunksInRadius _scanTask;
 
     private String _currentVisibleTarget;
-    private final Timer _funnyMessageTimer = new Timer(10);
+    private final TimerGame _funnyMessageTimer = new TimerGame(10);
 
     public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> ignorePredicate) {
         _ignoreTerminate = ignorePredicate;

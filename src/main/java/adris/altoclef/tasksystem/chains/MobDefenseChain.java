@@ -14,7 +14,7 @@ import adris.altoclef.util.KillAura;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -54,7 +54,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private boolean _wasPuttingOutFire = false;
 
-    private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
+    private final HashMap<Entity, TimerGame> _closeAnnoyingEntities = new HashMap<>();
 
     private Task _runAwayTask;
 
@@ -170,7 +170,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     // Give each hostile a timer, if they're close for too long deal with them.
                     if (isClose) {
                         if (!_closeAnnoyingEntities.containsKey(hostile)) {
-                            _closeAnnoyingEntities.put(hostile, new Timer(12));
+                            _closeAnnoyingEntities.put(hostile, new TimerGame(12));
                             _closeAnnoyingEntities.get(hostile).reset();
                         }
                         if (_closeAnnoyingEntities.get(hostile).elapsed()) {

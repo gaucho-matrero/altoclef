@@ -7,7 +7,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
@@ -108,7 +108,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private boolean _fullCheckFailed = false;
     private int _craftCount;
 
-    private final Timer _craftResetTimer = new Timer(10);
+    private final TimerGame _craftResetTimer = new TimerGame(10);
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");

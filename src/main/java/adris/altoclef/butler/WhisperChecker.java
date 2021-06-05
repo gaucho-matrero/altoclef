@@ -2,7 +2,7 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class WhisperChecker {
 
-    private static final Timer _repeatTimer = new Timer(0.1);
+    private static final TimerGame _repeatTimer = new TimerGame(0.1);
 
     private static String _lastMessage = null;
 

@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.ChestSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
@@ -32,7 +32,7 @@ public class ContainerTracker extends Tracker {
     private final ChestMap _chestMap;
     private final FurnaceMap _furnaceMap;
 
-    private final Timer _updateTimer = new Timer(10);
+    private final TimerGame _updateTimer = new TimerGame(10);
 
     // We can't get the contents of the screen until the server ticks once.
     private Screen _awaitingScreen = null;

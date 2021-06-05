@@ -267,7 +267,8 @@ public class AltoClef implements ModInitializer {
 
     public MessageSender getMessageSender() {return _messageSender;}
 
-    public int getTicks() {
+    // uh oh static
+    public static int getTicks() {
         ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
         return ((ClientConnectionAccessor)con).getTicks();
     }
@@ -304,8 +305,9 @@ public class AltoClef implements ModInitializer {
 
 
     // Are we in game (playing in a server/world)
-    public boolean inGame() {
-        return getPlayer() != null;
+    // uh oh, static creep
+    public static boolean inGame() {
+        return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
     }
 
     public Dimension getCurrentDimension() {

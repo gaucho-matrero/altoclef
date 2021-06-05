@@ -14,7 +14,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -34,7 +34,7 @@ public class CollectObsidianTask extends ResourceTask {
 
     private Task _forceCompleteTask = null;
 
-    private final Timer _placeWaterTimeout = new Timer(6);
+    private final TimerGame _placeWaterTimeout = new TimerGame(6);
 
     private final MovementProgressChecker _lavaTimeout = new MovementProgressChecker();
 

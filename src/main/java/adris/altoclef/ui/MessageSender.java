@@ -1,7 +1,8 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.BaseTimer;
+import adris.altoclef.util.csharpisbetter.TimerReal;
 import net.minecraft.client.MinecraftClient;
 
 import java.util.Comparator;
@@ -23,9 +24,9 @@ public class MessageSender {
     );
     //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
-    private final Timer _fastSendTimer = new Timer(0.3f);
-    private final Timer _bigSendTimer = new Timer(3.5);
-    private final Timer _bigBigSendTimer = new Timer(10);
+    private final BaseTimer _fastSendTimer = new TimerReal(0.3f);
+    private final BaseTimer _bigSendTimer = new TimerReal(3.5);
+    private final BaseTimer _bigBigSendTimer = new TimerReal(10);
 
     private int _messageCounter = 0;
 

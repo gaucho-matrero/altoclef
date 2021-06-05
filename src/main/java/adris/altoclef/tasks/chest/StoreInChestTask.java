@@ -2,11 +2,10 @@ package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.ChestSlot;
 import adris.altoclef.util.slots.Slot;
@@ -19,7 +18,7 @@ import java.util.List;
 public class StoreInChestTask extends AbstractDoInChestTask {
 
     private final ItemTarget[] _targets;
-    private final Timer _actionTimer = new Timer(0);
+    private final TimerGame _actionTimer = new TimerGame(0);
 
     private final BlockPos _targetChest;
 

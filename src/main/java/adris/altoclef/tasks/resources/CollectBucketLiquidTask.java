@@ -11,7 +11,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.input.Input;
@@ -45,8 +45,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
     private BlockPos _targetLiquid;
 
-    private final Timer _tryImmediatePickupTimer = new Timer(3);
-    private final Timer _pickedUpTimer = new Timer(0.5);
+    private final TimerGame _tryImmediatePickupTimer = new TimerGame(3);
+    private final TimerGame _pickedUpTimer = new TimerGame(0.5);
 
     private MovementProgressChecker _progressChecker = new MovementProgressChecker();
 

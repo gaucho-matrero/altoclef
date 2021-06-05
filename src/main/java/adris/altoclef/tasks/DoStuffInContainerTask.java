@@ -5,7 +5,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
@@ -38,10 +38,10 @@ public abstract class DoStuffInContainerTask extends Task {
 
 
     // If we decided on placing, force place for at least 10 seconds
-    private final Timer _placeForceTimer = new Timer(10);
+    private final TimerGame _placeForceTimer = new TimerGame(10);
 
     // If we just placed something, stop placing and try going to the nearest container.
-    private final Timer _justPlacedTimer = new Timer(3);
+    private final TimerGame _justPlacedTimer = new TimerGame(3);
 
     private Task _openTableTask;
 

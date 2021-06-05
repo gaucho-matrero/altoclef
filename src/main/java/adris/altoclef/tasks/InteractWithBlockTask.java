@@ -9,7 +9,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
 import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
@@ -47,7 +47,7 @@ public class InteractWithBlockTask extends Task {
 
     private final boolean _shiftClick;
 
-    private final Timer _clickTimer = new Timer(5);
+    private final TimerGame _clickTimer = new TimerGame(5);
 
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);

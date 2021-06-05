@@ -8,7 +8,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorInventorySlot;
@@ -34,7 +34,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final MiningRequirement _requirement;
 
-    private final Timer _cursorStackTimer = new Timer(3);
+    private final TimerGame _cursorStackTimer = new TimerGame(3);
 
     private final MineOrCollectTask _subtask;
 

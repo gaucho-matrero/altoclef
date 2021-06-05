@@ -1,6 +1,6 @@
 package adris.altoclef.util;
 
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Type;
@@ -11,7 +11,7 @@ public class CachedProjectile {
     public double gravity;
     public Type projectileType;
 
-    private Timer _lastCache = new Timer(2);
+    private TimerGame _lastCache = new TimerGame(2);
     private Vec3d _cachedHit;
     private boolean _cacheHeld = false;
 

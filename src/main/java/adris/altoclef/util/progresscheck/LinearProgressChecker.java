@@ -1,6 +1,6 @@
 package adris.altoclef.util.progresscheck;
 
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 
 /**
  * Simple progress checker that requires we always make progress.
@@ -8,7 +8,7 @@ import adris.altoclef.util.csharpisbetter.Timer;
 public class LinearProgressChecker implements IProgressChecker<Double> {
 
     private final double _minProgress;
-    private final Timer _timer;
+    private final TimerGame _timer;
 
     private double _lastProgress;
     private double _currentProgress;
@@ -19,7 +19,7 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
 
     public LinearProgressChecker(double timeout, double minProgress) {
         _minProgress = minProgress;
-        _timer = new Timer(timeout);
+        _timer = new TimerGame(timeout);
         reset();
     }
 

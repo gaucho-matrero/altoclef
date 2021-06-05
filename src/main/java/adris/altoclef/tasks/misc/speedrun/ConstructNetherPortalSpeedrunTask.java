@@ -10,7 +10,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -34,7 +34,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
 
     // Corresponds to the LEFT most side of where the player will stand on the portal.
     private BlockPos _portalOrigin = null;
-    private final Timer _lavaSearchTimer = new Timer(5);
+    private final TimerGame _lavaSearchTimer = new TimerGame(5);
 
     private final adris.altoclef.tasksystem.Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
 
@@ -114,10 +114,10 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
 
     private boolean _firstSearch = false;
 
-    private final Timer _placeLavaWeCanBreakAgainTimer = new Timer(5);
+    private final TimerGame _placeLavaWeCanBreakAgainTimer = new TimerGame(5);
 
-    private final Timer _specialBottomCaseCloserTimer = new Timer(10);
-    private final Timer _specialBottomCaseCloserTimerForcePlace = new Timer(5);
+    private final TimerGame _specialBottomCaseCloserTimer = new TimerGame(10);
+    private final TimerGame _specialBottomCaseCloserTimerForcePlace = new TimerGame(5);
 
     @Override
     protected void onStart(AltoClef mod) {

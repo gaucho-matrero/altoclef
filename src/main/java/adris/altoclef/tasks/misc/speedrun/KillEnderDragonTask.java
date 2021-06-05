@@ -10,7 +10,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.GoalAnd;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
@@ -48,7 +48,7 @@ import java.util.List;
 public class KillEnderDragonTask extends Task {
 
     // Don't accidentally anger endermen lol
-    private final Timer _lookDownTimer = new Timer(0.5);
+    private final TimerGame _lookDownTimer = new TimerGame(0.5);
 
     private final Task _collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100), new Block[] {Blocks.END_STONE}, MiningRequirement.WOOD);
 
@@ -200,10 +200,10 @@ public class KillEnderDragonTask extends Task {
 
         private Mode _mode = Mode.WAITING_FOR_PERCH;
 
-        private final Timer _hitHoldTimer = new Timer(0.1);
-        private final Timer _hitResetTimer = new Timer(2);
+        private final TimerGame _hitHoldTimer = new TimerGame(0.1);
+        private final TimerGame _hitResetTimer = new TimerGame(2);
 
-        private final Timer _randomWanderChangeTimeout = new Timer(20);
+        private final TimerGame _randomWanderChangeTimeout = new TimerGame(20);
         /*
         private final Timer _dragonPerchChecker = new Timer(3);
         private static final double DRAGON_PERCH_ORBIT_RADIUS = 10;

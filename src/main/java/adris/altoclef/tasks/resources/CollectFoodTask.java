@@ -10,7 +10,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -61,7 +61,7 @@ public class CollectFoodTask extends Task {
     private SmeltInFurnaceTask _smeltTask = null;
 
     private Task _currentResourceTask = null;
-    private final Timer _checkNewOptionsTimer = new Timer(3);
+    private final TimerGame _checkNewOptionsTimer = new TimerGame(3);
 
     public CollectFoodTask(double unitsNeeded) {
         _unitsNeeded = unitsNeeded;

@@ -1,7 +1,7 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.FireballEntity;
@@ -24,7 +24,7 @@ public class KillAura {
 
     // Smart aura data
     private final List<Entity> _targets = new ArrayList<>();
-    private final Timer _hitDelay = new Timer(0.2);
+    private final TimerGame _hitDelay = new TimerGame(0.2);
     private Entity _forceHit = null;
 
     public void tickStart(AltoClef mod) {

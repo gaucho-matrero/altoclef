@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -14,7 +14,7 @@ public class EscapeFromLavaTask extends Task {
 
     private BlockPos target;
 
-    private final Timer _scanTimer = new Timer(5);
+    private final TimerGame _scanTimer = new TimerGame(5);
 
     @Override
     protected void onStart(AltoClef mod) {

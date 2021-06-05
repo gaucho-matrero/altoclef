@@ -9,7 +9,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
@@ -105,8 +105,8 @@ public class TradeWithPiglinsTask extends ResourceTask {
         private static final double PIGLIN_NEARBY_RADIUS = 10;
 
         private Entity _currentlyBartering = null;
-        private final Timer _barterTimeout = new Timer(2);
-        private final Timer _intervalTimeout = new Timer(10);
+        private final TimerGame _barterTimeout = new TimerGame(2);
+        private final TimerGame _intervalTimeout = new TimerGame(10);
 
         private final HashSet<Entity> _blacklisted = new HashSet<>();
 

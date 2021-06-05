@@ -13,7 +13,7 @@ import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.BedBlock;
@@ -32,7 +32,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     private static final Block[] BEDS = CollectBedTask.BEDS;
 
-    private final Timer _regionScanTimer = new Timer(9);
+    private final TimerGame _regionScanTimer = new TimerGame(9);
 
     private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 1);
     private final Vec3i[] BED_BOTTOM_PLATFORM = new Vec3i[] {
@@ -55,9 +55,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     private BlockPos _bedForSpawnPoint;
 
-    private final Timer _bedInteractTimeout = new Timer(5);
+    private final TimerGame _bedInteractTimeout = new TimerGame(5);
 
-    private final Timer _inBedTimer = new Timer(1);
+    private final TimerGame _inBedTimer = new TimerGame(1);
 
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);

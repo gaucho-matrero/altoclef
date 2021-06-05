@@ -8,7 +8,7 @@ import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
@@ -30,7 +30,7 @@ public class PlaceBlockNearbyTask extends Task {
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
 
-    private final Timer _randomlookTimer = new Timer(0.25);
+    private final TimerGame _randomlookTimer = new TimerGame(0.25);
 
     private BlockPos _justPlaced; // Where we JUST placed a block.
     private BlockPos _tryPlace;   // Where we should TRY placing a block.

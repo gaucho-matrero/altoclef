@@ -5,28 +5,22 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.CraftingTableSlot;
-import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class CraftGenericTask extends Task {
 
     private final CraftingRecipe _recipe;
-    private Timer _invTimer;
+    private TimerGame _invTimer;
 
     public CraftGenericTask(CraftingRecipe recipe) {
         _recipe = recipe;
@@ -40,7 +34,7 @@ public class CraftGenericTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         if (_invTimer == null) {
-            _invTimer = new Timer(mod.getModSettings().getContainerItemMoveDelay());
+            _invTimer = new TimerGame(mod.getModSettings().getContainerItemMoveDelay());
         } else {
             _invTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
         }

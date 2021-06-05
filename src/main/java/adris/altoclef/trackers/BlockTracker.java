@@ -3,12 +3,11 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
@@ -43,9 +42,9 @@ public class BlockTracker extends Tracker {
 
     //private final PosCache _cache = new PosCache(100, 64*1.5);
 
-    private final Timer _timer = new Timer(7.0);
+    private final TimerGame _timer = new TimerGame(7.0);
 
-    private final Timer _forceElapseTimer = new Timer(2.0);
+    private final TimerGame _forceElapseTimer = new TimerGame(2.0);
 
     private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
 

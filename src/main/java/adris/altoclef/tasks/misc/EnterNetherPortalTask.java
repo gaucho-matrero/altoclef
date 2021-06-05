@@ -6,7 +6,7 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,7 +15,7 @@ public class EnterNetherPortalTask extends Task {
     private final Task _getPortalTask;
     private final Dimension _targetDimension;
 
-    private Timer _portalTimeout = new Timer(10);
+    private TimerGame _portalTimeout = new TimerGame(10);
     private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
 
     private boolean _leftPortal;

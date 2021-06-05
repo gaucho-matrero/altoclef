@@ -8,7 +8,7 @@ import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.Items;
@@ -19,10 +19,10 @@ import java.util.Optional;
 
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
-    private final Timer _tryCollectWaterTimer = new Timer(4);
+    private final TimerGame _tryCollectWaterTimer = new TimerGame(4);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
-    private final Timer _pickupRepeatTimer = new Timer(1);
+    private final TimerGame _pickupRepeatTimer = new TimerGame(1);
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);

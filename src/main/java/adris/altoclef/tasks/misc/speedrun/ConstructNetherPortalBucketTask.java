@@ -12,7 +12,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -77,7 +77,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     private BlockPos _currentCastTarget = null;
 
     private boolean _firstSearch = false;
-    private final Timer _lavaSearchTimer = new Timer(5);
+    private final TimerGame _lavaSearchTimer = new TimerGame(5);
 
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(5);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(25);
@@ -85,7 +85,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     // Stored here to cache lava blacklist
     private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
 
-    private final Timer _refreshTimer = new Timer(11);
+    private final TimerGame _refreshTimer = new TimerGame(11);
 
     @Override
     protected void onStart(AltoClef mod) {

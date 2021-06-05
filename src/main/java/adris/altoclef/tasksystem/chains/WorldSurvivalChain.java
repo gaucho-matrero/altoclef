@@ -3,15 +3,14 @@ package adris.altoclef.tasksystem.chains;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
     private boolean _wasAvoidingDrowning;
-    private final Timer _wasInLavaTimer = new Timer(1);
+    private final TimerGame _wasInLavaTimer = new TimerGame(1);
 
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);

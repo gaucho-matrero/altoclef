@@ -9,8 +9,7 @@ import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -39,7 +38,7 @@ public class LocateStrongholdTask extends Task {
 
     private final int _targetEyes;
 
-    private Timer _throwTimer = new Timer(5);
+    private TimerGame _throwTimer = new TimerGame(5);
 
     private SearchStrongholdTask _searchTask;
 
