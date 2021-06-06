@@ -357,10 +357,6 @@ public class Settings {
             result.save();
         }
 
-        for (ProtectionRange protection : result.areasToProtect) {
-            Debug.logInternal("Debug: Protection range: " + protection);
-        }
-
         return result;
     }
 
