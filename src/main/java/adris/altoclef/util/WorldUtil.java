@@ -16,13 +16,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public interface WorldUtil {
 
@@ -187,5 +185,9 @@ public interface WorldUtil {
             }
         }
         return null;
+    }
+
+    static Vec3d blockCenter(BlockPos block) {
+        return new Vec3d(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
 }

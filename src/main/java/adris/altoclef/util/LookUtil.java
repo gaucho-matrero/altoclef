@@ -45,6 +45,21 @@ public class LookUtil {
         return cleanLineOfSight(entity, start, end, maxRange);
     }
 
+    public static boolean cleanLineOfSight(Entity entity, BlockPos block, double maxRange) {
+        Vec3d center = WorldUtil.blockCenter(block);
+        HitResult hit = raycast(entity, getCameraPos(entity), center, maxRange);
+        switch (hit.getType()) {
+            case MISS:
+                return true;
+            case BLOCK:
+                BlockHitResult bhit = (BlockHitResult) hit;
+                return bhit.getBlockPos().equals(block);
+            case ENTITY:
+                return false;
+        }
+        return false;
+    }
+
     public static BlockHitResult raycast(Entity entity, Vec3d start, Vec3d end, double maxRange) {
         Vec3d delta = end.subtract(start);
         if (delta.lengthSquared() > maxRange*maxRange) {

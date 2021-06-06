@@ -9,10 +9,9 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
@@ -42,8 +41,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
     private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
 
     private final HashSet<BlockPos> _blacklist = new HashSet<>();
-
-    private BlockPos _targetLiquid;
 
     private final TimerGame _tryImmediatePickupTimer = new TimerGame(3);
     private final TimerGame _pickedUpTimer = new TimerGame(0.5);
@@ -138,7 +135,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
-            if (_toCollect == Blocks.LAVA && mod.getWorld().getBlockState(blockPos.up()).getBlock() == Blocks.BEDROCK) {
+            if (_toCollect == Blocks.LAVA && !WorldUtil.canBreak(mod, blockPos.up())) {
                 return true;
             }
 
@@ -146,9 +143,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }), _toCollect);
 
         // Find nearest water and right click it
-        BlockPos nearestLiquid = getNearestLiquid.apply(mod.getPlayer().getPos());
-        _targetLiquid = nearestLiquid;
-        if (nearestLiquid != null) {
+        if (getNearestLiquid.apply(mod.getPlayer().getPos()) != null) {
             // We want to MINIMIZE this distance to liquid.
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
@@ -168,20 +163,13 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     }
                 }
 
-                InteractWithBlockTask task = new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
-                // noinspection rawtypes
-                task.TimedOut.addListener(
-                        new ActionListener() {
-                            @Override
-                            public void invoke(Object value) {
-                                Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(_blacklist.toArray()));
-                                Debug.logMessage("Blacklisted " + blockpos);
-                                mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                                _blacklist.add(blockpos);
-
-                            }
-                        });
-                return task;
+                // We're close enough AND we see the block!
+                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 6) && LookUtil.cleanLineOfSight(mod.getPlayer(), blockpos, 7)) {
+                    return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
+                }
+                // Get close enough.
+                // up because if we go below we'll try to move next to the liquid (for lava, not a good move)
+                return new GetCloseToBlockTask(blockpos.up());
             }, getNearestLiquid, _toCollect);
             //return task;
         }

@@ -107,7 +107,8 @@ public class InteractWithBlockTask extends Task {
             return _wanderTask;
         }
         if (!_moveChecker.check(mod)) {
-            Debug.logMessage("Failed, wandering.");
+            Debug.logMessage("Failed, blacklisting and wandering.");
+            mod.getBlockTracker().requestBlockUnreachable(_target);
             TimedOut.invoke();
             return _wanderTask;
         }
