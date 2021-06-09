@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.KillAura;
 import adris.altoclef.util.csharpisbetter.Util;
@@ -216,6 +217,17 @@ public class Settings {
     private boolean autoRespawn = true;
 
     /**
+     *
+     * This setting lets you configure what the bot should do if it needs to go to the nether
+     * but can't find a nether portal immediately.
+     *
+     * Options:
+     *      BUILD_PORTAL_VANILLA: Builds a nether portal, either with obsidian or with a water bucket and lava pool.
+     *      GO_TO_HOME_BASE: Travel to the set home coordinates and assume there's a portal there.
+     */
+    private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
+
+    /**
      * If true, will use blacklist for rejecting users from using your player as a butler
      */
     private boolean useButlerBlacklist = true;
@@ -313,6 +325,14 @@ public class Settings {
             Items.WHITE_SHULKER_BOX,
             Items.YELLOW_SHULKER_BOX
     );
+
+    /**
+     * Where "home base" is for the bot.
+     * Some settings use this value, but by default
+     * this value goes unused, so don't worry
+     * about setting this unless you need it.
+     */
+    private BlockPos homeBasePosition = new BlockPos(0, 64, 0);
 
     /**
      * These areas will not be mined.
@@ -468,6 +488,14 @@ public class Settings {
             if (protection.includes(pos)) return true;
         }
         return false;
+    }
+
+    public DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR getOverworldToNetherBehaviour() {
+        return overworldToNetherBehaviour;
+    }
+
+    public BlockPos getHomeBasePosition() {
+        return homeBasePosition;
     }
 
     private static boolean idArrayContainsItem(Item item, int[] ids) {

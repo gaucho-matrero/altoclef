@@ -54,6 +54,7 @@ public class AltoClef implements ModInitializer {
     private BlockTracker _blockTracker;
     private ContainerTracker _containerTracker;
     private SimpleChunkTracker _chunkTracker;
+    private MiscBlockTracker _miscBlockTracker;
 
     // Renderers
     private CommandStatusOverlay _commandStatusOverlay;
@@ -113,6 +114,7 @@ public class AltoClef implements ModInitializer {
         _blockTracker = new BlockTracker(this, _trackerManager);
         _containerTracker = new ContainerTracker(this, _trackerManager);
         _chunkTracker = new SimpleChunkTracker(this);
+        _miscBlockTracker = new MiscBlockTracker(this);
 
         // Renderers
         _commandStatusOverlay = new CommandStatusOverlay();
@@ -144,6 +146,7 @@ public class AltoClef implements ModInitializer {
 
         // TODO: should this go here?
         _containerTracker.onServerTick();
+        _miscBlockTracker.tick();
 
         _trackerManager.tick();
         _taskRunner.tick();
@@ -230,6 +233,7 @@ public class AltoClef implements ModInitializer {
     public BlockTracker getBlockTracker() { return _blockTracker; }
     public ContainerTracker getContainerTracker() {return _containerTracker;}
     public SimpleChunkTracker getChunkTracker() {return _chunkTracker;}
+    public MiscBlockTracker getMiscBlockTracker() {return _miscBlockTracker;}
 
     // Baritone access
     public Baritone getClientBaritone() {

@@ -23,8 +23,9 @@ public class TrackerManager {
             for (Tracker tracker : _trackers) {
                 tracker.reset();
             }
-            // This is a bit of a spaghetti dependency but it's ok for now.
+            // This is a a spaghetti. Fix at some point.
             _mod.getChunkTracker().reset(_mod);
+            _mod.getMiscBlockTracker().reset();
         }
         _wasInGame = inGame;
 
