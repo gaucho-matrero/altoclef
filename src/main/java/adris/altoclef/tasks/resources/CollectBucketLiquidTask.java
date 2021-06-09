@@ -47,6 +47,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
     private MovementProgressChecker _progressChecker = new MovementProgressChecker();
 
+    private boolean wasWandering = false;
+
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
         _liquidName = liquidName;
@@ -81,6 +83,15 @@ public class CollectBucketLiquidTask extends ResourceTask {
     }
 
 
+    @Override
+    protected Task onTick(AltoClef mod) {
+        Task result = super.onTick(mod);
+        // Reset our "first time" timeout/wander flag.
+        if (!thisOrChildAreTimedOut()) {
+            wasWandering = false;
+        }
+        return result;
+    }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
@@ -131,7 +142,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
-            if (mod.getBlockTracker().unreachable(blockPos)) return true; // I think there was a bug here? Doesn't hurt to include though.
+            if (mod.getBlockTracker().unreachable(blockPos)) return true;
+            if (mod.getBlockTracker().unreachable(blockPos.up())) return true; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
@@ -151,24 +163,26 @@ public class CollectBucketLiquidTask extends ResourceTask {
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
 
                 // Clear above if lava because we can't enter.
-                if (_toCollect == Blocks.LAVA) {
-                    if (WorldUtil.isSolid(mod, blockpos.up())) {
-                        if (!_progressChecker.check(mod)) {
-                            Debug.logMessage("Failed to break, blacklisting & wandering");
-                            mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                            _blacklist.add(blockpos);
-                            return _wanderTask;
-                        }
-                        return new DestroyBlockTask(blockpos.up());
+                if (WorldUtil.isSolid(mod, blockpos.up())) {
+                    if (!_progressChecker.check(mod)) {
+                        Debug.logMessage("Failed to break, blacklisting & wandering");
+                        mod.getBlockTracker().requestBlockUnreachable(blockpos);
+                        _blacklist.add(blockpos);
+                        return _wanderTask;
                     }
+                    return new DestroyBlockTask(blockpos.up());
                 }
 
                 // We're close enough AND we see the block!
-                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 6) && LookUtil.cleanLineOfSight(mod.getPlayer(), blockpos, 7)) {
+                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookUtil.cleanLineOfSight(mod.getPlayer(), blockpos, 5)) {
                     return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 }
                 // Get close enough.
                 // up because if we go below we'll try to move next to the liquid (for lava, not a good move)
+                if (this.thisOrChildAreTimedOut() && !wasWandering) {
+                    mod.getBlockTracker().requestBlockUnreachable(blockpos.up());
+                    wasWandering = true;
+                }
                 return new GetCloseToBlockTask(blockpos.up());
             }, getNearestLiquid, _toCollect);
             //return task;

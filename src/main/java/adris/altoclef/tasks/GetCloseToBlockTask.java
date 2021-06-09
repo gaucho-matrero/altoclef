@@ -32,9 +32,8 @@ public class GetCloseToBlockTask extends Task {
         // Always bump the range down if we've met it.
         // We have a strictly decreasing range, which means we will eventualy get
         // as close as we can.
-        int nowRange = getCurrentDistance(mod);
-        if (nowRange <= _currentRange) {
-            _currentRange = nowRange - 1;
+        if (inRange(mod)) {
+            _currentRange = getCurrentDistance(mod) - 1;
         }
         return new GetWithinRangeOfBlockTask(_toApproach, _currentRange);
     }
@@ -47,7 +46,9 @@ public class GetCloseToBlockTask extends Task {
     private int getCurrentDistance(AltoClef mod) {
         return (int) Math.sqrt(mod.getPlayer().getBlockPos().getSquaredDistance(_toApproach));
     }
-
+    private boolean inRange(AltoClef mod) {
+        return mod.getPlayer().getBlockPos().getSquaredDistance(_toApproach) <= _currentRange*_currentRange;
+    }
 
     @Override
     protected boolean isEqual(Task obj) {

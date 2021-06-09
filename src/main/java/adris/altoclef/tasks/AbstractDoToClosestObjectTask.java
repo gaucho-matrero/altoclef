@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.Vec3d;
@@ -18,7 +17,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     private T _currentlyPursuing = null;
 
-    private final HashMap<T, Double> _heuristicMap = new HashMap<>();
+    private final HashMap<T, CachedHeuristic> _heuristicMap = new HashMap<>();
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
     protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
@@ -76,14 +75,28 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                 if (isMovingToClosestPos(mod)) {
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
-                    _heuristicMap.put(_currentlyPursuing, currentHeuristic);
+                    double closestDistanceSqr = getPos(mod, _currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
+                    int lastTick = AltoClef.getTicks();
+
+                    if (!_heuristicMap.containsKey(_currentlyPursuing)) {
+                        _heuristicMap.put(_currentlyPursuing, new CachedHeuristic());
+                    }
+                    CachedHeuristic h = _heuristicMap.get(_currentlyPursuing);
+                    h.updateHeuristic(currentHeuristic);
+                    h.updateDistance(closestDistanceSqr);
+                    h.setTickAttempted(lastTick);
                     if (_heuristicMap.containsKey(newClosest)) {
-                        //Debug.logInternal("OVERKILL: " + _heuristicMap.get(newClosest) + " ?< " + currentHeuristic);
                         // Our new object has a past potential heuristic calculated, if it's better try it out.
-                        if (_heuristicMap.get(newClosest) < currentHeuristic) {
-                            setDebugState("Found closer!");
+                        CachedHeuristic maybeReAttempt = _heuristicMap.get(newClosest);
+                        double maybeClosestDistance = getPos(mod, newClosest).squaredDistanceTo(mod.getPlayer().getPos());
+                        // Get considerably closer (divide distance by 2)
+                        if (maybeReAttempt.getHeuristicValue() < h.getHeuristicValue() || maybeClosestDistance < maybeReAttempt.getClosestDistanceSqr() / 4) {
+                            setDebugState("Retrying old heuristic!");
                             // The currently closest previously calculated heuristic is better, move towards it!
                             _currentlyPursuing = newClosest;
+                            // In theory, this next line shouldn't need to be run,
+                            // but it's CRITICAL to making this work for some reason
+                            maybeReAttempt.updateDistance(maybeClosestDistance);
                         }
                     } else {
                         setDebugState("Trying out NEW pursuit");
@@ -113,6 +126,47 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
         setDebugState("Waiting for calculations I think (NOT wandering)");
         return null;
+    }
+
+    private static class CachedHeuristic {
+
+        private double _closestDistanceSqr;
+        private int _tickAttempted;
+        private double _heuristicValue;
+
+        public CachedHeuristic() {
+            _closestDistanceSqr = Double.POSITIVE_INFINITY;
+            _heuristicValue = Double.POSITIVE_INFINITY;
+        }
+        public CachedHeuristic(double closestDistanceSqr, int tickAttempted, double heuristicValue) {
+            _closestDistanceSqr = closestDistanceSqr;
+            _tickAttempted = tickAttempted;
+            _heuristicValue = heuristicValue;
+        }
+
+        public double getHeuristicValue() {
+            return _heuristicValue;
+        }
+
+        public void updateHeuristic(double heuristicValue) {
+            _heuristicValue = Math.min(_heuristicValue, heuristicValue);
+        }
+
+        public double getClosestDistanceSqr() {
+            return _closestDistanceSqr;
+        }
+
+        public void updateDistance(double closestDistanceSqr) {
+            _closestDistanceSqr = Math.min(_closestDistanceSqr, closestDistanceSqr);
+        }
+
+        public int getTickAttempted() {
+            return _tickAttempted;
+        }
+
+        public void setTickAttempted(int tickAttempted) {
+            _tickAttempted = tickAttempted;
+        }
     }
 
     // Interface DRAFT:

@@ -3,7 +3,6 @@ package adris.altoclef.trackers.blacklisting;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.MiningRequirement;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
@@ -33,7 +32,7 @@ public abstract class AbstractObjectBlacklist<T> {
             if (newTool.ordinal() > entry.bestTool.ordinal()) entry.bestTool = newTool;
             if (newDistance < entry.bestDistanceSq) entry.bestDistanceSq = newDistance;
             entry.numberOfFailures = 0;
-            //Debug.logMessage("    TEMP: (failure RESET): " + pos.toShortString());
+            Debug.logMessage("Blacklist RESET: " + item.toString());
         }
         entry.numberOfFailures ++;
         entry.numberOfFailuresAllowed = numberOfFailuresAllowed;
