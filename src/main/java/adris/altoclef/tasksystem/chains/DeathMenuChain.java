@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.csharpisbetter.TimerReal;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -32,7 +33,7 @@ public class DeathMenuChain extends TaskChain {
     private Class _prevScreen = null;
 
     // Sometimes we fuck up, so we might want to retry considering the death screen.
-    private final TimerGame _deathRetryTimer = new TimerGame(8);
+    private final TimerReal _deathRetryTimer = new TimerReal(8);
 
     @Override
     protected void onStop(AltoClef mod) {
