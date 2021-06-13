@@ -1,6 +1,7 @@
 plugins {
     id "fabric-loom" version "0.5-SNAPSHOT"
     id "maven-publish"
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -34,12 +35,23 @@ dependencies {
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-//    compile files('libs/baritone-1.6.2-dev.jar')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.10.1')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.10.1')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.10.1')
     implementation("baritone:baritone:1.6.2-dev") {
         version {
             branch = "fabric/1.16.3"
         }
     }
+}
+shadowJar {
+    configurations = [project.configurations.shadow]
+    classifier = 'shadow'
+}
+
+remapJar {
+    dependsOn(":shadowJar")
+    input.set(shadowJar.archiveFile)
 }
 
 processResources {
