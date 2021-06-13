@@ -6,13 +6,12 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.InventoryTracker;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
+import baritone.api.utils.input.Input;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
@@ -21,14 +20,11 @@ import java.util.List;
 
 public class PlayerInteractionFixChain extends TaskChain {
 
+    private final TimerGame _stackHeldTimeout = new TimerGame(8);
+    private final TimerGame _generalDuctTapeSwapTimeout = new TimerGame(30);
+    private final TimerGame _shiftDepressTimeout = new TimerGame(10);
+    private final TimerGame _betterToolTimer = new TimerGame(0.5);
     private ItemStack _lastHandStack = null;
-    private final Timer _stackHeldTimeout = new Timer(8);
-
-    private final Timer _generalDuctTapeSwapTimeout = new Timer(30);
-
-    private final Timer _shiftDepressTimeout = new Timer(10);
-
-    private final Timer _betterToolTimer = new Timer(0.5);
 
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
@@ -51,7 +47,7 @@ public class PlayerInteractionFixChain extends TaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+        if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
         if (_betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
@@ -89,10 +85,10 @@ public class PlayerInteractionFixChain extends TaskChain {
         }
 
         // Unpress shift (it gets stuck for some reason???)
-        if (MinecraftClient.getInstance().options.keySneak.isPressed()) {
+        if (mod.getInputControls().isHeldDown(Input.SNEAK)) {
             if (_shiftDepressTimeout.elapsed()) {
                 Debug.logMessage("Unpressing shift/sneak");
-                MinecraftClient.getInstance().options.keySneak.setPressed(false);
+                mod.getInputControls().release(Input.SNEAK);
             }
         } else {
             _shiftDepressTimeout.reset();

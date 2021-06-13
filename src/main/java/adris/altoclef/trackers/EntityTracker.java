@@ -5,9 +5,9 @@ import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.CachedProjectile;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.ItemTarget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -21,7 +21,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")
@@ -45,7 +48,54 @@ public class EntityTracker extends Tracker {
         super(manager);
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, Item ...items) {
+    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
+        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
+    }
+
+    /**
+     * Squash a class that may have sub classes into one distinguishable class type.
+     * For ease of use.
+     *
+     * @param type: An entity class that may have a 'simpler' class to squash to
+     * @return what the given entity class should be read as/catalogued as.
+     */
+    private static Class squashType(Class type) {
+        // Squash types for ease of use
+        if (PlayerEntity.class.isAssignableFrom(type)) {
+            return PlayerEntity.class;
+        }
+        return type;
+    }
+
+    public static boolean isAngryAtPlayer(Entity hostile) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        // NOTE: These do not work.
+        if (hostile instanceof EndermanEntity) {
+            EndermanEntity enderman = (EndermanEntity) hostile;
+            return enderman.isAngryAt(player) && enderman.isAngry();
+        }
+        if (hostile instanceof ZombifiedPiglinEntity) {
+            ZombifiedPiglinEntity zombie = (ZombifiedPiglinEntity) hostile;
+            // Will ALWAYS be false.
+            return zombie.hasAngerTime() && zombie.isAngryAt(player);
+        }
+        return !isTradingPiglin(hostile);
+    }
+
+    public static boolean isTradingPiglin(Entity entity) {
+        if (entity instanceof PiglinEntity) {
+            PiglinEntity pig = (PiglinEntity) entity;
+            for (ItemStack stack : pig.getItemsHand()) {
+                if (stack.getItem().equals(Items.GOLD_INGOT)) {
+                    // We're trading with this one, ignore it.
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public ItemEntity getClosestItemDrop(Vec3d position, Item... items) {
         ensureUpdated();
         ItemTarget[] tempTargetList = new ItemTarget[items.length];
         for (int i = 0; i < items.length; ++i) {
@@ -55,7 +105,7 @@ public class EntityTracker extends Tracker {
         //return getClosestItemDrop(position, ItemTarget.getItemArray(_mod, targets));
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget ...targets) {
+    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget... targets) {
         ensureUpdated();
         if (targets.length == 0) {
             Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
@@ -86,11 +136,11 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    public Entity getClosestEntity(Vec3d position, Class ...entityTypes) {
+    public Entity getClosestEntity(Vec3d position, Class... entityTypes) {
         return this.getClosestEntity(position, (entity) -> false, entityTypes);
     }
 
-    public Entity getClosestEntity(Vec3d position, Predicate<Entity> ignore, Class ...entityTypes) {
+    public Entity getClosestEntity(Vec3d position, Predicate<Entity> ignore, Class... entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
         for (Class toFind : entityTypes) {
@@ -110,9 +160,9 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    public boolean itemDropped(Item ...items) {
+    public boolean itemDropped(Item... items) {
         ensureUpdated();
-        for(Item item : items) {
+        for (Item item : items) {
             if (_itemDropLocations.containsKey(item)) {
                 // Find a non-blacklisted item
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
@@ -123,7 +173,7 @@ public class EntityTracker extends Tracker {
         return false;
     }
 
-    public boolean itemDropped(ItemTarget ...targets) {
+    public boolean itemDropped(ItemTarget... targets) {
         ensureUpdated();
         for (ItemTarget target : targets) {
             if (itemDropped(target.getMatches())) return true;
@@ -131,7 +181,7 @@ public class EntityTracker extends Tracker {
         return false;
     }
 
-    public boolean entityFound(Class ...types) {
+    public boolean entityFound(Class... types) {
         ensureUpdated();
         for (Class type : types) {
             if (_entityMap.containsKey(type)) return true;
@@ -177,6 +227,7 @@ public class EntityTracker extends Tracker {
             return _playerMap.containsKey(name);
         }
     }
+
     public Vec3d getPlayerMostRecentPosition(String name) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -186,6 +237,7 @@ public class EntityTracker extends Tracker {
         }
         return null;
     }
+
     public PlayerEntity getPlayerEntity(String name) {
         if (isPlayerLoaded(name)) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -297,66 +349,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
-
-    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
-        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
-    }
-
-    /**
-     * Squash a class that may have sub classes into one distinguishable class type.
-     * For ease of use.
-     * @param type: An entity class that may have a 'simpler' class to squash to
-     * @return what the given entity class should be read as/catalogued as.
-     */
-    private static Class squashType(Class type) {
-        // Squash types for ease of use
-        if (PlayerEntity.class.isAssignableFrom(type)) {
-            return PlayerEntity.class;
-        }
-        return type;
-    }
-
     @Override
     protected void reset() {
         // Dirty clears everything else.
         _entityBlacklist.clear();
-    }
-
-    public static boolean isAngryAtPlayer(Entity hostile) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        // NOTE: These do not work.
-        if (hostile instanceof EndermanEntity) {
-            EndermanEntity enderman = (EndermanEntity) hostile;
-            return enderman.isAngryAt(player) && enderman.isAngry();
-        }
-        if (hostile instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombie = (ZombifiedPiglinEntity) hostile;
-            // Will ALWAYS be false.
-            return zombie.hasAngerTime() && zombie.isAngryAt(player);
-        }
-        if (isTradingPiglin(hostile)) {
-            return false;
-        }
-        /*
-        if (hostile instanceof SpiderEntity) {
-            SpiderEntity sp = (SpiderEntity) hostile;
-            float b = sp.getBrightnessAtEyes();
-            // Will not consider spiders that stop attacking!
-            return (b < 0.5f);
-        }*/
-        return true;
-    }
-
-    public static boolean isTradingPiglin(Entity entity) {
-        if (entity instanceof PiglinEntity) {
-            PiglinEntity pig = (PiglinEntity) entity;
-            for (ItemStack stack : pig.getItemsHand()) {
-                if (stack.getItem().equals(Items.GOLD_INGOT)) {
-                    // We're trading with this one, ignore it.
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

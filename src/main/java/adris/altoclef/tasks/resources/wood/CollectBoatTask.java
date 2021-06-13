@@ -12,9 +12,11 @@ public class CollectBoatTask extends CraftWithMatchingPlanksTask {
     public CollectBoatTask(Item[] targets, ItemTarget planks, int count) {
         super(targets, createRecipe(planks), new boolean[]{true, false, true, true, true, true, false, false, false}, count);
     }
+
     public CollectBoatTask(Item target, String plankCatalogueName, int count) {
         this(new Item[]{target}, new ItemTarget(plankCatalogueName, 1), count);
     }
+
     public CollectBoatTask(int count) {
         this(ItemUtil.WOOD_BOAT, TaskCatalogue.getItemTarget("planks", 1), count);
     }

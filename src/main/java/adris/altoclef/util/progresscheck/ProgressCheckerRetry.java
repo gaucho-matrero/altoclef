@@ -1,7 +1,5 @@
 package adris.altoclef.util.progresscheck;
 
-import adris.altoclef.Debug;
-
 /**
  * A progress checker that can fail a few times before it "actually" fails.
  */

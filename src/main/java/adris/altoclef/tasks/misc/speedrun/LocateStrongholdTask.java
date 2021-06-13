@@ -9,8 +9,7 @@ import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.LookUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -31,15 +30,11 @@ public class LocateStrongholdTask extends Task {
     private static final int EYE_RETHROW_DISTANCE = 1000;
 
     private final List<BlockPos> _cachedPortalFrame = new ArrayList<>();
-
+    private final int _targetEyes;
     private EyeDirection _cachedEyeDirection = null;
     private Entity _currentThrownEye = null;
-
     private Vec3d _lastThrowPos = null;
-
-    private final int _targetEyes;
-
-    private Timer _throwTimer = new Timer(5);
+    private final TimerGame _throwTimer = new TimerGame(5);
 
     private SearchStrongholdTask _searchTask;
 
@@ -171,7 +166,7 @@ public class LocateStrongholdTask extends Task {
 
     // Represents the direction we need to travel to get to the stronghold.
     private static class EyeDirection {
-        private Vec3d _start;
+        private final Vec3d _start;
         private Vec3d _end;
 
         public EyeDirection(Vec3d startPos) {
@@ -185,6 +180,7 @@ public class LocateStrongholdTask extends Task {
         public Vec3d getOrigin() {
             return _start;
         }
+
         public Vec3d getDelta() {
             return _end.subtract(_start);
         }

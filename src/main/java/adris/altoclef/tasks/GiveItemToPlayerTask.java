@@ -1,4 +1,3 @@
-
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
@@ -9,7 +8,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -24,12 +22,10 @@ public class GiveItemToPlayerTask extends Task {
     private final ItemTarget[] _targets;
 
     private final CataloguedResourceTask _resourceTask;
-
+    private final List<ItemTarget> _throwTarget = new ArrayList<>();
     private boolean _droppingItems;
 
-    private final List<ItemTarget> _throwTarget = new ArrayList<>();
-
-    public GiveItemToPlayerTask(String player, ItemTarget ...targets) {
+    public GiveItemToPlayerTask(String player, ItemTarget... targets) {
         _playerName = player;
         _targets = targets;
 
@@ -56,15 +52,16 @@ public class GiveItemToPlayerTask extends Task {
             // THROW ITEMS
             setDebugState("Throwing items");
             LookUtil.lookAt(mod, targetPos);
-            for (ItemTarget target : _throwTarget) {
-                if (target.targetCount > 0) {
+            for (int i = 0; i < _throwTarget.size(); ++i) {
+                ItemTarget target = _throwTarget.get(i);
+                if (target.getTargetCount() > 0) {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Debug.logMessage("THROWING: " + has.get());
                         ItemStack stack = mod.getInventoryTracker().throwSlot(Slot.getFromInventory(has.get()));
-                        //mod.getInventoryTracker().equipItem(target);
-                        //mod.getControllerExtras().dropCurrentStack(true);
-                        target.targetCount -= stack.getCount();
+                        // Update target
+                        target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
+                        _throwTarget.set(i, target);
                         return null;
                     }
                 }

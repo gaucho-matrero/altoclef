@@ -1,13 +1,13 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.TaskCatalogue;
 
 public class SatisfyMiningRequirementTask extends Task {
 
-    private MiningRequirement _requirement;
+    private final MiningRequirement _requirement;
 
     public SatisfyMiningRequirementTask(MiningRequirement requirement) {
         _requirement = requirement;

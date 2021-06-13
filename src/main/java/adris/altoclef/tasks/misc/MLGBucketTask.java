@@ -2,8 +2,6 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.resources.CollectBucketLiquidTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import baritone.api.utils.IPlayerContext;
@@ -12,10 +10,8 @@ import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +31,6 @@ public class MLGBucketTask extends Task {
         _clicked = false;
         _placedPos = null;
         // hold shift while falling.
-        //MinecraftClient.getInstance().options.keySneak.setPressed(true);
         // Look down at first, usually does the trick.
         mod.getPlayer().pitch = 90;
     }
@@ -44,8 +39,8 @@ public class MLGBucketTask extends Task {
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
         // We may crop the edge of a block or wall.
-        Vec3d[] offsets = new Vec3d[] {
-                new Vec3d(0, 0,0),
+        Vec3d[] offsets = new Vec3d[]{
+                new Vec3d(0, 0, 0),
                 new Vec3d(-0.5, 0, 0),
                 new Vec3d(0.5, 0, 0),
                 new Vec3d(0, 0, -0.5),
@@ -88,13 +83,7 @@ public class MLGBucketTask extends Task {
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
                     Debug.logMessage("HIT: " + willLandIn);
                     _placedPos = willLandIn;
-                    if (!_clicked) {
-                        MinecraftClient.getInstance().options.keyUse.setPressed(true);
-                        _clicked = true;
-                    } else {
-                        MinecraftClient.getInstance().options.keyUse.setPressed(false);
-                    }
-                    _clicked = false;
+                    mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
                 }
             } else {
@@ -103,7 +92,7 @@ public class MLGBucketTask extends Task {
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
                 mod.getPlayer().pitch = 90;
             }
-                //player.rotationPitch = 90f
+            //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
         } else {
             setDebugState("Wait for it...");
@@ -119,8 +108,6 @@ public class MLGBucketTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        MinecraftClient.getInstance().options.keyUse.setPressed(false);
-        //MinecraftClient.getInstance().options.keySneak.setPressed(false);
     }
 
     @Override

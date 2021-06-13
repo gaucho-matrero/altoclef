@@ -1,24 +1,43 @@
 package adris.altoclef;
 
+import adris.altoclef.tasks.DefaultGoToDimensionTask;
+import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.KillAura;
 import adris.altoclef.util.csharpisbetter.Util;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("ALL")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Settings {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";
+
+    // Internal only.
+    // If settings failed to load, this will be set to warn the user.
+    @JsonIgnore
+    private transient boolean _failedToLoad = false;
 
     /**
      * If true, text will appear on the top left showing the current
@@ -29,7 +48,7 @@ public class Settings {
     /**
      * Whenever we're moving, speed up our client by a multiple of this number.
      * Useful when traveling long distances, and only is enabled when we're moving and not mining.
-     *
+     * <p>
      * Set to 1 for this to have no effect.
      */
     private float speedHack = 1.0f;
@@ -41,55 +60,49 @@ public class Settings {
 
     /**
      * If a dropped resource item is further than this from the player, don't pick it up.
-     *
+     * <p>
      * -1 (or less than 0) to disable.
      */
     private float resourcePickupDropRange = -1;
-
-
 
 
     /**
      * minumum amount of food to have in the inventory.
      * if we have less food than this value the bot will go pickup some more.
      */
-
     private int minimumFoodAllowed = 0;
 
 
-
     /**
-     *  amount of food to collect when the food in inventory
-     *  is lower than the value of foodUnitsThreshold
+     * amount of food to collect when the food in inventory
+     * is lower than the value of foodUnitsThreshold
      */
-
     private int foodUnitsToCollect = 0;
 
 
     /**
      * Chests are cached for their contents.
-     *
+     * <p>
      * If the bot is collecting a resource and finds a chest within this range,
      * it will grab the resource from the chest.
-     *
+     * <p>
      * Set this to 0 to disable chest pickups.
-     *
+     * <p>
      * Don't set this too high, as the bot will prioritize chests even if the resource
      * is easily accesible now.
-     *
      */
     private float resourceChestLocateRange = 500;
 
     /**
      * Some block resources are obtained through non-mining means
      * (like a crafting table or stone block, which can be crafted or smelted).
-     *
+     * <p>
      * However, if the block resource is found within this range it will be mined first.
-     *
+     * <p>
      * Set this to 0 to disable this feature
      * (keep in mind, this will not affect blocks like "dirt" and "cobblestone"
      * that can only be obtained through mining)
-     *
+     * <p>
      * Set this to -1 to ALWAYS mine a block if it's catalogued.
      * This is not recommended. For example, if the bot happens to track a
      * crafting table 10000 blocks away, and it then tries obtaining one
@@ -117,7 +130,7 @@ public class Settings {
 
     /**
      * Before grabbing ANYTHING, get a pickaxe.
-     *
+     * <p>
      * Will help with navigation as sometimes dropped items will be underground,
      * but this behaviour only makes sense in regular minecraft worlds.
      */
@@ -139,39 +152,37 @@ public class Settings {
 
     /**
      * Defines how killaura behaves when "mobDefense" is set to true.
-     *
-     *
+     * <p>
+     * <p>
      * Strategies:
-     *
-     *      FASTEST: All hostiles are attacked at every possible moment, every frame.
-     *      SMART: Closest hostile is attacked at max every 0.2 seconds.
-     *      OFF: Off
+     * <p>
+     * FASTEST: All hostiles are attacked at every possible moment, every frame.
+     * SMART: Closest hostile is attacked at max every 0.2 seconds.
+     * OFF: Off
      */
     private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
 
     /**
      * Only applies if mobDefense is on.
-     *
+     * <p>
      * If enabled, will attempt to dodge all incoming projectiles
      */
     private boolean dodgeProjectiles = true;
 
     /**
      * Skeletons and large groups of mobs are a huge pain.
-     *
+     * <p>
      * With this set to true, the bot may either
      * kill or run away from mobs that stay too close for too long.
-     *
      */
     private boolean killOrAvoidAnnoyingHostiles = true;
 
     /**
      * If enabled, the bot will avoid going underwater if baritone
      * isn't giving the bot movement instructions.
-     *
+     * <p>
      * Baritone doesn't know how to move underwater so this should cause
      * no problems, but disable it if you want the bot to be able to sink.
-     *
      */
     private boolean avoidDrowning = true;
 
@@ -187,17 +198,27 @@ public class Settings {
 
     /**
      * If true, will automatically reconnect to the last open server if you get disconnected.
-     *
+     * <p>
      * If disabled, the bot will stop running when you disconnect from a server.
      */
     private boolean autoReconnect = true;
 
     /**
      * If true, will automatically respawn instantly if you die.
-     *
+     * <p>
      * If disabled, the bot will stop running when you die.
      */
     private boolean autoRespawn = true;
+
+    /**
+     * This setting lets you configure what the bot should do if it needs to go to the nether
+     * but can't find a nether portal immediately.
+     * <p>
+     * Options:
+     * BUILD_PORTAL_VANILLA: Builds a nether portal, either with obsidian or with a water bucket and lava pool.
+     * GO_TO_HOME_BASE: Travel to the set home coordinates and assume there's a portal there.
+     */
+    private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
     /**
      * If true, will use blacklist for rejecting users from using your player as a butler
@@ -209,24 +230,22 @@ public class Settings {
     private boolean useButlerWhitelist = true;
 
     /**
-     *
-     *
      * Servers have different messaging plugins that change the way messages are displayed.
      * Rather than attempt to implement all of them and introduce a big security risk,
      * you may define custom whisper formats that the butler will watch out for.
-     *
+     * <p>
      * Within curly brackets are three special parts:
-     *
+     * <p>
      * {from}: Who the message was sent from
      * {to}: Who the message was sent to, butler will ignore if this is not your username.
      * {message}: The message.
-     *
-     *
+     * <p>
+     * <p>
      * WARNING: The butler will only accept non-chat messages as commands, but don't make this too lenient,
-     *      else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
-     *      create the following messages.
+     * else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
+     * create the following messages.
      */
-    private String[] whisperFormats = new String[] {
+    private String[] whisperFormats = new String[]{
             "{from} whispers to you: {message}",
             "{from} whispers: {message}",
             "\\[{from} -> {to}\\] {message}"
@@ -242,27 +261,29 @@ public class Settings {
     /**
      * If we need to throw away something, throw away these items first.
      */
-    private int[] throwawayItems = new int[] {
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
+    private List<Item> throwawayItems = Arrays.asList(
             // Overworld junk
-            Item.getRawId(Items.DIORITE),
-            Item.getRawId(Items.ANDESITE),
-            Item.getRawId(Items.GRANITE),
-            Item.getRawId(Items.COBBLESTONE),
-            Item.getRawId(Items.DIRT),
-            Item.getRawId(Items.GRAVEL),
+            Items.DIORITE,
+            Items.ANDESITE,
+            Items.GRANITE,
+            Items.COBBLESTONE,
+            Items.DIRT,
+            Items.GRAVEL,
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
-            Item.getRawId(Items.NETHERRACK),
-            Item.getRawId(Items.MAGMA_BLOCK),
-            Item.getRawId(Items.SOUL_SOIL),
-            Item.getRawId(Items.SOUL_SAND),
-            Item.getRawId(Items.NETHER_BRICKS),
-            Item.getRawId(Items.NETHER_BRICK)
-    };
+            Items.NETHERRACK,
+            Items.MAGMA_BLOCK,
+            Items.SOUL_SOIL,
+            Items.SOUL_SAND,
+            Items.NETHER_BRICKS,
+            Items.NETHER_BRICK
+    );
 
     /**
      * If we need to throw away something but we don't have any "throwaway Items",
      * throw away any unimportant item that's not currently needed in our task chain.
-     *
+     * <p>
      * Careful with this! If true, any item not in "importantItems" is liable to be thrown away.
      */
     private boolean throwAwayUnusedItems = false;
@@ -271,28 +292,38 @@ public class Settings {
      * We will NEVER throw away these items.
      * Even if "throwAwayUnusedItems" is true and one of these items is not used in a task.
      */
-    private int[] importantItems = new int[] {
-            Item.getRawId(Items.ENCHANTED_GOLDEN_APPLE),
-            Item.getRawId(Items.ENDER_EYE),
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
+    private List<Item> importantItems = Arrays.asList(
+            Items.ENCHANTED_GOLDEN_APPLE,
+            Items.ENDER_EYE,
             // Don't throw away shulker boxes that would be pretty bad lol
-            Item.getRawId(Items.SHULKER_BOX),
-            Item.getRawId(Items.BLACK_SHULKER_BOX),
-            Item.getRawId(Items.BLUE_SHULKER_BOX),
-            Item.getRawId(Items.BROWN_SHULKER_BOX),
-            Item.getRawId(Items.CYAN_SHULKER_BOX),
-            Item.getRawId(Items.GRAY_SHULKER_BOX),
-            Item.getRawId(Items.GREEN_SHULKER_BOX),
-            Item.getRawId(Items.LIGHT_BLUE_SHULKER_BOX),
-            Item.getRawId(Items.LIGHT_GRAY_SHULKER_BOX),
-            Item.getRawId(Items.LIME_SHULKER_BOX),
-            Item.getRawId(Items.MAGENTA_SHULKER_BOX),
-            Item.getRawId(Items.ORANGE_SHULKER_BOX),
-            Item.getRawId(Items.PINK_SHULKER_BOX),
-            Item.getRawId(Items.PURPLE_SHULKER_BOX),
-            Item.getRawId(Items.RED_SHULKER_BOX),
-            Item.getRawId(Items.WHITE_SHULKER_BOX),
-            Item.getRawId(Items.YELLOW_SHULKER_BOX)
-    };
+            Items.SHULKER_BOX,
+            Items.BLACK_SHULKER_BOX,
+            Items.BLUE_SHULKER_BOX,
+            Items.BROWN_SHULKER_BOX,
+            Items.CYAN_SHULKER_BOX,
+            Items.GRAY_SHULKER_BOX,
+            Items.GREEN_SHULKER_BOX,
+            Items.LIGHT_BLUE_SHULKER_BOX,
+            Items.LIGHT_GRAY_SHULKER_BOX,
+            Items.LIME_SHULKER_BOX,
+            Items.MAGENTA_SHULKER_BOX,
+            Items.ORANGE_SHULKER_BOX,
+            Items.PINK_SHULKER_BOX,
+            Items.PURPLE_SHULKER_BOX,
+            Items.RED_SHULKER_BOX,
+            Items.WHITE_SHULKER_BOX,
+            Items.YELLOW_SHULKER_BOX
+    );
+
+    /**
+     * Where "home base" is for the bot.
+     * Some settings use this value, but by default
+     * this value goes unused, so don't worry
+     * about setting this unless you need it.
+     */
+    private BlockPos homeBasePosition = new BlockPos(0, 64, 0);
 
     /**
      * These areas will not be mined.
@@ -301,78 +332,90 @@ public class Settings {
      * the bot doesn't keep trying to break spawn protected
      * blocks.
      */
-    private ProtectionRange[] areasToProtect = new ProtectionRange[] {
-
-    };
-
-    // Internal tracking of whether we're dirty or not.
-    private transient boolean _dirty;
+    private List<ProtectionRange> areasToProtect = Collections.emptyList();
 
     public static Settings load() {
 
         File loadFrom = new File(SETTINGS_PATH);
         if (!loadFrom.exists()) {
             Settings result = new Settings();
-            result.markDirty();
             result.save();
             return result;
         }
 
-        String data;
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(BlockPos.class, new BlockPosDeserializer());
+        mapper.registerModule(module);
+
+        Settings result = new Settings(); // Defaults
         try {
-            data = new String(Files.readAllBytes(Paths.get(SETTINGS_PATH)));
+            result = mapper.readValue(Paths.get(SETTINGS_PATH).toFile(), Settings.class);
+        } catch (JsonMappingException ex) {
+            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". JSON Error Message: " + ex.getMessage() + ".\n JSON Error STACK TRACE:\n\n");
+            result._failedToLoad = true;
+            ex.printStackTrace();
         } catch (IOException e) {
+            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". IOException.");
+            result._failedToLoad = true;
             e.printStackTrace();
-            return null;
         }
-        Gson gson = new Gson();
 
-        Settings result = gson.fromJson(data, Settings.class);
-        result.markDirty();
-        result.save();
-
-        for (ProtectionRange protection : result.areasToProtect) {
-            Debug.logInternal("Debug: Protection range: " + protection);
+        // Save over to include NEW settings
+        // but only if a load was successful. Don't want to override user settings!
+        if (!result.failedToLoad()) {
+            result.save();
         }
 
         return result;
     }
 
     private static void save(Settings settings) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        String userJson = gson.toJson(settings);
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(BlockPos.class, new BlockPosSerializer());
+        mapper.registerModule(module);
 
         try {
-            Files.write(Paths.get(SETTINGS_PATH), userJson.getBytes());
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            // Pretty print and indent arrays too.
+            DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+            prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+
+            mapper.writer(prettyPrinter).writeValue(Paths.get(SETTINGS_PATH).toFile(), settings);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Dirty managing
-    private void markDirty() {
-        _dirty = true;
-    }
-    public boolean isDirty() {
-        return _dirty;
+    private static boolean idArrayContainsItem(Item item, int[] ids) {
+        int id = Item.getRawId(item);
+        for (int check : ids) {
+            if (check == id) return true;
+        }
+        return false;
     }
 
     public void save() {
-        if (!_dirty) return;
         save(this);
-        _dirty = false;
     }
 
-    public boolean shouldShowTaskChain() { return showTaskChains; }
-
-    public void setSpeedHack(float value) {
-        speedHack = value; markDirty();
+    public boolean failedToLoad() {
+        return _failedToLoad;
     }
+
+    public boolean shouldShowTaskChain() {
+        return showTaskChains;
+    }
+
     public float getSpeedHack() {
         return speedHack;
     }
 
-    public float getResourcePickupRange() {return resourcePickupDropRange;}
+    public float getResourcePickupRange() {
+        return resourcePickupDropRange;
+    }
 
     public float getResourceChestLocateRange() {
         return resourceChestLocateRange;
@@ -394,104 +437,91 @@ public class Settings {
         return minimumFoodAllowed;
     }
 
-
     public boolean isMobDefense() {
         return mobDefense;
-    }
-
-    public void setMobDefense(boolean mobDefense) {
-        this.mobDefense = mobDefense;
-        markDirty();
     }
 
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
     }
-    public void setDodgeProjectiles(boolean dodgeProjectiles) {
-        this.dodgeProjectiles = dodgeProjectiles; markDirty();
-    }
 
     public boolean isAutoEat() {
         return autoEat;
     }
-    public void setAutoEat(boolean autoEat) {
-        this.autoEat = autoEat;
-        markDirty();
-    }
+
     public boolean isAutoReconnect() {
         return autoReconnect;
-    }
-    public void setAutoReconnect(boolean autoReconnect) {
-        this.autoReconnect = autoReconnect;
     }
 
     public boolean isAutoRespawn() {
         return autoRespawn;
     }
-    public void setAutoRespawn(boolean autoRespawn) {
-        this.autoRespawn = autoRespawn;
-    }
 
-    public boolean shouldReplantCrops() {return replantCrops;}
+    public boolean shouldReplantCrops() {
+        return replantCrops;
+    }
 
     public boolean isUseButlerBlacklist() {
         return useButlerBlacklist;
-    }
-    public void setUseButlerBlacklist(boolean useButlerBlacklist) {
-        this.useButlerBlacklist = useButlerBlacklist;
     }
 
     public boolean isUseButlerWhitelist() {
         return useButlerWhitelist;
     }
-    public void setUseButlerWhitelist(boolean useButlerWhitelist) {
-        this.useButlerWhitelist = useButlerWhitelist;
+
+    public boolean shouldDealWithAnnoyingHostiles() {
+        return killOrAvoidAnnoyingHostiles;
     }
 
-    public boolean shouldDealWithAnnoyingHostiles() {return killOrAvoidAnnoyingHostiles;}
+    public KillAura.Strategy getForceFieldStrategy() {
+        return forceFieldStrategy;
+    }
 
-    public KillAura.Strategy getForceFieldStrategy() {return forceFieldStrategy;}
-
-    public boolean shouldIdleWhenNotActive() {return idleWhenNotActive;}
+    public boolean shouldIdleWhenNotActive() {
+        return idleWhenNotActive;
+    }
 
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
     }
 
-    public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
+    public boolean shouldCollectPickaxeFirst() {
+        return collectPickaxeFirst;
+    }
 
-    public boolean shouldAvoidDrowning() {return avoidDrowning;}
+    public boolean shouldAvoidDrowning() {
+        return avoidDrowning;
+    }
 
-    public boolean shouldAvoidSearchingForDungeonChests() {return avoidSearchingDungeonChests;}
+    public boolean shouldAvoidSearchingForDungeonChests() {
+        return avoidSearchingDungeonChests;
+    }
 
     public boolean isThrowaway(Item item) {
-        return idArrayContainsItem(item, throwawayItems);
+        return throwawayItems.contains(item);
     }
+
     public boolean isImportant(Item item) {
-        return idArrayContainsItem(item, importantItems);
+        return importantItems.contains(item);
     }
+
     public boolean shouldThrowawayUnusedItems() {
         return this.throwAwayUnusedItems;
     }
+
     public Item[] getThrowawayItems(AltoClef mod) {
         List<Item> result = new ArrayList<>();
-        for (int throwawayItem : throwawayItems) {
-            Item item = Item.byRawId(throwawayItem);
-            if (!mod.getBehaviour().isProtected(item)) {
-                result.add(item);
+        for (Item throwawayItem : throwawayItems) {
+            if (!mod.getBehaviour().isProtected(throwawayItem)) {
+                result.add(throwawayItem);
             }
         }
         return Util.toArray(Item.class, result);
     }
-    public Item[] getThrowawayItemsRaw() {
-        Item[] result = new Item[throwawayItems.length];
-        for (int i = 0; i < throwawayItems.length; ++i) {
-            result[i] = Item.byRawId(throwawayItems[i]);
-        }
-        return result;
-    }
 
-    public String[] getWhisperFormats() {return whisperFormats;}
+    public String[] getWhisperFormats() {
+        return whisperFormats;
+    }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
         for (ProtectionRange protection : areasToProtect) {
@@ -500,12 +530,12 @@ public class Settings {
         return false;
     }
 
-    private static boolean idArrayContainsItem(Item item, int[] ids) {
-        int id = Item.getRawId(item);
-        for (int check : ids) {
-            if (check == id) return true;
-        }
-        return false;
+    public DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR getOverworldToNetherBehaviour() {
+        return overworldToNetherBehaviour;
+    }
+
+    public BlockPos getHomeBasePosition() {
+        return homeBasePosition;
     }
 
     private static class ProtectionRange {
@@ -520,6 +550,142 @@ public class Settings {
 
         public String toString() {
             return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
+        }
+    }
+
+    static class ItemSerializer extends StdSerializer<Object> {
+        public ItemSerializer() {
+            this(null);
+        }
+
+        public ItemSerializer(Class<Object> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            List<Item> items = (List<Item>) value;
+            gen.writeStartArray();
+            for (Item item : items) {
+                String key = ItemUtil.trimItemName(item.getTranslationKey());
+                gen.writeString(key);
+            }
+            gen.writeEndArray();
+        }
+    }
+
+    static class ItemDeserializer extends StdDeserializer<Object> {
+        public ItemDeserializer() {
+            this(null);
+        }
+
+        public ItemDeserializer(Class<Object> vc) {
+            super(vc);
+        }
+
+        @Override
+        public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            List<Item> result = new ArrayList<>();
+
+            if (p.getCurrentToken() != JsonToken.START_ARRAY) {
+                throw new JsonParseException("Start array expected", p.getCurrentLocation());
+            }
+            while (p.nextToken() != JsonToken.END_ARRAY) {
+                Item item;
+                if (p.getCurrentToken() == JsonToken.VALUE_NUMBER_INT) {
+                    // Old raw id (ew stinky)
+                    int rawId = p.getIntValue();
+                    item = Item.byRawId(rawId);
+                } else {
+                    // Translation key (the proper way)
+                    String itemKey = p.getText();
+                    itemKey = ItemUtil.trimItemName(itemKey);
+                    item = Registry.ITEM.get(new Identifier(itemKey));
+                }
+                result.add(item);
+            }
+
+            return result;
+        }
+    }
+
+    static class BlockPosSerializer extends StdSerializer<BlockPos> {
+        public BlockPosSerializer() {
+            this(null);
+        }
+
+        public BlockPosSerializer(Class<BlockPos> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(BlockPos value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeString(value.getX() + ", " + value.getY() + ", " + value.getZ());
+        }
+    }
+
+    static class BlockPosDeserializer extends StdDeserializer<BlockPos> {
+        public BlockPosDeserializer() {
+            this(null);
+        }
+
+        public BlockPosDeserializer(Class<BlockPos> vc) {
+            super(vc);
+        }
+
+        int trySet(JsonParser p, Map<String, Integer> map, String key) throws JsonParseException {
+            if (map.containsKey(key)) {
+                return map.get(key);
+            }
+            throw new JsonParseException(p, "Blockpos should have key for " + key + " key, but one was not found.");
+        }
+
+        int tryParse(JsonParser p, String whole, String part) throws JsonParseException {
+            try {
+                return Integer.parseInt(part.trim());
+            } catch (NumberFormatException e) {
+                throw new JsonParseException(p, "Failed to parse blockpos string \""
+                        + whole + "\", specificaly part \"" + part + "\".");
+            }
+        }
+
+        @Override
+        public BlockPos deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+            if (p.getCurrentToken() == JsonToken.VALUE_STRING) {
+                String bposString = p.getValueAsString();
+                String[] parts = bposString.split(",");
+                if (parts.length != 3) {
+                    throw new JsonParseException(p, "Invalid blockpos string: \"" + bposString + "\", must be in form \"x, y, z\".");
+                }
+                int x = tryParse(p, bposString, parts[0]);
+                int y = tryParse(p, bposString, parts[1]);
+                int z = tryParse(p, bposString, parts[2]);
+                return new BlockPos(x, y, z);
+            } else if (p.getCurrentToken() == JsonToken.START_OBJECT) {
+                Map<String, Integer> parts = new HashMap<>();
+                p.nextToken();
+                while (p.getCurrentToken() != JsonToken.END_OBJECT) {
+                    if (p.getCurrentToken() == JsonToken.FIELD_NAME) {
+                        String fName = p.getCurrentName();
+                        p.nextToken();
+                        if (p.getCurrentToken() != JsonToken.VALUE_NUMBER_INT) {
+                            throw new JsonParseException(p, "Expecting integer token for blockpos. Got: " + p.getCurrentToken());
+                        }
+                        parts.put(p.getCurrentName(), p.getIntValue());
+                        p.nextToken();
+                    } else {
+                        throw new JsonParseException(p, "Invalid structure, expected field name (like x, y or z)");
+                    }
+                }
+                if (parts.size() != 3) {
+                    throw new JsonParseException(p, "Expected [x, y, z] keys to be part of a blockpos object. Got " + Util.arrayToString(Util.toArray(String.class, parts.keySet())));
+                }
+                int x = trySet(p, parts, "x");
+                int y = trySet(p, parts, "y");
+                int z = trySet(p, parts, "z");
+                return new BlockPos(x, y, z);
+            }
+            throw new JsonParseException(p, "Invalid token: " + p.getCurrentToken());
         }
     }
 }

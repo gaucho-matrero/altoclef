@@ -24,10 +24,10 @@ public class GoalFollowEntity implements Goal {
     @Override
     public double heuristic(int x, int y, int z) {
         //synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            double xDiff = x - _entity.getPos().getX();
-            int yDiff = y - _entity.getBlockPos().getY();
-            double zDiff = z - _entity.getPos().getZ();
-            return GoalBlock.calculate(xDiff, yDiff, zDiff);
+        double xDiff = x - _entity.getPos().getX();
+        int yDiff = y - _entity.getBlockPos().getY();
+        double zDiff = z - _entity.getPos().getZ();
+        return GoalBlock.calculate(xDiff, yDiff, zDiff);
         //}
     }
 }

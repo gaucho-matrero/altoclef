@@ -5,11 +5,9 @@ import adris.altoclef.AltoClef;
 public class UserAuth {
     private static final String BLACKLIST_PATH = "altoclef_butler_blacklist.txt";
     private static final String WHITELIST_PATH = "altoclef_butler_whitelist.txt";
-
+    private final AltoClef _mod;
     private UserListFile _blacklist;
     private UserListFile _whitelist;
-
-    private final AltoClef _mod;
 
     public UserAuth(AltoClef mod) {
         _mod = mod;

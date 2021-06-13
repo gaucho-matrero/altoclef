@@ -9,12 +9,11 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.Timer;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.api.utils.Rotation;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -26,32 +25,23 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.function.Function;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
-    private int _count;
-
-    private Item _target;
-    private Block _toCollect;
-
-    private String _liquidName;
+    private final HashSet<BlockPos> _blacklist = new HashSet<>();
+    private final TimerGame _tryImmediatePickupTimer = new TimerGame(3);
+    private final TimerGame _pickedUpTimer = new TimerGame(0.5);
+    private final int _count;
 
     //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
+    private final Item _target;
+    private final Block _toCollect;
+    private final String _liquidName;
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
 
-    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
-
-    private final HashSet<BlockPos> _blacklist = new HashSet<>();
-
-    private final Timer _reachTimer = new Timer(2);
-
-    private BlockPos _targetLiquid;
-
-    private final Timer _tryImmediatePickupTimer = new Timer(3);
-    private final Timer _pickedUpTimer = new Timer(0.5);
-
-    private MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private boolean wasWandering = false;
 
     public CollectBucketLiquidTask(String liquidName, Item filledBucket, int targetCount, Block toCollect) {
         super(filledBucket, targetCount);
@@ -84,10 +74,18 @@ public class CollectBucketLiquidTask extends ResourceTask {
         _wanderTask.resetWander();
 
         _progressChecker.reset();
-        _reachTimer.reset();
     }
 
 
+    @Override
+    protected Task onTick(AltoClef mod) {
+        Task result = super.onTick(mod);
+        // Reset our "first time" timeout/wander flag.
+        if (!thisOrChildAreTimedOut()) {
+            wasWandering = false;
+        }
+        return result;
+    }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
@@ -99,14 +97,15 @@ public class CollectBucketLiquidTask extends ResourceTask {
         if (_tryImmediatePickupTimer.elapsed()) {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
             if (standingInside == _toCollect) {
-                mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
+                setDebugState("Trying to collect (we are in it)");
+                mod.getInputControls().forceLook(0, 90);
+                //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
                 //Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
                 _tryImmediatePickupTimer.reset();
                 if (!mod.getInventoryTracker().equipItem(Items.BUCKET)) {
                     Debug.logWarning("Failed to equip bucket.");
                 } else {
-                    //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-                    MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                    mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                     mod.getExtraBaritoneSettings().setInteractionPaused(true);
                     _pickedUpTimer.reset();
                     _progressChecker.reset();
@@ -116,7 +115,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         if (!_pickedUpTimer.elapsed()) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
             _progressChecker.reset();
             // Wait for force pickup
@@ -125,7 +123,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Failed to receive: Wandering.");
-            _reachTimer.reset();
             _progressChecker.reset();
             return _wanderTask;
         }
@@ -134,17 +131,17 @@ public class CollectBucketLiquidTask extends ResourceTask {
         int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
-            _reachTimer.reset();
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
         Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
             if (_blacklist.contains(blockPos)) return true;
-            if (mod.getBlockTracker().unreachable(blockPos)) return true; // I think there was a bug here? Doesn't hurt to include though.
+            if (mod.getBlockTracker().unreachable(blockPos)) return true;
+            if (mod.getBlockTracker().unreachable(blockPos.up())) return true; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
-            if (_toCollect == Blocks.LAVA && mod.getWorld().getBlockState(blockPos.up()).getBlock() == Blocks.BEDROCK) {
+            if (_toCollect == Blocks.LAVA && !WorldUtil.canBreak(mod, blockPos.up())) {
                 return true;
             }
 
@@ -152,61 +149,35 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }), _toCollect);
 
         // Find nearest water and right click it
-        BlockPos nearestLiquid = getNearestLiquid.apply(mod.getPlayer().getPos());
-        _targetLiquid = nearestLiquid;
-        if (nearestLiquid != null) {
+        if (getNearestLiquid.apply(mod.getPlayer().getPos()) != null) {
             // We want to MINIMIZE this distance to liquid.
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
 
-            // If we're able to reach the block but we fail...
-            if (mod.getCustomBaritone().getInteractWithBlockPositionProcess().isActive()) {
-                Optional<Rotation> reach = mod.getCustomBaritone().getInteractWithBlockPositionProcess().getCurrentReach();
-                if (reach.isPresent()) {
-                    if (_reachTimer.elapsed()) {
-                        _reachTimer.reset();
-                        Debug.logMessage("Failed to collect liquid at " + nearestLiquid + ", probably an invalid source block. blacklisting and trying another one.");
-                        _blacklist.add(nearestLiquid);
-                        mod.getBlockTracker().requestBlockUnreachable(nearestLiquid);
-                        // Try again.
-                        return null;
-                    }
-                } else {
-                    _reachTimer.reset();
-                }
-            } else {
-                _reachTimer.reset();
-            }
-
             return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
 
                 // Clear above if lava because we can't enter.
-                if (_toCollect == Blocks.LAVA) {
-                    if (WorldUtil.isSolid(mod, blockpos.up())) {
-                        if (!_progressChecker.check(mod)) {
-                            Debug.logMessage("Failed to break, blacklisting & wandering");
-                            mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                            _blacklist.add(blockpos);
-                            return _wanderTask;
-                        }
-                        return new DestroyBlockTask(blockpos.up());
+                if (WorldUtil.isSolid(mod, blockpos.up())) {
+                    if (!_progressChecker.check(mod)) {
+                        Debug.logMessage("Failed to break, blacklisting & wandering");
+                        mod.getBlockTracker().requestBlockUnreachable(blockpos);
+                        _blacklist.add(blockpos);
+                        return _wanderTask;
                     }
+                    return new DestroyBlockTask(blockpos.up());
                 }
 
-                InteractItemWithBlockTask task = new InteractItemWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
-                // noinspection rawtypes
-                task.TimedOut.addListener(
-                        new ActionListener() {
-                            @Override
-                            public void invoke(Object value) {
-                                Debug.logInternal("CURRENT BLACKLIST: " + Util.arrayToString(_blacklist.toArray()));
-                                Debug.logMessage("Blacklisted " + blockpos);
-                                mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                                _blacklist.add(blockpos);
-
-                            }
-                        });
-                return task;
+                // We're close enough AND we see the block!
+                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookUtil.cleanLineOfSight(mod.getPlayer(), blockpos, 5)) {
+                    return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
+                }
+                // Get close enough.
+                // up because if we go below we'll try to move next to the liquid (for lava, not a good move)
+                if (this.thisOrChildAreTimedOut() && !wasWandering) {
+                    mod.getBlockTracker().requestBlockUnreachable(blockpos.up());
+                    wasWandering = true;
+                }
+                return new GetCloseToBlockTask(blockpos.up());
             }, getNearestLiquid, _toCollect);
             //return task;
         }
@@ -227,7 +198,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         mod.getBlockTracker().stopTracking(_toCollect);
         mod.getBehaviour().pop();
         //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-        MinecraftClient.getInstance().options.keyUse.setPressed(false);
         mod.getExtraBaritoneSettings().setInteractionPaused(false);
     }
 
@@ -251,6 +221,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             super("water", Items.WATER_BUCKET, targetCount, Blocks.WATER);
         }
     }
+
     public static class CollectLavaBucketTask extends CollectBucketLiquidTask {
         public CollectLavaBucketTask(int targetCount) {
             super("lava", Items.LAVA_BUCKET, targetCount, Blocks.LAVA);

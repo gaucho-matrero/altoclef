@@ -1,19 +1,20 @@
 package adris.altoclef.util.csharpisbetter;
 
-// Simple timer
-public class Timer {
-
+public abstract class BaseTimer {
     private double _prevTime = 0;
     private double _interval;
 
-    public Timer(double interval) {
-        _interval = interval;
+    public BaseTimer(double intervalSeconds) {
+        _interval = intervalSeconds;
     }
 
     public double getDuration() {
         return currentTime() - _prevTime;
     }
-    public void setInterval(double interval) {_interval = interval;}
+
+    public void setInterval(double interval) {
+        _interval = interval;
+    }
 
     public boolean elapsed() {
         return getDuration() > _interval;
@@ -27,7 +28,6 @@ public class Timer {
         _prevTime = 0;
     }
 
-    public static double currentTime() {
-        return (double) System.currentTimeMillis() / 1000.0;
-    }
+    protected abstract double currentTime();
+
 }

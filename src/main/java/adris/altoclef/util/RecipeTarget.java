@@ -4,8 +4,8 @@ import java.util.Objects;
 
 public class RecipeTarget {
 
-    private CraftingRecipe _recipe;
-    private ItemTarget _item;
+    private final CraftingRecipe _recipe;
+    private final ItemTarget _item;
 
     public RecipeTarget(ItemTarget item, CraftingRecipe recipe) {
         _item = item;
@@ -15,6 +15,7 @@ public class RecipeTarget {
     public CraftingRecipe getRecipe() {
         return _recipe;
     }
+
     public ItemTarget getItem() {
         return _item;
     }

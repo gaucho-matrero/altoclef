@@ -12,9 +12,11 @@ public class CollectWoodenDoorTask extends CraftWithMatchingPlanksTask {
     public CollectWoodenDoorTask(Item[] targets, ItemTarget planks, int count) {
         super(targets, createRecipe(planks), new boolean[]{true, true, false, true, true, false, true, true, false}, count);
     }
+
     public CollectWoodenDoorTask(Item target, String plankCatalogueName, int count) {
         this(new Item[]{target}, new ItemTarget(plankCatalogueName, 1), count);
     }
+
     public CollectWoodenDoorTask(int count) {
         this(ItemUtil.WOOD_DOOR, TaskCatalogue.getItemTarget("planks", 1), count);
     }

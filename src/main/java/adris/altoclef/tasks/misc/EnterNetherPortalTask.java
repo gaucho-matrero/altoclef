@@ -6,7 +6,7 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,13 +15,18 @@ public class EnterNetherPortalTask extends Task {
     private final Task _getPortalTask;
     private final Dimension _targetDimension;
 
-    private Timer _portalTimeout = new Timer(10);
-    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
+    private final TimerGame _portalTimeout = new TimerGame(10);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
 
     private boolean _leftPortal;
 
+    public EnterNetherPortalTask(Dimension targetDimension) {
+        this(null, targetDimension);
+    }
+
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
-        if (targetDimension == Dimension.END) throw new IllegalArgumentException("Can't build a nether portal to the end.");
+        if (targetDimension == Dimension.END)
+            throw new IllegalArgumentException("Can't build a nether portal to the end.");
         _getPortalTask = getPortalTask;
         _targetDimension = targetDimension;
     }
@@ -59,6 +64,9 @@ public class EnterNetherPortalTask extends Task {
         BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
                 block -> {
                     // REQUIRE that there be solid ground beneath us.
+                    if (!mod.getChunkTracker().isChunkLoaded(block)) {
+                        return false;
+                    }
                     BlockPos below = block.down();
                     boolean canStand = WorldUtil.isSolid(mod, below);
                     return !canStand;
@@ -66,7 +74,7 @@ public class EnterNetherPortalTask extends Task {
                 Blocks.NETHER_PORTAL);
         if (portal != null) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(),  (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;
@@ -86,7 +94,7 @@ public class EnterNetherPortalTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof EnterNetherPortalTask) {
             EnterNetherPortalTask task = (EnterNetherPortalTask) obj;
-            return (task._getPortalTask.equals(_getPortalTask) && task._targetDimension.equals(_targetDimension));
+            return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
         }
         return false;
     }

@@ -1,7 +1,8 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.BaseTimer;
+import adris.altoclef.util.csharpisbetter.TimerReal;
 import net.minecraft.client.MinecraftClient;
 
 import java.util.Comparator;
@@ -23,9 +24,9 @@ public class MessageSender {
     );
     //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
-    private final Timer _fastSendTimer = new Timer(0.3f);
-    private final Timer _bigSendTimer = new Timer(3.5);
-    private final Timer _bigBigSendTimer = new Timer(10);
+    private final BaseTimer _fastSendTimer = new TimerReal(0.3f);
+    private final BaseTimer _bigSendTimer = new TimerReal(3.5);
+    private final BaseTimer _bigBigSendTimer = new TimerReal(10);
 
     private int _messageCounter = 0;
 
@@ -33,36 +34,41 @@ public class MessageSender {
     private int _slowCount;
 
     public void tick() {
-        if (_bigBigSendTimer.elapsed()) {
-            if (_bigSendTimer.elapsed()) {
-                if (_fastSendTimer.elapsed()) {
-                    if (!_whisperQueue.isEmpty()) {
-                        _fastSendTimer.reset();
-                        BaseMessage msg = _whisperQueue.poll();
-                        assert msg != null;
-                        sendChatInstant(msg.getChatInput());
-                        _fastCount++;
-                        if (_fastCount >= FAST_LIMIT) {
-                            _bigSendTimer.reset();
-                            _fastCount = 0;
-                            _slowCount++;
-                            if (_slowCount >= SLOW_LIMIT) {
-                                _bigBigSendTimer.reset();
-                                _slowCount = 0;
-                            }
-                        }
-                    }
-                }
+        if (canSendMessage()) {
+            if (!_whisperQueue.isEmpty()) {
+                BaseMessage msg = _whisperQueue.poll();
+                assert msg != null;
+                sendChatUpdateTimers(msg.getChatInput());
             }
         }
     }
+
     public void enqueueWhisper(String username, String message, MessagePriority priority) {
         _whisperQueue.add(new Whisper(username, message, priority, _messageCounter++));
     }
+
     public void enqueueChat(String message, MessagePriority priority) {
         _whisperQueue.add(new ChatMessage(message, priority, _messageCounter++));
     }
 
+    private boolean canSendMessage() {
+        return _bigBigSendTimer.elapsed() && _bigSendTimer.elapsed() && _fastSendTimer.elapsed();
+    }
+
+    private void sendChatUpdateTimers(String message) {
+        sendChatInstant(message);
+        _fastSendTimer.reset();
+        _fastCount++;
+        if (_fastCount >= FAST_LIMIT) {
+            _bigSendTimer.reset();
+            _fastCount = 0;
+            _slowCount++;
+            if (_slowCount >= SLOW_LIMIT) {
+                _bigBigSendTimer.reset();
+                _slowCount = 0;
+            }
+        }
+    }
 
     private void sendChatInstant(String message) {
         if (MinecraftClient.getInstance().player == null) {
@@ -99,6 +105,7 @@ public class MessageSender {
             return "/msg " + username + " " + message;
         }
     }
+
     private static class ChatMessage extends BaseMessage {
 
         public String message;
@@ -108,6 +115,7 @@ public class MessageSender {
             this.message = message;
 
         }
+
         @Override
         public String getChatInput() {
             return message;

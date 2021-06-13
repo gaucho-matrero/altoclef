@@ -3,7 +3,6 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalDodgeProjectiles;
 import baritone.api.pathing.goals.Goal;
 

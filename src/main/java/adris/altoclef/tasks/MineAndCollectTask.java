@@ -8,7 +8,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorInventorySlot;
@@ -19,7 +19,10 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.MiningToolItem;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -34,7 +37,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     private final MiningRequirement _requirement;
 
-    private final Timer _cursorStackTimer = new Timer(3);
+    private final TimerGame _cursorStackTimer = new TimerGame(3);
 
     private final MineOrCollectTask _subtask;
 
@@ -44,12 +47,15 @@ public class MineAndCollectTask extends ResourceTask {
         _blocksToMine = blocksToMine;
         _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
     }
+
     public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
         this(blocksToMine, itemTargetToBlockList(blocksToMine), requirement);
     }
+
     public MineAndCollectTask(ItemTarget target, Block[] blocksToMine, MiningRequirement requirement) {
-        this(new ItemTarget[] {target}, blocksToMine, requirement);
+        this(new ItemTarget[]{target}, blocksToMine, requirement);
     }
+
     public MineAndCollectTask(Item item, int count, Block[] blocksToMine, MiningRequirement requirement) {
         this(new ItemTarget(item, count), blocksToMine, requirement);
     }
@@ -57,7 +63,7 @@ public class MineAndCollectTask extends ResourceTask {
     public static Block[] itemTargetToBlockList(ItemTarget[] targets) {
         List<Block> result = new ArrayList<>(targets.length);
         for (ItemTarget target : targets) {
-            for(Item item : target.getMatches()) {
+            for (Item item : target.getMatches()) {
                 result.add(Block.getBlockFromItem(item));
             }
         }
@@ -153,16 +159,11 @@ public class MineAndCollectTask extends ResourceTask {
 
         private final Block[] _blocks;
         private final ItemTarget[] _targets;
-
-        private BlockPos _miningPos;
-
-        private AltoClef _mod;
-
         private final Set<BlockPos> _blacklist = new HashSet<>();
-
         private final MovementProgressChecker _progressChecker = new MovementProgressChecker(1);
-
         private final Task _pickupTask;
+        private BlockPos _miningPos;
+        private AltoClef _mod;
 
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
@@ -180,7 +181,7 @@ public class MineAndCollectTask extends ResourceTask {
                 ItemEntity item = (ItemEntity) obj;
                 return item.getPos();
             }
-            throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+            throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
         }
 
         @Override
@@ -190,10 +191,7 @@ public class MineAndCollectTask extends ResourceTask {
                 closestBlock = mod.getBlockTracker().getNearestTracking(pos, (check) -> {
                     if (_blacklist.contains(check)) return true;
                     // Filter out blocks that will get us into trouble. TODO: Blacklist
-                    if (!MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check)) {
-                        return true;
-                    }
-                    return false;
+                    return !MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check);
                 }, _blocks);
             }
             ItemEntity closestDrop = null;
@@ -201,8 +199,8 @@ public class MineAndCollectTask extends ResourceTask {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock == null? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
-            double dropSq = closestDrop == null? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos);
+            double blockSq = closestBlock == null ? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
+            double dropSq = closestDrop == null ? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos);
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
@@ -254,7 +252,7 @@ public class MineAndCollectTask extends ResourceTask {
 
                 return _pickupTask;
             }
-            throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null? obj.getClass().toString() : "(null object)"));
+            throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
         }
 
         @Override

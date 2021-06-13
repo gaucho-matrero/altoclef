@@ -6,9 +6,8 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.screen.GenericContainerScreenHandler;
@@ -17,11 +16,11 @@ import net.minecraft.util.math.BlockPos;
 public class PickupFromChestTask extends AbstractDoInChestTask {
 
     private final ItemTarget[] _targets;
-    private final Timer _actionTimer = new Timer(0);
+    private final TimerGame _actionTimer = new TimerGame(0);
 
     private final BlockPos _targetChest;
 
-    public PickupFromChestTask(BlockPos targetChest, ItemTarget ...targets) {
+    public PickupFromChestTask(BlockPos targetChest, ItemTarget... targets) {
         super(targetChest);
         _targets = targets;
         _targetChest = targetChest;

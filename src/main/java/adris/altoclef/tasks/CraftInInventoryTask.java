@@ -11,11 +11,9 @@ import adris.altoclef.util.slots.Slot;
 public class CraftInInventoryTask extends ResourceTask {
 
     private final CraftingRecipe _recipe;
-
-    private boolean _fullCheckFailed = false;
-
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
+    private boolean _fullCheckFailed = false;
 
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
@@ -23,9 +21,11 @@ public class CraftInInventoryTask extends ResourceTask {
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
+
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
         this(target, recipe, true, false);
     }
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
@@ -93,6 +93,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected String toCraftingDebugStringName() {
         return "Craft 2x2 Task";
     }
+
     protected boolean isCraftingEqual(CraftInInventoryTask other) {
         return true;
     }

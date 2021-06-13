@@ -15,8 +15,9 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 public class ReplaceBlocksTask extends Task {
 
@@ -28,20 +29,38 @@ public class ReplaceBlocksTask extends Task {
 
     private final BlockPos _from;
     private final BlockPos _to;
-
+    private final Deque<BlockPos> _forceReplace = new ArrayDeque<>();
+    private final ActionListener<PlayerExtraController.BlockBrokenEvent> blockBrokenListener = new ActionListener<PlayerExtraController.BlockBrokenEvent>() {
+        @Override
+        public void invoke(PlayerExtraController.BlockBrokenEvent evt) {
+            if (evt.player.equals(MinecraftClient.getInstance().player)) {
+                if (isWithinRange(evt.blockPos)) {
+                    boolean wasAReplacable = Util.arrayContains(_toFind, evt.blockState.getBlock());
+                    if (wasAReplacable) {
+                        Debug.logMessage("ADDED REPLACABLE FORCE: " + evt.blockPos);
+                        _forceReplace.push(evt.blockPos);
+                    } else {
+                        Debug.logMessage("Destroyed a non replacable block (delete this print if things are good lol)");
+                    }
+                } else {
+                    Debug.logMessage("Not within range (TODO: DELETE THIS PRINT)");
+                }
+            } else {
+                Debug.logMessage("INEQUAL PLAYER (delete this print if things are good lol)");
+            }
+        }
+    };
     private Task _collectMaterialsTask;
-
     private Task _replaceTask;
 
-    private final Stack<BlockPos> _forceReplace = new Stack<>();
-
-    public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block ...toFind) {
+    public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block... toFind) {
         _toFind = toFind;
         _toReplace = toReplace;
         _from = from;
         _to = to;
     }
-    public ReplaceBlocksTask(ItemTarget toReplace, Block ...toFind) {
+
+    public ReplaceBlocksTask(ItemTarget toReplace, Block... toFind) {
         this(toReplace, null, null, toFind);
     }
 
@@ -89,7 +108,7 @@ public class ReplaceBlocksTask extends Task {
         Block[] blocksToPlace = Util.itemsToBlocks(_toReplace.getMatches());
 
         // If we are forced to replace something we broke, do it now.
-        while (!_forceReplace.empty()) {
+        while (!_forceReplace.isEmpty()) {
             BlockPos toReplace = _forceReplace.pop();
             if (!Util.arrayContains(blocksToPlace, mod.getWorld().getBlockState(toReplace).getBlock())) {
                 _replaceTask = new PlaceBlockTask(toReplace, blocksToPlace);
@@ -101,9 +120,9 @@ public class ReplaceBlocksTask extends Task {
         setDebugState("Searching for blocks to replace...");
         return new DoToClosestBlockTask(
                 () -> mod.getPlayer().getPos(), whereToPlace -> {
-                    _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
-                    return _replaceTask;
-                },
+            _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
+            return _replaceTask;
+        },
                 pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore), _toFind)
         );
     }
@@ -128,27 +147,6 @@ public class ReplaceBlocksTask extends Task {
         return "Replacing " + Util.arrayToString(_toFind) + " with " + _toReplace;
     }
 
-    private final ActionListener<PlayerExtraController.BlockBrokenEvent> blockBrokenListener = new ActionListener<PlayerExtraController.BlockBrokenEvent>() {
-        @Override
-        public void invoke(PlayerExtraController.BlockBrokenEvent evt) {
-            if (evt.player.equals(MinecraftClient.getInstance().player)) {
-                if (isWithinRange(evt.blockPos)) {
-                    boolean wasAReplacable = Util.arrayContains(_toFind, evt.blockState.getBlock());
-                    if (wasAReplacable) {
-                        Debug.logMessage("ADDED REPLACABLE FORCE: " + evt.blockPos);
-                        _forceReplace.push(evt.blockPos);
-                    } else {
-                        Debug.logMessage("Destroyed a non replacable block (delete this print if things are good lol)");
-                    }
-                } else {
-                    Debug.logMessage("Not within range (TODO: DELETE THIS PRINT)");
-                }
-            } else {
-                Debug.logMessage("INEQUAL PLAYER (delete this print if things are good lol)");
-            }
-        }
-    };
-
     private boolean isWithinRange(BlockPos pos) {
         if (_from != null) {
             if (_from.getX() > pos.getX() || _from.getY() > pos.getY() || _from.getZ() > pos.getZ()) {
@@ -156,9 +154,7 @@ public class ReplaceBlocksTask extends Task {
             }
         }
         if (_to != null) {
-            if (_to.getX() < pos.getX() || _to.getY() < pos.getY() || _to.getZ() < pos.getZ()) {
-                return false;
-            }
+            return _to.getX() >= pos.getX() && _to.getY() >= pos.getY() && _to.getZ() >= pos.getZ();
         }
         return true;
     }

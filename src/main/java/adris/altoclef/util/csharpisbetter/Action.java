@@ -1,19 +1,14 @@
 package adris.altoclef.util.csharpisbetter;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 public class Action<T> {
 
     private final List<ActionListener<T>> _consumers = new ArrayList<>();
-
-    private boolean _lock = false;
-
     private final List<ActionListener<T>> _toAdd = new ArrayList<>();
     private final List<ActionListener<T>> _toRemove = new ArrayList<>();
+    private boolean _lock = false;
 
     public void addListener(ActionListener<T> listener) {
         if (_lock) {
@@ -37,7 +32,7 @@ public class Action<T> {
         _lock = true;
         _consumers.addAll(_toAdd);
         _toAdd.clear();
-        for(ActionListener<T> consumer : _consumers) {
+        for (ActionListener<T> consumer : _consumers) {
             consumer.invoke(value);
         }
         _lock = false;

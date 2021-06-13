@@ -5,8 +5,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ProjectileUtil;
 import baritone.api.pathing.goals.Goal;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -21,12 +19,19 @@ public class GoalDodgeProjectiles implements Goal {
     private final double _distanceHorizontal;
     private final double _distanceVertical;
 
-    private List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
+    private final List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
 
     public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
         _mod = mod;
         _distanceHorizontal = distanceHorizontal;
         _distanceVertical = distanceVertical;
+    }
+
+    private static boolean isInvalidProjectile(CachedProjectile projectile) {
+        //noinspection RedundantIfStatement
+        if (projectile == null) return true;
+        //if (projectile.getVelocity().lengthSquared() < 0.1) return false;
+        return false;
     }
 
     @Override
@@ -84,18 +89,11 @@ public class GoalDodgeProjectiles implements Goal {
         return -1 * costFactor;
     }
 
-    private static boolean isInvalidProjectile(CachedProjectile projectile) {
-        //noinspection RedundantIfStatement
-        if (projectile == null) return true;
-        //if (projectile.getVelocity().lengthSquared() < 0.1) return false;
-        return false;
-    }
-
     private boolean isHitCloseEnough(Vec3d hit, Vec3d to) {
         Vec3d delta = to.subtract(hit);
-        double horizontalSquared = delta.x*delta.x + delta.z*delta.z;
+        double horizontalSquared = delta.x * delta.x + delta.z * delta.z;
         double vertical = Math.abs(delta.y);
-        return horizontalSquared < _distanceHorizontal*_distanceHorizontal && vertical < _distanceVertical;
+        return horizontalSquared < _distanceHorizontal * _distanceHorizontal && vertical < _distanceVertical;
     }
 
     private List<CachedProjectile> getProjectiles() {

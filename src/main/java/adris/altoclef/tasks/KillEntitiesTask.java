@@ -11,8 +11,9 @@ public class KillEntitiesTask extends DoToClosestEntityTask {
         super(() -> {
             assert MinecraftClient.getInstance().player != null;
             return MinecraftClient.getInstance().player.getPos();
-        }, KillEntityTask::new, ignorePredicate,  entities);
+        }, KillEntityTask::new, ignorePredicate, entities);
     }
+
     public KillEntitiesTask(Class... entities) {
         super(() -> {
             assert MinecraftClient.getInstance().player != null;

@@ -40,8 +40,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // TODO: Do them in order.
         _doTask = new DoSmeltInFurnaceTask(targets[0]);
     }
+
     public SmeltInFurnaceTask(SmeltTarget target) {
-        this(new SmeltTarget[] {target});
+        this(new SmeltTarget[]{target});
     }
 
     private static ItemTarget[] extractItemTargets(SmeltTarget[] recipeTargets) {
@@ -76,7 +77,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close furnace screen
-        if (mod.inGame()) {
+        if (AltoClef.inGame()) {
             mod.getPlayer().closeHandledScreen();
         }
     }
@@ -104,14 +105,10 @@ public class SmeltInFurnaceTask extends ResourceTask {
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask implements ITaskWithDowntime {
 
         private final SmeltTarget _target;
-
+        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
         private ContainerTracker.FurnaceData _currentFurnace;
-
         // When we're expected to run out of fuel.
         private int _runOutOfFuelExpectedTick;
-
-        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
-
         private boolean _ignoreMaterials = false;
 
         private boolean _ranOutOfMaterials = false;
@@ -128,7 +125,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
             if (obj instanceof DoSmeltInFurnaceTask) {
-                DoSmeltInFurnaceTask other = (DoSmeltInFurnaceTask)obj;
+                DoSmeltInFurnaceTask other = (DoSmeltInFurnaceTask) obj;
                 return other._target.equals(_target) && other._ignoreMaterials == _ignoreMaterials;
             }
             return false;
@@ -152,19 +149,19 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Check for materials.
             // If materials are already in the furnace, we need less of them.
             if (!_ignoreMaterials) {
-                ItemTarget neededMaterials = new ItemTarget(_target.getMaterial());
-                neededMaterials.targetCount -= mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
+                int materialsNeeded = _target.getMaterial().getTargetCount();
+                materialsNeeded -= mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
                 if (_currentFurnace != null) {
-                    if (neededMaterials.matches(_currentFurnace.materials.getItem())) {
-                        neededMaterials.targetCount -= _currentFurnace.materials.getCount();
+                    if (_target.getMaterial().matches(_currentFurnace.materials.getItem())) {
+                        materialsNeeded -= _currentFurnace.materials.getCount();
                     }// else {
                     //Debug.logMessage("Material does NOT match " + _currentFurnace.materials.getItem().getTranslationKey());
                     //}
                     //Debug.logMessage("Material Matches: %d - (%d + %d + %d)", neededMaterials.targetCount, _currentFurnace.materials.getCount(), _currentFurnace.output.getCount(), mod.getInventoryTracker().getItemCount(_target.getItem()));
-                    neededMaterials.targetCount -= _currentFurnace.output.getCount();
+                    materialsNeeded -= _currentFurnace.output.getCount();
                 }
-                int has = mod.getInventoryTracker().getItemCountIncludingTable(neededMaterials);
-                if (has < neededMaterials.targetCount) {
+                ItemTarget neededMaterials = new ItemTarget(_target.getMaterial(), materialsNeeded);
+                if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
                     setDebugState("Collecting materials: " + neededMaterials);
                     _smeltProgressChecker.reset();
                     return getMaterialTask(neededMaterials);
@@ -178,7 +175,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             boolean needsNewFurnace = getTargetContainerPosition() == null;
 
-            double fuelNeeded = _target.getMaterial().targetCount - mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
+            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
 
             double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
 
@@ -204,7 +201,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // virtual
         protected Task getMaterialTask(ItemTarget target) {
             if (target.isCatalogueItem()) {
-                return TaskCatalogue.getItemTask(target.getCatalogueName(), target.targetCount);
+                return TaskCatalogue.getItemTask(target.getCatalogueName(), target.getTargetCount());
             } else {
                 Debug.logWarning("Smelt in furnace: material target is not catalogued: " + target + ". Override getMaterialTask or make sure the given material is catalogued!");
                 return null;
@@ -227,11 +224,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Move materials
 
             ItemStack output = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            int outputCount = _target.getItem().matches(output.getItem())?  output.getCount() : 0;
+            int outputCount = _target.getItem().matches(output.getItem()) ? output.getCount() : 0;
             int materialCount = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount();
 
             int currentlyHeld = mod.getInventoryTracker().getItemCount(_target.getItem());
-            int targetCount = _target.getItem().targetCount;
+            int targetCount = _target.getItem().getTargetCount();
             // How many MORE materials do we need in the slot to end up with the correct number of items?
             int toMove = targetCount - (outputCount + materialCount + currentlyHeld);
             if (_ignoreMaterials) {
@@ -246,8 +243,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 //Debug.logInternal("OOF: " + toMove + " : " + this._target.getMaterial().getMatches()[0].getTranslationKey());
             }
             if (toMove > 0) {
-                ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial());
-                toMoveTarget.targetCount = toMove;
+                ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial(), toMove);
                 int moved = mod.getInventoryTracker().moveItemToSlot(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
 
                 if (moved != toMove && !_ignoreMaterials) {
@@ -316,7 +312,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             // We got stone
             if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) > 8) {
-                double cost = 300 - (50 * (double)mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
+                double cost = 300 - (50 * (double) mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
                 return Math.max(cost, 60);
             }
             // We got pick
@@ -345,7 +341,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // TODO:!! only if we're smelting and have all of our materials & fuel met!!
             Debug.logError("TODO: Implement this! I was too lazy to do it last time. Check above TODO.");
             // We're down while our furnace is expected to be burning.
-            int currentTicks = mod.getTicks();
+            int currentTicks = AltoClef.getTicks();
             if (_currentFurnace != null) {
                 if (_currentFurnace.getRemainingFuelNeededToBurnMaterials() <= 0) {
                     // Our furnace is ready to go

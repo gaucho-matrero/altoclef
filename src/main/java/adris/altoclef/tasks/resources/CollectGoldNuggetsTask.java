@@ -13,7 +13,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
 public class CollectGoldNuggetsTask extends ResourceTask {
@@ -47,7 +46,7 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 }
                 // Get gold ingots
                 int nuggiesStillNeeded = _count - potentialNuggies;
-                return TaskCatalogue.getItemTask("gold_ingot", (int)Math.ceil((double)nuggiesStillNeeded / 9.0));
+                return TaskCatalogue.getItemTask("gold_ingot", (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
             case NETHER:
                 setDebugState("Mining nuggies");
                 return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);

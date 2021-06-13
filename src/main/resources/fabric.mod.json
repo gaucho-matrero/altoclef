@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "id": "altoclef",
   "version": "${version}",
-
   "name": "Alto Clef",
   "description": "Plays Block Game",
   "authors": [
@@ -12,10 +11,8 @@
     "homepage": "https://fabricc.net/",
     "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
-
   "license": "CC0-1.0",
   "icon": "assets/altoclef/icon.png",
-
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -25,5 +22,4 @@
   "mixins": [
     "altoclef.mixins.json"
   ]
-
 }

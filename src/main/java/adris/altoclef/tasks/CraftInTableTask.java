@@ -7,7 +7,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
@@ -30,24 +30,28 @@ public class CraftInTableTask extends ResourceTask {
         _targets = targets;
         _craftTask = new DoCraftInTableTask(_targets);
     }
+
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
-        _targets = new RecipeTarget[] {new RecipeTarget(target, recipe)};
+        _targets = new RecipeTarget[]{new RecipeTarget(target, recipe)};
         _craftTask = new DoCraftInTableTask(_targets, collect, ignoreUncataloguedSlots);
     }
+
     public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
         this(target, recipe, true, false);
     }
+
     public CraftInTableTask(Item[] items, int count, CraftingRecipe recipe) {
         this(new ItemTarget(items, count), recipe);
     }
+
     public CraftInTableTask(Item item, int count, CraftingRecipe recipe) {
         this(new ItemTarget(item, count), recipe);
     }
 
     private static ItemTarget[] extractItemTargets(RecipeTarget[] recipeTargets) {
         List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
-        for(RecipeTarget target : recipeTargets) {
+        for (RecipeTarget target : recipeTargets) {
             result.add(target.getItem());
         }
         return Util.toArray(ItemTarget.class, result);
@@ -104,11 +108,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private final boolean _collect;
 
     private final CollectRecipeCataloguedResourcesTask _collectTask;
-
+    private final TimerGame _craftResetTimer = new TimerGame(10);
     private boolean _fullCheckFailed = false;
     private int _craftCount;
-
-    private final Timer _craftResetTimer = new Timer(10);
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, "crafting_table");
@@ -116,6 +118,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         _targets = targets;
         _collect = collect;
     }
+
     public DoCraftInTableTask(RecipeTarget[] targets) {
         this(targets, true, false);
     }
@@ -137,7 +140,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
         mod.getBehaviour().pop();
-        if (mod.inGame()) {
+        if (AltoClef.inGame()) {
             mod.getPlayer().closeHandledScreen();
         }
     }
@@ -165,15 +168,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 }
             }
         }
-        /*
-        // Collect recipe materials first
-        for(RecipeTarget target : _targets) {
-            if (!mod.getInventoryTracker().hasRecipeMaterials(target.getRecipe())) {
-                setDebugState("Collecting materials");
-                return new CollectRecipeCataloguedResourcesTask(target.getRecipe());
-            }
-        }
-         */
 
         if (!isContainerOpen(mod)) {
             _craftResetTimer.reset();

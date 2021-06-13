@@ -1,11 +1,9 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -22,10 +20,11 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     private final Function<BlockPos, Task> _getTargetTask;
 
 
-    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block ...blocks) {
+    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block... blocks) {
         this(getOriginSupplier, getTargetTask, (origin) -> mod.getBlockTracker().getNearestTracking(origin, blocks), blocks);
     }
-    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block ...blocks) {
+
+    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _targetBlocks = blocks;
@@ -58,13 +57,6 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         if (!mod.getChunkTracker().isChunkLoaded(obj)) return true;
 
         return mod.getBlockTracker().blockIsValid(obj, _targetBlocks);
-        /*
-        BlockState state = mod.getWorld().getBlockState(obj);
-        for (Block block : _targetBlocks) {
-            if (state.getBlock().equals(block)) return true;
-        }
-        return false;
-         */
     }
 
     @Override

@@ -14,7 +14,7 @@ import adris.altoclef.util.KillAura;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.ProjectileUtil;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -45,27 +45,32 @@ public class MobDefenseChain extends SingleTaskChain {
     private static final double DANGER_KEEP_DISTANCE = 15;
 
     private static final double SAFE_KEEP_DISTANCE = 8;
-
+    // Kind of a silly solution
+    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[]{SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class, DrownedEntity.class};
     private final KillAura _killAura = new KillAura();
-
+    private final HashMap<Entity, TimerGame> _closeAnnoyingEntities = new HashMap<>();
     private Entity _targetEntity;
-
     private boolean _doingFunkyStuff = false;
-
     private boolean _wasPuttingOutFire = false;
-
-    private final HashMap<Entity, Timer> _closeAnnoyingEntities = new HashMap<>();
-
     private Task _runAwayTask;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
     }
 
+    public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
+        double distance = creeper.squaredDistanceTo(pos);
+        float fuse = creeper.getClientFuseTime(1);
+
+        // Not fusing. We only get fusing crepers.
+        if (fuse <= 0.001f) return 0;
+        return distance * (1 - fuse * fuse);
+    }
+
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (!mod.inGame()) {
+        if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -77,7 +82,7 @@ public class MobDefenseChain extends SingleTaskChain {
         mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+        if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
         // Put out fire if we're standing on one like an idiot
         BlockPos fireBlock = isInsideFireAndOnFire(mod);
@@ -160,7 +165,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity hostile : hostiles) {
-                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity)? 18 : 2;
+                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity) ? 18 : 2;
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
@@ -170,7 +175,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     // Give each hostile a timer, if they're close for too long deal with them.
                     if (isClose) {
                         if (!_closeAnnoyingEntities.containsKey(hostile)) {
-                            _closeAnnoyingEntities.put(hostile, new Timer(12));
+                            _closeAnnoyingEntities.put(hostile, new TimerGame(12));
                             _closeAnnoyingEntities.get(hostile).reset();
                         }
                         if (_closeAnnoyingEntities.get(hostile).elapsed()) {
@@ -214,7 +219,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     // full diamond has 8 bonus toughness
                     // full netherite has 12 bonus toughness
                     int armor = mod.getPlayer().getArmor();
-                    float damage = bestSword == null? 0 : (1 + bestSword.getMaterial().getAttackDamage());
+                    float damage = bestSword == null ? 0 : (1 + bestSword.getMaterial().getAttackDamage());
 
                     int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
 
@@ -251,9 +256,9 @@ public class MobDefenseChain extends SingleTaskChain {
         boolean onFire = mod.getPlayer().isOnFire();
         if (!onFire) return null;
         BlockPos p = mod.getPlayer().getBlockPos();
-        BlockPos[] toCheck = new BlockPos[] {
-            p,
-            p.add(1, 0, 0),
+        BlockPos[] toCheck = new BlockPos[]{
+                p,
+                p.add(1, 0, 0),
                 p.add(1, 0, 1),
                 p.add(1, 0, -1),
                 p.add(0, 0, 1),
@@ -273,7 +278,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private void putOutFire(AltoClef mod, BlockPos pos) {
         Baritone b = mod.getClientBaritone();
         IPlayerContext ctx = b.getPlayerContext();
-        Optional<Rotation> reachable = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) , ctx.playerController().getBlockReachDistance(), false);
+        Optional<Rotation> reachable = RotationUtils.reachableOffset(ctx.player(), pos, new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5), ctx.playerController().getBlockReachDistance(), false);
         if (reachable.isPresent()) {
             b.getLookBehavior().updateTarget(reachable.get(), true);
             if (ctx.isLookingAt(pos)) {
@@ -348,7 +353,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     target = creeper;
                 }
             }
-        } catch (ConcurrentModificationException | ArrayIndexOutOfBoundsException | NullPointerException e ) {
+        } catch (ConcurrentModificationException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             // IDK why but these exceptions happen sometimes. It's extremely bizarre and I have no idea why.
             Debug.logWarning("Weird Exception caught and ignored while scanning for creepers: " + e.getMessage());
             return target;
@@ -364,14 +369,8 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 boolean isGhastBall = projectile.projectileType == FireballEntity.class;
                 if (isGhastBall) {
-                    continue;
                     // Ignore ghast balls
-                    /*
-                    // ignore if it's too far away.
-                    if (!projectile.position.isInRange(mod.getPlayer().getPos(), 40)) {
-                        continue;
-                    }
-                     */
+                    continue;
                 }
                 if (projectile.projectileType == DragonFireballEntity.class) {
                     // Ignore dragon fireballs
@@ -384,10 +383,11 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
-                double horizontalDistance = Math.sqrt(delta.x*delta.x + delta.z*delta.z);
+                double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
                 double verticalDistance = delta.y;
 
-                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) return true;
+                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
+                    return true;
             }
         } catch (ConcurrentModificationException e) {
             Debug.logWarning("Weird exception caught and ignored while checking for nearby projectiles.");
@@ -430,14 +430,14 @@ public class MobDefenseChain extends SingleTaskChain {
             try {
                 ClientPlayerEntity player = mod.getPlayer();
                 List<HostileEntity> hostiles = mod.getEntityTracker().getHostiles();
-                for(HostileEntity entity : hostiles) {
+                for (HostileEntity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
                     if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getBehaviour().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {
                         return true;
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 Debug.logWarning("Weird multithread exception. Will fix later.");
             }
         }
@@ -450,17 +450,7 @@ public class MobDefenseChain extends SingleTaskChain {
         float health = mod.getPlayer().getHealth();
         if (armor <= 15 && health < 3) return true;
         if (armor < 10 && health < 10) return true;
-        if (armor < 5 && health < 18) return true;
-        return false;
-    }
-
-    public static double getCreeperSafety(Vec3d pos, CreeperEntity creeper) {
-        double distance = creeper.squaredDistanceTo(pos);
-        float fuse = creeper.getClientFuseTime(1);
-
-        // Not fusing. We only get fusing crepers.
-        if (fuse <= 0.001f) return 0;
-        return distance * (1 - fuse*fuse);
+        return armor < 5 && health < 18;
     }
 
     public void setTargetEntity(Entity entity) {
@@ -470,6 +460,7 @@ public class MobDefenseChain extends SingleTaskChain {
     public void setForceFieldRange(double range) {
         _killAura.setRange(range);
     }
+
     public void resetForceField() {
         _killAura.setRange(Double.POSITIVE_INFINITY);
     }
@@ -493,7 +484,4 @@ public class MobDefenseChain extends SingleTaskChain {
     public String getName() {
         return "Mob Defense";
     }
-
-    // Kind of a silly solution
-    public static Class[] HOSTILE_ANNOYING_CLASSES = new Class[] {SkeletonEntity.class, ZombieEntity.class, SpiderEntity.class, CaveSpiderEntity.class, WitchEntity.class, PiglinEntity.class, PiglinBruteEntity.class, HoglinEntity.class, ZoglinEntity.class, BlazeEntity.class, WitherSkeletonEntity.class, PillagerEntity.class, DrownedEntity.class};
 }

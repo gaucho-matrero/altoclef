@@ -5,25 +5,24 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 /**
- *
  * TO TEST:
- *  - Do stuff in container works ALL THE WAY up until opening the container
- *      - Crafting table placed down, goes to it
- *      - Crafting table far away, goes to it
- *      - Crafting table non existant, makes one
- *      - Crafting table SUPER far away, makes one
+ * - Do stuff in container works ALL THE WAY up until opening the container
+ * - Crafting table placed down, goes to it
+ * - Crafting table far away, goes to it
+ * - Crafting table non existant, makes one
+ * - Crafting table SUPER far away, makes one
  * TO DO NEXT:
- *  - Craft recipe in the table just like with CraftInInventoryTask
- *  - Test crafting a wooden pickaxe
- *  - Test crafting a stone pickaxe
- *  - Test crafting 2 stone pickaxes. Make sure we __delay__ the crafting table stuff until we get all resources.
+ * - Craft recipe in the table just like with CraftInInventoryTask
+ * - Test crafting a wooden pickaxe
+ * - Test crafting a stone pickaxe
+ * - Test crafting 2 stone pickaxes. Make sure we __delay__ the crafting table stuff until we get all resources.
  */
 
 @SuppressWarnings("ConstantConditions")
@@ -33,16 +32,11 @@ public abstract class DoStuffInContainerTask extends Task {
     private final Block _containerBlock;
 
     private final PlaceBlockNearbyTask _placeTask;
-
-    private BlockPos _cachedContainerPosition = null;
-
-
     // If we decided on placing, force place for at least 10 seconds
-    private final Timer _placeForceTimer = new Timer(10);
-
+    private final TimerGame _placeForceTimer = new TimerGame(10);
     // If we just placed something, stop placing and try going to the nearest container.
-    private final Timer _justPlacedTimer = new Timer(3);
-
+    private final TimerGame _justPlacedTimer = new TimerGame(3);
+    private BlockPos _cachedContainerPosition = null;
     private Task _openTableTask;
 
     public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
@@ -55,7 +49,7 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         if (_openTableTask == null) {
-            _openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), blockpos -> new GetToBlockTask(blockpos, true), _containerBlock);
+            _openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), InteractWithBlockTask::new, _containerBlock);
         }
 
         mod.getBlockTracker().trackBlock(_containerBlock);
@@ -149,7 +143,9 @@ public abstract class DoStuffInContainerTask extends Task {
     }
 
     // Virtual
-    protected BlockPos overrideContainerPosition(AltoClef mod) { return null; }
+    protected BlockPos overrideContainerPosition(AltoClef mod) {
+        return null;
+    }
 
     protected BlockPos getTargetContainerPosition() {
         return _cachedContainerPosition;
@@ -180,6 +176,7 @@ public abstract class DoStuffInContainerTask extends Task {
     protected abstract boolean isSubTaskEqual(DoStuffInContainerTask obj);
 
     protected abstract boolean isContainerOpen(AltoClef mod);
+
     protected abstract Task containerSubTask(AltoClef mod);
 
     protected abstract double getCostToMakeNew(AltoClef mod);

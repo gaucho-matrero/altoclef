@@ -1,9 +1,8 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -20,9 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -48,12 +45,15 @@ public class CollectCropTask extends ResourceTask {
         _cropBlock = cropBlock;
         _collectSeedTask = new PickupDroppedItemTask(new ItemTarget(cropSeed, 1), true);
     }
+
     public CollectCropTask(ItemTarget cropToCollect, Block[] cropBlock, Item... cropSeed) {
         this(cropToCollect, cropBlock, cropSeed, ignore -> false);
     }
+
     public CollectCropTask(ItemTarget cropToCollect, Block cropBlock, Item... cropSeed) {
         this(cropToCollect, new Block[]{cropBlock}, cropSeed);
     }
+
     public CollectCropTask(Item cropItem, int count, Block cropBlock, Item... cropSeed) {
         this(new ItemTarget(cropItem, count), cropBlock, cropSeed);
     }
@@ -104,7 +104,7 @@ public class CollectCropTask extends ResourceTask {
             assert !_emptyCropland.isEmpty();
             return new DoToClosestBlockTask(
                     () -> mod.getPlayer().getPos(),
-                    blockPos -> new InteractItemWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
+                    blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
                     pos -> Util.minItem(_emptyCropland, (block) -> block.getSquaredDistance(pos, false)), Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }
 
@@ -113,8 +113,7 @@ public class CollectCropTask extends ResourceTask {
             // Breaking immature crops will only yield one output! This is a bad move.
             if (mod.getModSettings().shouldReplantCrops() && !isMature(mod, ignoreBlock)) return true;
             // Wheat must be mature always.
-            if (mod.getWorld().getBlockState(ignoreBlock).getBlock() == Blocks.WHEAT && !isMature(mod, ignoreBlock)) return true;
-            return false;
+            return mod.getWorld().getBlockState(ignoreBlock).getBlock() == Blocks.WHEAT && !isMature(mod, ignoreBlock);
         };
 
         // Dimension
@@ -128,7 +127,7 @@ public class CollectCropTask extends ResourceTask {
                 () -> mod.getPlayer().getPos(),
                 blockPos -> {
                     _emptyCropland.add(blockPos);
-                   return new DestroyBlockTask(blockPos);
+                    return new DestroyBlockTask(blockPos);
                 }, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCrop, _cropBlock)
         );
     }
@@ -150,12 +149,14 @@ public class CollectCropTask extends ResourceTask {
     private boolean shouldReplantNow(AltoClef mod) {
         return mod.getModSettings().shouldReplantCrops() && hasEmptyCrops(mod) && mod.getInventoryTracker().hasItem(_cropSeed);
     }
+
     private boolean hasEmptyCrops(AltoClef mod) {
         for (BlockPos pos : _emptyCropland) {
             if (isEmptyCrop(mod, pos)) return true;
         }
         return false;
     }
+
     private boolean isEmptyCrop(AltoClef mod, BlockPos pos) {
         return WorldUtil.isAir(mod, pos);
     }

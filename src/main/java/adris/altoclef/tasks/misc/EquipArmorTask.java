@@ -6,21 +6,20 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 public class EquipArmorTask extends Task {
 
     private final String[] _toEquip;
 
-    private final Timer _moveTimer = new Timer(0.5f);
+    private final TimerGame _moveTimer = new TimerGame(0.5f);
 
-    public EquipArmorTask(String ...toEquip) {
+    public EquipArmorTask(String... toEquip) {
         _toEquip = toEquip;
     }
 

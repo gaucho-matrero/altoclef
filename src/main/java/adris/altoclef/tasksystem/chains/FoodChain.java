@@ -5,6 +5,7 @@ import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.LookUtil;
+import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.effect.StatusEffects;
@@ -15,13 +16,10 @@ import net.minecraft.item.Items;
 
 public class FoodChain extends SingleTaskChain {
 
+    private static final int RIGHT_CLICK_KEY = 1 - 100;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
-
     private boolean _needsFood = false;
-
-
-    private static final int RIGHT_CLICK_KEY = 1 - 100;
 
     public FoodChain(TaskRunner runner) {
         super(runner);
@@ -30,7 +28,7 @@ public class FoodChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (!mod.inGame()) {
+        if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -67,17 +65,13 @@ public class FoodChain extends SingleTaskChain {
         if (hasFood && (needsToEat(mod) || _requestFillup)) {
             Item toUse = getBestItemToEat(mod);
             if (toUse != null) {
-                //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
-                _isTryingToEat = true;
-                _requestFillup = true;
 
                 // Make sure we're not facing a container
                 if (!LookUtil.tryAvoidingInteractable(mod)) {
                     return Float.NEGATIVE_INFINITY;
                 }
 
-                mod.getInventoryTracker().equipItem(toUse);
-                startEat(mod);
+                startEat(mod, toUse);
             } else {
                 stopEat(mod);
             }
@@ -110,13 +104,18 @@ public class FoodChain extends SingleTaskChain {
         // Nothing.
     }
 
-    private void startEat(AltoClef mod) {
-        MinecraftClient.getInstance().options.keyUse.setPressed(true);
+    private void startEat(AltoClef mod, Item food) {
+        //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
+        _isTryingToEat = true;
+        _requestFillup = true;
+        mod.getInventoryTracker().equipItem(food);
+        mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
+
     private void stopEat(AltoClef mod) {
         if (_isTryingToEat) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
+            mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
             _isTryingToEat = false;
             _requestFillup = false;
@@ -153,7 +152,7 @@ public class FoodChain extends SingleTaskChain {
         if (foodLevel < 20 - 5) {
             int need = 20 - foodLevel;
             Item best = getBestItemToEat(mod);
-            int fills = (best != null && best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            int fills = (best != null && best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : 0;
             return fills == need;
         }
 
@@ -204,14 +203,13 @@ public class FoodChain extends SingleTaskChain {
     @Override
     protected void onStop(AltoClef mod) {
         if (_isTryingToEat) {
-            MinecraftClient.getInstance().options.keyUse.setPressed(false);
+            mod.getInputControls().release(Input.CLICK_RIGHT);
             _isTryingToEat = false;
             _requestFillup = false;
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
         super.onStop(mod);
     }
-
 
 
     // If we need to eat like, NOW.

@@ -24,13 +24,20 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         super(new ItemTarget(beds, count), createBedRecipe(wool), new boolean[]{true, true, true, false, false, false, false, false, false});
         _visualBedTarget = new ItemTarget(beds, count);
     }
+
     public CollectBedTask(Item bed, String woolCatalogueName, int count) {
         this(new Item[]{bed}, new ItemTarget(woolCatalogueName, 1), count);
     }
+
     public CollectBedTask(int count) {
         this(ItemUtil.BED, TaskCatalogue.getItemTarget("wool", 1), count);
     }
 
+    private static CraftingRecipe createBedRecipe(ItemTarget wool) {
+        ItemTarget w = wool;
+        ItemTarget p = TaskCatalogue.getItemTarget("planks", 1);
+        return CraftingRecipe.newShapedRecipe(new ItemTarget[]{w, w, w, p, p, p, null, null, null}, 1);
+    }
 
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
@@ -71,11 +78,5 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
     @Override
     protected String toDebugStringName() {
         return "Crafting bed: " + _visualBedTarget;
-    }
-
-    private static CraftingRecipe createBedRecipe(ItemTarget wool) {
-        ItemTarget w = wool;
-        ItemTarget p = TaskCatalogue.getItemTarget("planks", 1);
-        return CraftingRecipe.newShapedRecipe(new ItemTarget[]{w, w, w, p, p, p, null, null, null}, 1);
     }
 }

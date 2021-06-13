@@ -2,7 +2,7 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -10,56 +10,9 @@ import java.util.regex.Pattern;
 
 public class WhisperChecker {
 
-    private static final Timer _repeatTimer = new Timer(0.1);
+    private static final TimerGame _repeatTimer = new TimerGame(0.1);
 
-    private static String _lastMessage = null;
-
-    /*
-    public WhisperChecker() {
-        // CHECK
-        temp("{from} whispers to you: {message}",
-                "FROM whispers to you: MESSAGE IS HERE BOYS! Do the thing.",
-                "Boby whispers to you: Please eat potato bimmy",
-                "Bobby: Bimot plz playe dee em see too",
-                "FROM whispers to you: {to} WORKS HAHAHA {message} This is fucked {oof}");
-        temp("\\[{from} -> {to}\\] {message}",
-                "[From -> FuzzyC00kie] Valid message!",
-                "[FuzzyC00kie -> From] Response, Invalid!!!!",
-                "[]hello!!! Oof.");
-    }
-    private static void temp(String format, String ...messages) {
-        String ourUsername = "FuzzyC00kie";
-        for (String message : messages) {
-            MessageResult check = tryParse(ourUsername, format, message);
-            Debug.logInternal("CHECK: {" + format + "} with {" + message + "} => " + check);
-        }
-    }
-     */
-
-    public MessageResult receiveMessage(AltoClef mod, String ourUsername, String msg) {
-        String foundMiddlePart = "";
-        int index = -1;
-
-        boolean duplicate = (msg.equals(_lastMessage));
-        if (duplicate && !_repeatTimer.elapsed()) {
-            _repeatTimer.reset();
-            // It's probably an actual duplicate. IDK why we get those but yeah.
-            return null;
-        }
-
-
-        for (String format : mod.getModSettings().getWhisperFormats()) {
-            MessageResult check = tryParse(ourUsername, format, msg);
-            if (check != null) {
-                String user = check.from;
-                String message = check.message;
-                if (user == null || message == null) break;
-                return check;
-            }
-        }
-
-        return null;
-    }
+    private static final String _lastMessage = null;
 
     private static MessageResult tryParse(String ourUsername, String whisperFormat, String message) {
         List<String> parts = new ArrayList<>(Arrays.asList("{from}", "{to}", "{message}"));
@@ -104,6 +57,31 @@ public class WhisperChecker {
             result.message = values.get("{message}");
             return result;
         }
+        return null;
+    }
+
+    public MessageResult receiveMessage(AltoClef mod, String ourUsername, String msg) {
+        String foundMiddlePart = "";
+        int index = -1;
+
+        boolean duplicate = (msg.equals(_lastMessage));
+        if (duplicate && !_repeatTimer.elapsed()) {
+            _repeatTimer.reset();
+            // It's probably an actual duplicate. IDK why we get those but yeah.
+            return null;
+        }
+
+
+        for (String format : mod.getModSettings().getWhisperFormats()) {
+            MessageResult check = tryParse(ourUsername, format, msg);
+            if (check != null) {
+                String user = check.from;
+                String message = check.message;
+                if (user == null || message == null) break;
+                return check;
+            }
+        }
+
         return null;
     }
 

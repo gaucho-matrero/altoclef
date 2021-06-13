@@ -11,7 +11,6 @@ import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.Item;
@@ -21,7 +20,6 @@ import net.minecraft.util.Hand;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 
 public class CollectWoolTask extends ResourceTask {
 
@@ -36,11 +34,21 @@ public class CollectWoolTask extends ResourceTask {
         _count = count;
         _wools = getWoolColorItems(colors);
     }
+
     public CollectWoolTask(DyeColor color, int count) {
-        this(new DyeColor[] {color}, count);
+        this(new DyeColor[]{color}, count);
     }
+
     public CollectWoolTask(int count) {
         this(DyeColor.values(), count);
+    }
+
+    private static Item[] getWoolColorItems(DyeColor[] colors) {
+        Item[] result = new Item[colors.length];
+        for (int i = 0; i < result.length; ++i) {
+            result[i] = ItemUtil.getColorfulItems(colors[i]).wool;
+        }
+        return result;
     }
 
     @Override
@@ -82,10 +90,10 @@ public class CollectWoolTask extends ResourceTask {
         // Only option left is to Kill la Kill.
         return new KillAndLootTask(SheepEntity.class, entity -> {
             if (entity instanceof SheepEntity) {
-                SheepEntity sheep = (SheepEntity)entity;
+                SheepEntity sheep = (SheepEntity) entity;
                 // Hunt sheep of the same color.
                 if (!_colors.contains(sheep.getColor())) return false;
-                return ((SheepEntity)entity).isSheared();
+                return ((SheepEntity) entity).isSheared();
             }
             return false;
         }, new ItemTarget(_wools, _count));
@@ -104,14 +112,6 @@ public class CollectWoolTask extends ResourceTask {
     @Override
     protected String toDebugStringName() {
         return "Collect " + _count + " wool.";
-    }
-
-    private static Item[] getWoolColorItems(DyeColor[] colors) {
-        Item[] result = new Item[colors.length];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = ItemUtil.getColorfulItems(colors[i]).wool;
-        }
-        return result;
     }
 
     static class ShearSheepTask extends AbstractDoToEntityTask {

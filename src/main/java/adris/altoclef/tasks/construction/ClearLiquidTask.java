@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.InteractItemWithBlockTask;
+import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.item.Items;
@@ -25,7 +25,7 @@ public class ClearLiquidTask extends Task {
     protected Task onTick(AltoClef mod) {
         if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
             mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-            return new InteractItemWithBlockTask(new ItemTarget("bucket", 1), _liquidPos, false);
+            return new InteractWithBlockTask(new ItemTarget("bucket", 1), _liquidPos, false);
         }
 
         return new PlaceStructureBlockTask(_liquidPos);

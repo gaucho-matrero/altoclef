@@ -2,7 +2,6 @@ package adris.altoclef.mixins;
 
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

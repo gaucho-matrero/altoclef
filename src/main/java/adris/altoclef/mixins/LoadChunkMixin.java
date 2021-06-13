@@ -1,6 +1,5 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.Debug;
 import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.nbt.CompoundTag;
@@ -17,19 +16,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientChunkManager.class)
 public class LoadChunkMixin {
 
-        @Inject(
+    @Inject(
             method = "loadChunkFromPacket",
             at = @At("RETURN")
-        )
-        private void onLoadChunk(int x, int z, @Nullable BiomeArray biomes, PacketByteBuf buf, CompoundTag tag, int verticalStripBitmask, boolean complete, CallbackInfoReturnable<WorldChunk> ci) {
-            StaticMixinHookups.onChunkLoad(ci.getReturnValue());
-        }
+    )
+    private void onLoadChunk(int x, int z, @Nullable BiomeArray biomes, PacketByteBuf buf, CompoundTag tag, int verticalStripBitmask, boolean complete, CallbackInfoReturnable<WorldChunk> ci) {
+        StaticMixinHookups.onChunkLoad(ci.getReturnValue());
+    }
 
-        @Inject(
+    @Inject(
             method = "unload",
             at = @At("TAIL")
-        )
-        private void onChunkUnload(int x, int z, CallbackInfo ci) {
-            StaticMixinHookups.onChunkUnload(x, z);
-        }
+    )
+    private void onChunkUnload(int x, int z, CallbackInfo ci) {
+        StaticMixinHookups.onChunkUnload(x, z);
+    }
 }

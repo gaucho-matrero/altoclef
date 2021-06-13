@@ -9,7 +9,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
 public class CollectGoldIngotTask extends ResourceTask {
@@ -47,7 +46,7 @@ public class CollectGoldIngotTask extends ResourceTask {
                 return new CraftInTableTask(Items.GOLD_INGOT, _count, recipe);
             }
             // Mine nuggets
-            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count*9), new Block[] {Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
+            return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count * 9), new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
         }
         return null;
     }

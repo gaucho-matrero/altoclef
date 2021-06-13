@@ -4,37 +4,34 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.csharpisbetter.Timer;
+import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.csharpisbetter.TimerReal;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerInfo;
 
-import java.lang.reflect.Type;
-
 public class DeathMenuChain extends TaskChain {
 
-    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
-    private boolean shouldAutoReconnect(AltoClef mod) {
-        return mod.getModSettings().isAutoReconnect();
-    }
+    // Sometimes we fuck up, so we might want to retry considering the death screen.
+    private final TimerReal _deathRetryTimer = new TimerReal(8);
+    ServerInfo _prevServerEntry = null;
+    private boolean _reconnecting = false;
+    private final TimerGame _reconnectTimer = new TimerGame(1);
+    private int _deathCount = 0;
+    private Class _prevScreen = null;
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
 
-    private boolean _reconnecting = false;
+    private boolean shouldAutoRespawn(AltoClef mod) {
+        return mod.getModSettings().isAutoRespawn();
+    }
 
-    ServerInfo _prevServerEntry = null;
-
-    private Timer _reconnectTimer = new Timer(1);
-
-    private int _deathCount = 0;
-
-    private Class _prevScreen = null;
-
-    // Sometimes we fuck up, so we might want to retry considering the death screen.
-    private final Timer _deathRetryTimer = new Timer(8);
+    private boolean shouldAutoReconnect(AltoClef mod) {
+        return mod.getModSettings().isAutoReconnect();
+    }
 
     @Override
     protected void onStop(AltoClef mod) {
@@ -71,7 +68,7 @@ public class DeathMenuChain extends TaskChain {
         if (screen != null && screen.getClass() != _prevScreen) {
 
             // Keep track of the last server we were on so we can re-connect.
-            if (mod.inGame()) {
+            if (AltoClef.inGame()) {
                 _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
             }
 
