@@ -35,6 +35,9 @@ import java.util.function.Consumer;
 
 public class AltoClef implements ModInitializer {
 
+    // Static access to altoclef
+    public static Action<AltoClef> onInitialize = new Action<>();
+
     public final Action<String> onGameMessage = new Action<>();
     public final Action<String> onGameOverlayMessage = new Action<>();
     // I forget why this is here somebody help
@@ -142,6 +145,8 @@ public class AltoClef implements ModInitializer {
         initializeCommands();
 
         Playground.IDLE_TEST_INIT_FUNCTION(this);
+
+        onInitialize.invoke(this);
     }
 
     // Client tick
