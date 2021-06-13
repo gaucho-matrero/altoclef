@@ -1,7 +1,5 @@
 package adris.altoclef;
 
-import net.fabricmc.loader.launch.common.FabricMixinBootstrap;
-import net.fabricmc.loom.util.FabricApiExtension;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 

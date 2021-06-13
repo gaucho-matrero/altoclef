@@ -9,7 +9,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
-import baritone.api.utils.RotationUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 

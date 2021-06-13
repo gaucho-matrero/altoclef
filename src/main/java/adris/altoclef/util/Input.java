@@ -2,7 +2,6 @@ package adris.altoclef.util;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.InputUtil;
-import org.lwjgl.glfw.GLFW;
 
 public class Input {
 

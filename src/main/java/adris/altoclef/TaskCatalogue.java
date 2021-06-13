@@ -4,7 +4,6 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;

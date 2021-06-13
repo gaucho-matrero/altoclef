@@ -2,8 +2,8 @@ package adris.altoclef;
 
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
-import baritone.process.MineProcess;
 import baritone.api.utils.RayTraceUtils;
+import baritone.process.MineProcess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;

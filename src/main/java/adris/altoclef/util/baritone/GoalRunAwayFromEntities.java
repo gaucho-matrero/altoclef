@@ -2,7 +2,6 @@ package adris.altoclef.util.baritone;
 
 import adris.altoclef.AltoClef;
 import baritone.api.pathing.goals.Goal;
-import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
 import net.minecraft.entity.Entity;

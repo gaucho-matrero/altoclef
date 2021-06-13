@@ -4,13 +4,10 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
-
-import java.util.Arrays;
 
 public class CollectCobblestoneTask extends ResourceTask {
 

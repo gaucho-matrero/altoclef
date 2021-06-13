@@ -11,7 +11,6 @@ import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 public class EquipArmorTask extends Task {

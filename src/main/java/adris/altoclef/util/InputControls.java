@@ -5,7 +5,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.KeyBinding;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * Sometimes we want to trigger a "press" for one frame, or do other input forcing.
