@@ -29,7 +29,7 @@ public class StoreInAnyChestTask extends Task {
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
     private BlockPos _currentChestTry = null;
 
-    public StoreInAnyChestTask(ItemTarget ...targets) {
+    public StoreInAnyChestTask(ItemTarget... targets) {
         _targets = targets;
     }
 

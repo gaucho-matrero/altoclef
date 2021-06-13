@@ -20,14 +20,11 @@ import java.util.List;
 
 public class PlayerInteractionFixChain extends TaskChain {
 
-    private ItemStack _lastHandStack = null;
     private final TimerGame _stackHeldTimeout = new TimerGame(8);
-
     private final TimerGame _generalDuctTapeSwapTimeout = new TimerGame(30);
-
     private final TimerGame _shiftDepressTimeout = new TimerGame(10);
-
     private final TimerGame _betterToolTimer = new TimerGame(0.5);
+    private ItemStack _lastHandStack = null;
 
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
@@ -50,7 +47,7 @@ public class PlayerInteractionFixChain extends TaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+        if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
         if (_betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.

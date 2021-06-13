@@ -42,9 +42,11 @@ public class MessageSender {
             }
         }
     }
+
     public void enqueueWhisper(String username, String message, MessagePriority priority) {
         _whisperQueue.add(new Whisper(username, message, priority, _messageCounter++));
     }
+
     public void enqueueChat(String message, MessagePriority priority) {
         _whisperQueue.add(new ChatMessage(message, priority, _messageCounter++));
     }
@@ -52,6 +54,7 @@ public class MessageSender {
     private boolean canSendMessage() {
         return _bigBigSendTimer.elapsed() && _bigSendTimer.elapsed() && _fastSendTimer.elapsed();
     }
+
     private void sendChatUpdateTimers(String message) {
         sendChatInstant(message);
         _fastSendTimer.reset();
@@ -102,6 +105,7 @@ public class MessageSender {
             return "/msg " + username + " " + message;
         }
     }
+
     private static class ChatMessage extends BaseMessage {
 
         public String message;
@@ -111,6 +115,7 @@ public class MessageSender {
             this.message = message;
 
         }
+
         @Override
         public String getChatInput() {
             return message;

@@ -26,19 +26,25 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     private static final int TOO_MANY_BLAZES = 5;
     private static final double TOO_LITTLE_HEALTH_BLAZE = 5;
-
-    private BlockPos _foundBlazeSpawner = null;
-
     private final int _count;
+    private final SearchNetherFortressTask _searcher = new SearchNetherFortressTask();
 
     // Why was this here???
     //private Entity _toKill;
-
-    private final SearchNetherFortressTask _searcher = new SearchNetherFortressTask();
+    private BlockPos _foundBlazeSpawner = null;
 
     public CollectBlazeRodsTask(int count) {
         super(Items.BLAZE_ROD, count);
         _count = count;
+    }
+
+    private static boolean isHoveringAboveLavaOrTooHigh(AltoClef mod, Entity entity) {
+        int MAX_HEIGHT = 23;
+        for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
+            if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
+            if (WorldUtil.isSolid(mod, check)) return false;
+        }
+        return true;
     }
 
     @Override
@@ -71,7 +77,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
                 double sqDistanceToPlayer = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
                 // Ignore if the blaze is too far away.
-                if (sqDistanceToPlayer > SPAWNER_BLAZE_RADIUS*SPAWNER_BLAZE_RADIUS) {
+                if (sqDistanceToPlayer > SPAWNER_BLAZE_RADIUS * SPAWNER_BLAZE_RADIUS) {
                     // If the blaze can see us it needs to go lol
                     BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), toKill.getCameraPosVec(1.0F), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mod.getPlayer()));
                     if (hit != null && hit.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), false) < sqDistanceToPlayer) {
@@ -114,7 +120,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
         } else {
             // Search for blaze
-            for(BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.SPAWNER)) {
+            for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.SPAWNER)) {
                 if (isValidBlazeSpawner(mod, pos)) {
                     _foundBlazeSpawner = pos;
                     break;
@@ -125,15 +131,6 @@ public class CollectBlazeRodsTask extends ResourceTask {
         // We need to find our fortress.
         setDebugState("Searching for fortress/Traveling around fortress");
         return _searcher;
-    }
-
-    private static boolean isHoveringAboveLavaOrTooHigh(AltoClef mod, Entity entity) {
-        int MAX_HEIGHT = 23;
-        for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
-            if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
-            if (WorldUtil.isSolid(mod, check)) return false;
-        }
-        return true;
     }
 
     private boolean isValidBlazeSpawner(AltoClef mod, BlockPos pos) {

@@ -9,8 +9,8 @@ import net.minecraft.entity.effect.StatusEffects;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
-    private boolean _wasAvoidingDrowning;
     private final TimerGame _wasInLavaTimer = new TimerGame(1);
+    private boolean _wasAvoidingDrowning;
 
     public WorldSurvivalChain(TaskRunner runner) {
         super(runner);
@@ -23,7 +23,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
-        if (!mod.inGame()) return Float.NEGATIVE_INFINITY;
+        if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
         handleDrowning(mod);
         if (isInLavaOhShit(mod)) {

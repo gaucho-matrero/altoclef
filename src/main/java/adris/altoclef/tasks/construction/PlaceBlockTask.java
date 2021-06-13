@@ -26,20 +26,16 @@ import java.util.List;
 
 public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
+    private static final int MIN_MATERIALS = 1;
+    private static final int PREFERRED_MATERIALS = 32;
     private final BlockPos _target;
     private final Block[] _toPlace;
     private final boolean _useThrowaways;
     private final boolean _autoCollectStructureBlocks;
-
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
-
     private Task _materialTask;
-
     private int _failCount = 0;
-
-    private static final int MIN_MATERIALS = 1;
-    private static final int PREFERRED_MATERIALS = 32;
 
     public PlaceBlockTask(BlockPos target, Block[] toPlace, boolean useThrowaways, boolean autoCollectStructureBlocks) {
         _target = target;
@@ -47,8 +43,17 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         _useThrowaways = useThrowaways;
         _autoCollectStructureBlocks = autoCollectStructureBlocks;
     }
-    public PlaceBlockTask(BlockPos target, Block ...toPlace) {
+
+    public PlaceBlockTask(BlockPos target, Block... toPlace) {
         this(target, toPlace, false, false);
+    }
+
+    public static int getMaterialCount(AltoClef mod) {
+        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
+    }
+
+    public static Task getMaterialTask(int count) {
+        return TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", count), new ItemTarget("cobblestone", count), new ItemTarget("netherrack", count));
     }
 
     @Override
@@ -122,6 +127,8 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritone().getBuilderProcess().onLostControl();
     }
 
+    //TODO: Place structure where a leaf block was???? Might need to delete the block first if it's not empty/air/water.
+
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof PlaceBlockTask) {
@@ -141,8 +148,6 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         return Util.arrayContains(_toPlace, state.getBlock());
     }
 
-    //TODO: Place structure where a leaf block was???? Might need to delete the block first if it's not empty/air/water.
-
     @Override
     protected String toDebugString() {
         return "Place structure at " + _target.toShortString();
@@ -152,17 +157,10 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         return _failCount % 4 == 3;
     }
 
-    public static int getMaterialCount(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
-    }
-
-    public static Task getMaterialTask(int count) {
-        return TaskCatalogue.getSquashedItemTask(new ItemTarget("dirt", count), new ItemTarget("cobblestone", count), new ItemTarget("netherrack", count));
-    }
-
     private class PlaceStructureSchematic extends AbstractSchematic {
 
         private final AltoClef _mod;
+
         public PlaceStructureSchematic(AltoClef mod) {
             super(1, 1, 1);
             _mod = mod;

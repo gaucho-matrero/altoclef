@@ -1,6 +1,6 @@
 package adris.altoclef.util.csharpisbetter;
 
-public class TimerReal extends BaseTimer{
+public class TimerReal extends BaseTimer {
     public TimerReal(double intervalSeconds) {
         super(intervalSeconds);
     }

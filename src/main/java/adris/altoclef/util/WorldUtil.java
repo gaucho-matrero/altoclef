@@ -27,6 +27,7 @@ public interface WorldUtil {
     static Vec3d toVec3d(Vec3i pos) {
         return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
     }
+
     static Vec3i toVec3i(Vec3d pos) {
         return new Vec3i(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -92,7 +93,8 @@ public interface WorldUtil {
         }
         return -1;
     }
-    static int getGroundHeight(AltoClef mod, int x, int z, Block ...groundBlocks) {
+
+    static int getGroundHeight(AltoClef mod, int x, int z, Block... groundBlocks) {
         Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
         for (int y = 255; y >= 0; --y) {
             BlockPos check = new BlockPos(x, y, z);
@@ -105,6 +107,7 @@ public interface WorldUtil {
     static boolean canBreak(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos);
     }
+
     static boolean canPlace(AltoClef mod, BlockPos pos) {
         return !mod.getExtraBaritoneSettings().shouldAvoidPlacingAt(pos);
     }
@@ -113,6 +116,7 @@ public interface WorldUtil {
         return mod.getBlockTracker().blockIsValid(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
         //return state.isAir() || isAir(state.getBlock());
     }
+
     static boolean isAir(Block block) {
         return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
     }
@@ -136,6 +140,7 @@ public interface WorldUtil {
     static Iterable<BlockPos> scanRegion(AltoClef mod, BlockPos start, BlockPos end) {
         return () -> new Iterator<BlockPos>() {
             int x = start.getX(), y = start.getY(), z = start.getZ();
+
             @Override
             public boolean hasNext() {
                 return y <= end.getX() && z <= end.getZ() && x <= end.getX();
@@ -163,7 +168,8 @@ public interface WorldUtil {
         World w = MinecraftClient.getInstance().world;
         assert w != null;
         while (isFallingBlock(pos)) {
-            if (MovementHelper.avoidBreaking(bsi, pos.getX(), pos.getY(), pos.getZ(), w.getBlockState(pos))) return false;
+            if (MovementHelper.avoidBreaking(bsi, pos.getX(), pos.getY(), pos.getZ(), w.getBlockState(pos)))
+                return false;
             pos = pos.up();
         }
         return true;

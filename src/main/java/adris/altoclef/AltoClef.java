@@ -35,19 +35,21 @@ import java.util.function.Consumer;
 
 public class AltoClef implements ModInitializer {
 
+    public final Action<String> onGameMessage = new Action<>();
+    public final Action<String> onGameOverlayMessage = new Action<>();
+    // I forget why this is here somebody help
+    private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
     private CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
     private BotBehaviour _botBehaviour;
     private PlayerExtraController _extraController;
-
     // Task chains
     private UserTaskChain _userTaskChain;
     private FoodChain _foodChain;
     private MobDefenseChain _mobDefenseChain;
     private MLGBucketFallChain _mlgBucketChain;
-
     // Trackers
     private InventoryTracker _inventoryTracker;
     private EntityTracker _entityTracker;
@@ -55,25 +57,27 @@ public class AltoClef implements ModInitializer {
     private ContainerTracker _containerTracker;
     private SimpleChunkTracker _chunkTracker;
     private MiscBlockTracker _miscBlockTracker;
-
     // Renderers
     private CommandStatusOverlay _commandStatusOverlay;
-
     // Settings
     private adris.altoclef.Settings _settings;
-
     // Misc managers/input
     private MessageSender _messageSender;
     private InputControls _inputControls;
-
     // Butler
     private Butler _butler;
 
-    // I forget why this is here somebody help
-    private final Action<WorldChunk> _onChunkLoad = new Action<>();
+    // uh oh static
+    public static int getTicks() {
+        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
+        return ((ClientConnectionAccessor) con).getTicks();
+    }
 
-    public final Action<String> onGameMessage = new Action<>();
-    public final Action<String> onGameOverlayMessage = new Action<>();
+    // Are we in game (playing in a server/world)
+    // uh oh, static creep
+    public static boolean inGame() {
+        return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
+    }
 
     @Override
     public void onInitialize() {
@@ -165,9 +169,12 @@ public class AltoClef implements ModInitializer {
         _chunkTracker.onLoad(chunk.getPos());
         _onChunkLoad.invoke(chunk);
     }
+
     public void onChunkUnload(ChunkPos chunkPos) {
         _chunkTracker.onUnload(chunkPos);
     }
+
+    /// GETTERS AND SETTERS
 
     private void initializeBaritoneSettings() {
         // Let baritone move items to hotbar to use them
@@ -208,32 +215,54 @@ public class AltoClef implements ModInitializer {
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
-            new AltoClefCommands(_commandExecutor);
+            new AltoClefCommands(getCommandExecutor());
         } catch (Exception e) {
             /// ppppbbbbttt
             e.printStackTrace();
         }
     }
 
-    /// GETTERS AND SETTERS
-
     // Main handlers access
     public CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
+
     public TaskRunner getTaskRunner() {
         return _taskRunner;
     }
-    public UserTaskChain getUserTaskChain() { return _userTaskChain; }
-    public BotBehaviour getBehaviour() { return _botBehaviour; }
+
+    public UserTaskChain getUserTaskChain() {
+        return _userTaskChain;
+    }
+
+    public BotBehaviour getBehaviour() {
+        return _botBehaviour;
+    }
 
     // Trackers access
-    public InventoryTracker getInventoryTracker() { return _inventoryTracker; }
-    public EntityTracker getEntityTracker() { return _entityTracker; }
-    public BlockTracker getBlockTracker() { return _blockTracker; }
-    public ContainerTracker getContainerTracker() {return _containerTracker;}
-    public SimpleChunkTracker getChunkTracker() {return _chunkTracker;}
-    public MiscBlockTracker getMiscBlockTracker() {return _miscBlockTracker;}
+    public InventoryTracker getInventoryTracker() {
+        return _inventoryTracker;
+    }
+
+    public EntityTracker getEntityTracker() {
+        return _entityTracker;
+    }
+
+    public BlockTracker getBlockTracker() {
+        return _blockTracker;
+    }
+
+    public ContainerTracker getContainerTracker() {
+        return _containerTracker;
+    }
+
+    public SimpleChunkTracker getChunkTracker() {
+        return _chunkTracker;
+    }
+
+    public MiscBlockTracker getMiscBlockTracker() {
+        return _miscBlockTracker;
+    }
 
     // Baritone access
     public Baritone getClientBaritone() {
@@ -242,6 +271,7 @@ public class AltoClef implements ModInitializer {
         }
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
+
     public Settings getClientBaritoneSettings() {
         return Baritone.settings();
     }
@@ -250,7 +280,9 @@ public class AltoClef implements ModInitializer {
         return Baritone.getAltoClefSettings();
     }
 
-    public adris.altoclef.Settings getModSettings() {return _settings; }
+    public adris.altoclef.Settings getModSettings() {
+        return _settings;
+    }
 
     public adris.altoclef.Settings reloadModSettings() {
         adris.altoclef.Settings result = adris.altoclef.Settings.load();
@@ -269,49 +301,57 @@ public class AltoClef implements ModInitializer {
         return _butler;
     }
 
-    public MessageSender getMessageSender() {return _messageSender;}
-
-    // uh oh static
-    public static int getTicks() {
-        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
-        return ((ClientConnectionAccessor)con).getTicks();
+    public MessageSender getMessageSender() {
+        return _messageSender;
     }
 
     // Minecraft access
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
-    public ClientWorld getWorld() {return MinecraftClient.getInstance().world; }
-    public ClientPlayerInteractionManager getController() { return MinecraftClient.getInstance().interactionManager; }
-    public PlayerExtraController getControllerExtras() {return _extraController; }
 
-    public InputControls getInputControls() { return _inputControls; }
+    public ClientWorld getWorld() {
+        return MinecraftClient.getInstance().world;
+    }
 
+    public ClientPlayerInteractionManager getController() {
+        return MinecraftClient.getInstance().interactionManager;
+    }
+
+    public PlayerExtraController getControllerExtras() {
+        return _extraController;
+    }
+
+    public InputControls getInputControls() {
+        return _inputControls;
+    }
 
     // Extra control
     public void runUserTask(Task task) {
-        runUserTask(task, (nothing) -> {});
+        runUserTask(task, (nothing) -> {
+        });
     }
+
     @SuppressWarnings("rawtypes")
     public void runUserTask(Task task, Consumer onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }
-    public void cancelUserTask() {_userTaskChain.cancel(this);}
+
+    public void cancelUserTask() {
+        _userTaskChain.cancel(this);
+    }
 
     // Chains
     public FoodChain getFoodChain() {
         return _foodChain;
     }
+
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
-    public MLGBucketFallChain getMLGBucketChain() {return _mlgBucketChain;}
 
-
-    // Are we in game (playing in a server/world)
-    // uh oh, static creep
-    public static boolean inGame() {
-        return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
+    public MLGBucketFallChain getMLGBucketChain() {
+        return _mlgBucketChain;
     }
 
     public Dimension getCurrentDimension() {
@@ -324,13 +364,16 @@ public class AltoClef implements ModInitializer {
     public void log(String message) {
         log(message, MessagePriority.TIMELY);
     }
+
     public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
         _butler.onLog(message, priority);
     }
+
     public void logWarning(String message) {
         logWarning(message, MessagePriority.TIMELY);
     }
+
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
         _butler.onLogWarning(message, priority);

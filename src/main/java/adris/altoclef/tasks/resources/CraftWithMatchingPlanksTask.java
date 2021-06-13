@@ -19,13 +19,6 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
         _visualTarget = new ItemTarget(validTargets, count);
     }
 
-    // This part is already handled by "getExpectedTotalCountOfSameItem" and "getSpecificSameResourceTask".
-    /*
-    @Override
-    protected Task getAllSameResourcesTask(AltoClef mod) {
-        return super.getAllSameResourcesTask(mod);
-    }
-     */
 
     @Override
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {

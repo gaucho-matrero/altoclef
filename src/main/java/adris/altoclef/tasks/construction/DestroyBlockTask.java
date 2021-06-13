@@ -16,11 +16,9 @@ import net.minecraft.util.math.BlockPos;
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _pos;
-
-    private boolean _failedFirstTry;
-
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(10, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
+    private boolean _failedFirstTry;
 
 
     public DestroyBlockTask(BlockPos pos) {
@@ -73,7 +71,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        if (!mod.inGame()) return;
+        if (!AltoClef.inGame()) return;
         mod.getClientBaritone().getBuilderProcess().onLostControl();
         // Do not keep breaking.
         // Can lead to trouble, for example, if lava is right above the NEXT block.

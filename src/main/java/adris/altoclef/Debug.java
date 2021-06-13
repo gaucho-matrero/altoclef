@@ -3,13 +3,14 @@ package adris.altoclef;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
+// TODO: Debug library or use Minecraft's built in debugger
 public class Debug {
 
     public static void logInternal(String message) {
         System.out.println("ALTO CLEF: " + message);
     }
 
-    public static void logInternal(String format, Object ...args) {
+    public static void logInternal(String format, Object... args) {
         logInternal(String.format(format, args));
     }
 
@@ -24,11 +25,12 @@ public class Debug {
             logInternal(message);
         }
     }
+
     public static void logMessage(String message) {
         logMessage(message, true);
     }
 
-    public static void logMessage(String format, Object ...args) {
+    public static void logMessage(String format, Object... args) {
         logMessage(String.format(format, args));
     }
 
@@ -41,7 +43,7 @@ public class Debug {
         }
     }
 
-    public static void logWarning(String format, Object ...args) {
+    public static void logWarning(String format, Object... args) {
         logWarning(String.format(format, args));
     }
 
@@ -53,11 +55,10 @@ public class Debug {
         if (MinecraftClient.getInstance().player != null) {
             String msg = "\u00A72\u00A7l\u00A7c[Alto Clef ERROR]" + message + "\nat:\n" + stacktrace + "\u00A7r";
             MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
-            //MinecraftClient.getInstance().player.sendChatMessage(msg);
         }
     }
 
-    public static void logError(String format, Object ...args) {
+    public static void logError(String format, Object... args) {
         logError(String.format(format, args));
     }
 

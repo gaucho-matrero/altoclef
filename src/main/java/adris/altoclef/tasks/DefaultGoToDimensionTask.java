@@ -11,17 +11,11 @@ import net.minecraft.util.math.BlockPos;
 
 /**
  * Some generic tasks require us to go to the nether.
- *
+ * <p>
  * The user should be able to specify how this should be done in settings
  * (ex, craft a new portal from scratch or check particular portal areas first or highway or whatever)
- *
  */
 public class DefaultGoToDimensionTask extends Task {
-
-    public enum OVERWORLD_TO_NETHER_BEHAVIOUR {
-        BUILD_PORTAL_VANILLA,
-        GO_TO_HOME_BASE
-    }
 
     private final Dimension _target;
 
@@ -110,10 +104,12 @@ public class DefaultGoToDimensionTask extends Task {
         setDebugState("We're totally lost, wandering to shoot in the dark.");
         return new TimeoutWanderTask();
     }
+
     private Task goToOverworldFromEndTask(AltoClef mod) {
         setDebugState("TODO: Go to center portal (at 0,0). If it doesn't exist, kill ender dragon lol");
         return null;
     }
+
     private Task goToNetherFromOverworldTask(AltoClef mod) {
         if (netherPortalIsClose(mod)) {
             setDebugState("Going to nether portal");
@@ -128,6 +124,7 @@ public class DefaultGoToDimensionTask extends Task {
         setDebugState("Overworld->Nether Behaviour " + mod.getModSettings().getOverworldToNetherBehaviour() + " is NOT IMPLEMENTED YET!");
         return null;
     }
+
     private Task goToEndTask(AltoClef mod) {
         // Keep in mind that getting to the end requires going to the nether first.
         setDebugState("TODO: Get to End, Same as BeatMinecraft");
@@ -137,10 +134,13 @@ public class DefaultGoToDimensionTask extends Task {
     private boolean netherPortalIsClose(AltoClef mod) {
         if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
             BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
-            if (closest.isWithinDistance(mod.getPlayer().getPos(), 2000)) {
-                return true;
-            }
+            return closest.isWithinDistance(mod.getPlayer().getPos(), 2000);
         }
         return false;
+    }
+
+    public enum OVERWORLD_TO_NETHER_BEHAVIOUR {
+        BUILD_PORTAL_VANILLA,
+        GO_TO_HOME_BASE
     }
 }

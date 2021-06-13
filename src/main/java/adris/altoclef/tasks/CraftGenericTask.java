@@ -98,22 +98,9 @@ public class CraftGenericTask extends Task {
             }
         }
 
-        Slot outputSlot = bigCrafting? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+        Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
 
         mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
-        //mod.getInventoryTracker().clickSlot(outputSlot, 2, SlotActionType.SWAP);
-        // Grab back. This shouldn't be necessary
-        /*
-        for (int i = 0; i < (bigCrafting ? 9 : 4); ++i) {
-            Slot craftSlot = bigCrafting? CraftingTableSlot.getInputSlot(i, bigCrafting) : PlayerInventorySlot.getCraftInputSlot(i);
-            if (!mod.getInventoryTracker().getItemStackInSlot(craftSlot).isEmpty()) {
-                mod.getInventoryTracker().clickSlot(craftSlot, 0, SlotActionType.PICKUP);
-                mod.getInventoryTracker().clickSlot(craftSlot, 0, SlotActionType.QUICK_MOVE);
-            }
-        }
-
-        if (delayedCraft) return null;
-         */
 
         return null;
     }
@@ -126,7 +113,7 @@ public class CraftGenericTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof CraftGenericTask) {
-            return ((CraftGenericTask)obj)._recipe.equals(_recipe);
+            return ((CraftGenericTask) obj)._recipe.equals(_recipe);
         }
         return false;
     }

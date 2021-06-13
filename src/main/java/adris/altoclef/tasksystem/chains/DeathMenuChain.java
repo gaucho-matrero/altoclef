@@ -13,27 +13,25 @@ import net.minecraft.client.network.ServerInfo;
 
 public class DeathMenuChain extends TaskChain {
 
-    private boolean shouldAutoRespawn(AltoClef mod) { return mod.getModSettings().isAutoRespawn(); }
-    private boolean shouldAutoReconnect(AltoClef mod) {
-        return mod.getModSettings().isAutoReconnect();
-    }
+    // Sometimes we fuck up, so we might want to retry considering the death screen.
+    private final TimerReal _deathRetryTimer = new TimerReal(8);
+    ServerInfo _prevServerEntry = null;
+    private boolean _reconnecting = false;
+    private final TimerGame _reconnectTimer = new TimerGame(1);
+    private int _deathCount = 0;
+    private Class _prevScreen = null;
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
 
-    private boolean _reconnecting = false;
+    private boolean shouldAutoRespawn(AltoClef mod) {
+        return mod.getModSettings().isAutoRespawn();
+    }
 
-    ServerInfo _prevServerEntry = null;
-
-    private TimerGame _reconnectTimer = new TimerGame(1);
-
-    private int _deathCount = 0;
-
-    private Class _prevScreen = null;
-
-    // Sometimes we fuck up, so we might want to retry considering the death screen.
-    private final TimerReal _deathRetryTimer = new TimerReal(8);
+    private boolean shouldAutoReconnect(AltoClef mod) {
+        return mod.getModSettings().isAutoReconnect();
+    }
 
     @Override
     protected void onStop(AltoClef mod) {
@@ -70,7 +68,7 @@ public class DeathMenuChain extends TaskChain {
         if (screen != null && screen.getClass() != _prevScreen) {
 
             // Keep track of the last server we were on so we can re-connect.
-            if (mod.inGame()) {
+            if (AltoClef.inGame()) {
                 _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
             }
 

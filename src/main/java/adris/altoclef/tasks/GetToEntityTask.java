@@ -21,6 +21,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
         _entity = entity;
         _closeEnoughDistance = closeEnoughDistance;
     }
+
     public GetToEntityTask(Entity entity) {
         this(entity, 1);
     }

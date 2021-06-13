@@ -16,6 +16,7 @@ public class MovementProgressChecker {
         _distanceChecker = new ProgressCheckerRetry<>(new DistanceProgressChecker(distanceTimeout, minDistance), attempts);
         _mineChecker = new LinearProgressChecker(mineTimeout, minMineProgress);
     }
+
     public MovementProgressChecker(double distanceTimeout, double minDistance, double mineTimeout, double minMineProgress) {
         this(distanceTimeout, minDistance, mineTimeout, minMineProgress, 1);
     }
@@ -23,6 +24,7 @@ public class MovementProgressChecker {
     public MovementProgressChecker(int attempts) {
         this(4, 0.1, 0.5, 0.001, attempts);
     }
+
     public MovementProgressChecker() {
         this(1);
     }
@@ -46,13 +48,12 @@ public class MovementProgressChecker {
             }
             _lastBreakingBlock = breakBlock;
             _mineChecker.setProgress(mod.getControllerExtras().getBreakingBlockProgress());
-            if (_mineChecker.failed()) return false;
+            return !_mineChecker.failed();
         } else {
             _mineChecker.reset();
             _distanceChecker.setProgress(mod.getPlayer().getPos());
-            if (_distanceChecker.failed()) return false;
+            return !_distanceChecker.failed();
         }
-        return true;
     }
 
     public void reset() {

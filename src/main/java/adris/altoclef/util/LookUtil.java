@@ -32,6 +32,7 @@ public class LookUtil {
     public static boolean seesPlayer(Entity entity, Entity player, double maxRange, Vec3d entityOffs, Vec3d playerOffs) {
         return seesPlayerOffset(entity, player, maxRange, entityOffs, playerOffs) || seesPlayerOffset(entity, player, maxRange, entityOffs, new Vec3d(0, -1, 0).add(playerOffs));
     }
+
     public static boolean seesPlayer(Entity entity, Entity player, double maxRange) {
         return seesPlayer(entity, player, maxRange, Vec3d.ZERO, Vec3d.ZERO);
     }
@@ -62,11 +63,12 @@ public class LookUtil {
 
     public static BlockHitResult raycast(Entity entity, Vec3d start, Vec3d end, double maxRange) {
         Vec3d delta = end.subtract(start);
-        if (delta.lengthSquared() > maxRange*maxRange) {
+        if (delta.lengthSquared() > maxRange * maxRange) {
             end = start.add(delta.normalize().multiply(maxRange));
         }
         return entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
     }
+
     public static BlockHitResult raycast(Entity entity, Vec3d end, double maxRange) {
         Vec3d start = getCameraPos(entity);
         return raycast(entity, start, end, maxRange);
@@ -78,7 +80,7 @@ public class LookUtil {
             PlayerEntity player = (PlayerEntity) entity;
             isSneaking = player.isSneaking();
         }
-        return isSneaking? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
+        return isSneaking ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
     }
 
     //  1: Looking straight at pos
@@ -117,22 +119,18 @@ public class LookUtil {
         HitResult result = MinecraftClient.getInstance().crosshairTarget;
         if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
-            if (WorldUtil.isContainerBlock(mod, new BlockPos(result.getPos()))) {
-                return true;
-            }
+            return WorldUtil.isContainerBlock(mod, new BlockPos(result.getPos()));
         } else if (result.getType() == HitResult.Type.ENTITY) {
             if (result instanceof EntityHitResult) {
                 Entity entity = ((EntityHitResult) result).getEntity();
-                if (entity instanceof MerchantEntity) {
-                    return true;
-                }
+                return entity instanceof MerchantEntity;
             }
         }
         return false;
     }
 
     public static void randomOrientation(AltoClef mod) {
-        Rotation r = new Rotation((float)Math.random() * 360f, -90 + (float)Math.random() * 180f);
+        Rotation r = new Rotation((float) Math.random() * 360f, -90 + (float) Math.random() * 180f);
         mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
     }
 

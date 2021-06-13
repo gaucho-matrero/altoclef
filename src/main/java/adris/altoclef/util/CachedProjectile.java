@@ -11,18 +11,20 @@ public class CachedProjectile {
     public double gravity;
     public Type projectileType;
 
-    private TimerGame _lastCache = new TimerGame(2);
+    private final TimerGame _lastCache = new TimerGame(2);
     private Vec3d _cachedHit;
     private boolean _cacheHeld = false;
 
     public Vec3d getCachedHit() {
         return _cachedHit;
     }
+
     public void setCacheHit(Vec3d cache) {
         _cachedHit = cache;
         _cacheHeld = true;
         _lastCache.reset();
     }
+
     public boolean needsToRecache() {
         return !_cacheHeld || _lastCache.elapsed();
     }

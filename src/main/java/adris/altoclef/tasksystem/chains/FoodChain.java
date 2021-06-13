@@ -16,13 +16,10 @@ import net.minecraft.item.Items;
 
 public class FoodChain extends SingleTaskChain {
 
+    private static final int RIGHT_CLICK_KEY = 1 - 100;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
-
     private boolean _needsFood = false;
-
-
-    private static final int RIGHT_CLICK_KEY = 1 - 100;
 
     public FoodChain(TaskRunner runner) {
         super(runner);
@@ -31,7 +28,7 @@ public class FoodChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
 
-        if (!mod.inGame()) {
+        if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -115,6 +112,7 @@ public class FoodChain extends SingleTaskChain {
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
+
     private void stopEat(AltoClef mod) {
         if (_isTryingToEat) {
             mod.getInputControls().release(Input.CLICK_RIGHT);
@@ -154,7 +152,7 @@ public class FoodChain extends SingleTaskChain {
         if (foodLevel < 20 - 5) {
             int need = 20 - foodLevel;
             Item best = getBestItemToEat(mod);
-            int fills = (best != null && best.getFoodComponent() != null)? best.getFoodComponent().getHunger() : 0;
+            int fills = (best != null && best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : 0;
             return fills == need;
         }
 
@@ -212,7 +210,6 @@ public class FoodChain extends SingleTaskChain {
         }
         super.onStop(mod);
     }
-
 
 
     // If we need to eat like, NOW.

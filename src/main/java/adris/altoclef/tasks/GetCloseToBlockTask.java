@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 /**
  * Approaching a block can be done easily with baritone
  * but we have an issue: baritone requires that a goal be available.
- *
+ * <p>
  * For instance, say we want to approach the center of a lava pool.
  * That's not possible, so say we expect the bot to get as close as it can.
  * We have to specify the "radius", and this radius MUST be outside of the pool,
@@ -15,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
  */
 public class GetCloseToBlockTask extends Task {
 
-    private BlockPos _toApproach;
+    private final BlockPos _toApproach;
     private int _currentRange;
 
     public GetCloseToBlockTask(BlockPos toApproach) {
@@ -46,14 +46,15 @@ public class GetCloseToBlockTask extends Task {
     private int getCurrentDistance(AltoClef mod) {
         return (int) Math.sqrt(mod.getPlayer().getBlockPos().getSquaredDistance(_toApproach));
     }
+
     private boolean inRange(AltoClef mod) {
-        return mod.getPlayer().getBlockPos().getSquaredDistance(_toApproach) <= _currentRange*_currentRange;
+        return mod.getPlayer().getBlockPos().getSquaredDistance(_toApproach) <= _currentRange * _currentRange;
     }
 
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetCloseToBlockTask) {
-            return ((GetCloseToBlockTask)obj)._toApproach.equals(_toApproach);
+            return ((GetCloseToBlockTask) obj)._toApproach.equals(_toApproach);
         }
         return false;
     }

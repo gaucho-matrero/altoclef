@@ -41,7 +41,7 @@ import java.util.List;
 public class BeatMinecraftTask extends Task {
 
     /// TUNABLE PROPERTIES
-    private static final String[] DIAMOND_ARMORS = new String[] {"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
+    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
 
     private static final boolean STORE_BLAZE_RODS_IN_CHEST = true; // If true, will store blaze rods in chest while collecting ender pearls.
 
@@ -54,52 +54,70 @@ public class BeatMinecraftTask extends Task {
     private static final int TARGET_ENDER_PEARLS = 14;
     private static final int TARGET_ENDER_EYES = 14;
     private static final int PIGLIN_BARTER_GOLD_INGOT_BUFFER = 32;
-
-    private BlockPos _safetyBlazeRodChestPos = null;
-
-    // A flag to determine whether we should continue doing something.
-    // TODO: I handled this poorly. Either LEAN INTO it hard or throw this out completely.
-    private ForceState _forceState = ForceState.NONE;
-
-    private BlockPos _cachedPortalInNether;
     private final CollectBlazeRodsTask _blazeCollection = new CollectBlazeRodsTask(TARGET_BLAZE_RODS);
-
     private final LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
-
-    private BlockPos _netherPortalPos;
-
     // Get 3 diamond picks, because the nether SUCKS
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("diamond_chestplate", 1),
-                    new ItemTarget("diamond_leggings", 1),
-                    new ItemTarget("diamond_helmet", 1),
-                    new ItemTarget("diamond_boots", 1),
-                    new ItemTarget("diamond_pickaxe", 3),
-                    new ItemTarget("diamond_sword", 1),
-                    new ItemTarget("log", 20)
-                    );
+            new ItemTarget("diamond_leggings", 1),
+            new ItemTarget("diamond_helmet", 1),
+            new ItemTarget("diamond_boots", 1),
+            new ItemTarget("diamond_pickaxe", 3),
+            new ItemTarget("diamond_sword", 1),
+            new ItemTarget("log", 20)
+    );
     private final Task _prepareForDiamondCollectionTask = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("iron_pickaxe", 3)
     );
-
     private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
     private final Task _netherPrepareTaskWood = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("wooden_pickaxe", 1),
             new ItemTarget("log", 10)
     );
-
+    private final PlaceBedAndSetSpawnTask _placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
+    // Kinda jank ngl
+    private final Task _collectBuildMaterialsTask = PlaceBlockTask.getMaterialTask(100);
+    private BlockPos _safetyBlazeRodChestPos = null;
+    // A flag to determine whether we should continue doing something.
+    // TODO: I handled this poorly. Either LEAN INTO it hard or throw this out completely.
+    private ForceState _forceState = ForceState.NONE;
+    private BlockPos _cachedPortalInNether;
+    private BlockPos _netherPortalPos;
     // End game stuff
     private BlockPos _endBedSpawnPos = null;
-    private final PlaceBedAndSetSpawnTask _placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
     // If true, we were near the end portal, don't do traveling.
     private boolean _wasNearEndPortal = false;
-
     private List<BlockPos> _endPortalFrame = null;
     private BlockPos _cachedEndPortal = null;
     private int _cachedEndPearlsInFrame = 0;
-
-
     private Dimension _prevDimension = Dimension.OVERWORLD;
+
+    public static boolean diamondArmorEquipped(AltoClef mod) {
+        for (String armor : DIAMOND_ARMORS) {
+            //noinspection ConstantConditions
+            if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
+        }
+        return true;
+    }
+
+    public static boolean hasDiamondArmor(AltoClef mod) {
+        for (String armor : DIAMOND_ARMORS) {
+            //noinspection ConstantConditions
+            Item item = TaskCatalogue.getItemMatches(armor)[0];
+            if (mod.getInventoryTracker().isArmorEquipped(item)) continue;
+            if (!mod.getInventoryTracker().hasItem(item)) return false;
+        }
+        return true;
+    }
+
+    public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos)) return false;
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+        }
+        return state.get(EndPortalFrameBlock.EYE);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -143,11 +161,7 @@ public class BeatMinecraftTask extends Task {
         // do NOT diagonally ascend in the nether.
         Dimension currentDimension = mod.getCurrentDimension();
         if (currentDimension != _prevDimension) {
-            if (currentDimension == Dimension.NETHER) {
-                mod.getBehaviour().setAllowDiagonalAscend(false);
-            } else {
-                mod.getBehaviour().setAllowDiagonalAscend(true);
-            }
+            mod.getBehaviour().setAllowDiagonalAscend(currentDimension != Dimension.NETHER);
             _prevDimension = currentDimension;
         }
 
@@ -260,8 +274,8 @@ public class BeatMinecraftTask extends Task {
 
 
         // Get food, less if we're going to the end.
-        int preFood = needsToGoToNether? PRE_NETHER_FOOD : PRE_END_FOOD,
-                preFoodMin = needsToGoToNether? PRE_NETHER_FOOD_MIN : PRE_END_FOOD_MIN;
+        int preFood = needsToGoToNether ? PRE_NETHER_FOOD : PRE_END_FOOD,
+                preFoodMin = needsToGoToNether ? PRE_NETHER_FOOD_MIN : PRE_END_FOOD_MIN;
         if (mod.getInventoryTracker().totalFoodScore() < preFoodMin) {
             _forceState = ForceState.GETTING_FOOD;
         }
@@ -368,8 +382,8 @@ public class BeatMinecraftTask extends Task {
 
         // Make sure we have at least a wooden pickaxe at all times
         // AND materials to craft a new one, so we aren't stuck in a cavern somewhere.
-        int planksCount = 4*mod.getInventoryTracker().getItemCount(ItemUtil.LOG) + mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS);
-        int planksNeeded = 3 + (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)? 0 : 4) + (mod.getInventoryTracker().getItemCount(Items.STICK) >= 2? 0 : 2);
+        int planksCount = 4 * mod.getInventoryTracker().getItemCount(ItemUtil.LOG) + mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS);
+        int planksNeeded = 3 + (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE) ? 0 : 4) + (mod.getInventoryTracker().getItemCount(Items.STICK) >= 2 ? 0 : 2);
         if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD) || planksCount < planksNeeded) {
             // If we ran out of wood, go get more.
             if (planksCount >= planksNeeded) {
@@ -392,26 +406,15 @@ public class BeatMinecraftTask extends Task {
 
     private Task endTick(AltoClef mod) {
 
-        /*
-        if (!_endKamakazeeEngaged) {
-            //Debug.logWarning("Uh oh: Kamakazee mode was not engaged. This shouldn't happen though.");
-        }
-        if (_endBedSpawnPos == null) {
-            //Debug.logWarning("Uh oh: End Bed set to null for some reason. This shouldn't happen, but this will hurt a lot.");
-        }
-         */
-
         setDebugState("Defeating the ender dragon.");
         return new KillEnderDragonTask();
     }
-
-    // Kinda jank ngl
-    private final Task _collectBuildMaterialsTask = PlaceBlockTask.getMaterialTask(100);
 
     // Code duplication below, kinda bad but I'm in a hurry lol
     private boolean needToGetMaterialsBeforeEnd(AltoClef mod) {
         return !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON) || !mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD) || !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET);
     }
+
     private Task getMaterialsBeforeEndTask(AltoClef mod) {
         List<ItemTarget> toGet = new ArrayList<>();
         if (!mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD)) {
@@ -504,24 +507,6 @@ public class BeatMinecraftTask extends Task {
         return new FillStrongholdPortalTask(true);
     }
 
-
-    public static boolean diamondArmorEquipped(AltoClef mod) {
-        for (String armor : DIAMOND_ARMORS) {
-            //noinspection ConstantConditions
-            if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
-        }
-        return true;
-    }
-    public static boolean hasDiamondArmor(AltoClef mod) {
-        for (String armor : DIAMOND_ARMORS) {
-            //noinspection ConstantConditions
-            Item item = TaskCatalogue.getItemMatches(armor)[0];
-            if (mod.getInventoryTracker().isArmorEquipped(item)) continue;
-            if (!mod.getInventoryTracker().hasItem(item)) return false;
-        }
-        return true;
-    }
-
     private int getBlazeRodsInPosession(AltoClef mod) {
         int rodsInPosession = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
         if (STORE_BLAZE_RODS_IN_CHEST) {
@@ -588,15 +573,6 @@ public class BeatMinecraftTask extends Task {
             _cachedEndPearlsInFrame = count;
         }
         return _cachedEndPearlsInFrame;
-    }
-
-    public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
-        if (!mod.getChunkTracker().isChunkLoaded(pos)) return false;
-        BlockState state = mod.getWorld().getBlockState(pos);
-        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
-            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
-        }
-        return state.get(EndPortalFrameBlock.EYE);
     }
 
     private enum ForceState {

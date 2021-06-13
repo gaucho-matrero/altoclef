@@ -29,23 +29,17 @@ import java.util.function.Function;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
-    private int _count;
-
-    private Item _target;
-    private Block _toCollect;
-
-    private String _liquidName;
-
-    //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
-
-    private TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
-
     private final HashSet<BlockPos> _blacklist = new HashSet<>();
-
     private final TimerGame _tryImmediatePickupTimer = new TimerGame(3);
     private final TimerGame _pickedUpTimer = new TimerGame(0.5);
+    private final int _count;
 
-    private MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    //private IProgressChecker<Double> _checker = new LinearProgressChecker(5, 0.1);
+    private final Item _target;
+    private final Block _toCollect;
+    private final String _liquidName;
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(15f);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
 
     private boolean wasWandering = false;
 
@@ -227,6 +221,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             super("water", Items.WATER_BUCKET, targetCount, Blocks.WATER);
         }
     }
+
     public static class CollectLavaBucketTask extends CollectBucketLiquidTask {
         public CollectLavaBucketTask(int targetCount) {
             super("lava", Items.LAVA_BUCKET, targetCount, Blocks.LAVA);

@@ -36,11 +36,30 @@ public abstract class ResourceTask extends Task {
         _itemTargets = itemTargets;
         _pickupTask = new PickupDroppedItemTask(_itemTargets, true);
     }
+
     public ResourceTask(ItemTarget target) {
-        this(new ItemTarget[] {target});
+        this(new ItemTarget[]{target});
     }
+
     public ResourceTask(Item item, int targetCount) {
         this(new ItemTarget(item, targetCount));
+    }
+
+    // Returns: Whether this failed.
+    public static boolean ensureInventoryFree(AltoClef mod) {
+        if (mod.getInventoryTracker().isInventoryFull()) {
+            // Throw away!
+            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+            if (toThrow != null) {
+                // Equip then throw
+                //Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
+                mod.getInventoryTracker().throwSlot(toThrow);
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -81,7 +100,7 @@ public abstract class ResourceTask extends Task {
 
                 double range = mod.getModSettings().getResourcePickupRange();
                 ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
-                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod)) ) {
+                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
                     return _pickupTask;
                 }
             }
@@ -173,6 +192,7 @@ public abstract class ResourceTask extends Task {
         }
         return false;
     }
+
     protected Task getToCorrectDimensionTask(AltoClef mod) {
         return new DefaultGoToDimensionTask(_targetDimension);
     }
@@ -181,27 +201,11 @@ public abstract class ResourceTask extends Task {
         _mineIfPresent = toMine;
         return this;
     }
+
     public ResourceTask forceDimension(Dimension dimension) {
         _forceDimension = true;
         _targetDimension = dimension;
         return this;
-    }
-
-    // Returns: Whether this failed.
-    public static boolean ensureInventoryFree(AltoClef mod) {
-        if (mod.getInventoryTracker().isInventoryFull()) {
-            // Throw away!
-            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-            if (toThrow != null) {
-                // Equip then throw
-                //Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
-                mod.getInventoryTracker().throwSlot(toThrow);
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
     }
 
     protected abstract boolean shouldAvoidPickingUp(AltoClef mod);

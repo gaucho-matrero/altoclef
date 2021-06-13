@@ -39,8 +39,8 @@ public class MLGBucketTask extends Task {
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
         // We may crop the edge of a block or wall.
-        Vec3d[] offsets = new Vec3d[] {
-                new Vec3d(0, 0,0),
+        Vec3d[] offsets = new Vec3d[]{
+                new Vec3d(0, 0, 0),
                 new Vec3d(-0.5, 0, 0),
                 new Vec3d(0.5, 0, 0),
                 new Vec3d(0, 0, -0.5),
@@ -92,7 +92,7 @@ public class MLGBucketTask extends Task {
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
                 mod.getPlayer().pitch = 90;
             }
-                //player.rotationPitch = 90f
+            //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
         } else {
             setDebugState("Wait for it...");

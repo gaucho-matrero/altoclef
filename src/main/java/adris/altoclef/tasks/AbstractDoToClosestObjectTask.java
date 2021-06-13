@@ -10,36 +10,40 @@ import java.util.Optional;
 
 /**
  * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- *
+ * <p>
  * Use this whenever you want to travel to a target position that may change.
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
-    private T _currentlyPursuing = null;
-
     private final HashMap<T, CachedHeuristic> _heuristicMap = new HashMap<>();
+    private T _currentlyPursuing = null;
+    private boolean _wasWandering;
+    private Task _goalTask = null;
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
-    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
-    protected abstract Vec3d getOriginPos(AltoClef mod);
-    protected abstract Task getGoalTask(T obj);
-    protected abstract boolean isValid(AltoClef mod, T obj);
 
-    private boolean _wasWandering;
+    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
+
+    protected abstract Vec3d getOriginPos(AltoClef mod);
+
+    protected abstract Task getGoalTask(T obj);
+
+    protected abstract boolean isValid(AltoClef mod, T obj);
 
     // Virtual
     protected Task getWanderTask(AltoClef mod) {
         return new TimeoutWanderTask(true);
     }
 
-    private Task _goalTask = null;
-
     public void resetSearch() {
         _currentlyPursuing = null;
         _heuristicMap.clear();
         _goalTask = null;
     }
-    public boolean wasWandering() {return _wasWandering;}
+
+    public boolean wasWandering() {
+        return _wasWandering;
+    }
 
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
         Optional<Double> ticksRemainingOp = mod.getClientBaritone().getPathingBehavior().ticksRemainingInSegment();
@@ -138,6 +142,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
             _closestDistanceSqr = Double.POSITIVE_INFINITY;
             _heuristicValue = Double.POSITIVE_INFINITY;
         }
+
         public CachedHeuristic(double closestDistanceSqr, int tickAttempted, double heuristicValue) {
             _closestDistanceSqr = closestDistanceSqr;
             _tickAttempted = tickAttempted;
@@ -168,38 +173,4 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
             _tickAttempted = tickAttempted;
         }
     }
-
-    // Interface DRAFT:
-    /*
-     * MAKE THIS AN ABSTRACT TASK
-     *
-     * T can be
-     *      - BlockPos
-     *      - Entity
-     *      - Any object we might want to travel to
-     *
-     * Abstract functions
-     *  - get position(T) -> position
-     *  - get closest(T) -> (position, T)
-     *
-     *
-     * Private fields
-     * - best heurisitc
-     * - best object
-     * - (best position)?
-     *
-     * Methods
-     * - Reset Search
-     * - Get closest object
-     *      - Runs closest position function
-     *      - If different object:
-     *          If previous object was null, accept and get to.
-     *          If we're not running our GOTO task/process, ignore and keep going to previous object.
-     *          If we ARE running our GOTO task/process, GET CURRENT CALCULATED HEURISTIC and MAP.
-     *          If the NEW object has a MAPPING to a calculated heuristic:
-     *              If PREVIOUS object has BETTER heuristic, accept previous object.
-     *          If the NEW object does NOT have a mapping to a calculated heuristic, ACCEPT IT!
-     *      - If same object, keep running the GOTO Task (if no goto task, create one)
-     * - Create GOTO task/process given T
-     */
 }

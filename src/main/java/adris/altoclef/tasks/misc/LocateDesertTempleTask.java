@@ -54,13 +54,14 @@ public class LocateDesertTempleTask extends Task {
     private BlockPos desertTemplePosOrNull(AltoClef mod) {
         for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
             if (b(mod, pos.down()) == Blocks.CUT_SANDSTONE &&
-                b(mod, pos.down().down()) == Blocks.TNT) {
+                    b(mod, pos.down().down()) == Blocks.TNT) {
                 // 14 blocks up is where the teracotta is.
                 return pos.add(0, 14, 0);
             }
         }
         return null;
     }
+
     private Block b(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getBlock();
     }

@@ -9,9 +9,9 @@ import net.minecraft.client.MinecraftClient;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
- *
+ * <p>
  * This effectively makes the bot function as a servant, or butler.
- *
+ * <p>
  * Authorization is defined in "altoclef_butler_whitelist.txt" and "altoclef_butler_blacklist.txt"
  * and depends on the "useButlerWhitelist" and "useButlerBlacklist" settings in "altoclef_settings.json"
  */
@@ -82,6 +82,7 @@ public class Butler {
             sendWhisper(message, priority);
         }
     }
+
     public void onLogWarning(String message, MessagePriority priority) {
         if (_currentUser != null) {
             sendWhisper("[WARNING:] " + message, priority);
@@ -95,6 +96,7 @@ public class Butler {
     public String getCurrentUser() {
         return _currentUser;
     }
+
     public boolean hasCurrentUser() {
         return _currentUser != null;
     }
@@ -133,6 +135,7 @@ public class Butler {
             Debug.logWarning("Failed to send butler message as there are no users present: " + message);
         }
     }
+
     private void sendWhisper(String username, String message, MessagePriority priority) {
         _mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
     }

@@ -29,13 +29,10 @@ public class InventoryTracker extends Tracker {
     public static final int INVENTORY_SIZE = 36;
 
     private static final Item[] NORMAL_ACCEPTED_FUEL = new Item[]{Items.COAL, Items.CHARCOAL};
-
+    private static Map<Item, Integer> _fuelTimeMap = null;
     private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
     private final HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private final List<Integer> _foodSlots = new ArrayList<>();
-
-    private static Map<Item, Integer> _fuelTimeMap = null;
-
     private int _emptySlots = 0;
 
     private int _foodPoints = 0;
@@ -44,15 +41,64 @@ public class InventoryTracker extends Tracker {
         super(manager);
     }
 
+    private static Map<Item, Integer> getFuelTimeMap() {
+        if (_fuelTimeMap == null) {
+            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
+        }
+        return _fuelTimeMap;
+    }
+
+    public static double getFuelAmount(ItemStack... stacks) {
+        double total = 0;
+        for (ItemStack stack : stacks) {
+            if (getFuelTimeMap().containsKey(stack.getItem())) {
+                total += stack.getCount() * getFuelAmount(stack.getItem());
+            }
+        }
+        return total;
+    }
+
+    public static double getFuelAmount(Item... items) {
+        double total = 0;
+        for (Item item : items) {
+            if (getFuelTimeMap().containsKey(item)) {
+                int timeTicks = getFuelTimeMap().get(item);
+                // 300 ticks of wood -> 1.5 operations
+                // 200 ticks -> 1 operation
+                total += (double) timeTicks / 200.0;
+            }
+        }
+        return total;
+    }
+
+    public static boolean isFuel(Item item) {
+        return getFuelTimeMap().containsKey(item);
+    }
+
+    public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
+        PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor) handler).getPropertyDelegate();
+        return (double) d.get(0) / 200.0;
+    }
+
+    public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
+        return (double) handler.getCookProgress() / 24.0;
+    }
+
+    private static boolean slotIsCursor(Slot slot) {
+        return slot instanceof CursorInventorySlot;
+    }
+
     public int getEmptySlotCount() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             return _emptySlots;
         }
     }
+
     public boolean isInventoryFull() {
         return getEmptySlotCount() <= 0;
     }
+
     public boolean hasItem(Item item) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -62,18 +108,21 @@ public class InventoryTracker extends Tracker {
             return _itemCounts.containsKey(item);
         }
     }
-    public boolean hasItem(Item ...items) {
+
+    public boolean hasItem(Item... items) {
         ensureUpdated();
         for (Item item : items) {
             if (hasItem(item)) return true;
         }
         return false;
     }
+
     public boolean hasItem(String catalogueName) {
         Item[] items = TaskCatalogue.getItemMatches(catalogueName);
         assert items != null;
         return hasItem(items);
     }
+
     public int getItemCount(Item item) {
         ensureUpdated();
         if (!hasItem(item)) return 0;
@@ -93,7 +142,8 @@ public class InventoryTracker extends Tracker {
             return count;
         }
     }
-    public int getItemCount(Item ...items) {
+
+    public int getItemCount(Item... items) {
         ensureUpdated();
         int sum = 0;
         for (Item match : items) {
@@ -155,7 +205,7 @@ public class InventoryTracker extends Tracker {
         return max;
     }
 
-    public List<Integer> getInventorySlotsWithItem(Item ...items) {
+    public List<Integer> getInventorySlotsWithItem(Item... items) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             List<Integer> result = new ArrayList<>();
@@ -167,14 +217,15 @@ public class InventoryTracker extends Tracker {
             return result;
         }
     }
+
     public List<Integer> getEmptyInventorySlots() {
         return getInventorySlotsWithItem(Items.AIR);
     }
 
-    public boolean targetMet(ItemTarget ...targets) {
+    public boolean targetMet(ItemTarget... targets) {
         ensureUpdated();
 
-        for(ItemTarget target : targets) {
+        for (ItemTarget target : targets) {
             if (getItemCountIncludingTable(false, target.getMatches()) < target.getTargetCount()) {
                 return false;
             }
@@ -229,9 +280,11 @@ public class InventoryTracker extends Tracker {
             return total;
         }
     }
+
     public double getTotalFuelNormal() {
         return getTotalFuel(false, true);
     }
+
     /*public double getTotalFuel() {
         return getTotalFuel(false, false);
     }*/
@@ -250,19 +303,6 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    /*
-    public double getTotalFoodAmount() {
-        ensureUpdated();
-        double total = 0;
-        for (int slot : _foodSlots) {
-            ItemStack stack = getItemStackInSlot(Slot.getFromInventory(slot));
-            if (stack.getItem().getFoodComponent() == null) continue;
-            total += stack.getItem().getFoodComponent().getHunger() * stack.getCount();
-        }
-        return total;
-    }
-     */
-
     public List<ItemStack> getAvailableFoods() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -276,7 +316,7 @@ public class InventoryTracker extends Tracker {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean hasRecipeMaterialsOrTarget(RecipeTarget...targets) {
+    public boolean hasRecipeMaterialsOrTarget(RecipeTarget... targets) {
         ensureUpdated();
         HashMap<Integer, Integer> slotUsedCounts = new HashMap<>();
         for (RecipeTarget target : targets) {
@@ -290,7 +330,7 @@ public class InventoryTracker extends Tracker {
             }
             // need holds how many items we need to CRAFT
             // However, a crafting recipe can output more than 1 of an item.
-            int materialsPerSlotNeeded = (int)Math.ceil((float)need / target.getRecipe().outputCount());
+            int materialsPerSlotNeeded = (int) Math.ceil((float) need / target.getRecipe().outputCount());
             for (int i = 0; i < materialsPerSlotNeeded; ++i) {
                 for (int slot = 0; slot < recipe.getSlotCount(); ++slot) {
                     ItemTarget needs = recipe.getSlot(slot);
@@ -353,7 +393,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
         if (item instanceof ArmorItem) {
             ArmorItem armor = (ArmorItem) item;
-            for(ItemStack stack : _mod.getPlayer().getArmorItems()) {
+            for (ItemStack stack : _mod.getPlayer().getArmorItems()) {
                 if (stack.getItem() == item) return true;
             }
             return false;
@@ -570,9 +610,11 @@ public class InventoryTracker extends Tracker {
     public ItemStack clickSlot(Slot slot, SlotActionType type) {
         return clickSlot(slot, 0, type);
     }
+
     public ItemStack clickSlot(Slot slot, int mouseButton) {
         return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
     }
+
     public ItemStack clickSlot(Slot slot) {
         return clickSlot(slot, 0);
     }
@@ -581,7 +623,7 @@ public class InventoryTracker extends Tracker {
      * @param from   Slot to start moving from
      * @param to     Slot to move items to
      * @param amount How many to move
-     * @return       The number of items successfully transported
+     * @return The number of items successfully transported
      */
     public int moveItems(Slot from, Slot to, int amount) {
         to.ensureWindowOpened();
@@ -684,6 +726,7 @@ public class InventoryTracker extends Tracker {
         }
         return 0;
     }
+
     // These names aren't confusing
     public int moveItemToSlot(Item toMove, int moveCount, Slot moveTo) {
         List<Integer> itemSlots = getInventorySlotsWithItem(toMove);
@@ -745,27 +788,27 @@ public class InventoryTracker extends Tracker {
 
     public void deequipRightClickableItem() {
         deequip(item ->
-                item instanceof BucketItem // water,lava,milk,fishes
-                        || item instanceof EnderEyeItem
-                        || item == Items.BOW
-                        || item == Items.CROSSBOW
-                        || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
-                        || item == Items.ENDER_PEARL
-                        || item instanceof FireworkItem
-                        || item instanceof SpawnEggItem
-                        || item == Items.END_CRYSTAL
-                        || item == Items.EXPERIENCE_BOTTLE
-                        || item instanceof PotionItem // also includes splash/lingering
-                        || item == Items.TRIDENT
-                        || item == Items.WRITABLE_BOOK
-                        || item == Items.WRITTEN_BOOK
-                        || item instanceof FishingRodItem
-                        || item instanceof OnAStickItem
-                        || item == Items.COMPASS
-                        || item instanceof EmptyMapItem
-                        || item instanceof Wearable
-                        || item == Items.SHIELD
-                        || item == Items.LEAD
+                        item instanceof BucketItem // water,lava,milk,fishes
+                                || item instanceof EnderEyeItem
+                                || item == Items.BOW
+                                || item == Items.CROSSBOW
+                                || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
+                                || item == Items.ENDER_PEARL
+                                || item instanceof FireworkItem
+                                || item instanceof SpawnEggItem
+                                || item == Items.END_CRYSTAL
+                                || item == Items.EXPERIENCE_BOTTLE
+                                || item instanceof PotionItem // also includes splash/lingering
+                                || item == Items.TRIDENT
+                                || item == Items.WRITABLE_BOOK
+                                || item == Items.WRITTEN_BOOK
+                                || item instanceof FishingRodItem
+                                || item instanceof OnAStickItem
+                                || item == Items.COMPASS
+                                || item instanceof EmptyMapItem
+                                || item instanceof Wearable
+                                || item == Items.SHIELD
+                                || item == Items.LEAD
                 ,
                 true
         );
@@ -773,6 +816,7 @@ public class InventoryTracker extends Tracker {
 
     /**
      * Tries to de-equip any item that we don't want equipped.
+     *
      * @param isBad: Whether an item is bad/shouldn't be equipped
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
@@ -818,7 +862,7 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
-    public boolean isInHotBar(Item ...items) {
+    public boolean isInHotBar(Item... items) {
         for (int invSlot : getInventorySlotsWithItem(items)) {
             if (0 <= invSlot && invSlot < 9) {
                 return true;
@@ -826,6 +870,7 @@ public class InventoryTracker extends Tracker {
         }
         return false;
     }
+
     public void moveToNonEquippedHotbar(Item item, int offset) {
 
         if (!hasItem(item)) return;
@@ -847,48 +892,6 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    private static Map<Item, Integer> getFuelTimeMap() {
-        if (_fuelTimeMap == null) {
-            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
-        }
-        return _fuelTimeMap;
-    }
-
-    public static double getFuelAmount(ItemStack ...stacks) {
-        double total = 0;
-        for (ItemStack stack : stacks) {
-            if (getFuelTimeMap().containsKey(stack.getItem())) {
-                total += stack.getCount() * getFuelAmount(stack.getItem());
-            }
-        }
-        return total;
-    }
-    public static double getFuelAmount(Item ...items) {
-        double total = 0;
-        for (Item item : items) {
-            if (getFuelTimeMap().containsKey(item)) {
-                int timeTicks = getFuelTimeMap().get(item);
-                // 300 ticks of wood -> 1.5 operations
-                // 200 ticks -> 1 operation
-                total += (double) timeTicks / 200.0;
-            }
-        }
-        return total;
-    }
-
-    public static boolean isFuel(Item item) {
-        return getFuelTimeMap().containsKey(item);
-    }
-
-    public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
-        PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor)handler).getPropertyDelegate();
-        return (double)d.get(0) / 200.0;
-    }
-    public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
-        return (double) handler.getCookProgress() / 24.0;
-    }
-
-
     public ItemStack getItemStackInSlot(Slot slot) {
 
         if (slot == null) {
@@ -905,11 +908,7 @@ public class InventoryTracker extends Tracker {
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-        return (mcSlot != null)? mcSlot.getStack() : ItemStack.EMPTY;
-    }
-
-    private static boolean slotIsCursor(Slot slot) {
-        return slot instanceof CursorInventorySlot;
+        return (mcSlot != null) ? mcSlot.getStack() : ItemStack.EMPTY;
     }
 
     @Override

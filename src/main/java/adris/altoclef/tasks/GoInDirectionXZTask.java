@@ -18,6 +18,10 @@ public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
         _sidePenalty = sidePenalty;
     }
 
+    private static boolean closeEnough(Vec3d a, Vec3d b) {
+        return a.squaredDistanceTo(b) < 0.001;
+    }
+
     @Override
     protected Goal newGoal(AltoClef mod) {
         return new GoalDirectionXZ(_origin, _delta, _sidePenalty);
@@ -30,10 +34,6 @@ public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
             return (closeEnough(task._origin, _origin) && closeEnough(task._delta, _delta));
         }
         return false;
-    }
-
-    private static boolean closeEnough(Vec3d a, Vec3d b) {
-        return a.squaredDistanceTo(b) < 0.001;
     }
 
     @Override

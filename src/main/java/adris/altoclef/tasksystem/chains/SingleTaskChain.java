@@ -9,9 +9,8 @@ import adris.altoclef.util.csharpisbetter.Stopwatch;
 
 public abstract class SingleTaskChain extends TaskChain {
 
-    protected Task _mainTask = null;
     private final Stopwatch _taskStopwatch = new Stopwatch();
-
+    protected Task _mainTask = null;
     private boolean _interrupted = false;
 
     public SingleTaskChain(TaskRunner runner) {
@@ -62,7 +61,7 @@ public abstract class SingleTaskChain extends TaskChain {
 
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
-        Debug.logInternal("Chain Interrupted: " + this.toString() + " by " + other.toString());
+        Debug.logInternal("Chain Interrupted: " + this + " by " + other.toString());
         // Stop our task. When we're started up again, let our task know we need to run.
         _interrupted = true;
         if (_mainTask != null && _mainTask.isActive()) {

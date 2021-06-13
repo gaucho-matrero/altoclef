@@ -48,7 +48,7 @@ public class Settings {
     /**
      * Whenever we're moving, speed up our client by a multiple of this number.
      * Useful when traveling long distances, and only is enabled when we're moving and not mining.
-     *
+     * <p>
      * Set to 1 for this to have no effect.
      */
     private float speedHack = 1.0f;
@@ -60,12 +60,10 @@ public class Settings {
 
     /**
      * If a dropped resource item is further than this from the player, don't pick it up.
-     *
+     * <p>
      * -1 (or less than 0) to disable.
      */
     private float resourcePickupDropRange = -1;
-
-
 
 
     /**
@@ -75,38 +73,36 @@ public class Settings {
     private int minimumFoodAllowed = 0;
 
 
-
     /**
-     *  amount of food to collect when the food in inventory
-     *  is lower than the value of foodUnitsThreshold
+     * amount of food to collect when the food in inventory
+     * is lower than the value of foodUnitsThreshold
      */
     private int foodUnitsToCollect = 0;
 
 
     /**
      * Chests are cached for their contents.
-     *
+     * <p>
      * If the bot is collecting a resource and finds a chest within this range,
      * it will grab the resource from the chest.
-     *
+     * <p>
      * Set this to 0 to disable chest pickups.
-     *
+     * <p>
      * Don't set this too high, as the bot will prioritize chests even if the resource
      * is easily accesible now.
-     *
      */
     private float resourceChestLocateRange = 500;
 
     /**
      * Some block resources are obtained through non-mining means
      * (like a crafting table or stone block, which can be crafted or smelted).
-     *
+     * <p>
      * However, if the block resource is found within this range it will be mined first.
-     *
+     * <p>
      * Set this to 0 to disable this feature
      * (keep in mind, this will not affect blocks like "dirt" and "cobblestone"
      * that can only be obtained through mining)
-     *
+     * <p>
      * Set this to -1 to ALWAYS mine a block if it's catalogued.
      * This is not recommended. For example, if the bot happens to track a
      * crafting table 10000 blocks away, and it then tries obtaining one
@@ -134,7 +130,7 @@ public class Settings {
 
     /**
      * Before grabbing ANYTHING, get a pickaxe.
-     *
+     * <p>
      * Will help with navigation as sometimes dropped items will be underground,
      * but this behaviour only makes sense in regular minecraft worlds.
      */
@@ -156,39 +152,37 @@ public class Settings {
 
     /**
      * Defines how killaura behaves when "mobDefense" is set to true.
-     *
-     *
+     * <p>
+     * <p>
      * Strategies:
-     *
-     *      FASTEST: All hostiles are attacked at every possible moment, every frame.
-     *      SMART: Closest hostile is attacked at max every 0.2 seconds.
-     *      OFF: Off
+     * <p>
+     * FASTEST: All hostiles are attacked at every possible moment, every frame.
+     * SMART: Closest hostile is attacked at max every 0.2 seconds.
+     * OFF: Off
      */
     private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
 
     /**
      * Only applies if mobDefense is on.
-     *
+     * <p>
      * If enabled, will attempt to dodge all incoming projectiles
      */
     private boolean dodgeProjectiles = true;
 
     /**
      * Skeletons and large groups of mobs are a huge pain.
-     *
+     * <p>
      * With this set to true, the bot may either
      * kill or run away from mobs that stay too close for too long.
-     *
      */
     private boolean killOrAvoidAnnoyingHostiles = true;
 
     /**
      * If enabled, the bot will avoid going underwater if baritone
      * isn't giving the bot movement instructions.
-     *
+     * <p>
      * Baritone doesn't know how to move underwater so this should cause
      * no problems, but disable it if you want the bot to be able to sink.
-     *
      */
     private boolean avoidDrowning = true;
 
@@ -204,26 +198,25 @@ public class Settings {
 
     /**
      * If true, will automatically reconnect to the last open server if you get disconnected.
-     *
+     * <p>
      * If disabled, the bot will stop running when you disconnect from a server.
      */
     private boolean autoReconnect = true;
 
     /**
      * If true, will automatically respawn instantly if you die.
-     *
+     * <p>
      * If disabled, the bot will stop running when you die.
      */
     private boolean autoRespawn = true;
 
     /**
-     *
      * This setting lets you configure what the bot should do if it needs to go to the nether
      * but can't find a nether portal immediately.
-     *
+     * <p>
      * Options:
-     *      BUILD_PORTAL_VANILLA: Builds a nether portal, either with obsidian or with a water bucket and lava pool.
-     *      GO_TO_HOME_BASE: Travel to the set home coordinates and assume there's a portal there.
+     * BUILD_PORTAL_VANILLA: Builds a nether portal, either with obsidian or with a water bucket and lava pool.
+     * GO_TO_HOME_BASE: Travel to the set home coordinates and assume there's a portal there.
      */
     private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
@@ -237,24 +230,22 @@ public class Settings {
     private boolean useButlerWhitelist = true;
 
     /**
-     *
-     *
      * Servers have different messaging plugins that change the way messages are displayed.
      * Rather than attempt to implement all of them and introduce a big security risk,
      * you may define custom whisper formats that the butler will watch out for.
-     *
+     * <p>
      * Within curly brackets are three special parts:
-     *
+     * <p>
      * {from}: Who the message was sent from
      * {to}: Who the message was sent to, butler will ignore if this is not your username.
      * {message}: The message.
-     *
-     *
+     * <p>
+     * <p>
      * WARNING: The butler will only accept non-chat messages as commands, but don't make this too lenient,
-     *      else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
-     *      create the following messages.
+     * else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
+     * create the following messages.
      */
-    private String[] whisperFormats = new String[] {
+    private String[] whisperFormats = new String[]{
             "{from} whispers to you: {message}",
             "{from} whispers: {message}",
             "\\[{from} -> {to}\\] {message}"
@@ -292,7 +283,7 @@ public class Settings {
     /**
      * If we need to throw away something but we don't have any "throwaway Items",
      * throw away any unimportant item that's not currently needed in our task chain.
-     *
+     * <p>
      * Careful with this! If true, any item not in "importantItems" is liable to be thrown away.
      */
     private boolean throwAwayUnusedItems = false;
@@ -348,7 +339,6 @@ public class Settings {
         File loadFrom = new File(SETTINGS_PATH);
         if (!loadFrom.exists()) {
             Settings result = new Settings();
-            //result.markDirty();
             result.save();
             return result;
         }
@@ -399,23 +389,41 @@ public class Settings {
         }
     }
 
-    public void save() {
-        //if (!_dirty) return;
-        save(this);
-        //_dirty = false;
+    private static boolean idArrayContainsItem(Item item, int[] ids) {
+        int id = Item.getRawId(item);
+        for (int check : ids) {
+            if (check == id) return true;
+        }
+        return false;
     }
 
-    public boolean failedToLoad() { return _failedToLoad; }
+    public void save() {
+        save(this);
+    }
 
-    public boolean shouldShowTaskChain() { return showTaskChains; }
+    public boolean failedToLoad() {
+        return _failedToLoad;
+    }
+
+    public boolean shouldShowTaskChain() {
+        return showTaskChains;
+    }
+
     public float getSpeedHack() {
         return speedHack;
     }
-    public float getResourcePickupRange() {return resourcePickupDropRange;}
 
-    public float getResourceChestLocateRange() {return resourceChestLocateRange;}
+    public float getResourcePickupRange() {
+        return resourcePickupDropRange;
+    }
 
-    public float getResourceMineRange() {return resourceMineRange;}
+    public float getResourceChestLocateRange() {
+        return resourceChestLocateRange;
+    }
+
+    public float getResourceMineRange() {
+        return resourceMineRange;
+    }
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
@@ -429,48 +437,78 @@ public class Settings {
         return minimumFoodAllowed;
     }
 
-
     public boolean isMobDefense() {
         return mobDefense;
     }
+
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
     }
+
     public boolean isAutoEat() {
         return autoEat;
     }
+
     public boolean isAutoReconnect() {
         return autoReconnect;
     }
+
     public boolean isAutoRespawn() {
         return autoRespawn;
     }
-    public boolean shouldReplantCrops() {return replantCrops;}
+
+    public boolean shouldReplantCrops() {
+        return replantCrops;
+    }
+
     public boolean isUseButlerBlacklist() {
         return useButlerBlacklist;
     }
+
     public boolean isUseButlerWhitelist() {
         return useButlerWhitelist;
     }
-    public boolean shouldDealWithAnnoyingHostiles() {return killOrAvoidAnnoyingHostiles;}
-    public KillAura.Strategy getForceFieldStrategy() {return forceFieldStrategy;}
-    public boolean shouldIdleWhenNotActive() {return idleWhenNotActive;}
+
+    public boolean shouldDealWithAnnoyingHostiles() {
+        return killOrAvoidAnnoyingHostiles;
+    }
+
+    public KillAura.Strategy getForceFieldStrategy() {
+        return forceFieldStrategy;
+    }
+
+    public boolean shouldIdleWhenNotActive() {
+        return idleWhenNotActive;
+    }
+
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
     }
-    public boolean shouldCollectPickaxeFirst() { return collectPickaxeFirst; }
-    public boolean shouldAvoidDrowning() {return avoidDrowning;}
-    public boolean shouldAvoidSearchingForDungeonChests() {return avoidSearchingDungeonChests;}
+
+    public boolean shouldCollectPickaxeFirst() {
+        return collectPickaxeFirst;
+    }
+
+    public boolean shouldAvoidDrowning() {
+        return avoidDrowning;
+    }
+
+    public boolean shouldAvoidSearchingForDungeonChests() {
+        return avoidSearchingDungeonChests;
+    }
 
     public boolean isThrowaway(Item item) {
         return throwawayItems.contains(item);
     }
+
     public boolean isImportant(Item item) {
         return importantItems.contains(item);
     }
+
     public boolean shouldThrowawayUnusedItems() {
         return this.throwAwayUnusedItems;
     }
+
     public Item[] getThrowawayItems(AltoClef mod) {
         List<Item> result = new ArrayList<>();
         for (Item throwawayItem : throwawayItems) {
@@ -481,7 +519,9 @@ public class Settings {
         return Util.toArray(Item.class, result);
     }
 
-    public String[] getWhisperFormats() {return whisperFormats;}
+    public String[] getWhisperFormats() {
+        return whisperFormats;
+    }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
         for (ProtectionRange protection : areasToProtect) {
@@ -496,14 +536,6 @@ public class Settings {
 
     public BlockPos getHomeBasePosition() {
         return homeBasePosition;
-    }
-
-    private static boolean idArrayContainsItem(Item item, int[] ids) {
-        int id = Item.getRawId(item);
-        for (int check : ids) {
-            if (check == id) return true;
-        }
-        return false;
     }
 
     private static class ProtectionRange {
@@ -525,6 +557,7 @@ public class Settings {
         public ItemSerializer() {
             this(null);
         }
+
         public ItemSerializer(Class<Object> vc) {
             super(vc);
         }
@@ -545,6 +578,7 @@ public class Settings {
         public ItemDeserializer() {
             this(null);
         }
+
         public ItemDeserializer(Class<Object> vc) {
             super(vc);
         }
@@ -579,6 +613,7 @@ public class Settings {
         public BlockPosSerializer() {
             this(null);
         }
+
         public BlockPosSerializer(Class<BlockPos> vc) {
             super(vc);
         }
@@ -588,10 +623,12 @@ public class Settings {
             gen.writeString(value.getX() + ", " + value.getY() + ", " + value.getZ());
         }
     }
+
     static class BlockPosDeserializer extends StdDeserializer<BlockPos> {
         public BlockPosDeserializer() {
             this(null);
         }
+
         public BlockPosDeserializer(Class<BlockPos> vc) {
             super(vc);
         }
@@ -602,6 +639,7 @@ public class Settings {
             }
             throw new JsonParseException(p, "Blockpos should have key for " + key + " key, but one was not found.");
         }
+
         int tryParse(JsonParser p, String whole, String part) throws JsonParseException {
             try {
                 return Integer.parseInt(part.trim());
@@ -649,4 +687,5 @@ public class Settings {
             }
             throw new JsonParseException(p, "Invalid token: " + p.getCurrentToken());
         }
-    }}
+    }
+}

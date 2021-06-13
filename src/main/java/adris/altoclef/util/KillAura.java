@@ -14,17 +14,10 @@ import java.util.List;
  */
 public class KillAura {
 
-    public enum Strategy {
-        OFF,
-        FASTEST,
-        SMART
-    }
-
-    private double _forceFieldRange = Double.POSITIVE_INFINITY;
-
     // Smart aura data
     private final List<Entity> _targets = new ArrayList<>();
     private final TimerGame _hitDelay = new TimerGame(0.2);
+    private double _forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity _forceHit = null;
 
     public void tickStart(AltoClef mod) {
@@ -57,12 +50,13 @@ public class KillAura {
                     _hitDelay.reset();
                     Entity toHit = Util.minItem(_targets, (left, right) -> {
                         double distComp = right.squaredDistanceTo(mod.getPlayer()) - left.squaredDistanceTo(mod.getPlayer());
-                        return (int)Math.signum(distComp);
+                        return (int) Math.signum(distComp);
                     });
                     attack(mod, toHit);
                 }
                 break;
-            case OFF: break;
+            case OFF:
+                break;
         }
     }
 
@@ -72,13 +66,19 @@ public class KillAura {
 
     private boolean attack(AltoClef mod, Entity entity) {
         if (entity == null) return false;
-        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange*_forceFieldRange) {
+        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange) {
             // Equip non-tool
             mod.getInventoryTracker().deequipHitTool();
             mod.getControllerExtras().attack(entity);
             return true;
         }
         return false;
+    }
+
+    public enum Strategy {
+        OFF,
+        FASTEST,
+        SMART
     }
 
 }

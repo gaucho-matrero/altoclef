@@ -21,13 +21,14 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     private final Predicate<Entity> _ignorePredicate;
 
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class ...entities) {
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class... entities) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _ignorePredicate = ignorePredicate;
         _targetEntities = entities;
     }
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class ...entities) {
+
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class... entities) {
         this(getOriginSupplier, getTargetTask, entity -> false, entities);
     }
 
@@ -58,10 +59,12 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     }
 
     @Override
-    protected void onStart(AltoClef mod) { }
+    protected void onStart(AltoClef mod) {
+    }
 
     @Override
-    protected void onStop(AltoClef mod, Task interruptTask) { }
+    protected void onStop(AltoClef mod, Task interruptTask) {
+    }
 
     @Override
     protected boolean isEqual(Task obj) {
