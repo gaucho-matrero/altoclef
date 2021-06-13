@@ -203,6 +203,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
                             Entity closestHoglin = mod.getEntityTracker().getClosestEntity(entity.getPos(), HoglinEntity.class);
                             return closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS);
                         }
+                        return false;
                     }, PiglinEntity.class
             );
             if (found == null) {
