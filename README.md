@@ -11,7 +11,7 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 
 ## How it works
 
-Take a look at this [Guide from the wiki](https://github.com/toccatina/altoclef/wiki/1:-Documentation:-Big-Picture) or this [Video explanation](https://youtu.be/q5OmcinQ2ck?t=387)
+Take a look at this [Guide from the wiki](https://github.com/toccatina/altoclef/wiki/1:-Documentation:-Big-Picture) or this [Video explanation](https://youtu.be/q5OmcinQ2ck)
 
 
 ## Current capabilities, Examples:
