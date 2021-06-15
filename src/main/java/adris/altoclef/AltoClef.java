@@ -36,7 +36,8 @@ import java.util.function.Consumer;
 public class AltoClef implements ModInitializer {
 
     // Static access to altoclef
-    public static Action<AltoClef> onInitialize = new Action<>();
+    public static final Action<AltoClef> onInitialize = new Action<>();
+    public static final Action<AltoClef> onPostTick = new Action<>();
 
     public final Action<String> onGameMessage = new Action<>();
     public final Action<String> onGameOverlayMessage = new Action<>();
@@ -164,6 +165,8 @@ public class AltoClef implements ModInitializer {
         _messageSender.tick();
 
         _inputControls.onTickPost();
+
+        onPostTick.invoke(this);
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
