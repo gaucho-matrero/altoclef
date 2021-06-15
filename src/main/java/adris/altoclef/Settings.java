@@ -2,8 +2,11 @@ package adris.altoclef;
 
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.util.KillAura;
-import adris.altoclef.util.SerializationUtil;
 import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.serialization.BlockPosDeserializer;
+import adris.altoclef.util.serialization.BlockPosSerializer;
+import adris.altoclef.util.serialization.ItemDeserializer;
+import adris.altoclef.util.serialization.ItemSerializer;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -261,8 +264,8 @@ public class Settings {
     /**
      * If we need to throw away something, throw away these items first.
      */
-    @JsonSerialize(using = SerializationUtil.ItemSerializer.class)
-    @JsonDeserialize(using = SerializationUtil.ItemDeserializer.class)
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> throwawayItems = Arrays.asList(
             // Overworld junk
             Items.DIORITE,
@@ -292,8 +295,8 @@ public class Settings {
      * We will NEVER throw away these items.
      * Even if "throwAwayUnusedItems" is true and one of these items is not used in a task.
      */
-    @JsonSerialize(using = SerializationUtil.ItemSerializer.class)
-    @JsonDeserialize(using = SerializationUtil.ItemDeserializer.class)
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> importantItems = Arrays.asList(
             Items.ENCHANTED_GOLDEN_APPLE,
             Items.ENDER_EYE,
@@ -345,7 +348,7 @@ public class Settings {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(BlockPos.class, new SerializationUtil.BlockPosDeserializer());
+        module.addDeserializer(BlockPos.class, new BlockPosDeserializer());
         mapper.registerModule(module);
 
         Settings result = new Settings(); // Defaults
@@ -367,13 +370,15 @@ public class Settings {
             result.save();
         }
 
+        Debug.logMessage("TEMP HOME BASE: " + result.getHomeBasePosition());
+
         return result;
     }
 
     private static void save(Settings settings) {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(BlockPos.class, new SerializationUtil.BlockPosSerializer());
+        module.addSerializer(BlockPos.class, new BlockPosSerializer());
         mapper.registerModule(module);
 
         try {
