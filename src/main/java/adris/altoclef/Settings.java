@@ -370,8 +370,6 @@ public class Settings {
             result.save();
         }
 
-        Debug.logMessage("TEMP HOME BASE: " + result.getHomeBasePosition());
-
         return result;
     }
 

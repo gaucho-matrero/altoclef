@@ -3,7 +3,7 @@ package adris.altoclef.util.serialization;
 import com.fasterxml.jackson.core.JsonToken;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Collection;
+import java.util.List;
 
 public class BlockPosDeserializer extends AbstractVectorDeserializer<BlockPos, Integer> {
     @Override
@@ -22,14 +22,12 @@ public class BlockPosDeserializer extends AbstractVectorDeserializer<BlockPos, I
     }
 
     @Override
-    protected BlockPos deserializeFromUnits(Collection<Integer> units) {
-        Integer[] unitsArray = new Integer[3];
-        unitsArray = units.toArray(unitsArray);
-        return new BlockPos(unitsArray[0], unitsArray[1], unitsArray[2]);
+    protected BlockPos deserializeFromUnits(List<Integer> units) {
+        return new BlockPos(units.get(0), units.get(1), units.get(2));
     }
 
     @Override
-    protected JsonToken getUnitToken() {
-        return JsonToken.VALUE_NUMBER_INT;
+    protected boolean isUnitTokenValid(JsonToken token) {
+        return token == JsonToken.VALUE_NUMBER_INT;
     }
 }

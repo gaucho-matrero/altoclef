@@ -9,10 +9,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeserializer<T> {
     public AbstractVectorDeserializer() {
@@ -26,8 +23,8 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
     protected abstract String getTypeName();
     protected abstract String[] getComponents();
     protected abstract UnitType parseUnit(String unit) throws Exception;
-    protected abstract T deserializeFromUnits(Collection<UnitType> units);
-    protected abstract JsonToken getUnitToken();
+    protected abstract T deserializeFromUnits(List<UnitType> units);
+    protected abstract boolean isUnitTokenValid(JsonToken unitToken);
 
 
 
@@ -68,8 +65,8 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
                 if (p.getCurrentToken() == JsonToken.FIELD_NAME) {
                     String fName = p.getCurrentName();
                     p.nextToken();
-                    if (p.getCurrentToken() != getUnitToken()) {
-                        throw new JsonParseException(p, "Expecting " + getUnitToken() + "token for " + getTypeName() + ". Got: " + p.getCurrentToken());
+                    if (!isUnitTokenValid(p.currentToken())) {
+                        throw new JsonParseException(p, "Invalid token for " + getTypeName() + ". Got: " + p.getCurrentToken());
                     }
                     try {
                         parts.put(p.getCurrentName(), parseUnit(p.getValueAsString()));
