@@ -183,7 +183,8 @@ public class PlaceBlockNearbyTask extends Task {
         if (equipBlock(mod)) {
             // Shift click just for 100% container security.
             mod.getInputControls().hold(Input.SNEAK);
-            mod.getControllerExtras().mouseClickOverride(1, true);
+            mod.getInputControls().tryPress(Input.CLICK_RIGHT);
+            //mod.getControllerExtras().mouseClickOverride(1, true);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
             _justPlaced = targetPlace;
             return true;
@@ -193,7 +194,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     private void stopPlacing(AltoClef mod) {
         mod.getInputControls().release(Input.SNEAK);
-        mod.getControllerExtras().mouseClickOverride(1, false);
+        //mod.getControllerExtras().mouseClickOverride(1, false);
         // Oof, these sometimes cause issues so this is a bit of a duct tape fix.
         mod.getClientBaritone().getBuilderProcess().onLostControl();
     }

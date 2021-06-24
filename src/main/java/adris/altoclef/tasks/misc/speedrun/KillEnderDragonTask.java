@@ -225,19 +225,20 @@ public class KillEnderDragonTask extends Task {
                 _hitHoldTimer.reset();
                 _hitResetTimer.reset();
                 Debug.logInternal("HIT");
-                mod.getControllerExtras().mouseClickOverride(0, true);
+                mod.getInputControls().tryPress(Input.CLICK_LEFT);
+                //mod.getControllerExtras().mouseClickOverride(0, true);
             }
             if (_hitHoldTimer.elapsed()) {
                 if (!_wasReleased) {
                     Debug.logInternal("    up");
-                    mod.getControllerExtras().mouseClickOverride(0, false);
+                    //mod.getControllerExtras().mouseClickOverride(0, false);
                     _wasReleased = true;
                 }
             }
             if (_wasHitting && _hitResetTimer.elapsed() || mod.getPlayer().getAttackCooldownProgress(0) > 0.99) {
                 _wasHitting = false;
                 // Code duplication maybe?
-                mod.getControllerExtras().mouseClickOverride(0, false);
+                //mod.getControllerExtras().mouseClickOverride(0, false);
                 mod.getExtraBaritoneSettings().setInteractionPaused(false);
             }
         }
@@ -246,7 +247,7 @@ public class KillEnderDragonTask extends Task {
             if (_wasHitting) {
                 //MinecraftClient.getInstance().options.keyAttack.setPressed(false);
                 if (!_wasReleased) {
-                    mod.getControllerExtras().mouseClickOverride(0, false);
+                    //mod.getControllerExtras().mouseClickOverride(0, false);
                     mod.getExtraBaritoneSettings().setInteractionPaused(false);
                     _wasReleased = true;
                 }
@@ -373,7 +374,7 @@ public class KillEnderDragonTask extends Task {
         protected void onStop(AltoClef mod, Task interruptTask) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
-            mod.getControllerExtras().mouseClickOverride(0, false);
+            //mod.getControllerExtras().mouseClickOverride(0, false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
 

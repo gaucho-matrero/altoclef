@@ -2,7 +2,6 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
-import adris.altoclef.mixins.MinecraftMouseInputAccessor;
 import adris.altoclef.util.csharpisbetter.Action;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -84,13 +83,6 @@ public class PlayerExtraController {
                 new BlockPos(0, 0, 0), Direction.fromRotation(0)
         );
         _mod.getInventoryTracker().setDirty();
-    }
-
-    // This is really dumb and should be handled in "InputControls"
-    @Deprecated
-    public void mouseClickOverride(int button, boolean down) {
-        MinecraftMouseInputAccessor mouse = (MinecraftMouseInputAccessor) MinecraftClient.getInstance().mouse;
-        mouse.mouseClick(MinecraftClient.getInstance().getWindow().getHandle(), button, down ? 1 : 0, 0);
     }
 
     public static class BlockBrokenEvent {
