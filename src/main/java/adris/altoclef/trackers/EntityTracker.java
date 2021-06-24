@@ -12,6 +12,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -48,8 +49,12 @@ public class EntityTracker extends Tracker {
         super(manager);
     }
 
-    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
-        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
+    public static boolean isHostileToPlayer(AltoClef mod, Entity mob) {
+        boolean angry = isAngryAtPlayer(mob);
+        if (mob instanceof LivingEntity) {
+            return angry && ((LivingEntity)mob).canSee(mod.getPlayer());
+        }
+        return angry;
     }
 
     /**
