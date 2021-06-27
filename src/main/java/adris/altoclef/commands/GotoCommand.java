@@ -11,7 +11,6 @@ import adris.altoclef.tasks.GetToXZTask;
 import adris.altoclef.util.Dimension;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,11 +39,10 @@ public class GotoCommand extends Command {
             return;
         }
         if (y != EMPTY) {
-            mod.runUserTask(new DefaultGoToDimensionTask(dimensionHashMap.get(dimension)), nothing -> {
-                mod.runUserTask(new GetToBlockTask(new BlockPos(x, y, z), false), nothing1 -> finish());
-            });
+                mod.runUserTask(new GetToBlockTask(new BlockPos(x, y, z), false, dimensionHashMap.get(dimension)), nothing1 -> finish());
         } else {
             mod.runUserTask(new DefaultGoToDimensionTask(dimensionHashMap.get(dimension)), nothing -> {
+                mod.cancelUserTask();
                 mod.runUserTask(new GetToXZTask(x, z), nothing1 -> finish());
             });
         }

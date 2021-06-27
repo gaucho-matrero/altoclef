@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.util.math.BlockPos;
@@ -11,14 +12,27 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     private final BlockPos _position;
     private final boolean _preferStairs;
+    private final Dimension _dimension;
 
     public GetToBlockTask(BlockPos position, boolean preferStairs) {
+        this(position, preferStairs, null);
+    }
+
+    public GetToBlockTask(BlockPos position, boolean preferStairs, Dimension dimension) {
+        _dimension = dimension;
         _position = position;
         _preferStairs = preferStairs;
     }
 
     public GetToBlockTask(BlockPos position) {
         this(position, false);
+    }
+    @Override
+    protected Task onTick(AltoClef mod) {
+        if(_dimension != null && mod.getCurrentDimension() != _dimension) {
+            return new DefaultGoToDimensionTask(_dimension);
+        }
+        return null;
     }
 
     @Override
@@ -41,7 +55,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     protected boolean isEqual(Task obj) {
         if (obj instanceof GetToBlockTask) {
             GetToBlockTask other = (GetToBlockTask) obj;
-            return other._position.equals(_position) && other._preferStairs == _preferStairs;
+            return other._position.equals(_position) && other._preferStairs == _preferStairs && other._dimension == _dimension;
         }
         return false;
     }
