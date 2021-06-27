@@ -32,7 +32,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
         if(_dimension != null && mod.getCurrentDimension() != _dimension) {
             return new DefaultGoToDimensionTask(_dimension);
         }
-        return null;
+        return super.onTick(mod);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     protected String toDebugString() {
-        return "Getting to block " + _position;
+        return "Getting to block " + _position + (_dimension != null ? " in dimension " + _dimension : "");
     }
 
 
