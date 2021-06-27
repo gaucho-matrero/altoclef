@@ -7,7 +7,6 @@ import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.SkeletonEntity;
 
 import java.util.List;
@@ -59,7 +58,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
             List<Entity> result;
-            Stream<HostileEntity> stream = mod.getEntityTracker().getHostiles().stream();
+            Stream<Entity> stream = mod.getEntityTracker().getHostiles().stream();
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 if (!_includeSkeletons) {
                     stream = stream.filter(hostile -> !(hostile instanceof SkeletonEntity));

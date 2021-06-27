@@ -145,7 +145,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
         if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // Deal with hostiles because they are annoying.
-            List<HostileEntity> hostiles;
+            List<Entity> hostiles;
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 hostiles = mod.getEntityTracker().getHostiles();//mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class;
@@ -402,7 +402,7 @@ public class MobDefenseChain extends SingleTaskChain {
             Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
             if (entity != null) {
                 double range = SAFE_KEEP_DISTANCE - 2;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, entity)) {
                     return entity;
                 }
             }
@@ -410,11 +410,11 @@ public class MobDefenseChain extends SingleTaskChain {
         // Hoglins are dangerous because we can't push them with the force field.
         // If we merely force field them and stand still our health will slowly be chipped away until we die
         if (mod.getEntityTracker().entityFound(HoglinEntity.class, ZoglinEntity.class)) {
-            if (mod.getPlayer().getHealth() < 5) {
+            if (mod.getPlayer().getHealth() < 10) {
                 Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
                 if (entity != null) {
                     double range = SAFE_KEEP_DISTANCE - 1;
-                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, (HostileEntity) entity)) {
+                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isHostileToPlayer(mod, entity)) {
                         return entity;
                     }
                 }
@@ -429,8 +429,8 @@ public class MobDefenseChain extends SingleTaskChain {
             // If hostile mobs are nearby...
             try {
                 ClientPlayerEntity player = mod.getPlayer();
-                List<HostileEntity> hostiles = mod.getEntityTracker().getHostiles();
-                for (HostileEntity entity : hostiles) {
+                List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+                for (Entity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
                     if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getBehaviour().shouldExcludeFromForcefield(entity) && EntityTracker.isHostileToPlayer(mod, entity)) {

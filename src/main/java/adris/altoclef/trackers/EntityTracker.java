@@ -12,6 +12,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -35,7 +36,7 @@ public class EntityTracker extends Tracker {
     private final HashMap<Class, List<Entity>> _entityMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
-    private final List<HostileEntity> _hostiles = new ArrayList<>();
+    private final List<Entity> _hostiles = new ArrayList<>();
 
     private final List<CachedProjectile> _projectiles = new ArrayList<>();
 
@@ -48,8 +49,12 @@ public class EntityTracker extends Tracker {
         super(manager);
     }
 
-    public static boolean isHostileToPlayer(AltoClef mod, HostileEntity mob) {
-        return isAngryAtPlayer(mob) && mob.canSee(mod.getPlayer());
+    public static boolean isHostileToPlayer(AltoClef mod, Entity mob) {
+        boolean angry = isAngryAtPlayer(mob);
+        if (mob instanceof LivingEntity) {
+            return angry && ((LivingEntity)mob).canSee(mod.getPlayer());
+        }
+        return angry;
     }
 
     /**
@@ -68,11 +73,16 @@ public class EntityTracker extends Tracker {
     }
 
     public static boolean isAngryAtPlayer(Entity hostile) {
+        // TODO: Ignore on Peaceful difficulty.
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
         if (hostile instanceof EndermanEntity) {
             EndermanEntity enderman = (EndermanEntity) hostile;
             return enderman.isAngryAt(player) && enderman.isAngry();
+        }
+        // Hoglins by default are pretty mad.
+        if (hostile instanceof HoglinEntity) {
+            return true;
         }
         if (hostile instanceof ZombifiedPiglinEntity) {
             ZombifiedPiglinEntity zombie = (ZombifiedPiglinEntity) hostile;
@@ -214,7 +224,7 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public List<HostileEntity> getHostiles() {
+    public List<Entity> getHostiles() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             return _hostiles;
@@ -297,20 +307,16 @@ public class EntityTracker extends Tracker {
                 } else if (entity instanceof MobEntity) {
                     //MobEntity mob = (MobEntity) entity;
 
+                    if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
 
-                    if (entity instanceof HostileEntity) {
-
-                        // Only run away if the hostile can see us.
-                        HostileEntity hostile = (HostileEntity) entity;
-
-                        if (isHostileToPlayer(_mod, hostile)) {
+                        if (isHostileToPlayer(_mod, entity)) {
 
                             // Check if the mob is facing us or is close enough
-                            boolean closeEnough = hostile.isInRange(_mod.getPlayer(), 26);
+                            boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);
 
                             //Debug.logInternal("TARGET: " + hostile.is);
                             if (closeEnough) {
-                                _hostiles.add(hostile);
+                                _hostiles.add(entity);
                             }
                         }
                     }

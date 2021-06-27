@@ -14,3 +14,6 @@ assignees: ''
 ## Expected Behavior
 
 ## Actual Behavior
+
+## Crashlogs (if applicable)
+_(you may drag + drop the text log here)_
