@@ -19,7 +19,7 @@ public class GotoCommand extends Command {
     private static final int EMPTY = -1;
 
     public GotoCommand() throws CommandException {
-        super("goto", "Tell bot to travel to a set of coordinates.", new Arg(String.class, "dimension"), new Arg(Integer.class, "X"), new Arg(Integer.class, "Y"), new Arg(Integer.class, "Z"));
+        super("goto", "Tell bot to travel to a set of coordinates.", new Arg(String.class, "dimension"), new Arg(Integer.class, "X"), new Arg(Integer.class, "Y", EMPTY, 3, false), new Arg(Integer.class, "Z"));
     }
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
@@ -41,10 +41,7 @@ public class GotoCommand extends Command {
         if (y != EMPTY) {
                 mod.runUserTask(new GetToBlockTask(new BlockPos(x, y, z), false, dimensionHashMap.get(dimension)), nothing1 -> finish());
         } else {
-            mod.runUserTask(new DefaultGoToDimensionTask(dimensionHashMap.get(dimension)), nothing -> {
-                mod.cancelUserTask();
-                mod.runUserTask(new GetToXZTask(x, z), nothing1 -> finish());
-            });
+            mod.runUserTask(new GetToXZTask(x, z, dimensionHashMap.get(dimension)), nothing -> finish());
         }
     }
 }
