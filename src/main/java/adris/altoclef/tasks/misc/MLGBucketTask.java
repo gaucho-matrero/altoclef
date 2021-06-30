@@ -42,27 +42,35 @@ public class MLGBucketTask extends Task {
         Vec3d[] offsets = new Vec3d[]{
                 new Vec3d(0, 0, 0),
                 new Vec3d(-0.5, 0, 0),
+                new Vec3d(0, 0, 0.5),
                 new Vec3d(0.5, 0, 0),
                 new Vec3d(0, 0, -0.5),
-                new Vec3d(0, 0, 0.5)
+                new Vec3d(-0.5, 0, -0.5),
+                new Vec3d(-0.5, 0, 0.5),
+                new Vec3d(0.5, 0, -0.5),
+                new Vec3d(0.5, 0, 0.5),
         };
         BlockHitResult result = null;
+        double bestSqDist = Double.POSITIVE_INFINITY;
         for (Vec3d offset : offsets) {
             RaycastContext rctx = test(mod.getPlayer(), offset);
-            result = mod.getWorld().raycast(rctx);
-            if (result.getType() == HitResult.Type.BLOCK) {
-                break;
+            BlockHitResult hit = mod.getWorld().raycast(rctx);
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                double curDis = hit.squaredDistanceTo(mod.getPlayer());
+                if (curDis < bestSqDist) {
+                    result = hit;
+                    bestSqDist = curDis;
+                }
             }
         }
 
-        if (result.getType() == HitResult.Type.BLOCK) {
+        if (result != null && result.getType() == HitResult.Type.BLOCK) {
             BlockPos toPlaceOn = result.getBlockPos();
 
             BlockPos willLandIn = toPlaceOn.up();
             // If we're water, we're ok. Do nothing.
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
             if (willLandInState.getBlock() == Blocks.WATER) {
-                Debug.logMessage("(HIT SET): " + willLandIn);
                 _placedPos = willLandIn;
                 // We good.
                 setDebugState("Waiting to fall into water");

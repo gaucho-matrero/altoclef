@@ -2,6 +2,7 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.misc.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
@@ -14,13 +15,14 @@ import baritone.api.utils.input.Input;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
     private final TimerGame _tryCollectWaterTimer = new TimerGame(4);
-    private final TimerGame _pickupRepeatTimer = new TimerGame(1);
+    private final TimerGame _pickupRepeatTimer = new TimerGame(0.25);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
 
@@ -52,7 +54,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                     BlockPos placed = _lastMLG.getWaterPlacedPos();
                     //Debug.logInternal("PLACED: " + placed);
                     if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5)) {
-                        BlockPos toInteract = placed.down();
+                        BlockPos toInteract = placed;
+                        // Allow looking at fluids
+                        mod.getBehaviour().push();
+                        mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
                         Optional<Rotation> reach = InteractWithBlockTask.getReach(toInteract, Direction.UP);
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
@@ -72,8 +77,11 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                                     }
                                 }
                             }
+                        } else {
+                            // Eh just try collecting water the regular way if all else fails.
+                            setTask(TaskCatalogue.getItemTask("water_bucket", 1));
                         }
-                        setTask(null);
+                        mod.getBehaviour().pop();
                         return 60;
                     }
                 }
