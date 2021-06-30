@@ -60,10 +60,10 @@ public class ArgParser {
         return result;
     }
 
-    public void LoadArgs(String line) {
+    public void LoadArgs(String line, boolean removeFirst) {
         List<String> units = SplitLineIntoKeywords(line);
         // Discard the first element since, well, it will always be the name of the command.
-        if (units.size() != 0) {
+        if (removeFirst && units.size() != 0) {
             units.remove(0);
         }
         argUnits = new String[units.size()];
@@ -115,4 +115,7 @@ public class ArgParser {
     public ArgBase[] getArgs() {
         return _args;
     }
+
+    // Dear god kill this system already
+    public String[] getArgUnits() { return argUnits; }
 }

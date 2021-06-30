@@ -112,7 +112,7 @@ public class Arg<T> extends ArgBase {
                     res.append("|");
                 }
                 res.delete(res.length() - 1, res.length()); // Remove the last "|"
-                throw new CommandException("Invalid argument found: {unit}. Accepted values are: {res}");
+                throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
             }
             return GetConverted(vType, _enumValues.get(unit));
         }

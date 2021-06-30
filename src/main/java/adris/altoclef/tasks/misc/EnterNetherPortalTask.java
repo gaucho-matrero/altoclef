@@ -9,6 +9,9 @@ import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.function.Function;
 
 public class EnterNetherPortalTask extends Task {
 
@@ -61,20 +64,21 @@ public class EnterNetherPortalTask extends Task {
             _portalTimeout.reset();
         }
 
-        BlockPos portal = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(),
+        Function<Vec3d, BlockPos> getClosestPortal = pos -> mod.getBlockTracker().getNearestTracking(pos,
                 block -> {
-                    // REQUIRE that there be solid ground beneath us.
+                    // REQUIRE that there be solid ground beneath us, not more portal.
                     if (!mod.getChunkTracker().isChunkLoaded(block)) {
                         return false;
                     }
                     BlockPos below = block.down();
-                    boolean canStand = WorldUtil.isSolid(mod, below);
+                    boolean canStand = WorldUtil.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
                     return !canStand;
                 },
                 Blocks.NETHER_PORTAL);
-        if (portal != null) {
+
+        if (getClosestPortal.apply(mod.getPlayer().getPos()) != null) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;
@@ -94,6 +98,7 @@ public class EnterNetherPortalTask extends Task {
     protected boolean isEqual(Task obj) {
         if (obj instanceof EnterNetherPortalTask) {
             EnterNetherPortalTask task = (EnterNetherPortalTask) obj;
+            //noinspection ConstantConditions
             return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
         }
         return false;

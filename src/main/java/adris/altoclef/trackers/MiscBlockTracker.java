@@ -28,14 +28,18 @@ public class MiscBlockTracker {
             for (BlockPos check : WorldUtil.scanRegion(_mod, _mod.getPlayer().getBlockPos().add(-1, -1, -1), _mod.getPlayer().getBlockPos().add(1, 1, 1))) {
                 Block currentBlock = _mod.getWorld().getBlockState(check).getBlock();
                 if (currentBlock == Blocks.NETHER_PORTAL) {
-                    for (int y = check.getY() - 1; y >= 0; --y) {
-                        if (_mod.getWorld().getBlockState(check).getBlock() == Blocks.NETHER_PORTAL) {
-                            check = new BlockPos(check.getX(), y, check.getZ());
+                    // Make sure we get the lowest nether portal, as we can only really enter from the bottom.
+                    while (check.getY() > 0) {
+                        if (_mod.getWorld().getBlockState(check.down()).getBlock() == Blocks.NETHER_PORTAL) {
+                            check = check.down();
                         } else {
                             break;
                         }
                     }
-                    _lastNetherPortal.put(_mod.getCurrentDimension(), check);
+                    BlockPos below = check.down();
+                    if (WorldUtil.isSolid(_mod, below)) {
+                        _lastNetherPortal.put(_mod.getCurrentDimension(), check);
+                    }
                     break;
                 }
             }
