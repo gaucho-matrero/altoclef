@@ -15,37 +15,81 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Out of all the commands, this one probably demonstrates
+ * why we need a better arg parsing system. Please.
+ */
 public class GotoCommand extends Command {
-    private static final int EMPTY = -1;
+    private static final int EMPTY = Integer.MAX_VALUE;
 
     public GotoCommand() throws CommandException {
-        super("goto", "Tell bot to travel to a set of coordinates.", new Arg(String.class, "dimension"), new Arg(Integer.class, "X", EMPTY, 1, false), new Arg(Integer.class, "Y", EMPTY, 3, false), new Arg(Integer.class, "Z", EMPTY, 1, false));
+        // x z
+        // x y z
+        // x y z dimension
+        // (dimension)
+        // (x z dimension)
+        super("goto", "Tell bot to travel to a set of coordinates.",
+                new Arg(Integer.class, "x", EMPTY, 1, false),
+                new Arg(Integer.class, "y", EMPTY, 2, false),
+                new Arg(Integer.class, "z", EMPTY, 1, false),
+                new Arg(Dimension.class, "dimension", null, 3, false)
+        );
     }
+
+    private static Dimension getDimensionJank(ArgParser parser, int expectedIndex) throws CommandException {
+        // Massive duct tape, if only one arg parse it as a dimension manually.
+        if (parser.getArgUnits().length == expectedIndex + 1) {
+            ArgParser jank = new ArgParser(new Arg(Dimension.class, "dimension"));
+            jank.LoadArgs(parser.getArgUnits()[expectedIndex], false);
+            return jank.Get(Dimension.class);
+        }
+        return null;
+    }
+
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        String dimension = (String) parser.Get(String.class);
-        int x = parser.Get(Integer.class),
-                y = parser.Get(Integer.class),
-                z = parser.Get(Integer.class);
-        List<String> validDimensions = Arrays.asList("overworld", "nether", "end");
-        HashMap<String, Dimension> dimensionHashMap = new HashMap<String, Dimension>();
-        dimensionHashMap.put("overworld", Dimension.OVERWORLD);
-        dimensionHashMap.put("nether", Dimension.NETHER);
-        dimensionHashMap.put("end", Dimension.END);
-        if(!validDimensions.contains(dimension)) {
-            mod.log(dimension + "does not seem to be a valid dimension. Here are the valid ones:");
-            mod.log(String.join(", ", validDimensions));
-            finish();
-            return;
+        int x = parser.Get(Integer.class);
+        int y = parser.Get(Integer.class);
+        // Turbo jank duct tape below, accounting for possibility of (x z dimension)
+        int z = EMPTY;
+        Dimension dimension = null;
+        try {
+            z = parser.Get(Integer.class);
+        } catch (CommandException e) {
+            // z might just be the dimension.
+            if (parser.getArgUnits().length == 3) {
+                dimension = getDimensionJank(parser, 2);
+                if (dimension != null) {
+                    // it WORKED! Our argument order is now messed up.
+                    z = y;
+                    y = EMPTY;
+                } else {
+                    // We failed, z is not the dimension.
+                    throw e;
+                }
+            } else {
+                // We failed, too many arguments.
+                throw e;
+            }
+        }
+        if (dimension == null) {
+            dimension = parser.Get(Dimension.class);
         }
         if(x == EMPTY && y == EMPTY && z == EMPTY) {
-            mod.runUserTask(new DefaultGoToDimensionTask(dimensionHashMap.get(dimension)), nothing -> finish());
-            return;
-        }
-        if (y != EMPTY) {
-            mod.runUserTask(new GetToBlockTask(new BlockPos(x, y, z), false, dimensionHashMap.get(dimension)), nothing1 -> finish());
+            // Require dimension as the only argument
+            if (dimension == null) {
+                dimension = getDimensionJank(parser, 0);
+                if (dimension == null) {
+                    finish();
+                    return;
+                }
+            }
+            mod.runUserTask(new DefaultGoToDimensionTask(dimension), nothing -> finish());
+        } else if (y != EMPTY) {
+            BlockPos target = new BlockPos(x, y, z);
+            mod.runUserTask(new GetToBlockTask(target, dimension), nothing1 -> finish());
         } else {
-            mod.runUserTask(new GetToXZTask(x, z, dimensionHashMap.get(dimension)), nothing -> finish());
+            mod.runUserTask(new GetToXZTask(x, z, dimension), nothing -> finish());
         }
     }
 }

@@ -22,7 +22,7 @@ public class GetToXZTask extends CustomBaritoneGoalTask {
     }
     @Override
     protected Task onTick(AltoClef mod) {
-        if(_dimension != null && mod.getCurrentDimension() != _dimension) {
+        if (_dimension != null && mod.getCurrentDimension() != _dimension) {
             return new DefaultGoToDimensionTask(_dimension);
         }
         return super.onTick(mod);
@@ -45,8 +45,7 @@ public class GetToXZTask extends CustomBaritoneGoalTask {
     @Override
     public boolean isFinished(AltoClef mod) {
         BlockPos cur = mod.getPlayer().getBlockPos();
-        Dimension dimension = mod.getCurrentDimension();
-        return (cur.getX() == _x && cur.getZ() == _z && (dimension == null || _dimension == mod.getCurrentDimension()));
+        return (cur.getX() == _x && cur.getZ() == _z && (_dimension == null || _dimension == mod.getCurrentDimension()));
     }
 
     @Override

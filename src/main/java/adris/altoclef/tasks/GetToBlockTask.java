@@ -17,6 +17,9 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     public GetToBlockTask(BlockPos position, boolean preferStairs) {
         this(position, preferStairs, null);
     }
+    public GetToBlockTask(BlockPos position, Dimension dimension) {
+        this(position, false, dimension);
+    }
 
     public GetToBlockTask(BlockPos position, boolean preferStairs, Dimension dimension) {
         _dimension = dimension;
@@ -29,7 +32,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     }
     @Override
     protected Task onTick(AltoClef mod) {
-        if(_dimension != null && mod.getCurrentDimension() != _dimension) {
+        if (_dimension != null && mod.getCurrentDimension() != _dimension) {
             return new DefaultGoToDimensionTask(_dimension);
         }
         return super.onTick(mod);
@@ -41,6 +44,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
             mod.getBehaviour().push();
             mod.getBehaviour().setPreferredStairs(true);
         }
+        super.onStart(mod);
     }
 
 
@@ -49,6 +53,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
         if (_preferStairs) {
             mod.getBehaviour().pop();
         }
+        super.onStop(mod, interruptTask);
     }
 
     @Override
@@ -58,6 +63,11 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
             return other._position.equals(_position) && other._preferStairs == _preferStairs && other._dimension == _dimension;
         }
         return false;
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return super.isFinished(mod) && (_dimension == null || _dimension == mod.getCurrentDimension());
     }
 
     @Override

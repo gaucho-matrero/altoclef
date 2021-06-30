@@ -26,7 +26,7 @@ public abstract class Command {
     public void Run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
         _onFinish = onFinish;
         _mod = mod;
-        parser.LoadArgs(line);
+        parser.LoadArgs(line, true);
         Call(mod, parser);
     }
 
