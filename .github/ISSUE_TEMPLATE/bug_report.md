@@ -15,5 +15,5 @@ assignees: ''
 
 ## Actual Behavior
 
-## Crashlogs (if applicable)
-_(you may drag + drop the text log here)_
+## Crashlogs and Screenshots (if applicable)
+_(you may drag + drop text logs and images here, thanks GitHub)_
