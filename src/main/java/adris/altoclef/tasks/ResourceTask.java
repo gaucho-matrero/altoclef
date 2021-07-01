@@ -136,7 +136,7 @@ public abstract class ResourceTask extends Task {
             if (!satisfiedReqs.isEmpty()) {
                 if (mod.getBlockTracker().anyFound(Util.toArray(Block.class, satisfiedReqs))) {
                     BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
-                    if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
+                    if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
                         _mineLastClosest = closest;
                     }
                     if (_mineLastClosest != null) {
