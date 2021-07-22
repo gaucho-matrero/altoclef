@@ -13,8 +13,11 @@ public abstract class SingleTaskChain extends TaskChain {
     protected Task _mainTask = null;
     private boolean _interrupted = false;
 
+    private AltoClef _mod;
+
     public SingleTaskChain(TaskRunner runner) {
         super(runner);
+        _mod = runner.getMod();
     }
 
     @Override
@@ -46,6 +49,9 @@ public abstract class SingleTaskChain extends TaskChain {
 
     public void setTask(Task task) {
         if (_mainTask == null || !_mainTask.equals(task)) {
+            if (_mainTask != null) {
+                _mainTask.stop(_mod, task);
+            }
             _mainTask = task;
             if (task != null) task.reset();
         }

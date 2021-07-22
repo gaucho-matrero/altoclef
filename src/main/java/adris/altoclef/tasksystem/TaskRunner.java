@@ -68,4 +68,8 @@ public class TaskRunner {
         return _cachedCurrentTaskChain;
     }
 
+    // Kinda jank ngl
+    public AltoClef getMod() {
+        return _mod;
+    }
 }

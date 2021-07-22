@@ -62,7 +62,7 @@ public abstract class Task {
         _stopped = false;
     }
 
-    protected void stop(AltoClef mod, Task interruptTask) {
+    public void stop(AltoClef mod, Task interruptTask) {
         if (!_active) return;
 
         onStop(mod, interruptTask);
