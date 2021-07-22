@@ -57,6 +57,7 @@ public class TaskCatalogue {
             mine("sand", Blocks.SAND, Items.SAND);
             mine("gravel", Blocks.GRAVEL, Items.GRAVEL);
             mine("clay_ball", Blocks.CLAY, Items.CLAY_BALL);
+            mine("ancient_debris", MiningRequirement.DIAMOND, Blocks.ANCIENT_DEBRIS, Items.ANCIENT_DEBRIS).forceDimension(Dimension.NETHER);
             simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("flint", Items.FLINT, CollectFlintTask::new);
             simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new).dontMineIfPresent();
@@ -149,6 +150,8 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
             shapedRecipe2x2("glowstone", Items.GLOWSTONE, 1, "glowstone_dust", "glowstone_dust", "glowstone_dust", "glowstone_dust").dontMineIfPresent();
+            smelt("netherite_scrap", Items.NETHERITE_SCRAP, "ancient_debris");
+            shapedRecipe3x3("netherite_ingot", Items.NETHERITE_INGOT, 1, "netherite_scrap", "netherite_scrap", "netherite_scrap", "netherite_scrap", "gold_ingot", "gold_ingot", "gold_ingot", "gold_ingot", o);
             simple("gold_nugget", Items.GOLD_NUGGET, CollectGoldNuggetsTask::new);
             {
                 String g = "gold_nugget";
@@ -235,6 +238,14 @@ public class TaskCatalogue {
             armor("iron", "iron_ingot", Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS);
             armor("golden", "gold_ingot", Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
             armor("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
+            smith("netherite_helmet", Items.NETHERITE_HELMET, "netherite_ingot", "diamond_helmet");
+            smith("netherite_chestplate", Items.NETHERITE_CHESTPLATE, "netherite_ingot", "diamond_chestplate");
+            smith("netherite_leggings", Items.NETHERITE_LEGGINGS, "netherite_ingot", "diamond_leggings");
+            smith("netherite_boots", Items.NETHERITE_BOOTS, "netherite_ingot", "diamond_boots");
+            smith("netherite_pickaxe", Items.NETHERITE_PICKAXE, "netherite_ingot", "diamond_pickaxe");
+            smith("netherite_axe", Items.NETHERITE_AXE, "netherite_ingot", "diamond_axe");
+            smith("netherite_shovel", Items.NETHERITE_SHOVEL, "netherite_ingot", "diamond_shovel");
+            smith("netherite_sword", Items.NETHERITE_SWORD, "netherite_ingot", "diamond_sword");
             shapedRecipe3x3("bow", Items.BOW, 1, "string", s, o, "string", o, s, "string", s, o);
             shapedRecipe3x3("arrow", Items.ARROW, 4, "flint", o, o, s, o, o, "feather", o, o);
             {
@@ -268,6 +279,7 @@ public class TaskCatalogue {
 
             // FURNITURE
             shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p).dontMineIfPresent();
+            shapedRecipe3x3("smithing_table", Items.SMITHING_TABLE, 1, "iron_ingot", "iron_ingot", o, p, p, o, p, p, o);
             simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
             woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate, (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));
             shapedRecipe2x2("wooden_button", ItemUtil.WOOD_BUTTON, 1, p, o, o, o);
@@ -564,6 +576,13 @@ public class TaskCatalogue {
 
     private static CataloguedResource smelt(String name, Item match, String materials) {
         return smelt(name, new Item[]{match}, materials);
+    }
+
+    private static CataloguedResource smith(String name, Item[] matches, String materials, String tool) {
+        return put(name, matches, count -> new UpgradeInSmithingTableTask(new ItemTarget(tool, count), new ItemTarget(materials, count), new ItemTarget(matches, count)));//new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
+    }
+    private static CataloguedResource smith(String name, Item match, String materials, String tool) {
+        return smith(name, new Item[]{match}, materials, tool);
     }
 
     private static CataloguedResource mob(String name, Item[] matches, Class mobClass) {

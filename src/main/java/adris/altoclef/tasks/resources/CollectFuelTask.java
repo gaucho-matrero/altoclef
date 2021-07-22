@@ -32,8 +32,9 @@ public class CollectFuelTask extends Task {
                 setDebugState("Going to overworld, since, well, no more fuel can be found here.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             case NETHER:
-                setDebugState("Collecting nether wood.");
-                return TaskCatalogue.getItemTask("planks", (int) Math.ceil(_targetFuel));
+                setDebugState("Going to overworld, since we COULD use wood but wood confuses the bot. A bug at the moment.");
+                return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+                //return TaskCatalogue.getItemTask("planks", (int) Math.ceil(_targetFuel));
         }
         setDebugState("INVALID DIMENSION: " + mod.getCurrentDimension());
         return null;

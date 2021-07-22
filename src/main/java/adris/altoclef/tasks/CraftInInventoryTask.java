@@ -46,18 +46,11 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         // Free up inventory
-        if (mod.getInventoryTracker().isInventoryFull()) {
-            // Throw away!
-            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-            if (toThrow != null) {
-                // Equip then throw
-                mod.getInventoryTracker().throwSlot(toThrow);
-            } else {
-                if (!_fullCheckFailed) {
-                    Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                }
-                _fullCheckFailed = true;
+        if (!mod.getInventoryTracker().ensureFreeInventorySlot()) {
+            if (!_fullCheckFailed) {
+                Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
             }
+            _fullCheckFailed = true;
         }
 
         setDebugState("Crafting in inventory... for " + toGet);

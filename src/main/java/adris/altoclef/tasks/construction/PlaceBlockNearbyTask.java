@@ -76,7 +76,7 @@ public class PlaceBlockNearbyTask extends Task {
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
-        if (current != null) {
+        if (current != null && !_cantPlaceHere.test(current)) {
             if (place(mod, current)) {
                 return null;
             }

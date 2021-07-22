@@ -389,21 +389,16 @@ public class InventoryTracker extends Tracker {
         //return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }
 
-    public boolean isArmorEquipped(Item item) {
+    public boolean isArmorEquipped(Item ...matches) {
         ensureUpdated();
-        if (item instanceof ArmorItem) {
-            ArmorItem armor = (ArmorItem) item;
-            for (ItemStack stack : _mod.getPlayer().getArmorItems()) {
-                if (stack.getItem() == item) return true;
+        for (Item item : matches) {
+            if (item instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) item;
+                for (ItemStack stack : _mod.getPlayer().getArmorItems()) {
+                    if (stack.getItem() == item) return true;
+                }
             }
-            return false;
-            /*
-            Slot slot = PlayerSlot.getEquipSlot(armor.getSlotType());
-            ItemStack target = getItemStackInSlot(slot);
-            return target.getItem().equals(item);
-             */
         }
-        Debug.logWarning("Non armor item provided, it is not equipped: " + item.getTranslationKey());
         return false;
     }
 
@@ -860,6 +855,21 @@ public class InventoryTracker extends Tracker {
             }
         }
         return false;
+    }
+
+    public boolean ensureFreeInventorySlot() {
+        if (isInventoryFull()) {
+            // Throw away!
+            Slot toThrow = getGarbageSlot();
+            if (toThrow != null) {
+                // Equip then throw
+                throwSlot(toThrow);
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean isInHotBar(Item... items) {

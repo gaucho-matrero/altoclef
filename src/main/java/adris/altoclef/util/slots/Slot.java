@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
+import net.minecraft.client.gui.screen.ingame.SmithingScreen;
 import net.minecraft.screen.GenericContainerScreenHandler;
 
 // Very helpful links
@@ -47,7 +48,7 @@ public abstract class Slot {
                 return new PlayerInventorySlot(inventorySlot);
             case CRAFTING_TABLE:
                 return new CraftingTableInventorySlot(inventorySlot);
-            case FURNACE:
+            case FURNACE_OR_SMITH:
                 return new FurnaceInventorySlot(inventorySlot);
             case CHEST_LARGE:
                 return new ChestInventorySlot(inventorySlot, true);
@@ -65,8 +66,8 @@ public abstract class Slot {
 
     private static ContainerType getCurrentType() {
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (screen instanceof FurnaceScreen) {
-            return ContainerType.FURNACE;
+        if (screen instanceof FurnaceScreen || screen instanceof SmithingScreen) {
+            return ContainerType.FURNACE_OR_SMITH;
         }
         if (screen instanceof GenericContainerScreen) {
             GenericContainerScreenHandler handler = ((GenericContainerScreen) screen).getScreenHandler();
@@ -115,6 +116,6 @@ public abstract class Slot {
         CRAFTING_TABLE,
         CHEST_SMALL,
         CHEST_LARGE,
-        FURNACE
+        FURNACE_OR_SMITH
     }
 }
