@@ -137,7 +137,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (_origin == null) return true;
+        // Why the heck did I add this in?
+        //if (_origin == null) return true;
 
         if (Float.isInfinite(_distanceToWander)) return false;
 
