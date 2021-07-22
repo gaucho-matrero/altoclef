@@ -32,6 +32,10 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
     @Override
     protected Task onTick(AltoClef mod) {
 
+        if (_cachedGoal == null) {
+            _cachedGoal = newGoal(mod);
+        }
+
         if (_wander) {
             if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
                 setDebugState("Wandering...");
@@ -45,7 +49,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
         }
 
         if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-            _cachedGoal = newGoal(mod);
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(_cachedGoal);
         }
         setDebugState("Completing goal.");
@@ -54,6 +57,9 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
 
     @Override
     public boolean isFinished(AltoClef mod) {
+        if (_cachedGoal == null) {
+            _cachedGoal = newGoal(mod);
+        }
         return _cachedGoal != null && _cachedGoal.isInGoal(mod.getPlayer().getBlockPos());
     }
 

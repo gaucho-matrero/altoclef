@@ -2,11 +2,11 @@ package adris.altoclef.tasksystem.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.CustomBaritoneGoalTask;
 import adris.altoclef.tasks.KillEntitiesTask;
 import adris.altoclef.tasks.misc.DodgeProjectilesTask;
 import adris.altoclef.tasks.misc.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.misc.RunAwayFromHostilesTask;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
@@ -42,7 +42,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
 
-    private static final double DANGER_KEEP_DISTANCE = 15;
+    private static final double DANGER_KEEP_DISTANCE = 15 * 2;
 
     private static final double SAFE_KEEP_DISTANCE = 8;
     // Kind of a silly solution
@@ -52,7 +52,9 @@ public class MobDefenseChain extends SingleTaskChain {
     private Entity _targetEntity;
     private boolean _doingFunkyStuff = false;
     private boolean _wasPuttingOutFire = false;
-    private Task _runAwayTask;
+    private CustomBaritoneGoalTask _runAwayTask;
+
+    private float _cachedLastPriority;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -69,7 +71,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
-
+        _cachedLastPriority = getPriorityInner(mod);
+        return _cachedLastPriority;
+    }
+    private float getPriorityInner(AltoClef mod) {
         if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
@@ -80,6 +85,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
         mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+
 
         // Pause if we're not loaded into a world.
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
@@ -109,7 +115,7 @@ public class MobDefenseChain extends SingleTaskChain {
         // Run away if a weird mob is close by.
         Entity universallyDangerous = getUniversallyDangerousMob(mod);
         if (universallyDangerous != null) {
-            _runAwayTask = new RunAwayFromHostilesTask(SAFE_KEEP_DISTANCE);
+            _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
             setTask(_runAwayTask);
             return 70;
         }
@@ -120,7 +126,7 @@ public class MobDefenseChain extends SingleTaskChain {
         if (blowingUp != null) {
             _doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
-            _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
+            _runAwayTask = new RunAwayFromCreepersTask(DANGER_KEEP_DISTANCE);
             setTask(_runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
@@ -244,9 +250,9 @@ public class MobDefenseChain extends SingleTaskChain {
 
 
         // By default if we aren't "immediately" in danger but were running away, keep running away until we're good.
-        if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
+        if (_runAwayTask != null && !_runAwayTask.isFinished(mod)) {
             setTask(_runAwayTask);
-            return 60;
+            return _cachedLastPriority;
         }
 
         return 0;
