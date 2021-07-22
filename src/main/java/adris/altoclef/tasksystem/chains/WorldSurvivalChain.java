@@ -8,7 +8,10 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
@@ -90,10 +93,12 @@ public class WorldSurvivalChain extends SingleTaskChain {
     }
 
     private boolean isStuckInNetherPortal(AltoClef mod) {
-        // We're stuck if we're inside a portal and are breaking it.
+        // We're stuck if we're inside a portal, are breaking it and can ONLY look at the portal.
         boolean inPortal = mod.getBlockTracker().blockIsValid(mod.getPlayer().getBlockPos(), Blocks.NETHER_PORTAL);
         boolean breakingPortal = mod.getControllerExtras().isBreakingBlock() && mod.getBlockTracker().blockIsValid(mod.getControllerExtras().getBreakingBlockPos(), Blocks.NETHER_PORTAL);
-        return inPortal && (breakingPortal || _wasStuckInPortal);
+        BlockHitResult currentLook = (BlockHitResult) MinecraftClient.getInstance().crosshairTarget;
+        boolean collidingWithportal =(currentLook != null && mod.getBlockTracker().blockIsValid(currentLook.getBlockPos(), Blocks.NETHER_PORTAL));
+        return inPortal && collidingWithportal && (breakingPortal || _wasStuckInPortal);
     }
 
     @Override

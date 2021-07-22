@@ -47,11 +47,11 @@ public class SafeRandomShimmyTask extends Task {
 
     @Override
     protected boolean isEqual(Task obj) {
-        return false;
+        return obj instanceof SafeRandomShimmyTask;
     }
 
     @Override
     protected String toDebugString() {
-        return null;
+        return "Shimmying";
     }
 }
