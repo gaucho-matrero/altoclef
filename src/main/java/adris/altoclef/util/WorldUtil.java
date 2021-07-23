@@ -200,4 +200,17 @@ public interface WorldUtil {
     static Vec3d blockCenter(BlockPos block) {
         return new Vec3d(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
+
+    static Vec3d getOverworldPosition(AltoClef mod, Vec3d pos) {
+        if (mod.getCurrentDimension() == Dimension.NETHER) {
+            pos = pos.multiply(8.0, 1, 8.0);
+        }
+        return pos;
+    }
+    static BlockPos getOverworldPosition(AltoClef mod, BlockPos pos) {
+        if (mod.getCurrentDimension() == Dimension.NETHER) {
+            pos = new BlockPos(pos.getX()*8, pos.getY(), pos.getZ()*8);
+        }
+        return pos;
+    }
 }

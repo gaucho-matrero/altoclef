@@ -44,6 +44,7 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
             }
             if (!_checker.check(mod)) {
                 Debug.logMessage("Failed to make progress on goal, wandering.");
+                onWander(mod);
                 return _wanderTask;
             }
         }
@@ -69,4 +70,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
     }
 
     protected abstract Goal newGoal(AltoClef mod);
+
+    protected void onWander(AltoClef mod) {}
 }

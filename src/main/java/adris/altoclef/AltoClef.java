@@ -14,6 +14,7 @@ import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
 import adris.altoclef.util.PlayerExtraController;
+import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
@@ -367,11 +368,7 @@ public class AltoClef implements ModInitializer {
         return Dimension.END;
     }
     public Vec3d getOverworldPosition() {
-        Vec3d pos = getPlayer().getPos();
-        if (getCurrentDimension() == Dimension.NETHER) {
-            pos = pos.multiply(1.0/8.0, 1, 1.0/8.0);
-        }
-        return pos;
+        return WorldUtil.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {

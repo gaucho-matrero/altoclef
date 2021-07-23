@@ -96,9 +96,12 @@ public class WorldSurvivalChain extends SingleTaskChain {
         // We're stuck if we're inside a portal, are breaking it and can ONLY look at the portal.
         boolean inPortal = mod.getBlockTracker().blockIsValid(mod.getPlayer().getBlockPos(), Blocks.NETHER_PORTAL);
         boolean breakingPortal = mod.getControllerExtras().isBreakingBlock() && mod.getBlockTracker().blockIsValid(mod.getControllerExtras().getBreakingBlockPos(), Blocks.NETHER_PORTAL);
-        BlockHitResult currentLook = (BlockHitResult) MinecraftClient.getInstance().crosshairTarget;
-        boolean collidingWithportal =(currentLook != null && mod.getBlockTracker().blockIsValid(currentLook.getBlockPos(), Blocks.NETHER_PORTAL));
-        return inPortal && collidingWithportal && (breakingPortal || _wasStuckInPortal);
+        if (MinecraftClient.getInstance().crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult currentLook = (BlockHitResult) MinecraftClient.getInstance().crosshairTarget;
+            boolean collidingWithportal = (currentLook != null && mod.getBlockTracker().blockIsValid(currentLook.getBlockPos(), Blocks.NETHER_PORTAL));
+            return inPortal && collidingWithportal && (breakingPortal || _wasStuckInPortal);
+        }
+        return false;
     }
 
     @Override

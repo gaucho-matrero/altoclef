@@ -27,10 +27,6 @@ public class GoalDirectionXZ implements Goal {
         this._sidePenalty = sidePenalty;
     }
 
-    public GoalDirectionXZ(Vec3d origin, Vec3d offset) {
-        this(origin, offset, 1000);
-    }
-
     private static String maybeCensor(double value) {
         return Baritone.settings().censorCoordinates.value ? "<censored>" : Double.toString(value);
     }

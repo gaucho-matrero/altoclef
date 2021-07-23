@@ -272,13 +272,13 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public double getTotalFuel(boolean includeThrowawayProtected, boolean includeNormalFuel) {
+    public double getTotalFuel(boolean forceNormalFuel) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             double total = 0;
             for (Item item : _itemCounts.keySet()) {
-                boolean normalGood = (includeNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
-                if (normalGood || includeThrowawayProtected || !_mod.getBehaviour().isProtected(item)) {
+                boolean normalGood = (forceNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
+                if ((!forceNormalFuel || normalGood) && (forceNormalFuel || !_mod.getBehaviour().isProtected(item))) {
                     total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
@@ -303,7 +303,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public double getTotalFuelNormal() {
-        return getTotalFuel(false, true);
+        return getTotalFuel(true);
     }
 
     /*public double getTotalFuel() {

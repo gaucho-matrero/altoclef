@@ -20,7 +20,7 @@ public class EnterNetherPortalTask extends Task {
     private final Dimension _targetDimension;
 
     private final TimerGame _portalTimeout = new TimerGame(10);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
 
     private final Predicate<BlockPos> _badPortal;
 
