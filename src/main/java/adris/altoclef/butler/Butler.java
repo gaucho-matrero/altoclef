@@ -35,15 +35,12 @@ public class Butler {
         _mod = mod;
         _userAuth = new UserAuth(mod);
         _mod.getUserTaskChain().onTaskFinish.addListener(
-                new ActionListener<String>() {
-                    @Override
-                    public void invoke(String msg) {
-                        if (_currentUser != null) {
-                            //sendWhisper("Finished. " + msg);
-                            _currentUser = null;
-                        }
+                new ActionListener<>(msg -> {
+                    if (_currentUser != null) {
+                        //sendWhisper("Finished. " + msg);
+                        _currentUser = null;
                     }
-                }
+                })
         );
     }
 

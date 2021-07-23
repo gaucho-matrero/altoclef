@@ -32,12 +32,7 @@ public abstract class ChunkSearchTask extends Task {
     private final Set<ChunkPos> _searchedAlready = new HashSet<>();
     private final ArrayList<ChunkPos> _searchLater = new ArrayList<>();
     private final ArrayList<ChunkPos> _justLoaded = new ArrayList<>();
-    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
-        @Override
-        public void invoke(WorldChunk value) {
-            onChunkLoad(value);
-        }
-    };
+    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>(this::onChunkLoad);
     private boolean _first = true;
     private boolean _finished = false;
 

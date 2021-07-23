@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.misc.speedrun;
+package adris.altoclef.tasks.construction.compound;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -7,6 +7,7 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
@@ -54,15 +55,6 @@ public class ConstructNetherPortalBucketTask extends Task {
             new Vec3i(0, 2, 1)
     };
 
-    private static final Vec3i[] CAST_FRAME = new Vec3i[]{
-            new Vec3i(0, -1, 0),
-            new Vec3i(0, 0, -1),
-            new Vec3i(0, 0, 1),
-            new Vec3i(-1, 0, 0),
-            new Vec3i(1, 0, 0),
-            new Vec3i(1, 1, 0)
-    };
-
     // The "portalable" region includes the portal (1 x 6 x 4 structure) and an outer buffer for its construction and water bullshit.
     // The "portal origin relative to region" corresponds to the portal origin with respect to the "portalable" region (see _portalOrigin).
     // This can only really be explained visually, sorry!
@@ -75,10 +67,9 @@ public class ConstructNetherPortalBucketTask extends Task {
     private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
     private final TimerGame _refreshTimer = new TimerGame(11);
     private BlockPos _portalOrigin = null;
-    private BlockPos _currentLavaTarget = null;
+
+    //private BlockPos _currentLavaTarget = null;
     private BlockPos _currentDestroyTarget = null;
-    private BlockPos _currentPlaceTarget = null;
-    private BlockPos _currentCastTarget = null;
     private boolean _firstSearch = false;
 
     @Override
@@ -95,15 +86,6 @@ public class ConstructNetherPortalBucketTask extends Task {
         // Also avoid breaking the cast frame
         mod.getBehaviour().avoidBlockBreaking(block -> {
             if (_portalOrigin != null) {
-                // Don't break CURRENT cast
-                if (_currentLavaTarget != null) {
-                    for (Vec3i castPosRelativeToLava : CAST_FRAME) {
-                        BlockPos castPos = _currentLavaTarget.add(castPosRelativeToLava);
-                        if (block.equals(castPos)) {
-                            return true;
-                        }
-                    }
-                }
                 // Don't break frame
                 for (Vec3i framePosRelative : PORTAL_FRAME) {
                     BlockPos framePos = _portalOrigin.add(framePosRelative);
@@ -111,17 +93,6 @@ public class ConstructNetherPortalBucketTask extends Task {
                         return mod.getWorld().getBlockState(framePos).getBlock() == Blocks.OBSIDIAN;
                     }
                 }
-            }
-            return false;
-        });
-
-        // We need to tell baritone to not make paths that require
-        // bridging on avoidPlacing blocks.
-        // Avoid placing stuff in the lava/water position of our cast.
-        mod.getBehaviour().avoidBlockPlacing(block -> {
-            if (_currentLavaTarget != null) {
-                BlockPos waterTarget = _currentLavaTarget.up();
-                return block.equals(_currentLavaTarget) || block.equals(waterTarget);
             }
             return false;
         });
@@ -144,10 +115,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         //If too far, reset.
         if (_portalOrigin != null && !_portalOrigin.isWithinDistance(mod.getPlayer().getPos(), 2000)) {
             _portalOrigin = null;
-            _currentCastTarget = null;
-            _currentLavaTarget = null;
             _currentDestroyTarget = null;
-            _currentPlaceTarget = null;
         }
 
         if (_currentDestroyTarget != null) {
@@ -155,13 +123,6 @@ public class ConstructNetherPortalBucketTask extends Task {
                 _currentDestroyTarget = null;
             } else {
                 return new DestroyBlockTask(_currentDestroyTarget);
-            }
-        }
-        if (_currentPlaceTarget != null) {
-            if (WorldUtil.isSolid(mod, _currentPlaceTarget)) {
-                _currentPlaceTarget = null;
-            } else {
-                return new PlaceStructureBlockTask(_currentPlaceTarget);
             }
         }
 
@@ -246,103 +207,10 @@ public class ConstructNetherPortalBucketTask extends Task {
                 return _collectLavaTask;
             }
 
-            if (_currentCastTarget == null || !_currentLavaTarget.equals(framePos)) {
-                // We need to place obsidian here.
-                _progressChecker.reset();
-                _currentLavaTarget = framePos;
-                _currentCastTarget = null;
-            }
+            // We need to place obsidian here.
+            return new PlaceObsidianBucketTask(framePos);
 
-            // Build the cast frame
-
-            if (_currentCastTarget != null && WorldUtil.isSolid(mod, _currentCastTarget)) {
-                // Current cast frame already built.
-                _currentCastTarget = null;
-            }
-            if (_currentCastTarget == null) {
-                // Find new cast frame
-                for (Vec3i castPosRelative : CAST_FRAME) {
-                    BlockPos castPos = _currentLavaTarget.add(castPosRelative);
-                    if (!WorldUtil.isSolid(mod, castPos)) {
-                        _currentCastTarget = castPos;
-                        break;
-                    }
-                }
-            }
-            if (_currentCastTarget != null) {
-                setDebugState("Building cast");
-                _currentPlaceTarget = _currentCastTarget;
-                return null;
-                //return new PlaceStructureBlockTask(_currentCastTarget);
-            }
-
-            // Cast frame built. Now, place lava.
-            if (frameBlock != Blocks.LAVA) {
-
-                if (WorldUtil.isSolid(mod, framePos)) {
-                    setDebugState("Clearing space around lava");
-                    _currentDestroyTarget = framePos;
-                    return null;
-                    //return new DestroyBlockTask(framePos);
-                }
-                // Clear the upper two as well, to make placing more reliable.
-                if (WorldUtil.isSolid(mod, framePos.up())) {
-                    setDebugState("Clearing space around lava");
-                    _currentDestroyTarget = framePos.up();
-                    return null;
-                }
-                if (WorldUtil.isSolid(mod, framePos.up(2))) {
-                    setDebugState("Clearing space around lava");
-                    _currentDestroyTarget = framePos.up(2);
-                    return null;
-                }
-
-                // Make sure we have water, juuust in case we have another creeper appear run end here
-                if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                    return TaskCatalogue.getItemTask("water_bucket", 1);
-                }
-
-                // Don't place lava at our position!
-                // Would lead to an embarrassing death.
-                BlockPos targetPos = _currentLavaTarget.add(-1, 1, 0);
-                if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
-                    setDebugState("Positioning player before lava");
-                    return new GetToBlockTask(targetPos, false);
-                }
-
-                setDebugState("Placing lava for cast");
-
-                return new InteractWithBlockTask(new ItemTarget("lava_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 0, 0), false);
-            }
-            // Lava placed, Now, place water.
-            BlockPos waterCheck = framePos.up();
-            if (mod.getWorld().getBlockState(waterCheck).getBlock() != Blocks.WATER) {
-                setDebugState("Placing water for cast");
-
-                if (WorldUtil.isSolid(mod, waterCheck)) {
-                    _currentDestroyTarget = waterCheck;
-                    return null;
-                    //return new DestroyBlockTask(waterCheck);
-
-                }
-                if (WorldUtil.isSolid(mod, waterCheck.up())) {
-                    _currentDestroyTarget = waterCheck.up();
-                    return null;
-                    //return new DestroyBlockTask(waterCheck.up());
-                }
-
-                // Get to position to avoid weird stuck scenario
-                BlockPos targetPos = _currentLavaTarget.add(-1, 1, 0);
-                if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                    setDebugState("Positioning player before water");
-                    return new GetToBlockTask(targetPos, false);
-                }
-
-                return new InteractWithBlockTask(new ItemTarget("water_bucket", 1), Direction.WEST, _currentLavaTarget.add(1, 1, 0), true);
-            }
         }
-        // No more obsidian targets necessary.
-        _currentLavaTarget = null;
 
         // Now, clear the inside.
         for (Vec3i offs : PORTAL_INTERIOR) {

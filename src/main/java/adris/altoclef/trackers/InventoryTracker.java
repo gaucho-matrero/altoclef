@@ -3,10 +3,7 @@ package adris.altoclef.trackers;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
@@ -117,10 +114,13 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
-    public boolean hasItem(String catalogueName) {
-        Item[] items = TaskCatalogue.getItemMatches(catalogueName);
-        assert items != null;
-        return hasItem(items);
+    public boolean hasItem(String ...catalogueNames) {
+        for (String catalogueName : catalogueNames) {
+            Item[] items = TaskCatalogue.getItemMatches(catalogueName);
+            assert items != null;
+            if (hasItem(items)) return true;
+        }
+        return false;
     }
 
     public int getItemCount(Item item) {
@@ -245,6 +245,27 @@ public class InventoryTracker extends Tracker {
                 return hasItem(Items.IRON_PICKAXE) || hasItem(Items.GOLDEN_PICKAXE) || hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
             case DIAMOND:
                 return hasItem(Items.DIAMOND_PICKAXE) || hasItem(Items.NETHERITE_PICKAXE);
+            default:
+                Debug.logError("You missed a spot");
+                return false;
+        }
+    }
+
+    /**
+     * Whether an armor set (or a strictly better version) is FULLY equipped
+     */
+    public boolean armorRequirementMet(ArmorRequirement requirement) {
+        switch (requirement) {
+            case NONE:
+                return true;
+            case LEATHER:
+                return ArmorRequirement.LEATHER.requirementMet(_mod) || ArmorRequirement.IRON.requirementMet(_mod) || ArmorRequirement.DIAMOND.requirementMet(_mod) || ArmorRequirement.NETHERITE.requirementMet(_mod);
+            case IRON:
+                return ArmorRequirement.IRON.requirementMet(_mod) || ArmorRequirement.DIAMOND.requirementMet(_mod) || ArmorRequirement.NETHERITE.requirementMet(_mod);
+            case DIAMOND:
+                return ArmorRequirement.DIAMOND.requirementMet(_mod) || ArmorRequirement.NETHERITE.requirementMet(_mod);
+            case NETHERITE:
+                return ArmorRequirement.NETHERITE.requirementMet(_mod);
             default:
                 Debug.logError("You missed a spot");
                 return false;

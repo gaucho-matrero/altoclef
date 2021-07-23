@@ -3,7 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.misc.EnterNetherPortalTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
-import adris.altoclef.tasks.misc.speedrun.ConstructNetherPortalBucketTask;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import net.minecraft.block.Blocks;

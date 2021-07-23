@@ -28,6 +28,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.Objects;
@@ -135,12 +136,9 @@ public class AltoClef implements ModInitializer {
 
         // Misc wiring
         // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
-            @Override
-            public void invoke(PlayerExtraController.BlockPlaceEvent value) {
-                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
-            }
-        });
+        _extraController.onBlockPlaced.addListener(new ActionListener<>(value -> {
+            _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
+        }));
 
 
         initializeCommands();
@@ -367,6 +365,13 @@ public class AltoClef implements ModInitializer {
         if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
         if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
         return Dimension.END;
+    }
+    public Vec3d getOverworldPosition() {
+        Vec3d pos = getPlayer().getPos();
+        if (getCurrentDimension() == Dimension.NETHER) {
+            pos = pos.multiply(1.0/8.0, 1, 1.0/8.0);
+        }
+        return pos;
     }
 
     public void log(String message) {

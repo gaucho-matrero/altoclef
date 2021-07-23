@@ -2,7 +2,9 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import baritone.api.BaritoneAPI;
+import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.MovementHelper;
+import baritone.process.MineProcess;
 import baritone.utils.BlockStateInterface;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -105,7 +107,9 @@ public interface WorldUtil {
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {
-        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos);
+        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
+                && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos)
+                && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos);
     }
 
     static boolean canPlace(AltoClef mod, BlockPos pos) {
@@ -143,7 +147,7 @@ public interface WorldUtil {
 
             @Override
             public boolean hasNext() {
-                return y <= end.getX() && z <= end.getZ() && x <= end.getX();
+                return y <= end.getY() && z <= end.getZ() && x <= end.getX();
             }
 
             @Override

@@ -18,12 +18,7 @@ public abstract class SearchChunksExploreTask extends Task {
     private final Set<ChunkPos> _alreadyExplored = new HashSet<>();
     private ChunkSearchTask _searcher;
     private AltoClef _mod;
-    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>() {
-        @Override
-        public void invoke(WorldChunk value) {
-            onChunkLoad(value);
-        }
-    };
+    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>(this::onChunkLoad);
 
     // Virtual
     protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {

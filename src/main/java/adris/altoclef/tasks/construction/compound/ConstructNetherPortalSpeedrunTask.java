@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.misc.speedrun;
+package adris.altoclef.tasks.construction.compound;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;

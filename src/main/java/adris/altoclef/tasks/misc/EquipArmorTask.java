@@ -11,7 +11,11 @@ import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.Item;
 import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class EquipArmorTask extends Task {
 
@@ -74,15 +78,7 @@ public class EquipArmorTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        for (String armor : _toEquip) {
-            ArmorItem item = (ArmorItem) TaskCatalogue.getItemMatches(armor)[0];
-            if (item == null) {
-                Debug.logWarning("Item " + armor + " is not armor! Will not equip.");
-            } else {
-                if (!mod.getInventoryTracker().isArmorEquipped(item)) return false;
-            }
-        }
-        return true;
+        return armorEquipped(mod);
     }
 
     @Override
@@ -103,4 +99,29 @@ public class EquipArmorTask extends Task {
     protected String toDebugString() {
         return "Equipping armor " + ArrayUtils.toString(_toEquip);
     }
+
+    private boolean armorTestAll(AltoClef mod, Predicate<Item> armorSatisfies) {
+        for (String armor : _toEquip) {
+            assert TaskCatalogue.taskExists(armor);
+            boolean found = false;
+            for (Item item : Objects.requireNonNull(TaskCatalogue.getItemMatches(armor))) {
+                if (armorSatisfies.test(item)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean hasArmor(AltoClef mod) {
+        return armorTestAll(mod, item -> mod.getInventoryTracker().isArmorEquipped(item) || mod.getInventoryTracker().hasItem(item));
+    }
+
+    public boolean armorEquipped(AltoClef mod) {
+        return armorTestAll(mod, item -> mod.getInventoryTracker().isArmorEquipped(item));
+    }
+
 }

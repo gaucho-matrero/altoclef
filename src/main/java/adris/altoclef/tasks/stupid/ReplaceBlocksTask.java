@@ -30,9 +30,17 @@ public class ReplaceBlocksTask extends Task {
     private final BlockPos _from;
     private final BlockPos _to;
     private final Deque<BlockPos> _forceReplace = new ArrayDeque<>();
-    private final ActionListener<PlayerExtraController.BlockBrokenEvent> blockBrokenListener = new ActionListener<PlayerExtraController.BlockBrokenEvent>() {
-        @Override
-        public void invoke(PlayerExtraController.BlockBrokenEvent evt) {
+    private final ActionListener<PlayerExtraController.BlockBrokenEvent> blockBrokenListener;
+    private Task _collectMaterialsTask;
+    private Task _replaceTask;
+
+    public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block... toFind) {
+        _toFind = toFind;
+        _toReplace = toReplace;
+        _from = from;
+        _to = to;
+
+        blockBrokenListener = new ActionListener<>(evt -> {
             if (evt.player.equals(MinecraftClient.getInstance().player)) {
                 if (isWithinRange(evt.blockPos)) {
                     boolean wasAReplacable = Util.arrayContains(_toFind, evt.blockState.getBlock());
@@ -48,16 +56,7 @@ public class ReplaceBlocksTask extends Task {
             } else {
                 Debug.logMessage("INEQUAL PLAYER (delete this print if things are good lol)");
             }
-        }
-    };
-    private Task _collectMaterialsTask;
-    private Task _replaceTask;
-
-    public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block... toFind) {
-        _toFind = toFind;
-        _toReplace = toReplace;
-        _from = from;
-        _to = to;
+        });
     }
 
     public ReplaceBlocksTask(ItemTarget toReplace, Block... toFind) {

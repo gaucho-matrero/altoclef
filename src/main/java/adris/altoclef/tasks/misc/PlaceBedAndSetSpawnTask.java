@@ -51,30 +51,24 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private BlockPos _currentBedRegion;
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
-    private final ActionListener<String> onCheckGameMessage = new ActionListener<String>() {
-        @Override
-        public void invoke(String value) {
-            if (value.contains("Respawn point set")) {
-                _spawnSet = true;
-                _inBedTimer.reset();
-            }
+    private final ActionListener<String> onCheckGameMessage = new ActionListener<>(value -> {
+        if (value.contains("Respawn point set")) {
+            _spawnSet = true;
+            _inBedTimer.reset();
         }
-    };
+    });
     private boolean _sleepAttemptMade;
-    private final ActionListener<String> onOverlayMessage = new ActionListener<String>() {
-        @Override
-        public void invoke(String value) {
-            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
-            for (String checkMessage : NEUTRAL_MESSAGES) {
-                if (value.contains(checkMessage)) {
-                    if (!_sleepAttemptMade) {
-                        _bedInteractTimeout.reset();
-                    }
-                    _sleepAttemptMade = true;
+    private final ActionListener<String> onOverlayMessage = new ActionListener<String>(value -> {
+        final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
+        for (String checkMessage : NEUTRAL_MESSAGES) {
+            if (value.contains(checkMessage)) {
+                if (!_sleepAttemptMade) {
+                    _bedInteractTimeout.reset();
                 }
+                _sleepAttemptMade = true;
             }
         }
-    };
+    });
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
 

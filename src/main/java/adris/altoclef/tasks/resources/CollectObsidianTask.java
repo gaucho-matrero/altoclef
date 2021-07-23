@@ -2,13 +2,11 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
-import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -17,18 +15,14 @@ import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class CollectObsidianTask extends ResourceTask {
 
@@ -38,6 +32,8 @@ public class CollectObsidianTask extends ResourceTask {
     private final int _count;
     private Task _forceCompleteTask = null;
     private BlockPos _lavaWaitCurrentPos;
+
+    private PlaceObsidianBucketTask _placeObsidianTask;
 
     public CollectObsidianTask(int count) {
         super(Items.OBSIDIAN, count);
@@ -65,8 +61,8 @@ public class CollectObsidianTask extends ResourceTask {
         mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
 
         mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
-        mod.getBlockTracker().trackBlock(Blocks.WATER);
-        mod.getBlockTracker().trackBlock(Blocks.LAVA);
+        //mod.getBlockTracker().trackBlock(Blocks.WATER);
+        //mod.getBlockTracker().trackBlock(Blocks.LAVA);
 
         // Avoid placing on the lava block we're trying to mine.
         mod.getBehaviour().avoidBlockPlacing(pos -> {
@@ -81,6 +77,17 @@ public class CollectObsidianTask extends ResourceTask {
             }
             return false;
         });
+    }
+
+    private static BlockPos getGoodObsidianPosition(AltoClef mod) {
+        BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
+        BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
+        for (BlockPos pos : WorldUtil.scanRegion(mod, start, end)) {
+            if (!WorldUtil.canBreak(mod, pos) || !WorldUtil.canPlace(mod, pos)) {
+                return null;
+            }
+        }
+        return mod.getPlayer().getBlockPos();
     }
 
     @Override
@@ -101,94 +108,76 @@ public class CollectObsidianTask extends ResourceTask {
             return _forceCompleteTask;
         }
 
-        if (mod.getBlockTracker().anyFound(Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+        Predicate<BlockPos> badObsidian = (blockPos ->
+                !blockPos.isWithinDistance(mod.getPlayer().getPos(), 800)
+                || !WorldUtil.canBreak(mod, blockPos)
+        );
+
+        /*
+        // Check for nearby obsidian
+        // WHY do we do this?
+        //      - because our jank 'portal' task protects our obsidian.
+        boolean obsidianNearby = false;
+        BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
+        BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
+        for (BlockPos pos : WorldUtil.scanRegion(mod, start, end)) {
+            if (mod.getBlockTracker().blockIsValid(pos, Blocks.OBSIDIAN) && !badObsidian.test(pos)) {
+                obsidianNearby = true;
+                break;
+            }
+        }
+         */
+        if (/*obsidianNearby || */mod.getBlockTracker().anyFound(badObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+            /*
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
             if (nearestObby != null) {
                 BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldUtil.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
 
-                if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 10 * 10) {
+                if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 5 * 5) {
                     _forceCompleteTask = new ClearLiquidTask(nearestWater);
                     setDebugState("Clearing water nearby obsidian");
                     return _forceCompleteTask;
                 }
             }
+             */
 
             setDebugState("Mining/Collecting obsidian");
+            _placeObsidianTask = null;
             return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[]{Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
         }
 
-        Function<Vec3d, BlockPos> getNearestLava = ppos -> mod.getBlockTracker().getNearestTracking(ppos,
-                blockPos -> {
-                    if (_lavaBlacklist.contains(blockPos)) return true;
-                    if (!WorldUtil.isSourceBlock(mod, blockPos, true)) return true;
-
-                    BlockPos placeOnPos = getLavaStructurePos(blockPos);
-
-                    BlockState placeOnState = mod.getWorld().getBlockState(placeOnPos);
-                    // We can't place a structure on lava.
-                    return placeOnState.getBlock() instanceof FluidBlock;
-                    //if (!mod.getWorld().getBlockState(placeOnPos).getFluidState().isEmpty()) return true;
-                },
-                Blocks.LAVA);
-
-        // No stuff detected, try finding lava and placing water near it.
-        BlockPos nearestLava = getNearestLava.apply(mod.getPlayer().getPos());
-
-        //Debug.logInternal("NEAREST LAVA: " + (nearestLava != null? nearestLava.toShortString() : "(null)") + " # lava: " + mod.getBlockTracker().getKnownLocations(Blocks.LAVA).size());
-
-        if (nearestLava != null) {
-
-            //noinspection PointlessNullCheck
-            if (_lavaWaitCurrentPos == null || !nearestLava.equals(_lavaWaitCurrentPos)) {
-                // We found a new lava to pursue.
-                _lavaWaitCurrentPos = nearestLava;
-                _lavaTimeout.reset();
+        if (_placeObsidianTask == null) {
+            BlockPos goodPos = getGoodObsidianPosition(mod);
+            if (goodPos != null) {
+                _placeObsidianTask = new PlaceObsidianBucketTask(goodPos);
+            } else {
+                setDebugState("Walking until we find a spot to place obsidian");
+                return new TimeoutWanderTask();
             }
-
-            // Collect water first
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                _lavaTimeout.reset();
-                _forceCompleteTask = TaskCatalogue.getItemTask("water_bucket", 1);
-                setDebugState("Getting water bucket");
-                return _forceCompleteTask;
+        }
+        // Try to see if we can nudge the obsidian placer closer to lava.
+        if (_placeObsidianTask != null && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+            // We've moved sort of far away from our post, and this will STOP running when we grab our lava
+            // (which is exactly when we want it to run and no more!
+            if (!_placeObsidianTask.getPos().isWithinDistance(mod.getPlayer().getPos(), 4)) {
+                BlockPos goodPos = getGoodObsidianPosition(mod);
+                if (goodPos != null) {
+                    Debug.logMessage("(nudged obsidian target closer)");
+                    _placeObsidianTask = new PlaceObsidianBucketTask(goodPos);
+                }
             }
-
-            if (!_lavaTimeout.check(mod)) {
-                Debug.logMessage("Failed to obsidian-ify lava, blacklisting.");
-                _lavaBlacklist.add(_lavaWaitCurrentPos);
-                //_lavaWaitCurrentPos = null;
-                return null;
-            }
-
-            // Make sure we have a spot to place the water.
-            BlockPos waterTargetPos = getLavaWaterPos(nearestLava);
-            BlockPos placeOnPos = getLavaStructurePos(nearestLava);
-            if (!WorldUtil.isSolid(mod, placeOnPos)) {
-                setDebugState("Making structure to place water on");
-                return new PlaceStructureBlockTask(placeOnPos);
-            }
-
-            setDebugState("Placing water near lava");
-
-            if (!mod.getWorld().getBlockState(waterTargetPos).isAir()) {
-                return new DestroyBlockTask(waterTargetPos);
-            }
-
-            //_placeWaterTimeout.reset();
-            return new InteractWithBlockTask(TaskCatalogue.getItemTarget("water_bucket", 1), Direction.WEST, placeOnPos, true);
-        } else {
-            _lavaTimeout.reset();
         }
 
-        setDebugState("Wandering, no obsidian/lava found.");
-        return new TimeoutWanderTask(true);
+        // lmfao
+        setDebugState("Placing Obsidian");
+        return _placeObsidianTask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.LAVA);
-        mod.getBlockTracker().stopTracking(Blocks.WATER);
+        //mod.getBlockTracker().stopTracking(Blocks.LAVA);
+        //mod.getBlockTracker().stopTracking(Blocks.WATER);
         mod.getBlockTracker().stopTracking(Blocks.OBSIDIAN);
         mod.getBehaviour().pop();
     }

@@ -177,13 +177,22 @@ public class BotBehaviour {
         }
     }
 
-    public void pop() {
+    public void push(State customState) {
+        _states.push(customState);
+    }
+
+    public State pop() {
         if (_states.isEmpty()) {
             Debug.logError("State stack is empty. This shouldn't be happening.");
-            return;
+            return null;
         }
-        State s = _states.pop();
-        s.applyState();
+        State popped = _states.pop();
+        if (_states.isEmpty()) {
+            Debug.logError("State stack is empty after pop. This shouldn't be happening.");
+            return null;
+        }
+        _states.peek().applyState();
+        return popped;
     }
 
     private State current() {

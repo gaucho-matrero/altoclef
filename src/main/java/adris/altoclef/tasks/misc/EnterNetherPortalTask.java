@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class EnterNetherPortalTask extends Task {
 
@@ -21,17 +22,26 @@ public class EnterNetherPortalTask extends Task {
     private final TimerGame _portalTimeout = new TimerGame(10);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3);
 
+    private final Predicate<BlockPos> _badPortal;
+
     private boolean _leftPortal;
 
-    public EnterNetherPortalTask(Dimension targetDimension) {
-        this(null, targetDimension);
-    }
-
-    public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
+    public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension, Predicate<BlockPos> badPortal) {
         if (targetDimension == Dimension.END)
             throw new IllegalArgumentException("Can't build a nether portal to the end.");
         _getPortalTask = getPortalTask;
         _targetDimension = targetDimension;
+        _badPortal = badPortal;
+    }
+
+    public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> badPortal) {
+        this(null, targetDimension, badPortal);
+    }
+    public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
+        this(getPortalTask, targetDimension, blockPos -> false);
+    }
+    public EnterNetherPortalTask(Dimension targetDimension) {
+        this(null, targetDimension);
     }
 
     @Override
@@ -72,7 +82,7 @@ public class EnterNetherPortalTask extends Task {
                     }
                     BlockPos below = block.down();
                     boolean canStand = WorldUtil.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
-                    return !canStand;
+                    return !canStand || _badPortal.test(block);
                 },
                 Blocks.NETHER_PORTAL);
 

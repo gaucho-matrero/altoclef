@@ -36,18 +36,17 @@ public class PlaceBlockNearbyTask extends Task {
     private BlockPos _tryPlace;   // Where we should TRY placing a block.
     // Oof, necesarry for the onBlockPlaced action.
     private AltoClef _mod;
-    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced = new ActionListener<PlayerExtraController.BlockPlaceEvent>() {
-        @Override
-        public void invoke(PlayerExtraController.BlockPlaceEvent value) {
-            if (Util.arrayContains(_toPlace, value.blockState.getBlock())) {
-                stopPlacing(_mod);
-            }
-        }
-    };
+    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced;
 
     public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block... toPlace) {
         _toPlace = toPlace;
         _cantPlaceHere = cantPlaceHere;
+        onBlockPlaced = new ActionListener<>(value ->
+        {
+            if (Util.arrayContains(_toPlace, value.blockState.getBlock())) {
+                stopPlacing(_mod);
+            }
+        });
     }
 
     public PlaceBlockNearbyTask(Block... toPlace) {
