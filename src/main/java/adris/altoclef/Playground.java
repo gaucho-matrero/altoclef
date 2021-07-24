@@ -8,6 +8,7 @@ import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTas
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.*;
+import adris.altoclef.tasks.misc.anarchysurvive.AnarchyTravelTestSurvivalTask;
 import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
@@ -349,6 +350,9 @@ public class Playground {
                         new ItemTarget("netherite_chestplate", 1),
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
+                break;
+            case "anarchy":
+                mod.runUserTask(new AnarchyTravelTestSurvivalTask());
                 break;
         }
     }
