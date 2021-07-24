@@ -341,6 +341,15 @@ public class Playground {
             case "example":
                 mod.runUserTask(new ExampleTask2());
                 break;
+            case "netherite":
+                mod.runUserTask(TaskCatalogue.getSquashedItemTask(
+                        new ItemTarget("netherite_pickaxe", 1),
+                        new ItemTarget("netherite_sword", 1),
+                        new ItemTarget("netherite_helmet", 1),
+                        new ItemTarget("netherite_chestplate", 1),
+                        new ItemTarget("netherite_leggings", 1),
+                        new ItemTarget("netherite_boots", 1)));
+                break;
         }
     }
 

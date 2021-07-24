@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.LookUtil;

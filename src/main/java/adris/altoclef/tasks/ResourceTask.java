@@ -219,4 +219,8 @@ public abstract class ResourceTask extends Task {
     protected abstract boolean isEqualResource(ResourceTask obj);
 
     protected abstract String toDebugStringName();
+
+    public ItemTarget[] getItemTargets() {
+        return _itemTargets;
+    }
 }

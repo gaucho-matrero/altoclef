@@ -1,16 +1,19 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.squashed;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.CraftInTableTask;
+import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.UpgradeInSmithingTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.Util;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 
-public class CataloguedResourceTask extends Task {
+public class CataloguedResourceTask extends ResourceTask {
 
 
     private final TaskSquasher _squasher;
@@ -18,6 +21,7 @@ public class CataloguedResourceTask extends Task {
     private final List<ResourceTask> _tasksToComplete;
 
     public CataloguedResourceTask(boolean squash, ItemTarget... targets) {
+        super(targets);
         _squasher = new TaskSquasher();
         _targets = targets;
         _tasksToComplete = new ArrayList<>(targets.length);
@@ -38,14 +42,14 @@ public class CataloguedResourceTask extends Task {
     }
 
     @Override
-    protected void onStart(AltoClef mod) {
+    protected void onResourceStart(AltoClef mod) {
 
     }
 
     @Override
-    protected Task onTick(AltoClef mod) {
+    protected Task onResourceTick(AltoClef mod) {
         for (ResourceTask task : _tasksToComplete) {
-            for (ItemTarget target : task._itemTargets) {
+            for (ItemTarget target : task.getItemTargets()) {
                 // If we failed to meet this task's targets, do the task.
                 if (!mod.getInventoryTracker().targetMet(target)) return task;
             }
@@ -56,7 +60,7 @@ public class CataloguedResourceTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         for (ResourceTask task : _tasksToComplete) {
-            for (ItemTarget target : task._itemTargets) {
+            for (ItemTarget target : task.getItemTargets()) {
                 if (!mod.getInventoryTracker().targetMet(target)) return false;
             }
         }
@@ -65,12 +69,18 @@ public class CataloguedResourceTask extends Task {
     }
 
     @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
+    protected boolean shouldAvoidPickingUp(AltoClef mod) {
+        // Useless
+        return false;
+    }
+
+    @Override
+    protected void onResourceStop(AltoClef mod, Task interruptTask) {
 
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
+    protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof CataloguedResourceTask) {
             CataloguedResourceTask other = (CataloguedResourceTask) obj;
             return Util.arraysEqual(other._targets, _targets);
@@ -79,7 +89,7 @@ public class CataloguedResourceTask extends Task {
     }
 
     @Override
-    protected String toDebugString() {
+    protected String toDebugStringName() {
         return "Get catalogued: " + ArrayUtils.toString(_targets);
     }
 
@@ -92,12 +102,13 @@ public class CataloguedResourceTask extends Task {
     @SuppressWarnings({"unchecked", "rawtypes"})
     static class TaskSquasher {
 
-        private final Map<Class, TypeSquasher> _squashMap = new HashMap<>();
+        private final Map<Class, adris.altoclef.tasks.squashed.TypeSquasher> _squashMap = new HashMap<>();
 
         private final List<ResourceTask> _unSquashableTasks = new ArrayList<>();
 
         public TaskSquasher() {
             _squashMap.put(CraftInTableTask.class, new CraftSquasher());
+            _squashMap.put(UpgradeInSmithingTableTask.class, new SmithingSquasher());
             //_squashMap.put(MineAndCollectTask.class)
         }
 
@@ -129,36 +140,5 @@ public class CataloguedResourceTask extends Task {
         }
     }
 
-    static class CraftSquasher extends TypeSquasher<CraftInTableTask> {
-
-        @Override
-        protected List<CraftInTableTask> getSquashed(List<CraftInTableTask> tasks) {
-
-            List<RecipeTarget> targetRecipies = new ArrayList<>();
-
-            for (CraftInTableTask task : tasks) {
-                targetRecipies.addAll(Arrays.asList(task.getRecipeTargets()));
-            }
-
-            //Debug.logMessage("Squashed " + targetRecipies.size());
-
-            return Collections.singletonList(new CraftInTableTask(Util.toArray(RecipeTarget.class, targetRecipies)));
-        }
-    }
-
-    static abstract class TypeSquasher<T extends ResourceTask> {
-
-        private final List<T> _tasks = new ArrayList<>();
-
-        void add(T task) {
-            _tasks.add(task);
-        }
-
-        public List<T> getSquashed() {
-            return getSquashed(_tasks);
-        }
-
-        protected abstract List<T> getSquashed(List<T> tasks);
-    }
 
 }

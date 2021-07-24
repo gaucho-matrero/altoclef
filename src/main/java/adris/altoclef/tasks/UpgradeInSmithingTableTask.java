@@ -55,9 +55,11 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         // if we don't have tools + materials, get them.
 
-        int materialsInSlot = getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_MATERIALS, _material);
-        int toolsInSlot = getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_TOOL, _tool);
-        int ouputInSlot = getItemsInSlot(mod, SmithingTableSlot.OUTPUT_SLOT, _output);
+        boolean inSmithingTable = (mod.getPlayer().currentScreenHandler instanceof SmithingScreenHandler);
+
+        int materialsInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_MATERIALS, _material) : 0;
+        int toolsInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_TOOL, _tool) : 0;
+        int ouputInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.OUTPUT_SLOT, _output) : 0;
 
         int desiredOutput = _output.getTargetCount() - ouputInSlot;
 
@@ -101,6 +103,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
     protected boolean isEqualResource(ResourceTask obj) {
         if (obj instanceof UpgradeInSmithingTableTask) {
             UpgradeInSmithingTableTask task = (UpgradeInSmithingTableTask) obj;
+            return task._tool.equals(_tool) && task._output.equals(_output) && task._material.equals(_material);
         }
         return false;
     }
@@ -181,4 +184,13 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             return price;
         }
     }
+
+    public ItemTarget getTools() {
+        return _tool;
+    }
+
+    public ItemTarget getMaterials() {
+        return _material;
+    }
+
 }
