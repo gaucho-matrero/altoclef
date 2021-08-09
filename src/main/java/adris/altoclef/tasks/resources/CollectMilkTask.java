@@ -74,7 +74,7 @@ public class CollectMilkTask extends ResourceTask {
                 Debug.logWarning("Failed to milk cow because you have no bucket.");
                 return null;
             }
-            if (mod.getInventoryTracker().equipItem(Items.BUCKET)) {
+            if (mod.getSlotHandler().equipItem(Items.BUCKET)) {
                 mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
             } else {
                 Debug.logWarning("Failed to equip bucket for some reason.");

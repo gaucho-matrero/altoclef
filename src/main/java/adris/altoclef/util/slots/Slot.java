@@ -80,6 +80,10 @@ public abstract class Slot {
         return ContainerType.PLAYER;
     }
 
+    public static boolean isCursor(Slot slot) {
+        return slot instanceof CursorInventorySlot;
+    }
+
     public int getInventorySlot() {
         if (!_isInventory) {
             return windowSlotToInventorySlot(_windowSlot);

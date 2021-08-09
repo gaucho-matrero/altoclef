@@ -59,7 +59,7 @@ public class GiveItemToPlayerTask extends Task {
                     Optional<Integer> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Debug.logMessage("THROWING: " + has.get());
-                        ItemStack stack = mod.getInventoryTracker().throwSlot(Slot.getFromInventory(has.get()));
+                        ItemStack stack = mod.getSlotHandler().throwSlot(Slot.getFromInventory(has.get()));
                         // Update target
                         target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
                         _throwTarget.set(i, target);
