@@ -102,7 +102,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0, 90), true);
                 //Debug.logMessage("Looking at " + _toCollect + ", picking up right away.");
                 _tryImmediatePickupTimer.reset();
-                if (!mod.getInventoryTracker().equipItem(Items.BUCKET)) {
+                if (!mod.getSlotHandler().equipItem(Items.BUCKET)) {
                     Debug.logWarning("Failed to equip bucket.");
                 } else {
                     mod.getInputControls().tryPress(Input.CLICK_RIGHT);

@@ -244,11 +244,11 @@ public class InteractWithBlockTask extends Task {
             mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
             if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
                 if (_toUse != null) {
-                    if (!mod.getInventoryTracker().equipItem(_toUse)) {
+                    if (!mod.getSlotHandler().equipItem(_toUse)) {
                         Debug.logWarning("Failed to equip item: " + Util.arrayToString(_toUse.getMatches()));
                     }
                 } else {
-                    mod.getInventoryTracker().deequipRightClickableItem();
+                    mod.getSlotHandler().deequipRightClickableItem();
                 }
                 mod.getInputControls().tryPress(_interactInput);
                 //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(_interactInput, true);

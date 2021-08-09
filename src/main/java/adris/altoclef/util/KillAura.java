@@ -68,7 +68,7 @@ public class KillAura {
         if (entity == null) return false;
         if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange) {
             // Equip non-tool
-            mod.getInventoryTracker().deequipHitTool();
+            mod.getSlotHandler().deequipHitTool();
             mod.getControllerExtras().attack(entity);
             return true;
         }

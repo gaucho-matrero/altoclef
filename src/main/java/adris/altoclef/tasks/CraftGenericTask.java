@@ -2,6 +2,9 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
+import adris.altoclef.tasks.slot.ThrowSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -75,34 +78,19 @@ public class CraftGenericTask extends Task {
             if (toFill == null || toFill.isEmpty()) {
                 if (present.getItem() != Items.AIR) {
                     // Move this item OUT if it should be empty
-                    mod.getInventoryTracker().throwSlot(currentCraftSlot);
-                    if (delayedCraft) return null;
+                    return new ThrowSlotTask(currentCraftSlot);
                 }
             } else {
                 boolean isSatisfied = toFill.matches(present.getItem());
                 if (!isSatisfied) {
-                    List<Integer> validSlots = mod.getInventoryTracker().getInventorySlotsWithItem(toFill.getMatches());
-                    if (validSlots.size() == 0) {
-                        Debug.logWarning("Does not have materials necessary for slot " + craftSlot + " for recipe. Craft failed.");
-                        // TODO: Cancel/fail
-                        return null;
-                    }
-                    int itemSlot = validSlots.get(0);
-                    Slot itemToMove = Slot.getFromInventory(itemSlot);
-                    // Satisfy this current slot.
-                    //Debug.logMessage("NEEDS: " + toFill + " : FOUND: " + mod.getInventoryTracker().getItemStackInSlot(itemToMove).getItem().getTranslationKey());
-                    //Debug.logMessage("Moving: " + itemToMove.getWindowSlot() + " -> " + currentCraftSlot.getWindowSlot());
-                    mod.getInventoryTracker().moveItems(itemToMove, currentCraftSlot, 1);
-                    if (delayedCraft) return null;
+                    return new MoveItemToSlotTask(new ItemTarget(toFill, 1), currentCraftSlot);
                 }
             }
         }
 
         Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
 
-        mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
-
-        return null;
+        return new ClickSlotTask(outputSlot, 0, SlotActionType.QUICK_MOVE);
     }
 
     @Override

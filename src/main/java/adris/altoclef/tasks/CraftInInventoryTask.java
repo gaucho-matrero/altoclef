@@ -46,7 +46,7 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         // Free up inventory
-        if (!mod.getInventoryTracker().ensureFreeInventorySlot()) {
+        if (!mod.getSlotHandler().ensureFreeInventorySlot()) {
             if (!_fullCheckFailed) {
                 Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
             }

@@ -108,7 +108,7 @@ public class FoodChain extends SingleTaskChain {
         //Debug.logInternal("EATING " + toUse.getTranslationKey() + " : " + test);
         _isTryingToEat = true;
         _requestFillup = true;
-        mod.getInventoryTracker().equipItem(food);
+        mod.getSlotHandler().equipItem(food);
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
