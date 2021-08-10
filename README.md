@@ -39,7 +39,6 @@ Check [releases](https://github.com/toccatina/altoclef/releases). Note you will 
 This is a **fabric only** mod, currently only available for **Minecraft 1.16.5**.
 
 
-
 ## TODO's/Future Features:
 - Smart tasks that are user customizable. Give resources json-assignable descriptions on how they CAN be obtained, and the system automatically tries to obtain it in the fastest way.
 - Given any schematic, Collect ALL resources and BUILD the schematic, ideally from a fresh survival world if possible.
@@ -47,10 +46,12 @@ This is a **fabric only** mod, currently only available for **Minecraft 1.16.5**
 - Make this bot able to survive anarchy
 - All acheivements, fully autonomous (not happening any time soon lol)
 
-## Building the Project Manually
+## Development
 
 1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project.
 
 2) Run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
 
 3) For building a jar to use as a fabric mod, run `altoclef/Tasks/build/build`. Then clone [my fork of fabritone](https://gitlab.com/adrisj7/fabritone) and perform the same build instructions/steps on that project's `fabric/1.16.3` branch.
+
+After building locally, [Watch a Rough AltoClef Tutorial Video Here](https://youtu.be/giBjHDZ7HvY)
