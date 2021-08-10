@@ -196,12 +196,10 @@ public class PlaceBlockNearbyTask extends Task {
             if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
                 mod.getPlayer().swingHand(hand);
                 Debug.logMessage("PRESSED");
+                _justPlaced = targetPlace;
                 return true;
             }
 
-            //mod.getControllerExtras().mouseClickOverride(1, true);
-            //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-            _justPlaced = targetPlace;
             return true;
         }
         return false;
