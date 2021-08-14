@@ -21,7 +21,6 @@ import net.minecraft.world.World;
 
 public class PlayerExtraController {
 
-    private static final double INTERACT_RANGE = 6;
     public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
     public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
     private final AltoClef _mod;
@@ -76,7 +75,7 @@ public class PlayerExtraController {
     }
 
     public boolean inRange(Entity entity) {
-        return _mod.getPlayer().isInRange(entity, INTERACT_RANGE);
+        return _mod.getPlayer().isInRange(entity, _mod.getModSettings().getEntityReachRange());
     }
 
     public void attack(Entity entity) {

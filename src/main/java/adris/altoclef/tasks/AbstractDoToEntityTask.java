@@ -54,7 +54,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return null;
         }
 
-        double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
+        double playerReach = mod.getModSettings().getEntityReachRange();
 
         // TODO: This is basically useless.
         EntityHitResult result = LookUtil.raycast(mod.getPlayer(), entity, playerReach);
