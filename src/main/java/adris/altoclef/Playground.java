@@ -229,12 +229,12 @@ public class Playground {
                     }
 
                     private void swap(Slot slot1, Slot slot2) {
-                        mod.getInventoryTracker().clickSlot(slot1);
+                        //mod.getInventoryTracker().clickSlot(slot1);
 
                         Debug.logMessage("MOVE 1...");
                         sleepSec(1);
                         // Pick up slot2
-                        ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
+                        //ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
                         Debug.logMessage("MOVE 2...");
                         sleepSec(1);
 
@@ -243,7 +243,7 @@ public class Playground {
 
                         // If slot 2 is not empty, move it back to slot 1
                         //if (second != null && !second.isEmpty()) {
-                        mod.getInventoryTracker().clickSlot(slot1);
+                        //mod.getInventoryTracker().clickSlot(slot1);
                         Debug.logMessage("MOVE 3!");
                     }
 
@@ -299,7 +299,7 @@ public class Playground {
             case "throwaway":
                 Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
                 if (toThrow != null) {
-                    mod.getInventoryTracker().throwSlot(toThrow);
+                    //mod.getInventoryTracker().throwSlot(toThrow);
                     // Equip then throw
                     //mod.getInventoryTracker().equipSlot(toThrow);
                     //mod.getInventoryTracker().equipItem(mod.getInventoryTracker().getItemStackInSlot(toThrow).getItem());
