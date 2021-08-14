@@ -82,6 +82,7 @@ public class PlayerExtraController {
     public void attack(Entity entity) {
         if (inRange(entity)) {
             _mod.getController().attackEntity(_mod.getPlayer(), entity);
+            _mod.getPlayer().swingHand(Hand.MAIN_HAND);
         }
     }
 

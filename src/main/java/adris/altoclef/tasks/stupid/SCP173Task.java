@@ -67,7 +67,7 @@ public class SCP173Task extends Task {
                 // Equip weapon
                 AbstractKillEntityTask.equipWeapon(mod);
                 if (mod.getPlayer().getAttackCooldownProgress(0) >= 0.99) {
-                    mod.getController().attackEntity(mod.getPlayer(), _lastTarget);
+                    mod.getControllerExtras().attack(_lastTarget);
                 }
             }
         }
