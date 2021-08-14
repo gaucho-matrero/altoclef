@@ -78,8 +78,10 @@ public class PlaceBlockNearbyTask extends Task {
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
         if (current != null && !_cantPlaceHere.test(current)) {
-            if (place(mod, current)) {
-                return null;
+            if (equipBlock(mod)) {
+                if (mod.getControllerExtras().place()) {
+                    return null;
+                }
             }
         }
 
@@ -176,31 +178,6 @@ public class PlaceBlockNearbyTask extends Task {
             if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
                 if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
             }
-        }
-        return false;
-    }
-
-    private boolean place(AltoClef mod, BlockPos targetPlace) {
-        if (equipBlock(mod)) {
-            // Shift click just for 100% container security.
-            mod.getInputControls().hold(Input.SNEAK);
-
-            //mod.getInputControls().tryPress(Input.CLICK_RIGHT);
-            // This appears to work on servers...
-            // TODO: Helper lol
-            HitResult mouseOver = MinecraftClient.getInstance().crosshairTarget;
-            if (mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
-                return false;
-            }
-            Hand hand = Hand.MAIN_HAND;
-            if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
-                mod.getPlayer().swingHand(hand);
-                Debug.logMessage("PRESSED");
-                _justPlaced = targetPlace;
-                return true;
-            }
-
-            return true;
         }
         return false;
     }

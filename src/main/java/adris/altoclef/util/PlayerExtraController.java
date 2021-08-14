@@ -3,12 +3,18 @@ package adris.altoclef.util;
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import adris.altoclef.util.csharpisbetter.Action;
+import adris.altoclef.util.csharpisbetter.TimerGame;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -22,6 +28,9 @@ public class PlayerExtraController {
     private ClientPlayNetworkHandler _networkHandler;
     private BlockPos _blockBreakPos;
     private double _blockBreakProgress;
+
+    // TODO: Settings Parameters?
+    private final TimerGame _placeTimer = new TimerGame(0.2);
 
     public PlayerExtraController(AltoClef mod) {
         _mod = mod;
@@ -83,6 +92,30 @@ public class PlayerExtraController {
                 new BlockPos(0, 0, 0), Direction.fromRotation(0)
         );
         _mod.getInventoryTracker().setDirty();
+    }
+
+    public boolean place() {
+        if (_placeTimer.elapsed()) {
+            _placeTimer.reset();
+            // Shift click just for 100% container security.
+            _mod.getInputControls().hold(Input.SNEAK);
+
+            //mod.getInputControls().tryPress(Input.CLICK_RIGHT);
+            // This appears to work on servers...
+            HitResult mouseOver = MinecraftClient.getInstance().crosshairTarget;
+            if (mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
+                return false;
+            }
+            Hand hand = Hand.MAIN_HAND;
+            assert MinecraftClient.getInstance().interactionManager != null;
+            if (MinecraftClient.getInstance().interactionManager.interactBlock(_mod.getPlayer(), _mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
+                _mod.getPlayer().swingHand(hand);
+                return true;
+            }
+
+            //return true;
+        }
+        return false;
     }
 
     public static class BlockBrokenEvent {
