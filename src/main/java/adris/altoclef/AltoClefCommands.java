@@ -15,7 +15,6 @@ public class AltoClefCommands extends CommandList {
                 new GetCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
-                new EquipCommand(),
                 new GotoCommand(),
                 new CoordsCommand(),
                 new StatusCommand(),

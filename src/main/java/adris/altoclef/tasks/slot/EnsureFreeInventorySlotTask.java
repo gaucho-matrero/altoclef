@@ -2,17 +2,9 @@ package adris.altoclef.tasks.slot;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.slots.Slot;
 
-public class MoveItemToInventoryTask extends Task {
-
-    private final ItemTarget _toMove;
-
-    public MoveItemToInventoryTask(ItemTarget toMove) {
-        _toMove = toMove;
-    }
-
-
+public class EnsureFreeInventorySlotTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -20,6 +12,13 @@ public class MoveItemToInventoryTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (mod.getSlotHandler().canDoSlotAction()) {
+            // Throw away!
+            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
+            if (toThrow != null) {
+                return new ThrowSlotTask(toThrow);
+            }
+        }
         return null;
     }
 
@@ -30,11 +29,11 @@ public class MoveItemToInventoryTask extends Task {
 
     @Override
     protected boolean isEqual(Task obj) {
-        return false;
+        return obj instanceof EnsureFreeInventorySlotTask;
     }
 
     @Override
     protected String toDebugString() {
-        return null;
+        return "Ensuring inventory is free";
     }
 }

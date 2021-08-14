@@ -16,11 +16,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+
 public class SlotHandler {
 
     private final AltoClef _mod;
 
-    private TimerGame _invTimer = new TimerGame(0);
+    private final TimerGame _slotActionTimer = new TimerGame(0);
 
     public SlotHandler(AltoClef mod) {
         _mod = mod;
@@ -30,18 +31,18 @@ public class SlotHandler {
         return _mod.getInventoryTracker();
     }
 
-    public boolean canMove() {
-        _invTimer.setInterval(_mod.getModSettings().getContainerItemMoveDelay());
-        return _invTimer.elapsed();
+    public boolean canDoSlotAction() {
+        _slotActionTimer.setInterval(_mod.getModSettings().getContainerItemMoveDelay());
+        return _slotActionTimer.elapsed();
+    }
+    public void registerSlotAction() {
+        _mod.getInventoryTracker().setDirty();
+        _slotActionTimer.reset();
     }
 
-    public void resetMove() {
-        _invTimer.reset();
-    }
 
     public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
-        if (!canMove()) return ItemStack.EMPTY;
-        resetMove();
+        if (!canDoSlotAction()) return ItemStack.EMPTY;
 
         if (slot.getWindowSlot() == -1) {
             Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
@@ -66,65 +67,43 @@ public class SlotHandler {
 
     }
 
-    public ItemStack clickSlot(Slot slot, SlotActionType type) {
-        return clickSlot(slot, 0, type);
-    }
+    public boolean forceEquipItem(Item toEquip) {
 
-    public ItemStack clickSlot(Slot slot, int mouseButton) {
-        return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
-    }
+        if (canDoSlotAction()) {
 
-    public ItemStack clickSlot(Slot slot) {
-        return clickSlot(slot, 0);
-    }
+            // Always equip to the second slot. First + last is occupied by baritone.
+            _mod.getPlayer().inventory.selectedSlot = 1;
 
-    public ItemStack throwSlot(Slot slot) {
-        ItemStack pickup = clickSlot(slot);
-        clickWindowSlot(-999, 0, SlotActionType.PICKUP);
-        inv().setDirty();
-        return pickup;
-    }
+            Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
-    public boolean isEquipped(Item item) {
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-        return inv().getItemStackInSlot(target).getItem() == item;
-    }
+            // Already equipped
+            if (inv().getItemStackInSlot(target).getItem() == toEquip) return true;
 
-    public boolean equipItem(Item toEquip) {
-
-        // Always equip to the second slot. First + last is occupied by baritone.
-        _mod.getPlayer().inventory.selectedSlot = 1;
-
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-
-        // Already equipped
-        if (inv().getItemStackInSlot(target).getItem() == toEquip) return true;
-
-        List<Integer> itemSlots = inv().getInventorySlotsWithItem(toEquip);
-        if (itemSlots.size() != 0) {
-            int slot = itemSlots.get(0);
-            assert target != null;
-            int hotbar = target.getInventorySlot();
-            if (0 <= hotbar && hotbar < 9) {
-                clickSlot(Objects.requireNonNull(Slot.getFromInventory(slot)), hotbar, SlotActionType.SWAP);
-                //swapItems(Slot.getFromInventory(slot), target);
-                return true;
-            } else {
-                Debug.logWarning("Tried to swap to hotbar that's not a hotbar position! " + hotbar + " (target=" + target + ")");
-                return false;
+            List<Slot> itemSlots = inv().getInventorySlotsWithItem(toEquip);
+            if (itemSlots.size() != 0) {
+                Slot slot = itemSlots.get(0);
+                assert target != null;
+                int hotbar = target.getInventorySlot();
+                if (0 <= hotbar && hotbar < 9) {
+                    clickSlot(Objects.requireNonNull(slot), hotbar, SlotActionType.SWAP);
+                    registerSlotAction();
+                    return true;
+                } else {
+                    Debug.logWarning("Tried to swap to hotbar that's not a hotbar position! " + hotbar + " (target=" + target + ")");
+                    return false;
+                }
             }
+
+            Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
+            return false;
         }
-
-        Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
-        return false;
+        return true;
     }
-
-    public void deequipHitTool() {
-        deequip(item -> item instanceof ToolItem, true);
+    public boolean forceDeequipHitTool() {
+        return forceDeequip(item -> item instanceof ToolItem, true);
     }
-
-    public void deequipRightClickableItem() {
-        deequip(item ->
+    public void forceDeequipRightClickableItem() {
+        forceDeequip(item ->
                         item instanceof BucketItem // water,lava,milk,fishes
                                 || item instanceof EnderEyeItem
                                 || item == Items.BOW
@@ -157,7 +136,7 @@ public class SlotHandler {
      * @param isBad: Whether an item is bad/shouldn't be equipped
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
-    public boolean deequip(Predicate<Item> isBad, boolean preferEmpty) {
+    public boolean forceDeequip(Predicate<Item> isBad, boolean preferEmpty) {
         boolean toolEquipped = false;
         Item equip = inv().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
         if (isBad.test(equip)) {
@@ -166,24 +145,26 @@ public class SlotHandler {
                 for (int i = 0; i < 35; ++i) {
                     Slot s = Slot.getFromInventory(i);
                     if (!isBad.test(inv().getItemStackInSlot(s).getItem())) {
-                        equipSlot(s);
+                        forceEquipSlot(s);
                         return true;
                     }
                 }
                 return false;
             } else {
-                equipItem(Items.AIR);
+                forceEquipItem(Items.AIR);
             }
         }
         return true;
     }
-
-    public void equipSlot(Slot slot) {
+    public void forceEquipSlot(Slot slot) {
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-        swapItems(slot, target);
+        forceSwapItems(slot, target);
     }
 
-    public boolean equipItem(ItemTarget toEquip) {
+    public boolean forceEquipItem(Item ...matches) {
+        return forceEquipItem(new ItemTarget(matches, 1));
+    }
+    public boolean forceEquipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
 
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
@@ -192,11 +173,13 @@ public class SlotHandler {
 
         for (Item item : toEquip.getMatches()) {
             if (inv().hasItem(item)) {
-                if (equipItem(item)) return true;
+                if (forceEquipItem(item)) return true;
             }
         }
         return false;
     }
+
+    /*
 
     public boolean ensureFreeInventorySlot() {
         if (inv().isInventoryFull()) {
@@ -213,35 +196,39 @@ public class SlotHandler {
         return true;
     }
 
+*/
     public void refreshInventory() {
         for (int i = 0; i < InventoryTracker.INVENTORY_SIZE; ++i) {
             Slot slot = Slot.getFromInventory(i);
-            clickSlot(slot);
-            clickSlot(slot);
+            clickSlot(slot, 0, SlotActionType.PICKUP);
+            clickSlot(slot, 0, SlotActionType.PICKUP);
         }
     }
 
-    public void swapItems(Slot slot1, Slot slot2) {
+    private void forceSwapItems(Slot slot1, Slot slot2) {
 
-        // Pick up slot1
-        if (!Slot.isCursor(slot1)) {
-            clickSlot(slot1);
+        if (canDoSlotAction()) {
+            // Pick up slot1
+            if (!Slot.isCursor(slot1)) {
+                clickSlot(slot1, 0, SlotActionType.PICKUP);
+            }
+            // Pick up slot2
+            ItemStack second = clickSlot(slot2, 0, SlotActionType.PICKUP);
+
+            // slot 1 is now in slot 2
+            // slot 2 is now in cursor
+
+            // If slot 2 is not empty, move it back to slot 1
+            //if (second != null && !second.isEmpty()) {
+            if (Slot.isCursor(slot1)) {
+                clickSlot(slot1, 0, SlotActionType.PICKUP);
+            }
+            inv().setDirty();
+            registerSlotAction();
         }
-        // Pick up slot2
-        ItemStack second = clickSlot(slot2);
-
-        // slot 1 is now in slot 2
-        // slot 2 is now in cursor
-
-        // If slot 2 is not empty, move it back to slot 1
-        //if (second != null && !second.isEmpty()) {
-        if (Slot.isCursor(slot1)) {
-            clickSlot(slot1);
-        }
-        inv().setDirty();
         //}
     }
-
+/*
 
     /**
      * @param from   Slot to start moving from

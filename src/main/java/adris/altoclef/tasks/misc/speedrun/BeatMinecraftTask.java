@@ -220,8 +220,8 @@ public class BeatMinecraftTask extends Task {
                 if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
                     ironDurability = 1;
                 } else {
-                    for (int invslot : mod.getInventoryTracker().getInventorySlotsWithItem(Items.IRON_PICKAXE)) {
-                        ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(Slot.getFromInventory(invslot));
+                    for (Slot slot : mod.getInventoryTracker().getInventorySlotsWithItem(Items.IRON_PICKAXE)) {
+                        ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(slot);
                         ironDurability += 1 - ((double) stack.getDamage() / (double) stack.getMaxDamage());
                     }
                 }

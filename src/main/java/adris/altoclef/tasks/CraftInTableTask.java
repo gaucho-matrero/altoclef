@@ -2,6 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -9,7 +10,6 @@ import adris.altoclef.util.ItemUtil;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
-import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
@@ -163,7 +163,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             if (!_collectTask.isFinished(mod)) {
 
                 if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_targets)) {
-                    setDebugState("craft does NOT have RECIPE MATERIALS: " + Util.arrayToString(_targets));
+                    setDebugState("Collecting materials for: " + Util.arrayToString(_targets));
                     return _collectTask;
                 }
             }
@@ -195,19 +195,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected Task containerSubTask(AltoClef mod) {
         //Debug.logMessage("GOT TO TABLE. Crafting...");
 
-        // Already handled above...
-        /*
-        if (_collect) {
-            for (RecipeTarget target : _targets) {
-                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target)) {
-                    // Collect recipe materials
-                    setDebugState("Collecting materials");
-                    return new CollectRecipeCataloguedResourcesTask(_targets);
-                }
-            }
-        }
-         */
-
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getPlayer().closeHandledScreen();
@@ -216,22 +203,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
 
         for (RecipeTarget target : _targets) {
-            if (!mod.getInventoryTracker().targetMet(target.getItem())) {
-                // Free up inventory
-                if (!mod.getSlotHandler().ensureFreeInventorySlot()) {
-                    if (!_fullCheckFailed) {
-                        Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                    }
-                    _fullCheckFailed = true;
-                }
-
-
-                //Debug.logMessage("Crafting: " + target.getRecipe());
-                return new CraftGenericTask(target.getRecipe());
-                //craftInstant(mod, target.getRecipe());
+            if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
+            if (mod.getInventoryTracker().isInventoryFull()) {
+                setDebugState("Freeing inventory before crafting...");
+                return new EnsureFreeInventorySlotTask();
             }
+            setDebugState("Crafting");
+            return new CraftGenericTask(target.getRecipe());
         }
-
         return null;
     }
 

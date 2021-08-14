@@ -74,10 +74,8 @@ public class CollectMilkTask extends ResourceTask {
                 Debug.logWarning("Failed to milk cow because you have no bucket.");
                 return null;
             }
-            if (mod.getSlotHandler().equipItem(Items.BUCKET)) {
+            if (mod.getSlotHandler().forceEquipItem(Items.BUCKET)) {
                 mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
-            } else {
-                Debug.logWarning("Failed to equip bucket for some reason.");
             }
 
 
@@ -86,8 +84,7 @@ public class CollectMilkTask extends ResourceTask {
 
         @Override
         protected Entity getEntityTarget(AltoClef mod) {
-            Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), CowEntity.class);
-            return found;
+            return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), CowEntity.class);
         }
 
         @Override

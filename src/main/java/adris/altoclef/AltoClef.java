@@ -24,6 +24,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.Items;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -136,9 +137,8 @@ public class AltoClef implements ModInitializer {
 
         // Misc wiring
         // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<>(value -> {
-            _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
-        }));
+        _extraController.onBlockPlaced.addListener(new ActionListener<>(value ->
+                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos)));
 
 
         initializeCommands();
