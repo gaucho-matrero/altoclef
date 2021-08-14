@@ -78,7 +78,7 @@ public class PlaceBlockNearbyTask extends Task {
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
         if (current != null && !_cantPlaceHere.test(current)) {
-            if (equipBlock(mod)) {
+            if (mod.getSlotHandler().forceEquipItem(Util.blocksToItems(_toPlace))) {
                 if (mod.getControllerExtras().place()) {
                     return null;
                 }
@@ -173,14 +173,6 @@ public class PlaceBlockNearbyTask extends Task {
         return null;
     }
 
-    private boolean equipBlock(AltoClef mod) {
-        for (Block block : _toPlace) {
-            if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
-                if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
-            }
-        }
-        return false;
-    }
 
     private void stopPlacing(AltoClef mod) {
         mod.getInputControls().release(Input.SNEAK);
