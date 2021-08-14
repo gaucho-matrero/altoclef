@@ -108,7 +108,7 @@ public class LocateStrongholdTask extends Task {
                 return new GetToYTask(EYE_THROW_MINIMUM_Y_POSITION + 1);
             }
             // Throw it
-            if (mod.getInventoryTracker().equipItem(Items.ENDER_EYE)) {
+            if (mod.getSlotHandler().forceEquipItem(Items.ENDER_EYE)) {
                 assert MinecraftClient.getInstance().interactionManager != null;
                 if (_throwTimer.elapsed()) {
                     if (LookUtil.tryAvoidingInteractable(mod)) {

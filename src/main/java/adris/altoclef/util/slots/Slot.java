@@ -9,6 +9,8 @@ import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.gui.screen.ingame.SmithingScreen;
 import net.minecraft.screen.GenericContainerScreenHandler;
 
+import java.util.Objects;
+
 // Very helpful links
 // Container Window Slots (used to move stuff around all containers, including player):
 //      https://wiki.vg/Inventory
@@ -98,9 +100,6 @@ public abstract class Slot {
         return _windowSlot;
     }
 
-    public void ensureWindowOpened() {
-    }
-
     protected abstract int inventorySlotToWindowSlot(int inventorySlot);
 
     protected abstract int windowSlotToInventorySlot(int windowSlot);
@@ -113,6 +112,19 @@ public abstract class Slot {
                 "inventory slot = " + getInventorySlot() +
                 ", window slot = " + getWindowSlot() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Slot slot = (Slot) o;
+        return getInventorySlot() == slot.getInventorySlot() && getWindowSlot() == slot.getWindowSlot();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getInventorySlot(), getWindowSlot());
     }
 
     enum ContainerType {

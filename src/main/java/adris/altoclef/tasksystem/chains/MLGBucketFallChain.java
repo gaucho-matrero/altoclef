@@ -62,9 +62,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
-                                if (!mod.getInventoryTracker().equipItem(new ItemTarget(Items.BUCKET, 1))) {
-                                    Debug.logWarning("Failed to equip bucket to pick up water post MLG.");
-                                } else {
+                                if (mod.getSlotHandler().forceEquipItem(new ItemTarget(Items.BUCKET, 1))) {
                                     if (_pickupRepeatTimer.elapsed()) {
                                         // Pick up
                                         //Debug.logMessage("PICK");

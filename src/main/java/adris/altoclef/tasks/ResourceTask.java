@@ -45,23 +45,6 @@ public abstract class ResourceTask extends Task {
         this(new ItemTarget(item, targetCount));
     }
 
-    // Returns: Whether this failed.
-    public static boolean ensureInventoryFree(AltoClef mod) {
-        if (mod.getInventoryTracker().isInventoryFull()) {
-            // Throw away!
-            Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-            if (toThrow != null) {
-                // Equip then throw
-                //Debug.logMessage("Throwing away from inventory slot " + toThrow.getInventorySlot());
-                mod.getInventoryTracker().throwSlot(toThrow);
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
@@ -177,7 +160,7 @@ public abstract class ResourceTask extends Task {
         result.append(toDebugStringName()).append(": [");
         int c = 0;
         for (ItemTarget target : _itemTargets) {
-            result.append(target.toString());
+            result.append(target != null? target.toString() : "(null)");
             if (++c != _itemTargets.length) {
                 result.append(", ");
             }

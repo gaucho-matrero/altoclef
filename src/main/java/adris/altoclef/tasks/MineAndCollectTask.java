@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -142,11 +143,11 @@ public class MineAndCollectTask extends ResourceTask {
                             MiningToolItem swapPick = (MiningToolItem) item;
                             if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
                                 // We can equip a better pickaxe.
-                                mod.getInventoryTracker().equipSlot(new CursorInventorySlot());
+                                mod.getSlotHandler().forceEquipSlot(new CursorInventorySlot());
                             }
                         } else {
                             // We're not equipped with a pickaxe...
-                            mod.getInventoryTracker().equipSlot(new CursorInventorySlot());
+                            mod.getSlotHandler().forceEquipSlot(new CursorInventorySlot());
                         }
                     }
                 }
@@ -246,8 +247,8 @@ public class MineAndCollectTask extends ResourceTask {
             if (obj instanceof ItemEntity) {
                 _miningPos = null;
 
-                if (!ResourceTask.ensureInventoryFree(_mod)) {
-                    Debug.logInternal("FAILED TO DROP ITEMS");
+                if (_mod.getInventoryTracker().isInventoryFull()) {
+                    return new EnsureFreeInventorySlotTask();
                 }
 
                 return _pickupTask;

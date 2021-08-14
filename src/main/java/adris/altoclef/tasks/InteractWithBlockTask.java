@@ -10,7 +10,6 @@ import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
@@ -244,11 +243,9 @@ public class InteractWithBlockTask extends Task {
             mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
             if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
                 if (_toUse != null) {
-                    if (!mod.getSlotHandler().equipItem(_toUse)) {
-                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(_toUse.getMatches()));
-                    }
+                    mod.getSlotHandler().forceEquipItem(_toUse);
                 } else {
-                    mod.getSlotHandler().deequipRightClickableItem();
+                    mod.getSlotHandler().forceDeequipRightClickableItem();
                 }
                 mod.getInputControls().tryPress(_interactInput);
                 //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(_interactInput, true);

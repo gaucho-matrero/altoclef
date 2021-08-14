@@ -74,12 +74,14 @@ public class PlaceBlockNearbyTask extends Task {
         // Close screen first
         mod.getPlayer().closeHandledScreen();
 
-
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
         if (current != null && !_cantPlaceHere.test(current)) {
-            if (place(mod, current)) {
-                return null;
+            setDebugState("Placing since we can...");
+            if (mod.getSlotHandler().forceEquipItem(Util.blocksToItems(_toPlace))) {
+                if (place(mod, current)) {
+                    return null;
+                }
             }
         }
 
@@ -171,17 +173,12 @@ public class PlaceBlockNearbyTask extends Task {
         return null;
     }
 
-    private boolean equipBlock(AltoClef mod) {
-        for (Block block : _toPlace) {
-            if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
-                if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
-            }
-        }
-        return false;
+    private boolean blockEquipped(AltoClef mod) {
+        return mod.getInventoryTracker().isEquipped(Util.blocksToItems(_toPlace));
     }
 
     private boolean place(AltoClef mod, BlockPos targetPlace) {
-        if (equipBlock(mod)) {
+        if (!mod.getExtraBaritoneSettings().isInteractionPaused() && blockEquipped(mod)) {
             // Shift click just for 100% container security.
             mod.getInputControls().hold(Input.SNEAK);
 
@@ -193,6 +190,7 @@ public class PlaceBlockNearbyTask extends Task {
                 return false;
             }
             Hand hand = Hand.MAIN_HAND;
+            assert MinecraftClient.getInstance().interactionManager != null;
             if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
                 mod.getPlayer().swingHand(hand);
                 Debug.logMessage("PRESSED");
