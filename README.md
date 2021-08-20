@@ -48,6 +48,8 @@ This is a **fabric only** mod, currently only available for **Minecraft 1.16.5**
 
 ## Development
 
+## For windows
+
 1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project.
 
 2) Run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
@@ -55,3 +57,10 @@ This is a **fabric only** mod, currently only available for **Minecraft 1.16.5**
 3) For building a jar to use as a fabric mod, run `altoclef/Tasks/build/build`. Then clone [my fork of fabritone](https://gitlab.com/adrisj7/fabritone) and perform the same build instructions/steps on that project's `fabric/1.16.3` branch.
 
 After building locally, [Watch a Rough AltoClef Tutorial Video Here](https://youtu.be/giBjHDZ7HvY)
+
+## For linux and MacOS
+
+1) cd ~/<directory where local repository is located>
+2) sudo / doas chmod +x gradlew 
+3) ./gradlew build
+
