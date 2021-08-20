@@ -22,22 +22,11 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
- 
-  tagged-release: 
-        name: "Preview Release"
-        runs-on: "ubuntu-latest"
-        steps:
-        - name: Sleep for 6 minutes
-          run: sleep 6m
-          shell: bash
-          
-        - name: "Build & test"
-          run: |
-           echo "done!"
-        - uses: "marvinpinto/action-automatic-releases@latest"
-          with:
-                repo_token: "${{ secrets.GITHUB_TOKEN }}"
-                prerelease: true
-                automatic_release_tag: preview
-                files: |
-                 *.jar
+    - name: Zip files
+      working-directory: ./build/libs
+      run: zip altoclef-${{ github.event.release.tag_name }}.zip *.jar
+    - name: Upload Files
+      uses: AButler/upload-release-assets@v2.0
+      with: 
+        files: 'build/libs/altocleft-${{ github.event.release.tag_name }}.zip;build/libs/*.jar'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
