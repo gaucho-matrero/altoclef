@@ -27,8 +27,8 @@ jobs:
         name: "Preview Release"
         runs-on: "ubuntu-latest"
         steps:
-        - name: Sleep for 30 seconds
-          run: sleep 5m
+        - name: Sleep for 6 minutes
+          run: sleep 6m
           shell: bash
           
         - name: "Build & test"
@@ -40,5 +40,4 @@ jobs:
                 prerelease: true
                 automatic_release_tag: preview
                 files: |
-                 LICENSE.txt
                  *.jar
