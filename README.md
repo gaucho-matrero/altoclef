@@ -2,6 +2,9 @@
 
 Contains any modifications to baritone we may want.
 
+## Updating from official branch
+`git subtree pull --prefix baritone-plus baritone-plus 1.16.5 --squash`
+
 ## Pushing updates to the official branch
 (For myself only): `git subtree push --prefix baritone-plus baritone-plus 1.16.5`
 
