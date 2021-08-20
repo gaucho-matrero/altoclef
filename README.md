@@ -1,3 +1,10 @@
+# Baritone-Plus (for AltoClef)
+
+Contains any modifications to baritone we may want.
+
+## Pushing updates to the official branch
+(For myself only): `git subtree push --prefix baritone-plus baritone-plus 1.16.5`
+
 # Baritone
 [![HitCount](http://hits.dwyl.com/cabaletta/baritone.svg)](http://hits.dwyl.com/cabaletta/baritone/)
 [![GitHub All Releases](https://img.shields.io/github/downloads/cabaletta/baritone/total.svg)](https://github.com/cabaletta/baritone/releases/)
