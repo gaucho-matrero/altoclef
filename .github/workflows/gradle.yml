@@ -5,8 +5,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    tags: 
-       - "v*"
+     branches: [ main ]
     
 jobs:   
   build:
