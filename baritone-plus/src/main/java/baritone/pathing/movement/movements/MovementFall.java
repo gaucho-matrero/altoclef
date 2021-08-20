@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -96,18 +97,21 @@ public class MovementFall extends Movement {
         BlockState destState = ctx.world().getBlockState(dest);
         Block destBlock = destState.getBlock();
         boolean isWater = destState.getFluidState().getFluid() instanceof WaterFluid;
-        if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
-            if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().getDimensionKey() == World.THE_NETHER) {
-                return state.setStatus(MovementStatus.UNREACHABLE);
-            }
 
-            if (ctx.player().getPositionVec().y - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().isOnGround()) {
-                ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER);
+        if (!Baritone.getAltoClefSettings().shouldNotPlaceBucketButStillFall()) {
+            if (!isWater && willPlaceBucket() && !playerFeet.equals(dest)) {
+                if (!PlayerInventory.isHotbar(ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER)) || ctx.world().getDimensionKey() == World.THE_NETHER) {
+                    return state.setStatus(MovementStatus.UNREACHABLE);
+                }
 
-                targetRotation = new Rotation(toDest.getYaw(), 90.0F);
+                if (ctx.player().getPositionVec().y - dest.getY() < ctx.playerController().getBlockReachDistance() && !ctx.player().isOnGround()) {
+                    ctx.player().inventory.currentItem = ctx.player().inventory.getSlotFor(STACK_BUCKET_WATER);
 
-                if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.down())) {
-                    state.setInput(Input.CLICK_RIGHT, true);
+                    targetRotation = new Rotation(toDest.getYaw(), 90.0F);
+
+                    if (ctx.isLookingAt(dest) || ctx.isLookingAt(dest.down())) {
+                        state.setInput(Input.CLICK_RIGHT, true);
+                    }
                 }
             }
         }

@@ -18,6 +18,7 @@
 package baritone.pathing.movement;
 
 import baritone.Baritone;
+import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.ActionCosts;
@@ -51,6 +52,9 @@ import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____S
 public interface MovementHelper extends ActionCosts, Helper {
 
     static boolean avoidBreaking(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
+
+        if (Baritone.getAltoClefSettings().shouldAvoidBreaking(new BlockPos(x, y, z))) return true;
+
         Block b = state.getBlock();
         return b == Blocks.ICE // ice becomes water, and water can mess up the path
                 || b instanceof SilverfishBlock // obvious reasons
@@ -91,7 +95,19 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block instanceof AirBlock) { // early return for most common case
             return true;
         }
-        if (block instanceof AbstractFireBlock || block == Blocks.TRIPWIRE || block == Blocks.COBWEB || block == Blocks.END_PORTAL || block == Blocks.COCOA || block instanceof AbstractSkullBlock || block == Blocks.BUBBLE_COLUMN || block instanceof ShulkerBoxBlock || block instanceof SlabBlock || block instanceof TrapDoorBlock || block == Blocks.HONEY_BLOCK || block == Blocks.END_ROD) {
+        if (block instanceof AbstractFireBlock
+                || block == Blocks.TRIPWIRE
+                || block == Blocks.COBWEB
+                || block == Blocks.END_PORTAL
+                || block == Blocks.COCOA
+                || block instanceof AbstractSkullBlock
+                || block == Blocks.BUBBLE_COLUMN
+                || block instanceof ShulkerBoxBlock
+                || block instanceof SlabBlock
+                || block instanceof TrapDoorBlock
+                || block == Blocks.HONEY_BLOCK
+                || block == Blocks.END_ROD
+                || block == Blocks.SWEET_BERRY_BUSH) {
             return false;
         }
         if (Baritone.settings().blocksToAvoid.value.contains(block)) {
@@ -122,7 +138,7 @@ public interface MovementHelper extends ActionCosts, Helper {
             // ok, it's low enough we could walk through it, but is it supported?
             return canWalkOn(bsi, x, y - 1, z);
         }
-        if (isFlowing(x, y, z, state, bsi)) {
+        if (!Baritone.getAltoClefSettings().isFlowingWaterPassAllowed() && isFlowing(x, y, z, state, bsi)) {
             return false; // Don't walk through flowing liquids
         }
         FluidState fluidState = state.getFluidState();
@@ -183,7 +199,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof TrapDoorBlock
                 || block instanceof EndPortalBlock
                 || block instanceof SkullBlock
-                || block instanceof ShulkerBoxBlock) {
+                || block instanceof ShulkerBoxBlock
+                || block instanceof SweetBerryBushBlock) {
             return false;
         }
         // door, fence gate, liquid, trapdoor have been accounted for, nothing else uses the world or pos parameters
@@ -203,8 +220,8 @@ public interface MovementHelper extends ActionCosts, Helper {
          */
         Block block = state.getBlock();
         if (block instanceof AirBlock) {
+            return !Baritone.getAltoClefSettings().shouldAvoidPlacingAt(x, y, z);
             // early return for common cases hehe
-            return true;
         }
         if (block instanceof SnowBlock) {
             // as before, default to true (mostly because it would otherwise make long distance pathing through snowy biomes impossible)
@@ -278,7 +295,8 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || block instanceof AbstractFireBlock
                 || block == Blocks.END_PORTAL
                 || block == Blocks.COBWEB
-                || block == Blocks.BUBBLE_COLUMN;
+                || block == Blocks.BUBBLE_COLUMN
+                || block == Blocks.SWEET_BERRY_BUSH;
     }
 
     /**
@@ -296,9 +314,9 @@ public interface MovementHelper extends ActionCosts, Helper {
     static boolean canWalkOn(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
         Block block = state.getBlock();
         if (block instanceof AirBlock || block == Blocks.MAGMA_BLOCK || block == Blocks.BUBBLE_COLUMN || block == Blocks.HONEY_BLOCK) {
+            return Baritone.getAltoClefSettings().canWalkOnForce(x, y, z);
             // early return for most common case (air)
             // plus magma, which is a normal cube but it hurts you
-            return false;
         }
         if (isBlockNormalCube(state)) {
             return true;
@@ -312,6 +330,7 @@ public interface MovementHelper extends ActionCosts, Helper {
         if (block == Blocks.ENDER_CHEST || block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
             return true;
         }
+        if (Baritone.getAltoClefSettings().canWalkOnForce(x, y, z)) return true;
         if (isWater(state)) {
             // since this is called literally millions of times per second, the benefit of not allocating millions of useless "pos.up()"
             // BlockPos s that we'd just garbage collect immediately is actually noticeable. I don't even think its a decrease in readability
@@ -338,6 +357,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             if (!Baritone.settings().allowWalkOnBottomSlab.value) {
                 return state.get(SlabBlock.TYPE) != SlabType.BOTTOM;
             }
+            return true;
+        }
+        if (block instanceof EndPortalFrameBlock) {
             return true;
         }
         return block instanceof StairsBlock;
@@ -372,6 +394,7 @@ public interface MovementHelper extends ActionCosts, Helper {
     }
 
     static boolean canPlaceAgainst(BlockStateInterface bsi, int x, int y, int z, BlockState state) {
+        if (Baritone.getAltoClefSettings().shouldAvoidPlacingAt(x, y, z)) return false;
         // can we look at the center of a side face of this block and likely be able to place?
         // (thats how this check is used)
         // therefore dont include weird things that we technically could place against (like carpet) but practically can't
@@ -397,6 +420,9 @@ public interface MovementHelper extends ActionCosts, Helper {
             }
             double strVsBlock = context.toolSet.getStrVsBlock(state);
             if (strVsBlock <= 0) {
+                return COST_INF;
+            }
+            if (Baritone.getAltoClefSettings().shouldAvoidBreaking(x, y, z)) {
                 return COST_INF;
             }
             double result = 1 / strVsBlock;
@@ -425,6 +451,7 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param b   the blockstate to mine
      */
     static void switchToBestToolFor(IPlayerContext ctx, BlockState b) {
+        if (Baritone.getAltoClefSettings().isInteractionPaused()) return;
         switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
     }
 

@@ -22,6 +22,7 @@ import baritone.api.cache.IWorldScanner;
 import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.api.utils.IPlayerContext;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.multiplayer.ClientChunkProvider;
 import net.minecraft.util.math.BlockPos;
@@ -147,6 +148,9 @@ public enum WorldScanner implements IWorldScanner {
 
     private boolean scanChunkInto(int chunkX, int chunkZ, Chunk chunk, BlockOptionalMetaLookup filter, Collection<BlockPos> result, int max, int yLevelThreshold, int playerY, int[] coordinateIterationOrder) {
         ChunkSection[] chunkInternalStorageArray = chunk.getSections();
+        HashMap<Block, Integer> numberFound = new HashMap<>();
+        int maxReached = 0;
+
         boolean foundWithinY = false;
         for (int yIndex = 0; yIndex < 16; yIndex++) {
             int y0 = coordinateIterationOrder[yIndex];
@@ -162,7 +166,8 @@ public enum WorldScanner implements IWorldScanner {
                         BlockState state = bsc.get(x, yy, z);
                         if (filter.has(state)) {
                             int y = yReal | yy;
-                            if (result.size() >= max) {
+                            // If we reached the limit EVERYWHERE, we're done.
+                            if (maxReached >= filter.blocks().size()) {
                                 if (Math.abs(y - playerY) < yLevelThreshold) {
                                     foundWithinY = true;
                                 } else {
@@ -173,7 +178,21 @@ public enum WorldScanner implements IWorldScanner {
                                     }
                                 }
                             }
+                            // If we reached the limit on JUST this one, keep going.
+                            Block b = state.getBlock();
+                            if (numberFound.containsKey(b) && numberFound.get(b) >= max) {
+                                continue;
+                            }
+
                             result.add(new BlockPos(chunkX | x, y, chunkZ | z));
+                            // Update number
+                            if (!numberFound.containsKey(b)) {
+                                numberFound.put(b, 0);
+                            }
+                            numberFound.put(b, numberFound.get(b) + 1);
+                            if (numberFound.get(b) >= max) {
+                                maxReached += 1;
+                            }
                         }
                     }
                 }

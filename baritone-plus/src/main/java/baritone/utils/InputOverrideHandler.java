@@ -88,6 +88,10 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         if (event.getType() == TickEvent.Type.OUT) {
             return;
         }
+        if (Baritone.getAltoClefSettings().isInteractionPaused()) {
+            setInputForceState(Input.CLICK_LEFT, false);
+            setInputForceState(Input.CLICK_RIGHT, false);
+        }
         if (isInputForcedDown(Input.CLICK_LEFT)) {
             setInputForceState(Input.CLICK_RIGHT, false);
         }

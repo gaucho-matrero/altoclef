@@ -84,11 +84,11 @@ public class CalculationContext {
         this.worldData = (WorldData) baritone.getWorldProvider().getCurrentWorld();
         this.bsi = new BlockStateInterface(world, worldData, forUseOnAnotherThread);
         this.toolSet = new ToolSet(player);
-        this.hasThrowaway = Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
+        this.hasThrowaway = !Baritone.getAltoClefSettings().isInteractionPaused() && Baritone.settings().allowPlace.value && ((Baritone) baritone).getInventoryBehavior().hasGenericThrowaway();
         this.hasWaterBucket = Baritone.settings().allowWaterBucketFall.value && PlayerInventory.isHotbar(player.inventory.getSlotFor(STACK_BUCKET_WATER)) && world.getDimensionKey() != World.THE_NETHER;
         this.canSprint = Baritone.settings().allowSprint.value && player.getFoodStats().getFoodLevel() > 6;
         this.placeBlockCost = Baritone.settings().blockPlacementPenalty.value;
-        this.allowBreak = Baritone.settings().allowBreak.value;
+        this.allowBreak = !Baritone.getAltoClefSettings().isInteractionPaused() && Baritone.settings().allowBreak.value;
         this.allowParkour = Baritone.settings().allowParkour.value;
         this.allowParkourPlace = Baritone.settings().allowParkourPlace.value;
         this.allowJumpAt256 = Baritone.settings().allowJumpAt256.value;
@@ -146,6 +146,9 @@ public class CalculationContext {
             // TODO perhaps MovementHelper.canPlaceAgainst could also use this?
             return COST_INF;
         }
+        if (Baritone.getAltoClefSettings().shouldAvoidPlacingAt(x, y, z)) {
+            return COST_INF;
+        }
         return placeBlockCost;
     }
 
@@ -154,6 +157,9 @@ public class CalculationContext {
             return COST_INF;
         }
         if (isPossiblyProtected(x, y, z)) {
+            return COST_INF;
+        }
+        if (Baritone.getAltoClefSettings().shouldAvoidBreaking(new BlockPos(x, y, z))) {
             return COST_INF;
         }
         return 1;

@@ -286,6 +286,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (MovementHelper.isReplaceable(placeAgainstPos.x, placeAgainstPos.y, placeAgainstPos.z, placeAgainstState, bsi)) {
                 continue;
             }
+            if (placeAgainstState.getBlock() instanceof AirBlock) {
+                continue;
+            }
             if (!toPlace.isValidPosition(ctx.world(), new BetterBlockPos(x, y, z))) {
                 continue;
             }
@@ -466,7 +469,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         List<BlockState> desirableOnHotbar = new ArrayList<>();
         Optional<Placement> toPlace = searchForPlacables(bcc, desirableOnHotbar);
-        if (toPlace.isPresent() && isSafeToCancel && ctx.player().isOnGround() && ticks <= 0) {
+        if (!Baritone.getAltoClefSettings().isInteractionPaused() && toPlace.isPresent() && isSafeToCancel && ctx.player().isOnGround() && ticks <= 0) {
             Rotation rot = toPlace.get().rot;
             baritone.getLookBehavior().updateTarget(rot, true);
             ctx.player().inventory.currentItem = toPlace.get().hotbarSelection;
@@ -477,7 +480,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             return new PathingCommand(null, PathingCommandType.CANCEL_AND_SET_GOAL);
         }
 
-        if (Baritone.settings().allowInventory.value) {
+        if (!Baritone.getAltoClefSettings().isInteractionPaused() && Baritone.settings().allowInventory.value) {
             ArrayList<Integer> usefulSlots = new ArrayList<>();
             List<BlockState> noValidHotbarOption = new ArrayList<>();
             outer:
@@ -825,6 +828,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
 
     private boolean valid(BlockState current, BlockState desired, boolean itemVerify) {
         if (desired == null) {
+            return true;
+        }
+        if (current == null) {
             return true;
         }
         if (current.getBlock() instanceof FlowingFluidBlock && Baritone.settings().okIfWater.value) {

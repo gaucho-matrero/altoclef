@@ -20,11 +20,14 @@ package baritone.utils;
 import baritone.Baritone;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.potion.Effects;
 
 import java.util.HashMap;
@@ -138,6 +141,19 @@ public class ToolSet {
         return best;
     }
 
+    public static boolean areShearsEffective(Block b) {
+        return BlockTags.LEAVES.contains(b)
+                || b == Blocks.COBWEB
+                || b == Blocks.GRASS
+                || b == Blocks.TALL_GRASS
+                || b == Blocks.LILY_PAD
+                || b == Blocks.FERN
+                || b == Blocks.DEAD_BUSH
+                || b == Blocks.VINE
+                || b == Blocks.TRIPWIRE
+                || BlockTags.WOOL.contains(b);
+    }
+
     /**
      * Calculate how effectively a block can be destroyed
      *
@@ -175,7 +191,17 @@ public class ToolSet {
             }
         }
 
-        speed /= hardness;
+        // Shears are fast against items that don't say they're fast.
+        if (Baritone.getAltoClefSettings().areShearsAllowed() && item.getItem() == Items.SHEARS && areShearsEffective(state.getBlock())) {
+            return Double.POSITIVE_INFINITY;
+        }
+
+        if (hardness != 0.0) {
+            speed /= hardness;
+        } else {
+            speed *= 100000;
+        }
+
         if (!state.getRequiresTool() || (!item.isEmpty() && item.canHarvestBlock(state))) {
             return speed / 30;
         } else {

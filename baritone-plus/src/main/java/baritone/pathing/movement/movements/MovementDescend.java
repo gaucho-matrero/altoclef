@@ -17,6 +17,7 @@
 
 package baritone.pathing.movement.movements;
 
+import baritone.Baritone;
 import baritone.api.IBaritone;
 import baritone.api.pathing.movement.MovementStatus;
 import baritone.api.utils.BetterBlockPos;
@@ -152,7 +153,7 @@ public class MovementDescend extends Movement {
                 if (context.assumeWalkOnWater) {
                     return false; // TODO fix
                 }
-                if (MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
+                if (!Baritone.getAltoClefSettings().isFlowingWaterPassAllowed() && MovementHelper.isFlowing(destX, newY, destZ, ontoBlock, context.bsi)) {
                     return false; // TODO flowing check required here?
                 }
                 if (!MovementHelper.canWalkOn(context.bsi, destX, newY - 1, destZ)) {
