@@ -22,17 +22,20 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-
-
+ 
   tagged-release: 
         name: "Preview Release"
         runs-on: "ubuntu-latest"
         steps:
-            - name: "Build & test"
-              run: |
-               echo "done!"
-            - uses: "marvinpinto/action-automatic-releases@latest"
-              with:
+        - name: Sleep for 30 seconds
+          run: sleep 5m
+          shell: bash
+          
+        - name: "Build & test"
+          run: |
+           echo "done!"
+        - uses: "marvinpinto/action-automatic-releases@latest"
+          with:
                 repo_token: "${{ secrets.GITHUB_TOKEN }}"
                 prerelease: true
                 automatic_release_tag: preview
