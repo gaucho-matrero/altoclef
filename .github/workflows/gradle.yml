@@ -30,3 +30,4 @@ jobs:
       with: 
         files: 'build/libs/altocleft-${{ github.event.release.tag_name }}.zip;build/libs/*.jar'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        release-tag: v1.0.0
