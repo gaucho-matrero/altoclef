@@ -28,6 +28,8 @@ import net.minecraft.util.math.vector.Vector3d;
  */
 public final class RayTraceUtils {
 
+    public static RayTraceContext.FluidMode fluidHandling = RayTraceContext.FluidMode.NONE;
+
     private RayTraceUtils() {}
 
     /**
@@ -57,7 +59,7 @@ public final class RayTraceUtils {
                 direction.y * blockReachDistance,
                 direction.z * blockReachDistance
         );
-        return entity.world.rayTraceBlocks(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
+        return entity.world.rayTraceBlocks(new RayTraceContext(start, end, RayTraceContext.BlockMode.OUTLINE, fluidHandling, entity));
     }
 
     public static Vector3d inferSneakingEyePosition(Entity entity) {
