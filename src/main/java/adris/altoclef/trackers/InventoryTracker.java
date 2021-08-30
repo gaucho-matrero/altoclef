@@ -114,11 +114,35 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
-    public boolean hasItem(String ...catalogueNames) {
+    public boolean hasItem(String... catalogueNames) {
         for (String catalogueName : catalogueNames) {
             Item[] items = TaskCatalogue.getItemMatches(catalogueName);
             assert items != null;
             if (hasItem(items)) return true;
+        }
+        return false;
+    }
+
+    public boolean swapToWeapon() {
+        if (hasItem(Items.NETHERITE_SWORD)) {
+            equipItem(Items.NETHERITE_SWORD);
+            return true;
+        }
+        if (hasItem(Items.DIAMOND_SWORD)) {
+            equipItem(Items.DIAMOND_SWORD);
+            return true;
+        }
+        if (hasItem(Items.IRON_SWORD)) {
+            equipItem(Items.IRON_SWORD);
+            return true;
+        }
+        if (hasItem(Items.STONE_SWORD)) {
+            equipItem(Items.STONE_SWORD);
+            return true;
+        }
+        if (hasItem(Items.WOODEN_SWORD)) {
+            equipItem(Items.WOODEN_SWORD);
+            return true;
         }
         return false;
     }
@@ -410,7 +434,7 @@ public class InventoryTracker extends Tracker {
         //return getRecipeMapping(Collections.emptyMap(), recipe, count) != null;
     }
 
-    public boolean isArmorEquipped(Item ...matches) {
+    public boolean isArmorEquipped(Item... matches) {
         ensureUpdated();
         for (Item item : matches) {
             if (item instanceof ArmorItem) {

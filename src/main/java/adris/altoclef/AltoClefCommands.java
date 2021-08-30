@@ -6,6 +6,7 @@ import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.commandsystem.CommandList;
 
 /// This structure was copied from a C# project. Fuck java. All my homies hate java.
+// ^ cringe
 public class AltoClefCommands extends CommandList {
 
     public AltoClefCommands(CommandExecutor executor) throws CommandException {

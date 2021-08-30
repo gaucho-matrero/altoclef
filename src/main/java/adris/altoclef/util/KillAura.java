@@ -3,8 +3,11 @@ package adris.altoclef.util;
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,7 @@ public class KillAura {
     private final TimerGame _hitDelay = new TimerGame(0.2);
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity _forceHit = null;
+    private final MinecraftClient _mc = MinecraftClient.getInstance();
 
     public void tickStart(AltoClef mod) {
         _targets.clear();
@@ -55,6 +59,25 @@ public class KillAura {
                     attack(mod, toHit);
                 }
                 break;
+            case DELAY:
+                // wait for the attack delay
+                if (_targets.isEmpty()) {
+                    return;
+                }
+
+                final Entity target = _targets.get(0);
+
+                if (_mc.player == null) {
+                    return;
+                }
+
+                if (_mc.player.getAttackCooldownProgress(0) < 1) {
+                    return;
+                }
+
+                attack(mod, target);
+
+                break;
             case OFF:
                 break;
         }
@@ -67,8 +90,9 @@ public class KillAura {
     private boolean attack(AltoClef mod, Entity entity) {
         if (entity == null) return false;
         if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange) {
+            mod.getInventoryTracker().swapToWeapon();
             // Equip non-tool
-            mod.getInventoryTracker().deequipHitTool();
+            // mod.getInventoryTracker().deequipHitTool();
             mod.getControllerExtras().attack(entity);
             return true;
         }
@@ -78,7 +102,8 @@ public class KillAura {
     public enum Strategy {
         OFF,
         FASTEST,
-        SMART
+        SMART,
+        DELAY
     }
 
 }
