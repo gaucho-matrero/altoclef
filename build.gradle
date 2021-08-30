@@ -17,6 +17,9 @@ repositories {
         name = "impactdevelopment-repo"
         url = "https://impactdevelopment.github.io/maven/"
     }
+    flatDir {
+        dirs 'baritone-plus/build/libs'
+    }
 }
 
 dependencies {
@@ -38,11 +41,12 @@ dependencies {
     shadow('com.fasterxml.jackson.core:jackson-core:2.10.1')
     shadow('com.fasterxml.jackson.core:jackson-annotations:2.10.1')
     shadow('com.fasterxml.jackson.core:jackson-databind:2.10.1')
-    implementation("baritone:baritone:1.6.2-dev") {
-        version {
-            branch = "fabric/1.16.3"
-        }
-    }
+
+    // Thank you georgeagostino for fixing my garbage
+    // Must run build from baritone-plus once
+    modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.6.3'
+    //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
+    //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
 }
 shadowJar {
     configurations = [project.configurations.shadow]
