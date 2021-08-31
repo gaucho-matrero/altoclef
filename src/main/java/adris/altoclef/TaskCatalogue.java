@@ -48,8 +48,8 @@ public class TaskCatalogue {
             mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
             mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
             mine("coal", MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
-            mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
-            mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
+            mine("raw_iron", MiningRequirement.STONE, Blocks.IRON_ORE, Items.RAW_IRON);
+            mine("raw_gold", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.RAW_GOLD);
             mine("diamond", MiningRequirement.IRON, Blocks.DIAMOND_ORE, Items.DIAMOND);
             mine("emerald", MiningRequirement.IRON, Blocks.EMERALD_ORE, Items.EMERALD);
             mine("redstone", MiningRequirement.IRON, Blocks.REDSTONE_ORE, Items.REDSTONE);
@@ -137,7 +137,7 @@ public class TaskCatalogue {
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
+            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron");
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
