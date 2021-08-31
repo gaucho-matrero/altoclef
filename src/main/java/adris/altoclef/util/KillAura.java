@@ -33,7 +33,7 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
-        final MinecraftClient _mc = MinecraftClient.getInstance();
+        final MinecraftClient mc = MinecraftClient.getInstance();
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
@@ -65,11 +65,11 @@ public class KillAura {
 
                 final Entity target = _targets.get(0);
 
-                if (_mc.player == null) {
+                if (mc.player == null) {
                     return;
                 }
 
-                if (_mc.player.getAttackCooldownProgress(0) < 1) {
+                if (mc.player.getAttackCooldownProgress(0) < 1) {
                     return;
                 }
 
