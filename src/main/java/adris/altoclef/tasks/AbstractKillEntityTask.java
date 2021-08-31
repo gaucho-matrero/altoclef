@@ -52,7 +52,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         // Equip weapon
         equipWeapon(mod);
         if (hitProg >= 0.99) {
-            mod.getController().attackEntity(mod.getPlayer(), entity);
+            mod.getControllerExtras().attack(entity);
         }
         return null;
     }

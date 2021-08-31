@@ -30,6 +30,7 @@ import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -149,7 +150,7 @@ public class KillEnderDragonTask extends Task {
             return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
                     (toDestroy) -> {
                         if (toDestroy.isInRange(mod.getPlayer(), 7)) {
-                            mod.getController().attackEntity(mod.getPlayer(), toDestroy);
+                            mod.getControllerExtras().attack(toDestroy);
                         }
                         // Go next to the crystal, arbitrary where we just need to get close.
                         return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
@@ -226,7 +227,7 @@ public class KillEnderDragonTask extends Task {
                 _hitResetTimer.reset();
                 Debug.logInternal("HIT");
                 mod.getInputControls().tryPress(Input.CLICK_LEFT);
-                //mod.getControllerExtras().mouseClickOverride(0, true);
+                mod.getPlayer().swingHand(Hand.MAIN_HAND);
             }
             if (_hitHoldTimer.elapsed()) {
                 if (!_wasReleased) {
@@ -293,12 +294,6 @@ public class KillEnderDragonTask extends Task {
                     if (head.isInRange(mod.getPlayer(), 7.5) && dragon.ticksSinceDeath <= 1) {
                         // Equip weapon
                         AbstractKillEntityTask.equipWeapon(mod);
-                        float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
-                        if (hitProg >= 0.99) {
-                            //mod.getController().attackEntity(mod.getPlayer(), head);
-                        } else {
-                            //stopHitting(mod);
-                        }
                         // Look torwards da dragon
                         Vec3d targetLookPos = head.getPos().add(0, 3, 0);
                         Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
