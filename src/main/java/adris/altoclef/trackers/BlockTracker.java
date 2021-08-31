@@ -182,7 +182,7 @@ public class BlockTracker extends Tracker {
                     Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
                     boolean valid = false;
                     for (Block type : blocks) {
-                        if (type.is(b)) {
+                        if (type == b) {
                             valid = true;
                             break;
                         }
@@ -293,7 +293,7 @@ public class BlockTracker extends Tracker {
                     return true;
                 }
                 BlockState state = zaWarudo.getBlockState(pos);
-                if (state.getBlock().is(block)) {
+                if (state.getBlock() == block) {
                     return true;
                 }
             }

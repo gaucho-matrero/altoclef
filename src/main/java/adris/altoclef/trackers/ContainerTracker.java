@@ -61,9 +61,9 @@ public class ContainerTracker extends Tracker {
     }
 
     public void onBlockInteract(BlockPos pos, Block block) {
-        if (block.is(Blocks.CHEST) || block.is(Blocks.TRAPPED_CHEST)) {
+        if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
             _chestMap.setInteractBlock(pos);
-        } else if (block.is(Blocks.FURNACE)) {
+        } else if (block == Blocks.FURNACE) {
             _furnaceMap.setInteractBlock(pos);
         }
     }

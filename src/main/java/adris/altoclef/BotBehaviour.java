@@ -94,11 +94,6 @@ public class BotBehaviour {
         current().applyState();
     }
 
-    public void setSearchAnywhereFlag(boolean value) {
-        current().mineProcSearchAnyFlag = value;
-        current().applyState();
-    }
-
     public void setAllowWalkThroughFlowingWater(boolean value) {
         current()._allowWalkThroughFlowingWater = value;
         current().applyState();
@@ -233,7 +228,6 @@ public class BotBehaviour {
 
         // Hard coded stuff
         public RaycastContext.FluidHandling rayFluidHandling;
-        public boolean mineProcSearchAnyFlag;
 
         public State() {
             this(null);
@@ -292,7 +286,6 @@ public class BotBehaviour {
             allowShears = settings.areShearsAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
-            mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
         }
 
         private void readMinecraftState() {
@@ -337,7 +330,6 @@ public class BotBehaviour {
 
             // Extra / hard coded
             RayTraceUtils.fluidHandling = rayFluidHandling;
-            MineProcess.searchAnyFlag = mineProcSearchAnyFlag;
 
             // Minecraft
             MinecraftClient.getInstance().options.pauseOnLostFocus = pauseOnLostFocus;

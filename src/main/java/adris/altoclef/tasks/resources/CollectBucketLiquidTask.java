@@ -62,7 +62,6 @@ public class CollectBucketLiquidTask extends ResourceTask {
         // Track fluids
         mod.getBehaviour().push();
         mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-        mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
         mod.getBlockTracker().trackBlock(_toCollect);
 
         // Avoid breaking / placing blocks at our liquid

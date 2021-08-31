@@ -58,7 +58,6 @@ public class CollectObsidianTask extends ResourceTask {
         mod.getBehaviour().push();
 
         mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-        mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
 
         mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
         //mod.getBlockTracker().trackBlock(Blocks.WATER);

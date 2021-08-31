@@ -205,26 +205,6 @@ public class Playground {
                         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
 
                         mod.runUserTask(new CraftGenericTask(recipe));
-                        /*
-                        Item toEquip = Items.BUCKET;//Items.AIR;
-                        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-
-                        InventoryTracker t = mod.getInventoryTracker();
-
-                        // Already equipped
-                        if (t.getItemStackInSlot(target).getItem() == toEquip) {
-                            Debug.logMessage("Already equipped.");
-                        } else {
-                            List<Integer> itemSlots = t.getInventorySlotsWithItem(toEquip);
-                            if (itemSlots.size() != 0) {
-                                int slot = itemSlots.get(0);
-                                t.swapItems(Slot.getFromInventory(slot), target);
-                                Debug.logMessage("Equipped via swap");
-                            } else {
-                                Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
-                            }
-                        }
-                         */
                     }
 
                     private void swap(Slot slot1, Slot slot2) {

@@ -1,11 +1,11 @@
 plugins {
-    id "fabric-loom" version "0.5-SNAPSHOT"
+    id "fabric-loom" version "0.8-SNAPSHOT"
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -43,12 +43,12 @@ dependencies {
     shadow('com.fasterxml.jackson.core:jackson-databind:2.10.1')
 
     // Thank you georgeagostino for fixing my garbage
-    // Must run build from baritone-plus once
     if (getProject().hasProperty("altoclef.development")) {
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.6.3'
+        // Must run build from baritone-plus once
+        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.7'
     } else {
-        modImplementation "cabaletta:baritone-unoptimized-fabric:1.6"
-        include "cabaletta:baritone-unoptimized-fabric:1.6"
+        modImplementation "cabaletta:baritone-unoptimized-fabric:1.7"
+        include "cabaletta:baritone-unoptimized-fabric:1.7"
     }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
@@ -69,9 +69,11 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         include "fabric.mod.json"
         expand "version": project.version
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
     }
 
     from(sourceSets.main.resources.srcDirs) {
+        duplicatesStrategy DuplicatesStrategy.EXCLUDE
         exclude "fabric.mod.json"
     }
 }

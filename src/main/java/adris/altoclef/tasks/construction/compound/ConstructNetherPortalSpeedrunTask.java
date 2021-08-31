@@ -114,7 +114,6 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         _portalFrameBuilt = false;
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
         mod.getBehaviour().push();
-        mod.getBehaviour().setSearchAnywhereFlag(true);
         //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
         // Avoid breaking frame.
         mod.getBehaviour().avoidBlockBreaking((block) -> {

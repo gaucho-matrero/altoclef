@@ -619,8 +619,9 @@ public class InventoryTracker extends Tracker {
         setDirty();
         int syncId = player.currentScreenHandler.syncId;
 
-        return _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
-
+        ItemStack stack = player.currentScreenHandler.getSlot(windowSlot).getStack().copy();
+        _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+        return stack;
     }
 
     public ItemStack clickSlot(Slot slot, SlotActionType type) {
@@ -772,7 +773,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         // Always equip to the second slot. First + last is occupied by baritone.
-        _mod.getPlayer().inventory.selectedSlot = 1;
+        _mod.getPlayer().getInventory().selectedSlot = 1;
 
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
@@ -810,7 +811,7 @@ public class InventoryTracker extends Tracker {
                                 || item == Items.CROSSBOW
                                 || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
                                 || item == Items.ENDER_PEARL
-                                || item instanceof FireworkItem
+                                || item instanceof FireworkRocketItem
                                 || item instanceof SpawnEggItem
                                 || item == Items.END_CRYSTAL
                                 || item == Items.EXPERIENCE_BOTTLE
@@ -907,7 +908,7 @@ public class InventoryTracker extends Tracker {
         if (!hasItem(item)) return;
 
         assert MinecraftClient.getInstance().player != null;
-        int equipSlot = MinecraftClient.getInstance().player.inventory.selectedSlot;
+        int equipSlot = MinecraftClient.getInstance().player.getInventory().selectedSlot;
 
         int otherSlot = (equipSlot + 1 + offset) % 9;
 
@@ -934,12 +935,12 @@ public class InventoryTracker extends Tracker {
         if (player == null) return null;
 
         if (slotIsCursor(slot)) {
-            return player.inventory.getCursorStack();
+            return player.currentScreenHandler.getCursorStack().copy();
         }
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-        return (mcSlot != null) ? mcSlot.getStack() : ItemStack.EMPTY;
+        return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
     }
 
     @Override
@@ -955,7 +956,8 @@ public class InventoryTracker extends Tracker {
                 // No updating needed, we have nothing.
                 return;
             }
-            PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
+            PlayerInventory inventory = MinecraftClient.getInstance().player.getInventory();
+            ItemStack cursorStack = MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack().copy();
 
             // - 1. idk
             for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
@@ -963,7 +965,7 @@ public class InventoryTracker extends Tracker {
                 ItemStack stack;
                 if (isCursorStack) {
                     // Add our cursor stack as well to the list.
-                    stack = inventory.getCursorStack();
+                    stack = cursorStack;
                 } else {
                     stack = inventory.getStack(slot);
                 }

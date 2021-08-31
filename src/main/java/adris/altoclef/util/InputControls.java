@@ -2,8 +2,8 @@ package adris.altoclef.util;
 
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.options.GameOptions;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.option.KeyBinding;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -74,8 +74,8 @@ public class InputControls {
 
     public void forceLook(float yaw, float pitch) {
         if (MinecraftClient.getInstance().player != null) {
-            MinecraftClient.getInstance().player.yaw = yaw;
-            MinecraftClient.getInstance().player.pitch = pitch;
+            MinecraftClient.getInstance().player.setYaw(yaw);
+            MinecraftClient.getInstance().player.setPitch(pitch);
         }
     }
 

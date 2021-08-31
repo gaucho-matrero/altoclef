@@ -9,7 +9,7 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
@@ -37,7 +37,7 @@ public class TaskCatalogue {
             /// RAW RESOURCES
             mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG).anyDimension();
             woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
-            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
+            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.DIRT_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             mine("andesite", MiningRequirement.WOOD, Blocks.ANDESITE, Items.ANDESITE);
             mine("granite", MiningRequirement.WOOD, Blocks.GRANITE, Items.GRANITE);
@@ -613,7 +613,7 @@ public class TaskCatalogue {
 
     private static void colorfulTasks(String baseName, Function<ItemUtil.ColorfulItems, Item> getMatch, BiFunction<ItemUtil.ColorfulItems, Integer, ResourceTask> getTask) {
         for (DyeColor dcol : DyeColor.values()) {
-            MaterialColor mcol = dcol.getMaterialColor();
+            MapColor mcol = dcol.getMapColor();
             ItemUtil.ColorfulItems color = ItemUtil.getColorfulItems(mcol);
             String prefix = color.colorName;
             put(prefix + "_" + baseName, new Item[]{getMatch.apply(color)}, count -> getTask.apply(color, count));
