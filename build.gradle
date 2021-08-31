@@ -14,8 +14,8 @@ group = project.maven_group
 repositories {
     mavenCentral()
     maven {
-        name = "impactdevelopment-repo"
-        url = "https://impactdevelopment.github.io/maven/"
+        name = "toccatina-repo"
+        url = "https://toccatina.github.io/maven/"
     }
     flatDir {
         dirs 'baritone-plus/build/libs'
@@ -44,7 +44,12 @@ dependencies {
 
     // Thank you georgeagostino for fixing my garbage
     // Must run build from baritone-plus once
-    modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.6.3'
+    if (getProject().hasProperty("altoclef.development")) {
+        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.6.3'
+    } else {
+        modImplementation "cabaletta:baritone-unoptimized-fabric:1.6"
+        include "cabaletta:baritone-unoptimized-fabric:1.6"
+    }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
 }
