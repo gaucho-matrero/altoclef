@@ -15,14 +15,14 @@ public class Debug {
     }
 
     public static void logMessage(String message, boolean prefix) {
-        if (MinecraftClient.getInstance().player == null) {
-            logInternal(message);
-        } else {
+        if (MinecraftClient.getInstance().player != null) {
             if (prefix) {
                 message = "\u00A72\u00A7l\u00A7o[Alto Clef] \u00A7r" + message;
             }
             MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
+        } else {
+            logInternal(message);
         }
     }
 

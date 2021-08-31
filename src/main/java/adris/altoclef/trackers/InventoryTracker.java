@@ -123,7 +123,12 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
-    public boolean swapToWeapon() {
+    /**
+     * Swaps to the best sword in the players inventory
+     *
+     * @return did the player have a sword (did it get swapped)
+     */
+    public boolean swapToSword() {
         if (hasItem(Items.NETHERITE_SWORD)) {
             equipItem(Items.NETHERITE_SWORD);
             return true;

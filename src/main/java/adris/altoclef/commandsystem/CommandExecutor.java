@@ -18,7 +18,7 @@ public class CommandExecutor {
         _commandPrefix = commandPrefix;
     }
 
-    public void registerNewCommand(Command command) throws InvalidKeyException {
+    public void RegisterNewCommand(Command command) throws InvalidKeyException {
         if (_commandSheet.containsKey(command.getName())) {
             throw new InvalidKeyException("Command with name " + command.getName() + " already exists! Can't register that name twice.");
         }

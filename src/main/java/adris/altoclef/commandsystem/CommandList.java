@@ -7,7 +7,7 @@ public class CommandList {
     public CommandList(CommandExecutor executor, Command... commands) {
         for (Command c : commands) {
             try {
-                executor.registerNewCommand(c);
+                executor.RegisterNewCommand(c);
             } catch (InvalidKeyException e) {
                 // ppbbbbttt
                 e.printStackTrace();

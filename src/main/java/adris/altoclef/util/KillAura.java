@@ -6,8 +6,6 @@ import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +20,6 @@ public class KillAura {
     private final TimerGame _hitDelay = new TimerGame(0.2);
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity _forceHit = null;
-    private final MinecraftClient _mc = MinecraftClient.getInstance();
 
     public void tickStart(AltoClef mod) {
         _targets.clear();
@@ -36,6 +33,7 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
+        final MinecraftClient _mc = MinecraftClient.getInstance();
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
@@ -90,9 +88,13 @@ public class KillAura {
     private boolean attack(AltoClef mod, Entity entity) {
         if (entity == null) return false;
         if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange) {
-            mod.getInventoryTracker().swapToWeapon();
+
             // Equip non-tool
-            // mod.getInventoryTracker().deequipHitTool();
+            if (mod.getModSettings().getForceFieldStrategy() == Strategy.DELAY) {
+                mod.getInventoryTracker().swapToSword();
+            } else {
+                mod.getInventoryTracker().deequipHitTool();
+            }
             mod.getControllerExtras().attack(entity);
             return true;
         }
