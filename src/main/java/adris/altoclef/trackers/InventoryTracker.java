@@ -619,7 +619,10 @@ public class InventoryTracker extends Tracker {
         setDirty();
         int syncId = player.currentScreenHandler.syncId;
 
-        ItemStack stack = player.currentScreenHandler.getSlot(windowSlot).getStack().copy();
+        ItemStack stack = ItemStack.EMPTY;
+        if (0 <= windowSlot && windowSlot < player.currentScreenHandler.slots.size()) {
+            stack = player.currentScreenHandler.getSlot(windowSlot).getStack().copy();
+        }
         _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
         return stack;
     }
