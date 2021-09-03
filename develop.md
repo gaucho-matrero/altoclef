@@ -1,7 +1,7 @@
 #Development Guide
 
 ## Get it Running
-1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project. Make sure you're using jdk 1.8 in your Project & Gradle Settings
+1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project. Make sure you're using jdk 16 in your Project & Gradle Settings!
 
 2) Run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
 
