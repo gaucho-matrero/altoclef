@@ -28,7 +28,9 @@ Take a look at this [Guide from the wiki](https://github.com/toccatina/altoclef/
 
 Check [releases](https://github.com/toccatina/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
 
-This is a **fabric only** mod, currently only available for **Minecraft 1.16.5**.
+This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
+
+For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect is untested and not affiliated with altoclef, use at your own risk!)
 
 ## [Usage Guide](usage.md)
 
