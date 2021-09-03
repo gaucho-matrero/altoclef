@@ -67,7 +67,7 @@ public class BeeMovieTask extends Task {
         if (block == null) return false;
         Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
         for (Block candidate : candidates) {
-            if (block.is(candidate)) return true;
+            if (block == candidate) return true;
         }
         return false;
     }

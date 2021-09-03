@@ -9,13 +9,14 @@ import adris.altoclef.util.csharpisbetter.TimerReal;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 
 public class DeathMenuChain extends TaskChain {
 
     // Sometimes we fuck up, so we might want to retry considering the death screen.
     private final TimerReal _deathRetryTimer = new TimerReal(8);
-    ServerInfo _prevServerEntry = null;
+    private ServerInfo _prevServerEntry = null;
     private boolean _reconnecting = false;
     private final TimerGame _reconnectTimer = new TimerGame(1);
     private int _deathCount = 0;
@@ -78,7 +79,7 @@ public class DeathMenuChain extends TaskChain {
                     Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
                     assert MinecraftClient.getInstance().player != null;
                     MinecraftClient.getInstance().player.requestRespawn();
-                    MinecraftClient.getInstance().openScreen(null);
+                    MinecraftClient.getInstance().setScreen(null);
                 } else {
                     // Cancel if we die and are not auto-respawning.
                     mod.cancelUserTask();
@@ -87,7 +88,7 @@ public class DeathMenuChain extends TaskChain {
                 if (shouldAutoReconnect(mod)) {
                     Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
                     _reconnecting = true;
-                    MinecraftClient.getInstance().openScreen(new MultiplayerScreen(new TitleScreen()));
+                    MinecraftClient.getInstance().setScreen(new MultiplayerScreen(new TitleScreen()));
                 } else {
                     // Cancel if we disconnect and are not auto-reconnecting.
                     mod.cancelUserTask();
@@ -101,7 +102,8 @@ public class DeathMenuChain extends TaskChain {
                     Debug.logWarning("Failed to re-connect to server, no server entry cached.");
                 } else {
                     MinecraftClient client = MinecraftClient.getInstance();
-                    client.openScreen(new ConnectScreen(screen, client, _prevServerEntry));
+                    ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
+                    //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
                 }
             }
             _prevScreen = screen.getClass();

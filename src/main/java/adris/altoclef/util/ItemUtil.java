@@ -2,7 +2,7 @@ package adris.altoclef.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
@@ -57,7 +57,7 @@ public interface ItemUtil {
         }
     };
     // This is kinda jank ngl
-    Map<MaterialColor, ColorfulItems> _colorMap = new HashMap<MaterialColor, ColorfulItems>() {
+    Map<MapColor, ColorfulItems> _colorMap = new HashMap<MapColor, ColorfulItems>() {
         {
             p(DyeColor.RED, "red", Items.RED_DYE, Items.RED_WOOL, Items.RED_BED, Items.RED_CARPET, Items.RED_STAINED_GLASS, Items.RED_STAINED_GLASS_PANE, Items.RED_TERRACOTTA, Items.RED_GLAZED_TERRACOTTA, Items.RED_CONCRETE, Items.RED_CONCRETE_POWDER, Items.RED_BANNER, Items.RED_SHULKER_BOX, Blocks.RED_WALL_BANNER);
             p(DyeColor.WHITE, "white", Items.WHITE_DYE, Items.WHITE_WOOL, Items.WHITE_BED, Items.WHITE_CARPET, Items.WHITE_STAINED_GLASS, Items.WHITE_STAINED_GLASS_PANE, Items.WHITE_TERRACOTTA, Items.WHITE_GLAZED_TERRACOTTA, Items.WHITE_CONCRETE, Items.WHITE_CONCRETE_POWDER, Items.WHITE_BANNER, Items.WHITE_SHULKER_BOX, Blocks.WHITE_WALL_BANNER);
@@ -79,7 +79,7 @@ public interface ItemUtil {
         }
 
         void p(DyeColor color, String colorName, Item dye, Item wool, Item bed, Item carpet, Item stainedGlass, Item stainedGlassPane, Item terracotta, Item glazedTerracotta, Item concrete, Item concretePowder, Item banner, Item shulker, Block wallBanner) {
-            put(color.getMaterialColor(), new ColorfulItems(color, colorName, dye, wool, bed, carpet, stainedGlass, stainedGlassPane, terracotta, glazedTerracotta, concrete, concretePowder, banner, shulker, wallBanner));
+            put(color.getMapColor(), new ColorfulItems(color, colorName, dye, wool, bed, carpet, stainedGlass, stainedGlassPane, terracotta, glazedTerracotta, concrete, concretePowder, banner, shulker, wallBanner));
         }
     };
     Map<WoodType, WoodItems> _woodMap = new HashMap<WoodType, WoodItems>() {
@@ -141,12 +141,12 @@ public interface ItemUtil {
         return logToPlanks(plankItem);
     }
 
-    static ColorfulItems getColorfulItems(MaterialColor color) {
+    static ColorfulItems getColorfulItems(MapColor color) {
         return _colorMap.get(color);
     }
 
     static ColorfulItems getColorfulItems(DyeColor color) {
-        return getColorfulItems(color.getMaterialColor());
+        return getColorfulItems(color.getMapColor());
     }
 
     static WoodItems getWoodItems(WoodType type) {

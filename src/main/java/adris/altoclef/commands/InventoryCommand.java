@@ -25,8 +25,8 @@ public class InventoryCommand extends Command {
             // Print inventory
             // Get item counts
             HashMap<String, Integer> counts = new HashMap<>();
-            for (int i = 0; i < mod.getPlayer().inventory.size(); ++i) {
-                ItemStack stack = mod.getPlayer().inventory.getStack(i);
+            for (int i = 0; i < mod.getPlayer().getInventory().size(); ++i) {
+                ItemStack stack = mod.getPlayer().getInventory().getStack(i);
                 if (!stack.isEmpty()) {
                     String name = Util.stripItemName(stack.getItem());
                     if (!counts.containsKey(name)) counts.put(name, 0);

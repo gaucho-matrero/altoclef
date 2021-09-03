@@ -84,7 +84,7 @@ public class PlaceBlockSchematic extends AbstractSchematic {
 
     private boolean blockIsTarget(Block block) {
         for (Block check : _blockToPlace) {
-            if (check.is(block)) return true;
+            if (check == block) return true;
         }
         return false;
     }

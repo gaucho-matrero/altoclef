@@ -9,7 +9,7 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
@@ -37,7 +37,7 @@ public class TaskCatalogue {
             /// RAW RESOURCES
             mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG).anyDimension();
             woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
-            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
+            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.DIRT_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             mine("andesite", MiningRequirement.WOOD, Blocks.ANDESITE, Items.ANDESITE);
             mine("granite", MiningRequirement.WOOD, Blocks.GRANITE, Items.GRANITE);
@@ -48,8 +48,8 @@ public class TaskCatalogue {
             mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
             mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
             mine("coal", MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
-            mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
-            mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
+            mine("raw_iron", MiningRequirement.STONE, Blocks.IRON_ORE, Items.RAW_IRON);
+            mine("raw_gold", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.RAW_GOLD);
             mine("diamond", MiningRequirement.IRON, Blocks.DIAMOND_ORE, Items.DIAMOND);
             mine("emerald", MiningRequirement.IRON, Blocks.EMERALD_ORE, Items.EMERALD);
             mine("redstone", MiningRequirement.IRON, Blocks.REDSTONE_ORE, Items.REDSTONE);
@@ -137,7 +137,7 @@ public class TaskCatalogue {
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
+            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron");
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
@@ -613,7 +613,7 @@ public class TaskCatalogue {
 
     private static void colorfulTasks(String baseName, Function<ItemUtil.ColorfulItems, Item> getMatch, BiFunction<ItemUtil.ColorfulItems, Integer, ResourceTask> getTask) {
         for (DyeColor dcol : DyeColor.values()) {
-            MaterialColor mcol = dcol.getMaterialColor();
+            MapColor mcol = dcol.getMapColor();
             ItemUtil.ColorfulItems color = ItemUtil.getColorfulItems(mcol);
             String prefix = color.colorName;
             put(prefix + "_" + baseName, new Item[]{getMatch.apply(color)}, count -> getTask.apply(color, count));
