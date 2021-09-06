@@ -111,7 +111,10 @@ public class CollectFoodTask extends Task {
         mod.getBehaviour().addProtectedItems(ITEMS_TO_PICK_UP);
         for (CookableFoodTarget food : COOKABLE_FOODS)
             mod.getBehaviour().addProtectedItems(food.getRaw(), food.getCooked());
-        for (CropTarget crop : CROPS) mod.getBehaviour().addProtectedItems(crop.cropItem);
+        for (CropTarget crop : CROPS) {
+            mod.getBehaviour().addProtectedItems(crop.cropItem);
+            mod.getBlockTracker().trackBlock(crop.cropBlock);
+        }
         mod.getBehaviour().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
 
         mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
@@ -276,6 +279,9 @@ public class CollectFoodTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
         mod.getBlockTracker().stopTracking(Blocks.SWEET_BERRY_BUSH);
+        for (CropTarget crop : CROPS) {
+            mod.getBlockTracker().stopTracking(crop.cropBlock);
+        }
         mod.getBehaviour().pop();
     }
 
@@ -317,7 +323,6 @@ public class CollectFoodTask extends Task {
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
-        if (!mod.getBlockTracker().isTracking(blockToCheck)) mod.getBlockTracker().trackBlock(blockToCheck);
         boolean spotted = nearestBlock != null || nearestDrop != null;
         // Collect hay until we have enough.
         if (spotted) {
@@ -367,6 +372,7 @@ public class CollectFoodTask extends Task {
         return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
     }
 
+    @SuppressWarnings("rawtypes")
     private static class CookableFoodTarget {
         public String rawFood;
         public String cookedFood;
@@ -400,6 +406,7 @@ public class CollectFoodTask extends Task {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static class CookableFoodTargetFish extends CookableFoodTarget {
 
         public CookableFoodTargetFish(String rawFood, String cookedFood, Class mobToKill) {
