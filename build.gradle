@@ -45,7 +45,7 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.7'
+        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.7.0'
     } else {
         modImplementation "cabaletta:baritone-unoptimized-fabric:1.7"
         include "cabaletta:baritone-unoptimized-fabric:1.7"
