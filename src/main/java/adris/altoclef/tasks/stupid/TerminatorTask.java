@@ -221,7 +221,7 @@ public class TerminatorTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-
+        mod.getBehaviour().pop();
     }
 
     @Override
