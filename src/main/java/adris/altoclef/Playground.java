@@ -330,6 +330,24 @@ public class Playground {
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
                 break;
+            case "whisper": {
+                File check = new File("whisper.txt");
+                try {
+                    FileInputStream fis = new FileInputStream(check);
+                    Scanner sc = new Scanner(fis);
+                    String me = sc.nextLine(),
+                            template = sc.nextLine(),
+                            message = sc.nextLine();
+                    WhisperChecker.MessageResult result = WhisperChecker.tryParse(me, template, message);
+                    Debug.logMessage("Got message: " + result);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            default:
+                mod.logWarning("Test not found: \"" + arg + "\".");
+                break;
         }
     }
 
