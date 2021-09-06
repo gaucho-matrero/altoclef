@@ -5,37 +5,29 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import baritone.api.pathing.goals.Goal;
+import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
-public class EscapeFromLavaTask extends Task {
+public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
 
-    private final TimerGame _scanTimer = new TimerGame(5);
-    private BlockPos target;
+    private final float _strength;
+
+    public EscapeFromLavaTask(float strength) {
+        _strength = strength;
+    }
+    public EscapeFromLavaTask() {
+        this(100);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBehaviour().allowWalkThroughLava(true);
-        target = null;
-        _scanTimer.forceElapse();
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-        if (_scanTimer.elapsed() && target == null) {
-            target = findSafePos(mod);
-            _scanTimer.reset();
-        }
-        if (target != null) {
-            setDebugState("Traveling to safe block at " + target);
-            return new GetToBlockTask(target, false);
-        }
-        // Just keep on moving!!!
-        setDebugState("Couldn't find safe spot. This is bad news.");
-        return new TimeoutWanderTask();
+        mod.getBehaviour().allowSwimThroughLava(true);
     }
 
     @Override
@@ -44,61 +36,45 @@ public class EscapeFromLavaTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof EscapeFromLavaTask;
+    protected Goal newGoal(AltoClef mod) {
+        return new EscapeFromLavaGoal();
     }
 
-    private BlockPos findSafePos(AltoClef mod) {
-        // What constitutes a safe pos?
-        // For each block within a 50 block radius:
-        int radius = 50;
-        BlockPos p = mod.getPlayer().getBlockPos();
-        BlockPos best = null;
-        double smallestScore = Double.POSITIVE_INFINITY;
-        for (int xx = p.getX() - radius; xx < p.getX() + radius; ++xx) {
-            for (int zz = p.getZ() - radius; zz < p.getZ() + radius; ++zz) {
-                blockLoop:
-                for (int yy = p.getY() - radius; yy < p.getY() + radius; ++yy) {
-                    BlockPos check = new BlockPos(xx, yy, zz);
-                    BlockState state = mod.getWorld().getBlockState(check);
-                    // Below and above can't be lava.
-                    final Vec3i[] noLavaPls = new Vec3i[]{
-                            new Vec3i(0, 0, 0),
-                            new Vec3i(0, 1, 0),
-                            new Vec3i(0, -1, 0),
-                            new Vec3i(1, 0, 0),
-                            new Vec3i(-1, 0, 0),
-                            new Vec3i(0, 0, 1),
-                            new Vec3i(0, 0, -1)
-                    };
-                    for (Vec3i noLava : noLavaPls) {
-                        if (mod.getWorld().getBlockState(check.add(noLava)).getBlock() == Blocks.LAVA) {
-                            continue blockLoop;
-                        }
-                    }
-                    // Below must be solid.
-                    if (WorldUtil.isSolid(mod, check.down())) {
-                        double scoreMultiplier = 1;
-                        if (WorldUtil.isAir(mod, check)) {
-                            scoreMultiplier *= 0.7;
-                        }
-                        if (WorldUtil.isAir(mod, check.up())) {
-                            scoreMultiplier *= 0.8;
-                        }
-                        double score = check.getSquaredDistance(mod.getPlayer().getPos(), false) * scoreMultiplier;
-                        if (score < smallestScore) {
-                            smallestScore = score;
-                            best = check;
-                        }
-                    }
-                }
-            }
-        }
-        return best;
+    @Override
+    protected boolean isEqual(Task obj) {
+        return obj instanceof EscapeFromLavaTask;
     }
 
     @Override
     protected String toDebugString() {
         return "Escaping lava";
+    }
+
+    private class EscapeFromLavaGoal implements Goal {
+
+        private static boolean isLava(int x, int y, int z) {
+            if (MinecraftClient.getInstance().world == null) return false;
+            return MovementHelper.isLava(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
+        }
+        private static boolean isWater(int x, int y, int z) {
+            if (MinecraftClient.getInstance().world == null) return false;
+            return MovementHelper.isWater(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
+        }
+
+        @Override
+        public boolean isInGoal(int x, int y, int z) {
+            return !isLava(x, y, z);
+        }
+
+        @Override
+        public double heuristic(int x, int y, int z) {
+            if (isLava(x, y, z)) {
+                return _strength;
+            }
+            if (isWater(x, y, z)) {
+                return -100;
+            }
+            return 0;
+        }
     }
 }
