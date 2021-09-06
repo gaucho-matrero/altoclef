@@ -124,6 +124,9 @@ public class LocateStrongholdTask extends Task {
                 Debug.logWarning("Failed to equip eye of ender to throw.");
             }
             return null;
+        } else if (!_cachedEyeDirection.hasDelta()) {
+            setDebugState("Waiting for thrown eye to appear...");
+            return null;
         }
 
         // Travel to stronghold + search around stronghold if necessary.
@@ -182,7 +185,12 @@ public class LocateStrongholdTask extends Task {
         }
 
         public Vec3d getDelta() {
+            if (_end == null) return Vec3d.ZERO;
             return _end.subtract(_start);
+        }
+
+        public boolean hasDelta() {
+            return _end != null;
         }
     }
 
