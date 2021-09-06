@@ -146,6 +146,10 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected Task onTick(AltoClef mod) {
 
+            if (!isContainerOpen(mod)) {
+                _smeltProgressChecker.reset();
+            }
+
             // Check for materials.
             // If materials are already in the furnace, we need less of them.
             if (!_ignoreMaterials) {
@@ -163,7 +167,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 ItemTarget neededMaterials = new ItemTarget(_target.getMaterial(), materialsNeeded);
                 if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
                     setDebugState("Collecting materials: " + neededMaterials);
-                    _smeltProgressChecker.reset();
                     return getMaterialTask(neededMaterials);
                 }
             }
@@ -172,8 +175,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             // SPECIAL CASE: If we are OR WERE searching for a crafting table, we need to hide planks as a source of fuel!
             // Otherwise, planks will be protected/unprotected and fuel will be needed/not needed in an infinite back+forth.
-
-            boolean needsNewFurnace = getTargetContainerPosition() == null;
 
             double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
 
@@ -189,7 +190,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             if (fuelNeeded > hasFuel) {
                 setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + hasFuel);
-                _smeltProgressChecker.reset();
                 return new CollectFuelTask(fuelNeeded);
             }
 
