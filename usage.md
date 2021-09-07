@@ -77,5 +77,8 @@ users are prioritized.
 If the receiver of a `/msg` doesn't get a message that looks like `X whispers to you: Y` and it's not being
 picked up by altoclef, you can add to the `whisperFormats` setting.
 
+**NOTE:** At least for now, you must escape brackets and paranthesis. Example: To receive messages that look like `[Player -> me] message` the format string is `\[{from} -> {to}\] {message}`
+
+
 **WARNING:** Be careful with this one as well, as the bot will trust these formats for ALL non-player chat messages.
 Messing up the format's ordering can let unauthorized people execute bot commands.
