@@ -14,8 +14,8 @@ group = project.maven_group
 repositories {
     mavenCentral()
     maven {
-        name = "toccatina-repo"
-        url = "https://toccatina.github.io/maven/"
+        name = "gaucho-matrero-repo"
+        url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
         dirs 'baritone/build/libs'

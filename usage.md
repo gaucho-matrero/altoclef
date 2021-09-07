@@ -50,7 +50,7 @@ Here's a list of some highlights.
 ## Bot Settings
 
 After running the game with the mod once, a file called `altoclef_settings.json` should appear in your `.minecraft` directory.
-This contains `altoclef` related settings. Check [Settings.java](https://github.com/toccatina/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
+This contains `altoclef` related settings. Check [Settings.java](https://github.com/gaucho-matrero/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
 for descriptions on what each setting does.
 
 
