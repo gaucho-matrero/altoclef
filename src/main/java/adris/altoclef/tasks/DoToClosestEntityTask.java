@@ -2,10 +2,10 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -67,10 +67,9 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DoToClosestEntityTask) {
-            DoToClosestEntityTask task = (DoToClosestEntityTask) obj;
-            return Util.arraysEqual(task._targetEntities, _targetEntities);
+    protected boolean isEqual(Task other) {
+        if (other instanceof DoToClosestEntityTask task) {
+            return Arrays.equals(task._targetEntities, _targetEntities);
         }
         return false;
     }

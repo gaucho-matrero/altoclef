@@ -130,9 +130,8 @@ public abstract class ChunkSearchTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof ChunkSearchTask) {
-            ChunkSearchTask task = (ChunkSearchTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof ChunkSearchTask task) {
             if (!task._startPoint.equals(_startPoint)) return false;
             return isChunkSearchEqual(task);
         }

@@ -41,8 +41,8 @@ public class KillPlayerTask extends AbstractKillEntityTask {
 
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
-        if (other instanceof KillPlayerTask) {
-            return ((KillPlayerTask) other)._playerName.equals(_playerName);
+        if (other instanceof KillPlayerTask task) {
+            return task._playerName.equals(_playerName);
         }
         return false;
     }

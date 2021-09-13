@@ -5,7 +5,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -34,7 +34,7 @@ public class CollectFlintTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         // We might just want to mine the closest gravel.
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), ignoreGravel -> !WorldUtil.fallingBlockSafeToBreak(ignoreGravel) || !WorldUtil.canBreak(mod, ignoreGravel), Blocks.GRAVEL);
+        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), ignoreGravel -> !WorldHelper.fallingBlockSafeToBreak(ignoreGravel) || !WorldHelper.canBreak(mod, ignoreGravel), Blocks.GRAVEL);
         if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
             return new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), DestroyBlockTask::new, Blocks.GRAVEL);
             //new DestroyBlockTask(_closest);
@@ -56,9 +56,8 @@ public class CollectFlintTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectFlintTask) {
-            CollectFlintTask task = (CollectFlintTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectFlintTask task) {
             return task._count == _count;
         }
         return false;

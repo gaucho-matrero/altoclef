@@ -10,7 +10,7 @@ import adris.altoclef.tasks.misc.PutOutFireTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.BlazeEntity;
@@ -42,7 +42,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
         int MAX_HEIGHT = 23;
         for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
             if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
-            if (WorldUtil.isSolid(mod, check)) return false;
+            if (WorldHelper.isSolid(mod, check)) return false;
         }
         return true;
     }
@@ -139,7 +139,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             return false;
             //return pos.isWithinDistance(mod.getPlayer().getPos(),3000);
         }
-        return WorldUtil.getSpawnerEntity(mod, pos) instanceof BlazeEntity;
+        return WorldHelper.getSpawnerEntity(mod, pos) instanceof BlazeEntity;
     }
 
     @Override
@@ -148,8 +148,8 @@ public class CollectBlazeRodsTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectBlazeRodsTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectBlazeRodsTask;
     }
 
     @Override

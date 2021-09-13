@@ -9,9 +9,10 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+
+import java.util.Arrays;
 
 public class CarveThenCollectTask extends ResourceTask {
 
@@ -89,10 +90,9 @@ public class CarveThenCollectTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CarveThenCollectTask) {
-            CarveThenCollectTask task = (CarveThenCollectTask) obj;
-            return (task._target.equals(_target) && task._toCarve.equals(_toCarve) && Util.arraysEqual(task._targetBlocks, _targetBlocks) && Util.arraysEqual(task._toCarveBlocks, _toCarveBlocks));
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CarveThenCollectTask task) {
+            return (task._target.equals(_target) && task._toCarve.equals(_toCarve) && Arrays.equals(task._targetBlocks, _targetBlocks) && Arrays.equals(task._toCarveBlocks, _toCarveBlocks));
         }
         return false;
     }

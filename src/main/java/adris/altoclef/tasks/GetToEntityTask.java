@@ -63,9 +63,8 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetToEntityTask) {
-            GetToEntityTask task = (GetToEntityTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetToEntityTask task) {
             return task._entity.equals(_entity) && Math.abs(task._closeEnoughDistance - _closeEnoughDistance) < 0.1;
         }
         return false;

@@ -2,7 +2,6 @@ package adris.altoclef.util;
 
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.item.Item;
 
 import java.util.Arrays;
@@ -66,7 +65,7 @@ public class ItemTarget {
         for (ItemTarget target : targets) {
             result.addAll(Arrays.asList(target.getMatches()));
         }
-        return Util.toArray(Item.class, result);
+        return result.toArray(Item[]::new);
     }
 
     public Item[] getMatches() {
@@ -95,8 +94,7 @@ public class ItemTarget {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ItemTarget) {
-            ItemTarget other = (ItemTarget) obj;
+        if (obj instanceof ItemTarget other) {
             if (_infinite) {
                 if (!other._infinite) return false;
             } else {
@@ -138,7 +136,7 @@ public class ItemTarget {
                 if (item == null) {
                     result.append("(null??)");
                 } else {
-                    result.append(ItemUtil.trimItemName(item.getTranslationKey()));
+                    result.append(ItemHelper.trimItemName(item.getTranslationKey()));
                 }
                 if (++counter != _itemMatches.length) {
                     result.append(",");

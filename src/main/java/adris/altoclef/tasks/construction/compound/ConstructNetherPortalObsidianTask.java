@@ -9,7 +9,7 @@ import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -63,9 +63,9 @@ public class ConstructNetherPortalObsidianTask extends Task {
 
     private static BlockPos getBuildableAreaNearby(AltoClef mod) {
         BlockPos checkOrigin = mod.getPlayer().getBlockPos();
-        for (BlockPos toCheck : WorldUtil.scanRegion(mod, checkOrigin, checkOrigin.add(PORTALABLE_REGION_SIZE))) {
+        for (BlockPos toCheck : WorldHelper.scanRegion(mod, checkOrigin, checkOrigin.add(PORTALABLE_REGION_SIZE))) {
             BlockState state = MinecraftClient.getInstance().world.getBlockState(toCheck);
-            boolean validToWorld = (WorldUtil.canPlace(mod, toCheck) || WorldUtil.canBreak(mod, toCheck));
+            boolean validToWorld = (WorldHelper.canPlace(mod, toCheck) || WorldHelper.canBreak(mod, toCheck));
             if (!validToWorld || state.getBlock() == Blocks.LAVA || state.getBlock() == Blocks.WATER || state.getBlock() == Blocks.BEDROCK) {
                 return null;
             }
@@ -139,12 +139,12 @@ public class ConstructNetherPortalObsidianTask extends Task {
         }
 
         // Clear middle
-        if (_destroyTarget != null && !WorldUtil.isAir(mod, _destroyTarget)) {
+        if (_destroyTarget != null && !WorldHelper.isAir(mod, _destroyTarget)) {
             return new DestroyBlockTask(_destroyTarget);
         }
         for (Vec3i middleOffs : PORTAL_INTERIOR) {
             BlockPos middlePos = _origin.add(middleOffs);
-            if (!WorldUtil.isAir(mod, middlePos)) {
+            if (!WorldHelper.isAir(mod, middlePos)) {
                 _destroyTarget = middlePos;
                 return new DestroyBlockTask(_destroyTarget);
             }
@@ -160,8 +160,8 @@ public class ConstructNetherPortalObsidianTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof ConstructNetherPortalObsidianTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof ConstructNetherPortalObsidianTask;
     }
 
     @Override

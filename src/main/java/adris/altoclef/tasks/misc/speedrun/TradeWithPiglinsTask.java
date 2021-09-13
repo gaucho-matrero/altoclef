@@ -87,8 +87,8 @@ public class TradeWithPiglinsTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof TradeWithPiglinsTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof TradeWithPiglinsTask;
     }
 
     @Override

@@ -29,9 +29,8 @@ public class DodgeProjectilesTask extends CustomBaritoneGoalTask {
 
     @SuppressWarnings("RedundantIfStatement")
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DodgeProjectilesTask) {
-            DodgeProjectilesTask task = (DodgeProjectilesTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof DodgeProjectilesTask task) {
             //if (task._mob.getPos().squaredDistanceTo(_mob.getPos()) > 0.5) return false;
             if (Math.abs(task._distanceHorizontal - _distanceHorizontal) > 1) return false;
             if (Math.abs(task._distanceVertical - _distanceVertical) > 1) return false;

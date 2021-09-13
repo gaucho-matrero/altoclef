@@ -3,7 +3,7 @@ package adris.altoclef.trackers;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.ChestSlot;
 import adris.altoclef.util.slots.Slot;
@@ -74,10 +74,10 @@ public class ContainerTracker extends Tracker {
 
     public void onServerTick() {
         if (_awaitingScreen != null) {
-            if (_awaitingScreen instanceof FurnaceScreen) {
-                onFurnaceScreenOpen(((FurnaceScreen) _awaitingScreen).getScreenHandler());
-            } else if (_awaitingScreen instanceof GenericContainerScreen) {
-                onChestScreenOpen(((GenericContainerScreen) _awaitingScreen).getScreenHandler());
+            if (_awaitingScreen instanceof FurnaceScreen furnaceScreen) {
+                onFurnaceScreenOpen(furnaceScreen.getScreenHandler());
+            } else if (_awaitingScreen instanceof GenericContainerScreen genericContainerScreen) {
+                onChestScreenOpen(genericContainerScreen.getScreenHandler());
             }
             //_awaitingScreen = null;
         }
@@ -167,7 +167,7 @@ public class ContainerTracker extends Tracker {
 
         @Override
         public void updateContainer(BlockPos pos, GenericContainerScreenHandler screenHandler) {
-            BlockPos leftSide = WorldUtil.getChestLeft(_mod, pos);
+            BlockPos leftSide = WorldHelper.getChestLeft(_mod, pos);
             if (leftSide == null) {
                 Debug.logInternal("PROBLEM: (could not find chest left side?)");
                 return;
@@ -203,7 +203,7 @@ public class ContainerTracker extends Tracker {
                 }
                 if (_mod.getChunkTracker().isChunkLoaded(blockToCheck)) {
                     ChestData data = _blockData.get(blockToCheck);
-                    if (data._big && !WorldUtil.isChestBig(_mod, blockToCheck)) {
+                    if (data._big && !WorldHelper.isChestBig(_mod, blockToCheck)) {
                         Debug.logMessage("Cached chest size at " + blockToCheck.toShortString() + " reduced, will delete chest info/uncache.");
                         deleteBlock(blockToCheck);
                     }

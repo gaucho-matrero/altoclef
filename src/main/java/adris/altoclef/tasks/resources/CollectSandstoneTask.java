@@ -49,8 +49,8 @@ public class CollectSandstoneTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectSandstoneTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectSandstoneTask;
     }
 
     @Override

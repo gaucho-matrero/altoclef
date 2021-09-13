@@ -1,6 +1,6 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +40,7 @@ public class ItemDeserializer extends StdDeserializer<Object> {
             } else {
                 // Translation key (the proper way)
                 String itemKey = p.getText();
-                itemKey = ItemUtil.trimItemName(itemKey);
+                itemKey = ItemHelper.trimItemName(itemKey);
                 item = Registry.ITEM.get(new Identifier(itemKey));
             }
             result.add(item);

@@ -2,11 +2,11 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -70,10 +70,9 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DoToClosestBlockTask) {
-            DoToClosestBlockTask task = (DoToClosestBlockTask) obj;
-            return Util.arraysEqual(task._targetBlocks, _targetBlocks);
+    protected boolean isEqual(Task other) {
+        if (other instanceof DoToClosestBlockTask task) {
+            return Arrays.equals(task._targetBlocks, _targetBlocks);
         }
         return false;
     }

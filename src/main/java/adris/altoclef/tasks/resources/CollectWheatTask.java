@@ -52,8 +52,8 @@ public class CollectWheatTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectWheatTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectWheatTask;
     }
 
     @Override

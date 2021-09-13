@@ -8,12 +8,13 @@ import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.StlHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,7 +93,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                     isGettingPickaxeFirstFlag = true;
                     return getPickaxeFirstTask;
                 }
-                Debug.logMessage(Util.arrayToString(Util.toArray(ItemEntity.class, _blacklist), element -> element == null ? "(null)" : element.getStack().getItem().getTranslationKey()));
+
+                Debug.logMessage(StlHelper.toString(_blacklist, element -> element == null ? "(null)" : element.getStack().getItem().getTranslationKey()));
                 Debug.logMessage("Failed to pick up drop, suggesting it's unreachable.");
                 _blacklist.add(_currentDrop);
                 mod.getEntityTracker().requestEntityUnreachable(_currentDrop);
@@ -119,9 +121,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     @Override
     protected boolean isEqual(Task other) {
         // Same target items
-        if (other instanceof PickupDroppedItemTask) {
-            PickupDroppedItemTask t = (PickupDroppedItemTask) other;
-            return Util.arraysEqual(t._itemTargets, _itemTargets) && t._freeInventoryIfFull == _freeInventoryIfFull;
+        if (other instanceof PickupDroppedItemTask task) {
+            return Arrays.equals(task._itemTargets, _itemTargets) && task._freeInventoryIfFull == _freeInventoryIfFull;
         }
         return false;
     }

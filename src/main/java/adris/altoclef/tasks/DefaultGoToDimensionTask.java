@@ -71,9 +71,8 @@ public class DefaultGoToDimensionTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DefaultGoToDimensionTask) {
-            DefaultGoToDimensionTask task = (DefaultGoToDimensionTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof DefaultGoToDimensionTask task) {
             return task._target == _target;
         }
         return false;

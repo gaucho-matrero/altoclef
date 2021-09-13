@@ -46,10 +46,9 @@ public class CollectFuelTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof CollectFuelTask) {
-            CollectFuelTask other = (CollectFuelTask) obj;
-            return Math.abs(other._targetFuel - _targetFuel) < 0.01;
+    protected boolean isEqual(Task other) {
+        if (other instanceof CollectFuelTask task) {
+            return Math.abs(task._targetFuel - _targetFuel) < 0.01;
         }
         return false;
     }

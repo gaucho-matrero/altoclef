@@ -1,6 +1,6 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -23,7 +23,7 @@ public class ItemSerializer extends StdSerializer<Object> {
         List<Item> items = (List<Item>) value;
         gen.writeStartArray();
         for (Item item : items) {
-            String key = ItemUtil.trimItemName(item.getTranslationKey());
+            String key = ItemHelper.trimItemName(item.getTranslationKey());
             gen.writeString(key);
         }
         gen.writeEndArray();

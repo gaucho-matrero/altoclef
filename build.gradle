@@ -18,7 +18,7 @@ repositories {
         url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
-        dirs 'baritone/build/libs'
+        dirs '../baritone/build/libs'
     }
 }
 

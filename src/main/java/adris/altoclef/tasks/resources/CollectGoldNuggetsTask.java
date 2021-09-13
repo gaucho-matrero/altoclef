@@ -65,8 +65,8 @@ public class CollectGoldNuggetsTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectGoldNuggetsTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectGoldNuggetsTask;
     }
 
     @Override

@@ -9,7 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.*;
@@ -222,7 +222,7 @@ public class CollectFoodTask extends Task {
                         }
                     }
                     // Unbreakable.
-                    return !WorldUtil.canBreak(mod, blockPos);
+                    return !WorldHelper.canBreak(mod, blockPos);
                     // We're not wheat so do NOT reject.
                 }), 100);
                 if (t != null) {
@@ -291,9 +291,9 @@ public class CollectFoodTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof CollectFoodTask) {
-            CollectFoodTask task = (CollectFoodTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof CollectFoodTask) {
+            CollectFoodTask task = (CollectFoodTask) other;
             return task._unitsNeeded == _unitsNeeded;
         }
         return false;
@@ -310,7 +310,7 @@ public class CollectFoodTask extends Task {
      */
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
         Predicate<BlockPos> rejectPlus = (blockPos) -> {
-            if (!WorldUtil.canBreak(mod, blockPos)) return true;
+            if (!WorldHelper.canBreak(mod, blockPos)) return true;
             return reject.test(blockPos);
         };
         BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), rejectPlus, blockToCheck);

@@ -37,8 +37,8 @@ public class LocateDesertTempleTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof LocateDesertTempleTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof LocateDesertTempleTask;
     }
 
     @Override

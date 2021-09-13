@@ -5,7 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
@@ -57,7 +57,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         double playerReach = mod.getModSettings().getEntityReachRange();
 
         // TODO: This is basically useless.
-        EntityHitResult result = LookUtil.raycast(mod.getPlayer(), entity, playerReach);
+        EntityHitResult result = LookHelper.raycast(mod.getPlayer(), entity, playerReach);
 
         double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
@@ -96,9 +96,8 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof AbstractDoToEntityTask) {
-            AbstractDoToEntityTask task = (AbstractDoToEntityTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof AbstractDoToEntityTask task) {
             if (!doubleCheck(task._maintainDistance, _maintainDistance)) return false;
             if (!doubleCheck(task._combatGuardLowerFieldRadius, _combatGuardLowerFieldRadius)) return false;
             if (!doubleCheck(task._combatGuardLowerRange, _combatGuardLowerRange)) return false;

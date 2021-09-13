@@ -11,7 +11,6 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
@@ -50,7 +49,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         for (SmeltTarget target : recipeTargets) {
             result.add(target.getItem());
         }
-        return Util.toArray(ItemTarget.class, result);
+        return result.toArray(ItemTarget[]::new);
     }
 
     public void ignoreMaterials() {
@@ -88,11 +87,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-
-        if (obj instanceof SmeltInFurnaceTask) {
-            SmeltInFurnaceTask other = (SmeltInFurnaceTask) obj;
-            return other._doTask.isEqual(_doTask);
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof SmeltInFurnaceTask task) {
+            return task._doTask.isEqual(_doTask);
         }
         return false;
     }
@@ -123,10 +120,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
         }
 
         @Override
-        protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
-            if (obj instanceof DoSmeltInFurnaceTask) {
-                DoSmeltInFurnaceTask other = (DoSmeltInFurnaceTask) obj;
-                return other._target.equals(_target) && other._ignoreMaterials == _ignoreMaterials;
+        protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
+            if (other instanceof DoSmeltInFurnaceTask task) {
+                return task._target.equals(_target) && task._ignoreMaterials == _ignoreMaterials;
             }
             return false;
         }
@@ -267,12 +263,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 if (fuelStack.getItem().equals(fuelToUse)) {
                     targetFuelItemCount -= fuelStack.getCount();
                 }
-                int moved = mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
-                int canMove = mod.getInventoryTracker().getItemCount(fuelToUse);
-                //Debug.logInternal("moved: " + moved);
-                /*if (canMove > 0 && moved != canMove) {
-                    Debug.logWarning("Failed to move " + canMove + " units of the fuel " + fuelToUse.getTranslationKey() + ". Only moved " + moved + ". Proceeding anyway.");
-                }*/
+                mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
             }
 
             // Grab from the output slot

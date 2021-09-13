@@ -15,7 +15,7 @@ import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -119,7 +119,7 @@ public class TerminatorTask extends Task {
                     // Too far away.
                     if (!entityIgnoreMaybe.isInRange(mod.getPlayer(), FEAR_DISTANCE)) return true;
                     // We may be far and obstructed, check.
-                    boolean seesPlayer = LookUtil.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
+                    boolean seesPlayer = LookHelper.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
 
                     //Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
                     return !seesPlayer;
@@ -225,8 +225,8 @@ public class TerminatorTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof TerminatorTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof TerminatorTask;
     }
 
     @Override
@@ -247,7 +247,7 @@ public class TerminatorTask extends Task {
 
     private void tryDoFunnyMessageTo(AltoClef mod, PlayerEntity player) {
         if (_funnyMessageTimer.elapsed()) {
-            if (LookUtil.seesPlayer(player, mod.getPlayer(), 80)) {
+            if (LookHelper.seesPlayer(player, mod.getPlayer(), 80)) {
                 String name = player.getName().getString();
                 if (_currentVisibleTarget == null || !_currentVisibleTarget.equals(name)) {
                     _currentVisibleTarget = name;
@@ -312,9 +312,9 @@ public class TerminatorTask extends Task {
         }
 
         @Override
-        protected boolean isEqual(Task obj) {
-            if (obj instanceof ScanChunksInRadius) {
-                ScanChunksInRadius scan = (ScanChunksInRadius) obj;
+        protected boolean isEqual(Task other) {
+            if (other instanceof ScanChunksInRadius) {
+                ScanChunksInRadius scan = (ScanChunksInRadius) other;
                 return scan._center.equals(_center) && Math.abs(scan._radius - _radius) <= 1;
             }
             return false;
@@ -335,8 +335,8 @@ public class TerminatorTask extends Task {
         }
 
         @Override
-        protected boolean isEqual(Task obj) {
-            return obj instanceof RunAwayFromPlayersTask;
+        protected boolean isEqual(Task other) {
+            return other instanceof RunAwayFromPlayersTask;
         }
 
         @Override

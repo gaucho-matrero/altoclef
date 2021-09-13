@@ -7,7 +7,7 @@ import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.StlHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
@@ -122,7 +122,7 @@ public abstract class ResourceTask extends Task {
         }
         List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(_itemTargets);
         if (!chestsWithItem.isEmpty()) {
-            BlockPos closest = Util.minItem(chestsWithItem, (left, right) -> (int) (right.getSquaredDistance(mod.getPlayer().getPos(), false) - left.getSquaredDistance(mod.getPlayer().getPos(), false)));
+            BlockPos closest = chestsWithItem.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(mod.getPlayer().getPos(), false))).get();
             if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
                 _currentChest = closest;
                 return new PickupFromChestTask(_currentChest, _itemTargets);
@@ -134,7 +134,7 @@ public abstract class ResourceTask extends Task {
             ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
             satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
             if (!satisfiedReqs.isEmpty()) {
-                if (mod.getBlockTracker().anyFound(Util.toArray(Block.class, satisfiedReqs))) {
+                if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
                     BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
                     if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
                         _mineLastClosest = closest;
@@ -163,10 +163,9 @@ public abstract class ResourceTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         // Same target items
-        if (other instanceof ResourceTask) {
-            ResourceTask t = (ResourceTask) other;
+        if (other instanceof ResourceTask t) {
             if (!isEqualResource(t)) return false;
-            return Util.arraysEqual(t._itemTargets, _itemTargets);
+            return Arrays.equals(t._itemTargets, _itemTargets);
         }
         return false;
     }
@@ -216,7 +215,7 @@ public abstract class ResourceTask extends Task {
 
     protected abstract void onResourceStop(AltoClef mod, Task interruptTask);
 
-    protected abstract boolean isEqualResource(ResourceTask obj);
+    protected abstract boolean isEqualResource(ResourceTask other);
 
     protected abstract String toDebugStringName();
 

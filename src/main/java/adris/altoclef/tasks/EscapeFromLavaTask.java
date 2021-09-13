@@ -1,17 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.pathing.goals.Goal;
 import baritone.pathing.movement.MovementHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 
 public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
 
@@ -41,8 +35,8 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof EscapeFromLavaTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof EscapeFromLavaTask;
     }
 
     @Override
