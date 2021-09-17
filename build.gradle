@@ -47,8 +47,8 @@ dependencies {
         // Must run build from baritone-plus once
         modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.7.0'
     } else {
-        modImplementation "cabaletta:baritone-unoptimized-fabric:1.7.0"
-        include "cabaletta:baritone-unoptimized-fabric:1.7.0"
+        modImplementation "cabaletta:baritone-unoptimized-fabric:1.7"
+        include "cabaletta:baritone-unoptimized-fabric:1.7"
     }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
