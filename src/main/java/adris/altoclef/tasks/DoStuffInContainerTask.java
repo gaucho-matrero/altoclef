@@ -56,7 +56,7 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         if (_openTableTask == null) {
-            _openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), InteractWithBlockTask::new, _containerBlocks);
+            _openTableTask = new DoToClosestBlockTask(InteractWithBlockTask::new, _containerBlocks);
         }
 
         mod.getBlockTracker().trackBlock(_containerBlocks);

@@ -20,15 +20,19 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     private final Function<BlockPos, Task> _getTargetTask;
 
 
-    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block... blocks) {
-        this(getOriginSupplier, getTargetTask, (origin) -> mod.getBlockTracker().getNearestTracking(origin, blocks), blocks);
-    }
-
     public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _targetBlocks = blocks;
         _getClosest = getClosestBlock;
+    }
+
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
+        this(null, getTargetTask, getClosestBlock, blocks);
+    }
+
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Block... blocks) {
+        this(getTargetTask, null, blocks);
     }
 
     @Override
@@ -38,12 +42,18 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     @Override
     protected BlockPos getClosestTo(AltoClef mod, Vec3d pos) {
-        return _getClosest.apply(pos);
+        if (_getClosest != null) {
+            return _getClosest.apply(pos);
+        }
+        return mod.getBlockTracker().getNearestTracking(pos, _targetBlocks);
     }
 
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
-        return _getOriginPos.get();
+        if (_getOriginPos != null) {
+            return _getOriginPos.get();
+        }
+        return mod.getPlayer().getPos();
     }
 
     @Override

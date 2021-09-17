@@ -32,6 +32,14 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
         this(getOriginSupplier, getTargetTask, entity -> false, entities);
     }
 
+    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class... entities) {
+        this(null, getTargetTask, ignorePredicate, entities);
+    }
+
+    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Class... entities) {
+        this(null, getTargetTask, entity -> false, entities);
+    }
+
     @Override
     protected Vec3d getPos(AltoClef mod, Entity obj) {
         return obj.getPos();
@@ -45,7 +53,10 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
-        return _getOriginPos.get();
+        if (_getOriginPos != null) {
+            return _getOriginPos.get();
+        }
+        return mod.getPlayer().getPos();
     }
 
     @Override

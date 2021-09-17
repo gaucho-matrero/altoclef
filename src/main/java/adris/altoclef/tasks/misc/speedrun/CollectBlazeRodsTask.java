@@ -90,8 +90,6 @@ public class CollectBlazeRodsTask extends ResourceTask {
         if (toKill != null && toKill.isAlive()) {
             setDebugState("Killing blaze");
             return new KillEntitiesTask(entity -> isHoveringAboveLavaOrTooHigh(mod, entity), BlazeEntity.class);
-            //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntitiesTask::new, BlazeEntity.class);
-            //return new KillEntityTask(toKill);
         }
 
 

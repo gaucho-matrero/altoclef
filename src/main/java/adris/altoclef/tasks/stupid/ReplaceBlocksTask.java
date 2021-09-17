@@ -119,12 +119,12 @@ public class ReplaceBlocksTask extends Task {
 
         // Now replace
         setDebugState("Searching for blocks to replace...");
-        return new DoToClosestBlockTask(
-                () -> mod.getPlayer().getPos(), whereToPlace -> {
-            _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
-            return _replaceTask;
-        },
-                pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore), _toFind)
+        return new DoToClosestBlockTask(whereToPlace -> {
+                _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
+                return _replaceTask;
+            },
+            pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore),
+            _toFind)
         );
     }
 

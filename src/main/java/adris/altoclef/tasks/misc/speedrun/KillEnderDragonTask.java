@@ -119,9 +119,7 @@ public class KillEnderDragonTask extends Task {
         if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
             setDebugState("Entering portal to beat the game.");
             return new DoToClosestBlockTask(
-                    () -> mod.getPlayer().getPos(),
                     blockPos -> new GetToBlockTask(blockPos.up(), false),
-                    pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL),
                     Blocks.END_PORTAL
             );
         }
@@ -143,14 +141,16 @@ public class KillEnderDragonTask extends Task {
         // Blow up the nearest end crystal
         if (mod.getEntityTracker().entityFound(EndCrystalEntity.class)) {
             setDebugState("Kamakazeeing crystals");
-            return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
-                    (toDestroy) -> {
-                        if (toDestroy.isInRange(mod.getPlayer(), 7)) {
-                            mod.getControllerExtras().attack(toDestroy);
-                        }
-                        // Go next to the crystal, arbitrary where we just need to get close.
-                        return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
-                    }, EndCrystalEntity.class);
+            return new DoToClosestEntityTask(
+                (toDestroy) -> {
+                    if (toDestroy.isInRange(mod.getPlayer(), 7)) {
+                        mod.getControllerExtras().attack(toDestroy);
+                    }
+                    // Go next to the crystal, arbitrary where we just need to get close.
+                    return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
+                },
+                EndCrystalEntity.class
+            );
         }
 
         // Punk dragon

@@ -80,7 +80,7 @@ public class StoreInAnyChestTask extends Task {
                 _progressChecker.reset();
             }
 
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(),
+            return new DoToClosestBlockTask(
                     blockPos -> {
                         if (_currentChestTry != blockPos) {
                             _progressChecker.reset();

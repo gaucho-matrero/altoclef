@@ -104,7 +104,6 @@ public class CollectCropTask extends ResourceTask {
             _emptyCropland.removeIf(blockPos -> !isEmptyCrop(mod, blockPos));
             assert !_emptyCropland.isEmpty();
             return new DoToClosestBlockTask(
-                    () -> mod.getPlayer().getPos(),
                     blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
                     pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))).orElse(null),
                     Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
@@ -126,7 +125,6 @@ public class CollectCropTask extends ResourceTask {
         // Break crop blocks.
         setDebugState("Breaking crops.");
         return new DoToClosestBlockTask(
-                () -> mod.getPlayer().getPos(),
                 blockPos -> {
                     _emptyCropland.add(blockPos);
                     return new DestroyBlockTask(blockPos);

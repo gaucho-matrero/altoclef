@@ -21,7 +21,7 @@ public class CollectEggsTask extends ResourceTask {
     public CollectEggsTask(int targetCount) {
         super(Items.EGG, targetCount);
         _count = targetCount;
-        _waitNearChickens = new DoToClosestEntityTask(() -> _mod.getPlayer().getPos(), chicken -> new GetToEntityTask(chicken, 5), ChickenEntity.class);
+        _waitNearChickens = new DoToClosestEntityTask(chicken -> new GetToEntityTask(chicken, 5), ChickenEntity.class);
     }
 
     @Override

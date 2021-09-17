@@ -153,8 +153,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
 
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
-
+            return new DoToClosestBlockTask((BlockPos blockpos) -> {
                 // Clear above if lava because we can't enter.
                 if (WorldHelper.isSolid(mod, blockpos.up())) {
                     if (!_progressChecker.check(mod)) {

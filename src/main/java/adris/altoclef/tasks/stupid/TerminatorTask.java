@@ -167,18 +167,18 @@ public class TerminatorTask extends Task {
 
             if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe), PlayerEntity.class) != null) {
                 setDebugState("Punking.");
-                return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(),
-                        entity -> {
-                            if (entity instanceof PlayerEntity) {
-                                tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
-                                return new KillPlayerTask(entity.getName().getString());
-                            }
-                            // Should never happen.
-                            Debug.logWarning("This should never happen.");
-                            return _scanTask;
-                        },
-                        ignore -> !shouldPunk(mod, (PlayerEntity) ignore),
-                        PlayerEntity.class
+                return new DoToClosestEntityTask(
+                    entity -> {
+                        if (entity instanceof PlayerEntity) {
+                            tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
+                            return new KillPlayerTask(entity.getName().getString());
+                        }
+                        // Should never happen.
+                        Debug.logWarning("This should never happen.");
+                        return _scanTask;
+                    },
+                    ignore -> !shouldPunk(mod, (PlayerEntity) ignore),
+                    PlayerEntity.class
                 );
             }
         }

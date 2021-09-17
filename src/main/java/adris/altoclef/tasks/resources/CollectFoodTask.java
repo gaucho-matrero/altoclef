@@ -328,10 +328,8 @@ public class CollectFoodTask extends Task {
         if (spotted) {
             if (nearestDrop != null) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
-                //new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), GetToEntityTask::new,)
-                //return new GetToEntityTask(nearestDrop);
             } else {
-                return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
+                return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
                 //return new DestroyBlockTask(nearestBlock);
             }
         }
@@ -343,10 +341,6 @@ public class CollectFoodTask extends Task {
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
-        //Task itemPickup = pickupTaskOrNull(mod, itemToGrab);
-        //if (itemPickup != null) return itemPickup;
-        //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntityTask::new, entity.getClass());
-        //return new KillEntityTask(entity);
         return new KillAndLootTask(entity.getClass(), new ItemTarget(itemToGrab, 1));
     }
 

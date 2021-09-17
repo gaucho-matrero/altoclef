@@ -88,7 +88,7 @@ public class EnterNetherPortalTask extends Task {
 
         if (getClosestPortal.apply(mod.getPlayer().getPos()) != null) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(blockpos -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;

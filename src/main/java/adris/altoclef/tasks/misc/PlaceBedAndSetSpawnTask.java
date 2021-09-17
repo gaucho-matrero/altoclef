@@ -157,7 +157,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         if (mod.getBlockTracker().anyFound(BEDS)) {
             // Sleep in the nearest bed
             setDebugState("Going to bed to sleep...");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), toSleepIn -> {
+            return new DoToClosestBlockTask(toSleepIn -> {
                 boolean closeEnough = toSleepIn.isWithinDistance(mod.getPlayer().getPos(), 3);
                 if (closeEnough) {
                     // why 0.2? I'm tired.
@@ -191,7 +191,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
                 _progressChecker.reset();
                 return new InteractWithBlockTask(targetMove);
-            }, pos -> mod.getBlockTracker().getNearestTracking(pos, BEDS), BEDS);
+            }, BEDS);
         }
 
         // Get a bed if we don't have one.
