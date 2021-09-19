@@ -24,12 +24,9 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Zip files
-      working-directory: ./build/libs
-      run: zip altoclef-${{ github.event.release.tag_name }}.zip *.jar
-    - name: Upload Files
-      uses: AButler/upload-release-assets@v2.0
-      with: 
-        files: 'build/libs/altoclef-${{ github.event.release.tag_name }}.zip;build/libs/*.jar'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        release-tag: v1.0.0
+      
+    - name: Archive Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Artifacts
+        path: ./build/libs
