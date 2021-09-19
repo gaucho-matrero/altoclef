@@ -33,9 +33,8 @@ public abstract class AbstractDoInChestTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof AbstractDoInChestTask) {
-            AbstractDoInChestTask task = (AbstractDoInChestTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof AbstractDoInChestTask task) {
             if (!task._targetChest.equals(_targetChest)) return false;
             return isSubEqual(task);
         }
@@ -44,6 +43,6 @@ public abstract class AbstractDoInChestTask extends Task {
 
     protected abstract Task doToOpenChestTask(AltoClef mod, GenericContainerScreenHandler handler);
 
-    protected abstract boolean isSubEqual(AbstractDoInChestTask obj);
+    protected abstract boolean isSubEqual(AbstractDoInChestTask other);
 
 }

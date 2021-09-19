@@ -3,16 +3,14 @@ package adris.altoclef.tasks.construction.compound;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
@@ -79,7 +77,6 @@ public class ConstructNetherPortalBucketTask extends Task {
 
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
         mod.getBehaviour().push();
-        mod.getBehaviour().setSearchAnywhereFlag(true);
 
         // Avoid breaking portal frame if we're obsidian.
         // Also avoid placing on the lava + water
@@ -119,7 +116,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         }
 
         if (_currentDestroyTarget != null) {
-            if (!WorldUtil.isSolid(mod, _currentDestroyTarget)) {
+            if (!WorldHelper.isSolid(mod, _currentDestroyTarget)) {
                 _currentDestroyTarget = null;
             } else {
                 return new DestroyBlockTask(_currentDestroyTarget);
@@ -193,7 +190,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             if (frameBlock == Blocks.OBSIDIAN) {
                 // Already satisfied, clear water above if need be.
                 BlockPos waterCheck = framePos.up();
-                if (mod.getWorld().getBlockState(waterCheck).getBlock() == Blocks.WATER && WorldUtil.isSourceBlock(mod, waterCheck, true)) {
+                if (mod.getWorld().getBlockState(waterCheck).getBlock() == Blocks.WATER && WorldHelper.isSourceBlock(mod, waterCheck, true)) {
                     setDebugState("Clearing water from cast");
                     return new ClearLiquidTask(waterCheck);
                 }
@@ -237,8 +234,8 @@ public class ConstructNetherPortalBucketTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof ConstructNetherPortalBucketTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof ConstructNetherPortalBucketTask;
     }
 
     @Override

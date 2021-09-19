@@ -11,8 +11,8 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.KillAura;
-import adris.altoclef.util.LookUtil;
-import adris.altoclef.util.ProjectileUtil;
+import adris.altoclef.util.LookHelper;
+import adris.altoclef.util.ProjectileHelper;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.Baritone;
@@ -36,6 +36,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
+@SuppressWarnings("rawtypes")
 public class MobDefenseChain extends SingleTaskChain {
 
     private static final double CREEPER_KEEP_DISTANCE = 10;
@@ -126,7 +127,7 @@ public class MobDefenseChain extends SingleTaskChain {
         if (blowingUp != null) {
             _doingFunkyStuff = true;
             //Debug.logMessage("RUNNING AWAY!");
-            _runAwayTask = new RunAwayFromCreepersTask(DANGER_KEEP_DISTANCE);
+            _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
             setTask(_runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
@@ -135,6 +136,7 @@ public class MobDefenseChain extends SingleTaskChain {
         if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
             _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
+            _runAwayTask = null;
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
         }
@@ -175,7 +177,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
-                        isClose = LookUtil.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
+                        isClose = LookHelper.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
                     }
 
                     // Give each hostile a timer, if they're close for too long deal with them.
@@ -213,10 +215,10 @@ public class MobDefenseChain extends SingleTaskChain {
                     // diamond 3 : 3 hostiles
                     // netherite 4 : 4 hostiles
 
-                    // Armor:
-                    // leather: 1 skeleton
-                    // iron: 2 hostiles
-                    // diamond: 3 hostiles
+                    // Armor: (do the math I'm not boutta calculate this)
+                    // leather: ?1 skeleton
+                    // iron: ?2 hostiles
+                    // diamond: ?3 hostiles
 
                     // 7 is full set of leather
                     // 15 is full set of iron.
@@ -227,12 +229,12 @@ public class MobDefenseChain extends SingleTaskChain {
                     int armor = mod.getPlayer().getArmor();
                     float damage = bestSword == null ? 0 : (1 + bestSword.getMaterial().getAttackDamage());
 
-                    int canDealWith = (int) Math.ceil((armor * 2.6 / 20.0) + (damage * 0.8));
+                    int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8));
 
                     canDealWith += 1;
                     if (canDealWith > numberOfProblematicEntities) {
                         // We can deal with it.
-
+                        _runAwayTask = null;
                         setTask(new KillEntitiesTask(
                                 entity -> !toDealWith.contains(entity),
                                 // Oof
@@ -310,15 +312,14 @@ public class MobDefenseChain extends SingleTaskChain {
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
                     if (EntityTracker.isAngryAtPlayer(entity)) {
-                        if (LookUtil.seesPlayer(entity, mod.getPlayer(), 10)) {
+                        if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }
                     }
                 } else if (entity instanceof FireballEntity) {
                     // Ghast ball
                     shouldForce = true;
-                } else if (entity instanceof PlayerEntity && mod.getBehaviour().shouldForceFieldPlayers()) {
-                    PlayerEntity player = (PlayerEntity) entity;
+                } else if (entity instanceof PlayerEntity player && mod.getBehaviour().shouldForceFieldPlayers()) {
                     if (!player.equals(mod.getPlayer())) {
                         String name = player.getName().getString();
                         if (!mod.getButler().isUserAuthorized(name)) {
@@ -383,7 +384,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     continue;
                 }
 
-                Vec3d expectedHit = ProjectileUtil.calculateArrowClosestApproach(projectile, mod.getPlayer());
+                Vec3d expectedHit = ProjectileHelper.calculateArrowClosestApproach(projectile, mod.getPlayer());
 
                 Vec3d delta = mod.getPlayer().getPos().subtract(expectedHit);
 

@@ -7,9 +7,3 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
-sourceControl {
-    gitRepository(URI.create("https://gitlab.com/adrisj7/fabritone.git")) {
-        producesModule("baritone:baritone")
-    }
-}

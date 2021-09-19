@@ -33,7 +33,7 @@ public class CollectGoldIngotTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.OVERWORLD) {
-            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, _count), new ItemTarget("gold_ore", _count)));
+            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, _count), new ItemTarget("raw_gold", _count)));
         } else if (mod.getCurrentDimension() == Dimension.NETHER) {
             // If we have enough nuggets, craft them.
             int nuggs = mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_NUGGET);
@@ -57,8 +57,8 @@ public class CollectGoldIngotTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj)._count == _count;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) other)._count == _count;
     }
 
     @Override

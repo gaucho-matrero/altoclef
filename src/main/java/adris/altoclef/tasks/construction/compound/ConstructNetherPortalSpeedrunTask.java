@@ -114,7 +114,6 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         _portalFrameBuilt = false;
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
         mod.getBehaviour().push();
-        mod.getBehaviour().setSearchAnywhereFlag(true);
         //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
         // Avoid breaking frame.
         mod.getBehaviour().avoidBlockBreaking((block) -> {
@@ -325,8 +324,8 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     }
 
     @Override
-    protected boolean isEqual(adris.altoclef.tasksystem.Task obj) {
-        return obj instanceof ConstructNetherPortalSpeedrunTask;
+    protected boolean isEqual(adris.altoclef.tasksystem.Task other) {
+        return other instanceof ConstructNetherPortalSpeedrunTask;
     }
 
     @Override

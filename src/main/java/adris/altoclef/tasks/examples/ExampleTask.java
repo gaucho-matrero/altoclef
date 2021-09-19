@@ -64,9 +64,9 @@ public class ExampleTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof ExampleTask) {
-            ExampleTask task = (ExampleTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof ExampleTask) {
+            ExampleTask task = (ExampleTask) other;
             return task._numberOfStonePickaxesToGrab == _numberOfStonePickaxesToGrab
                     && task._whereToPlaceCobblestone.equals(_whereToPlaceCobblestone);
         }

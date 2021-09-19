@@ -14,7 +14,7 @@ import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
 import adris.altoclef.util.PlayerExtraController;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
@@ -97,10 +97,10 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        initializeBaritoneSettings();
-
         // Load settings
         _settings = adris.altoclef.Settings.load();
+
+        initializeBaritoneSettings();
 
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
@@ -224,7 +224,6 @@ public class AltoClef implements ModInitializer {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
             new AltoClefCommands(getCommandExecutor());
         } catch (Exception e) {
-            /// ppppbbbbttt
             e.printStackTrace();
         }
     }
@@ -368,7 +367,7 @@ public class AltoClef implements ModInitializer {
         return Dimension.END;
     }
     public Vec3d getOverworldPosition() {
-        return WorldUtil.getOverworldPosition(this, getPlayer().getPos());
+        return WorldHelper.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {

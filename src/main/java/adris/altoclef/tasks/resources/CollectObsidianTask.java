@@ -4,14 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
-import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
@@ -58,7 +56,6 @@ public class CollectObsidianTask extends ResourceTask {
         mod.getBehaviour().push();
 
         mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-        mod.getBehaviour().setSearchAnywhereFlag(true); // If we don't set this, lava will never be found.
 
         mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
         //mod.getBlockTracker().trackBlock(Blocks.WATER);
@@ -82,8 +79,8 @@ public class CollectObsidianTask extends ResourceTask {
     private static BlockPos getGoodObsidianPosition(AltoClef mod) {
         BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
         BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
-        for (BlockPos pos : WorldUtil.scanRegion(mod, start, end)) {
-            if (!WorldUtil.canBreak(mod, pos) || !WorldUtil.canPlace(mod, pos)) {
+        for (BlockPos pos : WorldHelper.scanRegion(mod, start, end)) {
+            if (!WorldHelper.canBreak(mod, pos) || !WorldHelper.canPlace(mod, pos)) {
                 return null;
             }
         }
@@ -110,7 +107,7 @@ public class CollectObsidianTask extends ResourceTask {
 
         Predicate<BlockPos> badObsidian = (blockPos ->
                 !blockPos.isWithinDistance(mod.getPlayer().getPos(), 800)
-                || !WorldUtil.canBreak(mod, blockPos)
+                || !WorldHelper.canBreak(mod, blockPos)
         );
 
         /*
@@ -132,7 +129,7 @@ public class CollectObsidianTask extends ResourceTask {
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
             if (nearestObby != null) {
-                BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldUtil.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
+                BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldWorldHelper.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
 
                 if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 5 * 5) {
                     _forceCompleteTask = new ClearLiquidTask(nearestWater);
@@ -183,9 +180,8 @@ public class CollectObsidianTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectObsidianTask) {
-            CollectObsidianTask task = (CollectObsidianTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectObsidianTask task) {
             return task._count == _count;
         }
         return false;

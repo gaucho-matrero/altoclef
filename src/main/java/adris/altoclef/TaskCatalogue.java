@@ -6,10 +6,9 @@ import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.util.*;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.MapColor;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
@@ -35,9 +34,9 @@ public class TaskCatalogue {
             String o = null;
 
             /// RAW RESOURCES
-            mine("log", MiningRequirement.HAND, ItemUtil.LOG, ItemUtil.LOG).anyDimension();
+            mine("log", MiningRequirement.HAND, ItemHelper.LOG, ItemHelper.LOG).anyDimension();
             woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
-            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_PATH}, Items.DIRT);
+            mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.DIRT_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             mine("andesite", MiningRequirement.WOOD, Blocks.ANDESITE, Items.ANDESITE);
             mine("granite", MiningRequirement.WOOD, Blocks.GRANITE, Items.GRANITE);
@@ -47,13 +46,13 @@ public class TaskCatalogue {
             mine("soul_sand", Items.SOUL_SAND).forceDimension(Dimension.NETHER);
             mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
             mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
-            mine("coal", MiningRequirement.WOOD, Blocks.COAL_ORE, Items.COAL);
-            mine("iron_ore", MiningRequirement.STONE, Blocks.IRON_ORE, Items.IRON_ORE);
-            mine("gold_ore", MiningRequirement.IRON, Blocks.GOLD_ORE, Items.GOLD_ORE);
-            mine("diamond", MiningRequirement.IRON, Blocks.DIAMOND_ORE, Items.DIAMOND);
-            mine("emerald", MiningRequirement.IRON, Blocks.EMERALD_ORE, Items.EMERALD);
-            mine("redstone", MiningRequirement.IRON, Blocks.REDSTONE_ORE, Items.REDSTONE);
-            mine("lapis_lazuli", MiningRequirement.IRON, Blocks.LAPIS_ORE, Items.LAPIS_LAZULI);
+            mine("coal", MiningRequirement.WOOD, new Block[] {Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE}, Items.COAL);
+            mine("raw_iron", MiningRequirement.STONE, new Block[] {Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE}, Items.RAW_IRON);
+            mine("raw_gold", MiningRequirement.IRON, new Block[]{Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE}, Items.RAW_GOLD);
+            mine("diamond", MiningRequirement.IRON, new Block[]{Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE}, Items.DIAMOND);
+            mine("emerald", MiningRequirement.IRON, new Block[]{Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE}, Items.EMERALD);
+            mine("redstone", MiningRequirement.IRON, new Block[]{Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE}, Items.REDSTONE);
+            mine("lapis_lazuli", MiningRequirement.IRON, new Block[]{Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE}, Items.LAPIS_LAZULI);
             alias("lapis", "lapis_lazuli");
             mine("sand", Blocks.SAND, Items.SAND);
             mine("gravel", Blocks.GRAVEL, Items.GRAVEL);
@@ -62,7 +61,7 @@ public class TaskCatalogue {
             simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("flint", Items.FLINT, CollectFlintTask::new);
             simple("obsidian", Items.OBSIDIAN, CollectObsidianTask::new).dontMineIfPresent();
-            simple("wool", ItemUtil.WOOL, CollectWoolTask::new);
+            simple("wool", ItemHelper.WOOL, CollectWoolTask::new);
             simple("egg", Items.EGG, CollectEggsTask::new);
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
@@ -90,7 +89,7 @@ public class TaskCatalogue {
             shear("cobweb", Blocks.COBWEB, Items.COBWEB).dontMineIfPresent();
             colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             // Misc greenery
-            shear("leaves", Util.itemsToBlocks(ItemUtil.LEAVES), ItemUtil.LEAVES).dontMineIfPresent();
+            shear("leaves", ItemHelper.itemsToBlocks(ItemHelper.LEAVES), ItemHelper.LEAVES).dontMineIfPresent();
             woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves)));
             shear("vine", Blocks.VINE, Items.VINE).dontMineIfPresent();
             shear("grass", Blocks.GRASS, Items.GRASS).dontMineIfPresent();
@@ -99,7 +98,7 @@ public class TaskCatalogue {
             shear("fern", Blocks.FERN, Items.FERN).dontMineIfPresent();
             shear("large_fern", Blocks.LARGE_FERN, Items.LARGE_FERN).dontMineIfPresent();
             // Flowers
-            simple("flower", ItemUtil.FLOWER, CollectFlowerTask::new);
+            simple("flower", ItemHelper.FLOWER, CollectFlowerTask::new);
             mine("allium", Items.ALLIUM);
             mine("azure_bluet", Items.AZURE_BLUET);
             mine("blue_orchid", Items.BLUE_ORCHID);
@@ -128,7 +127,7 @@ public class TaskCatalogue {
 
 
             // MATERIALS
-            simple("planks", ItemUtil.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
+            simple("planks", ItemHelper.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
             for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count), true)) {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
@@ -137,7 +136,7 @@ public class TaskCatalogue {
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "iron_ore");
+            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron");
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
@@ -183,7 +182,7 @@ public class TaskCatalogue {
             shapedRecipe2x2("blaze_powder", Items.BLAZE_POWDER, 2, "blaze_rod", o, o, o);
             shapedRecipe2x2("ender_eye", Items.ENDER_EYE, 1, "blaze_powder", "ender_pearl", o, o);
             alias("eye_of_ender", "ender_eye");
-            shapedRecipe2x2("fermented_spider_eye", Items.SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
+            shapedRecipe2x2("fermented_spider_eye", Items.FERMENTED_SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
             simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
             // DYES
@@ -273,7 +272,7 @@ public class TaskCatalogue {
             alias("iron_pick", "iron_pickaxe");
             alias("gold_pick", "gold_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
-            simple("boat", ItemUtil.WOOD_BOAT, CollectBoatTask::new);
+            simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
 
@@ -281,13 +280,13 @@ public class TaskCatalogue {
             // FURNITURE
             shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p).dontMineIfPresent();
             shapedRecipe3x3("smithing_table", Items.SMITHING_TABLE, 1, "iron_ingot", "iron_ingot", o, p, p, o, p, p, o);
-            simple("wooden_pressure_plate", ItemUtil.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
+            simple("wooden_pressure_plate", ItemHelper.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
             woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate, (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));
-            shapedRecipe2x2("wooden_button", ItemUtil.WOOD_BUTTON, 1, p, o, o, o);
+            shapedRecipe2x2("wooden_button", ItemHelper.WOOD_BUTTON, 1, p, o, o, o);
             woodTasks("button", woodItems -> woodItems.button, (woodItems, count) -> new CraftInInventoryTask(new ItemTarget(woodItems.button, 1), CraftingRecipe.newShapedRecipe(woodItems.prefix + "_button", new ItemTarget[]{new ItemTarget(woodItems.planks, 1), null, null, null}, 1)));
             shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, o, o, "stone", "stone");
             shapedRecipe2x2("stone_button", Items.STONE_BUTTON, 1, "stone", o, o, o);
-            simple("sign", ItemUtil.WOOD_SIGN, CollectSignTask::new).dontMineIfPresent(); // By default, we save signs round these parts.
+            simple("sign", ItemHelper.WOOD_SIGN, CollectSignTask::new).dontMineIfPresent(); // By default, we save signs round these parts.
             woodTasks("sign", woodItems -> woodItems.sign, (woodItems, count) -> new CollectSignTask(woodItems.sign, woodItems.prefix + "_planks", count));
             {
                 String c = "cobblestone";
@@ -301,7 +300,7 @@ public class TaskCatalogue {
             }
             shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p).dontMineIfPresent();
             shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
-            simple("bed", ItemUtil.BED, CollectBedTask::new);
+            simple("bed", ItemHelper.BED, CollectBedTask::new);
             colorfulTasks("bed", colors -> colors.bed, (colors, count) -> new CollectBedTask(colors.bed, colors.colorName + "_wool", count));
             {
                 String i = "iron_ingot";
@@ -317,7 +316,7 @@ public class TaskCatalogue {
             {
                 String b = "obsidian";
                 shapedRecipe3x3("enchanting_table", Items.ENCHANTING_TABLE, 1, o, "book", o, "diamond", b, "diamond", b, b, b);
-                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o).dontMineIfPresent();
+                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, b, b, b, b, "ender_eye", b, b, b, b).dontMineIfPresent();
             }
             {
                 String b = "brick";
@@ -340,17 +339,17 @@ public class TaskCatalogue {
             shapedRecipe3x3("target", Items.TARGET, 1, o, "redstone", o, "redstone", "hay_block", "redstone", o, "redstone", o);
 
             // A BUNCH OF WOODEN STUFF
-            simple("wooden_stairs", ItemUtil.WOOD_STAIRS, CollectWoodenStairsTask::new);
+            simple("wooden_stairs", ItemHelper.WOOD_STAIRS, CollectWoodenStairsTask::new);
             woodTasks("stairs", woodItems -> woodItems.stairs, (woodItems, count) -> new CollectWoodenStairsTask(woodItems.stairs, woodItems.prefix + "_planks", count));
-            simple("wooden_slab", ItemUtil.WOOD_SLAB, CollectWoodenSlabTask::new);
+            simple("wooden_slab", ItemHelper.WOOD_SLAB, CollectWoodenSlabTask::new);
             woodTasks("slab", woodItems -> woodItems.slab, (woodItems, count) -> new CollectWoodenSlabTask(woodItems.slab, woodItems.prefix + "_planks", count));
-            simple("wooden_door", ItemUtil.WOOD_DOOR, CollectWoodenDoorTask::new);
+            simple("wooden_door", ItemHelper.WOOD_DOOR, CollectWoodenDoorTask::new);
             woodTasks("door", woodItems -> woodItems.door, (woodItems, count) -> new CollectWoodenDoorTask(woodItems.door, woodItems.prefix + "_planks", count));
-            simple("wooden_trapdoor", ItemUtil.WOOD_TRAPDOOR, CollectWoodenTrapDoorTask::new);
+            simple("wooden_trapdoor", ItemHelper.WOOD_TRAPDOOR, CollectWoodenTrapDoorTask::new);
             woodTasks("trapdoor", woodItems -> woodItems.trapdoor, (woodItems, count) -> new CollectWoodenTrapDoorTask(woodItems.trapdoor, woodItems.prefix + "_planks", count));
-            simple("wooden_fence", ItemUtil.WOOD_FENCE, CollectFenceTask::new);
+            simple("wooden_fence", ItemHelper.WOOD_FENCE, CollectFenceTask::new);
             woodTasks("fence", woodItems -> woodItems.fence, (woodItems, count) -> new CollectFenceTask(woodItems.fence, woodItems.prefix + "_planks", count));
-            simple("wooden_fence_gate", ItemUtil.WOOD_FENCE_GATE, CollectFenceGateTask::new);
+            simple("wooden_fence_gate", ItemHelper.WOOD_FENCE_GATE, CollectFenceGateTask::new);
             woodTasks("fence_gate", woodItems -> woodItems.fenceGate, (woodItems, count) -> new CollectFenceGateTask(woodItems.fenceGate, woodItems.prefix + "_planks", count));
             {
                 String r = "wooden_slab";
@@ -433,7 +432,7 @@ public class TaskCatalogue {
 
     private static CataloguedResource put(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
         CataloguedResource result = new CataloguedResource(matches, getTask);
-        Block[] blocks = Util.itemsToBlocks(matches);
+        Block[] blocks = ItemHelper.itemsToBlocks(matches);
         // DEFAULT BEHAVIOUR: Mine if present & assume overworld is required!
         if (blocks.length != 0) {
             result.mineIfPresent();
@@ -499,11 +498,11 @@ public class TaskCatalogue {
         return _nameToResourceTask.keySet();
     }
 
-    private static <T> CataloguedResource simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
+    private static CataloguedResource simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
         return put(name, matches, getTask);
     }
 
-    private static <T> CataloguedResource simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
+    private static CataloguedResource simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
         return simple(name, new Item[]{matches}, getTask);
     }
 
@@ -611,19 +610,19 @@ public class TaskCatalogue {
         return crop(name, new Item[]{match}, new Block[]{cropBlock}, new Item[]{cropSeed});
     }
 
-    private static void colorfulTasks(String baseName, Function<ItemUtil.ColorfulItems, Item> getMatch, BiFunction<ItemUtil.ColorfulItems, Integer, ResourceTask> getTask) {
-        for (DyeColor dcol : DyeColor.values()) {
-            MaterialColor mcol = dcol.getMaterialColor();
-            ItemUtil.ColorfulItems color = ItemUtil.getColorfulItems(mcol);
+    private static void colorfulTasks(String baseName, Function<ItemHelper.ColorfulItems, Item> getMatch, BiFunction<ItemHelper.ColorfulItems, Integer, ResourceTask> getTask) {
+        for (DyeColor dCol : DyeColor.values()) {
+            MapColor mCol = dCol.getMapColor();
+            ItemHelper.ColorfulItems color = ItemHelper.getColorfulItems(mCol);
             String prefix = color.colorName;
             put(prefix + "_" + baseName, new Item[]{getMatch.apply(color)}, count -> getTask.apply(color, count));
         }
     }
 
-    private static CataloguedResource[] woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
         List<CataloguedResource> result = new ArrayList<>();
         for (WoodType woodType : WoodType.values()) {
-            ItemUtil.WoodItems woodItems = ItemUtil.getWoodItems(woodType);
+            ItemHelper.WoodItems woodItems = ItemHelper.getWoodItems(woodType);
             String prefix = woodItems.prefix;
             CataloguedResource t = put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count));
             if (requireNetherForNetherStuff) {
@@ -633,10 +632,10 @@ public class TaskCatalogue {
             }
             result.add(t);
         }
-        return Util.toArray(CataloguedResource.class, result);
+        return result.toArray(CataloguedResource[]::new);
     }
 
-    private static CataloguedResource[] woodTasks(String baseName, Function<ItemUtil.WoodItems, Item> getMatch, BiFunction<ItemUtil.WoodItems, Integer, ResourceTask> getTask) {
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }
 
@@ -708,7 +707,7 @@ public class TaskCatalogue {
         public ResourceTask getResource(int count) {
             ResourceTask result = _getResource.apply(count);
             if (_mineIfPresent) {
-                result = result.mineIfPresent(Util.itemsToBlocks(_targets));
+                result = result.mineIfPresent(ItemHelper.itemsToBlocks(_targets));
             }
             if (_forceDimension) {
                 result = result.forceDimension(_targetDimension);

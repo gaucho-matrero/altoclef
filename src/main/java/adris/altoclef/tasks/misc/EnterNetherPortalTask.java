@@ -5,7 +5,7 @@ import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -81,14 +81,14 @@ public class EnterNetherPortalTask extends Task {
                         return false;
                     }
                     BlockPos below = block.down();
-                    boolean canStand = WorldUtil.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
+                    boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
                     return !canStand || _badPortal.test(block);
                 },
                 Blocks.NETHER_PORTAL);
 
         if (getClosestPortal.apply(mod.getPlayer().getPos()) != null) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (blockpos) -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(blockpos -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;
@@ -105,9 +105,9 @@ public class EnterNetherPortalTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof EnterNetherPortalTask) {
-            EnterNetherPortalTask task = (EnterNetherPortalTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof EnterNetherPortalTask) {
+            EnterNetherPortalTask task = (EnterNetherPortalTask) other;
             //noinspection ConstantConditions
             return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
         }

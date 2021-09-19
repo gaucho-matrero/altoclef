@@ -5,7 +5,7 @@ import adris.altoclef.tasks.AbstractKillEntityTask;
 import adris.altoclef.tasks.DoToClosestEntityTask;
 import adris.altoclef.tasks.GetToEntityTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
@@ -56,14 +56,14 @@ public class SCP173Task extends Task {
         if (seen) {
             // Stare at them, menacingly!!!
             if (_lastTarget != null) {
-                LookUtil.lookAt(mod, LookUtil.getCameraPos(_lastTarget));
+                LookHelper.lookAt(mod, LookHelper.getCameraPos(_lastTarget));
             }
             return null;
         }
 
         // Manually attack, since we ONLY attack when we can SEE the player.
         if (_lastTarget != null && mod.getPlayer().isInRange(_lastTarget, HIT_RANGE)) {
-            if (LookUtil.seesPlayer(mod.getPlayer(), _lastTarget, HIT_RANGE)) {
+            if (LookHelper.seesPlayer(mod.getPlayer(), _lastTarget, HIT_RANGE)) {
                 // Equip weapon
                 AbstractKillEntityTask.equipWeapon(mod);
                 if (mod.getPlayer().getAttackCooldownProgress(0) >= 0.99) {
@@ -72,10 +72,13 @@ public class SCP173Task extends Task {
             }
         }
 
-        return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), target -> {
-            _lastTarget = (PlayerEntity) target;
-            return new GetToEntityTask(target);
-        }, PlayerEntity.class);
+        return new DoToClosestEntityTask(
+            target -> {
+                _lastTarget = (PlayerEntity) target;
+                return new GetToEntityTask(target);
+            },
+            PlayerEntity.class
+        );
     }
 
     @Override
@@ -84,8 +87,8 @@ public class SCP173Task extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof SCP173Task;
+    protected boolean isEqual(Task other) {
+        return other instanceof SCP173Task;
     }
 
     @Override
@@ -111,7 +114,7 @@ public class SCP173Task extends Task {
     // but we ALSO consider when the player is ALMOST looking in the general direction and
     // is ROTATING TORWARDS US to try and mitigate the look delay.
     private boolean entityIsLookingInOurGeneralDirection(AltoClef mod, PlayerEntity other) {
-        double lookCloseness = LookUtil.getLookCloseness(other, mod.getPlayer().getPos());
+        double lookCloseness = LookHelper.getLookCloseness(other, mod.getPlayer().getPos());
         double last = _lastLookCloseness.getOrDefault(other, lookCloseness);
         double delta = lookCloseness - last;
         double predicted = lookCloseness + delta * 6;
@@ -120,7 +123,7 @@ public class SCP173Task extends Task {
     }
 
     private boolean entityHasLineOfSightToUs(AltoClef mod, PlayerEntity other) {
-        if (LookUtil.seesPlayer(mod.getPlayer(), other, MAX_RANGE)) {
+        if (LookHelper.seesPlayer(mod.getPlayer(), other, MAX_RANGE)) {
             return true;
         }
         // Check if we're about to be visible or if the PLAYER is about to be visible.
@@ -133,7 +136,7 @@ public class SCP173Task extends Task {
                 lastVelocityOffs = lastVelocityOffs.normalize().multiply(minLength);
             }
         }
-        return LookUtil.seesPlayer(mod.getPlayer(), other, MAX_RANGE, mod.getPlayer().getVelocity().multiply(playerVelMul), other.getVelocity().multiply(entityVelMul))
-                || LookUtil.seesPlayer(mod.getPlayer(), other, MAX_RANGE, lastVelocityOffs, Vec3d.ZERO);
+        return LookHelper.seesPlayer(mod.getPlayer(), other, MAX_RANGE, mod.getPlayer().getVelocity().multiply(playerVelMul), other.getVelocity().multiply(entityVelMul))
+                || LookHelper.seesPlayer(mod.getPlayer(), other, MAX_RANGE, lastVelocityOffs, Vec3d.ZERO);
     }
 }

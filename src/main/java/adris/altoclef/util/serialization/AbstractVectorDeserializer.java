@@ -1,6 +1,5 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.util.csharpisbetter.Util;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -79,7 +78,7 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
                 }
             }
             if (parts.size() != neededComponents.length) {
-                throw new JsonParseException(p, "Expected [" + String.join(",", neededComponents) + "] keys to be part of a blockpos object. Got " + Util.arrayToString(Util.toArray(String.class, parts.keySet())));
+                throw new JsonParseException(p, "Expected [" + String.join(",", neededComponents) + "] keys to be part of a blockpos object. Got " + Arrays.toString(parts.keySet().toArray(String[]::new)));
             }
             ArrayList<UnitType> resultingUnits = new ArrayList<UnitType>();
             for (String componentName : neededComponents) {

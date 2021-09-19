@@ -5,7 +5,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -414,7 +413,6 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
         for (Item item : matches) {
             if (item instanceof ArmorItem) {
-                ArmorItem armor = (ArmorItem) item;
                 for (ItemStack stack : _mod.getPlayer().getArmorItems()) {
                     if (stack.getItem() == item) return true;
                 }
@@ -430,11 +428,11 @@ public class InventoryTracker extends Tracker {
             // Get stuff that's throwaway by default
             List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
             if (throwawaySlots.size() != 0) {
-                int best = Util.minItem(throwawaySlots, (leftSlot, rightSlot) -> {
+                int best = throwawaySlots.stream().min((leftSlot, rightSlot) -> {
                     ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
                             right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
-                    return right.getCount() - left.getCount();
-                });
+                    return left.getCount() - right.getCount();
+                }).get();
                 Debug.logInternal("THROWING AWAY throwawayable ITEM AT SLOT " + best);
                 return Slot.getFromInventory(best);
             }
@@ -468,26 +466,26 @@ public class InventoryTracker extends Tracker {
                 }
 
                 if (possibleSlots.size() != 0) {
-                    int best = Util.minItem(possibleSlots, (leftSlot, rightSlot) -> {
+                    int best = possibleSlots.stream().min((leftSlot, rightSlot) -> {
                         ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
                                 right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
                         boolean leftIsTool = left.getItem() instanceof ToolItem;
                         boolean rightIsTool = right.getItem() instanceof ToolItem;
                         // Prioritize tools over materials.
                         if (rightIsTool && !leftIsTool) {
-                            return 1;
-                        } else if (leftIsTool && !rightIsTool) {
                             return -1;
+                        } else if (leftIsTool && !rightIsTool) {
+                            return 1;
                         }
                         if (rightIsTool && leftIsTool) {
                             // Prioritize material type, then durability.
                             ToolItem leftTool = (ToolItem) left.getItem();
                             ToolItem rightTool = (ToolItem) right.getItem();
                             if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
-                                return rightTool.getMaterial().getMiningLevel() - leftTool.getMaterial().getMiningLevel();
+                                return leftTool.getMaterial().getMiningLevel() - rightTool.getMaterial().getMiningLevel();
                             }
                             // We want less damage.
-                            return -1 * (right.getDamage() - left.getDamage());
+                            return left.getDamage() - right.getDamage();
                         }
 
                         // Prioritize food over other things if we lack food.
@@ -496,9 +494,9 @@ public class InventoryTracker extends Tracker {
                         boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
                         if (lacksFood) {
                             if (rightIsFood && !leftIsFood) {
-                                return 1;
-                            } else if (leftIsFood && !rightIsFood) {
                                 return -1;
+                            } else if (leftIsFood && !rightIsFood) {
+                                return 1;
                             }
                         }
                         // If both are food, pick the better cost.
@@ -507,12 +505,12 @@ public class InventoryTracker extends Tracker {
                             assert right.getItem().getFoodComponent() != null;
                             int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
                                     rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
-                            return rightCost - leftCost;
+                            return -1 * (leftCost - rightCost);
                         }
 
-                        // Just keep the one with the most quantity, but this doesn't really matter.
-                        return right.getCount() - left.getCount();
-                    });
+                        // Just discard the one with the smallest quantity, but this doesn't really matter.
+                        return left.getCount() - right.getCount();
+                    }).get();
                     Debug.logInternal("THROWING AWAY unused ITEM AT SLOT " + best);
                     return Slot.getFromInventory(best);
                 } else {
@@ -536,60 +534,6 @@ public class InventoryTracker extends Tracker {
         return MiningRequirement.HAND;
     }
 
-    private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
-        return getRecipeMapping(Collections.emptyMap(), recipe, 1);
-    }
-
-    // Less garbo version
-    private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
-        ensureUpdated();
-
-        HashMap<Integer, Integer> result = new HashMap<>();
-
-        HashMap<Item, Integer> usedUp = new HashMap<>(alreadyUsed);
-
-        // Go through each craft slot
-        for (int craftSlot = 0; craftSlot < recipe.getSlotCount(); ++craftSlot) {
-            ItemTarget item = recipe.getSlot(craftSlot);
-            if (item == null || item.isEmpty()) continue;
-
-            // Repeat this collection "count" number of times.
-            for (int i = 0; i < count; ++i) {
-                boolean foundMatch = false;
-                //noinspection SpellCheckingInspection
-                itemsearch:
-                // Check for an item that meets the requirement
-                for (Item match : item.getMatches()) {
-                    // Ensure we have a default used up of zero if not used up yet.
-                    if (!usedUp.containsKey(match)) usedUp.put(match, 0);
-
-                    int toSkip = usedUp.get(match);
-                    for (int invSlot : getInventorySlotsWithItem(match)) {
-                        ItemStack stack = getItemStackInSlot(Slot.getFromInventory(invSlot));
-                        // Skip over items we already used.
-                        // Edge case: We may skip over the entire stack. In that case this stack is used up.
-                        if (toSkip != 0 && toSkip >= stack.getCount()) {
-                            toSkip -= stack.getCount();
-                        } else {
-                            // If we skip over all the items in THIS stack, we will have at least one left over.
-                            // That means we found our guy.
-
-                            result.put(craftSlot, invSlot);
-                            usedUp.put(match, usedUp.get(match) + 1);
-                            foundMatch = true;
-                            break itemsearch;
-                        }
-                    }
-                }
-                if (!foundMatch) {
-                    //Debug.logWarning("Failed to find match for craft slot " + craftSlot);
-                    return null;
-                }
-            }
-        }
-
-        return result;
-    }
 
     public int totalFoodScore() {
         ensureUpdated();
@@ -619,8 +563,12 @@ public class InventoryTracker extends Tracker {
         setDirty();
         int syncId = player.currentScreenHandler.syncId;
 
-        return _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
-
+        ItemStack stack = ItemStack.EMPTY;
+        if (0 <= windowSlot && windowSlot < player.currentScreenHandler.slots.size()) {
+            stack = player.currentScreenHandler.getSlot(windowSlot).getStack().copy();
+        }
+        _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+        return stack;
     }
 
     public ItemStack clickSlot(Slot slot, SlotActionType type) {
@@ -708,7 +656,7 @@ public class InventoryTracker extends Tracker {
             clickSlot(slot1);
         }
         // Pick up slot2
-        ItemStack second = clickSlot(slot2);
+        clickSlot(slot2);
 
         // slot 1 is now in slot 2
         // slot 2 is now in cursor
@@ -772,7 +720,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         // Always equip to the second slot. First + last is occupied by baritone.
-        _mod.getPlayer().inventory.selectedSlot = 1;
+        _mod.getPlayer().getInventory().selectedSlot = 1;
 
         Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
@@ -810,7 +758,7 @@ public class InventoryTracker extends Tracker {
                                 || item == Items.CROSSBOW
                                 || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
                                 || item == Items.ENDER_PEARL
-                                || item instanceof FireworkItem
+                                || item instanceof FireworkRocketItem
                                 || item instanceof SpawnEggItem
                                 || item == Items.END_CRYSTAL
                                 || item == Items.EXPERIENCE_BOTTLE
@@ -907,7 +855,7 @@ public class InventoryTracker extends Tracker {
         if (!hasItem(item)) return;
 
         assert MinecraftClient.getInstance().player != null;
-        int equipSlot = MinecraftClient.getInstance().player.inventory.selectedSlot;
+        int equipSlot = MinecraftClient.getInstance().player.getInventory().selectedSlot;
 
         int otherSlot = (equipSlot + 1 + offset) % 9;
 
@@ -934,12 +882,12 @@ public class InventoryTracker extends Tracker {
         if (player == null) return null;
 
         if (slotIsCursor(slot)) {
-            return player.inventory.getCursorStack();
+            return player.currentScreenHandler.getCursorStack().copy();
         }
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-        return (mcSlot != null) ? mcSlot.getStack() : ItemStack.EMPTY;
+        return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
     }
 
     @Override
@@ -955,7 +903,8 @@ public class InventoryTracker extends Tracker {
                 // No updating needed, we have nothing.
                 return;
             }
-            PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
+            PlayerInventory inventory = MinecraftClient.getInstance().player.getInventory();
+            ItemStack cursorStack = MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack().copy();
 
             // - 1. idk
             for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
@@ -963,7 +912,7 @@ public class InventoryTracker extends Tracker {
                 ItemStack stack;
                 if (isCursorStack) {
                     // Add our cursor stack as well to the list.
-                    stack = inventory.getCursorStack();
+                    stack = cursorStack;
                 } else {
                     stack = inventory.getStack(slot);
                 }

@@ -2,7 +2,6 @@ package adris.altoclef;
 
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.util.KillAura;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.serialization.BlockPosDeserializer;
 import adris.altoclef.util.serialization.BlockPosSerializer;
 import adris.altoclef.util.serialization.ItemDeserializer;
@@ -121,15 +120,12 @@ public class Settings {
      */
     private boolean avoidSearchingDungeonChests = true;
 
-
     /**
-     * Some larger special tasks will perform extra preparation work to ensure your player
-     * has the most efficient tools for the job at hand.
-     *
-     * For instance, the Place Signs task might first acquire a diamond axe to ease the collection of wood.
-     * if "sharpenAxe" is disabled, it won't grab the axe and will collect wood with the best tool it currently has.
+     * How close we must be to attack/interact with an entity.
+     * 6 works well for singleplayer
+     * 4 works better on more restrictive multiplayer servers
      */
-    //private boolean sharpenAxe = true;
+    private float entityReachRange = 4;
 
     /**
      * Before grabbing ANYTHING, get a pickaxe.
@@ -512,6 +508,10 @@ public class Settings {
         return this.throwAwayUnusedItems;
     }
 
+    public float getEntityReachRange() {
+        return entityReachRange;
+    }
+
     public Item[] getThrowawayItems(AltoClef mod) {
         List<Item> result = new ArrayList<>();
         for (Item throwawayItem : throwawayItems) {
@@ -519,7 +519,7 @@ public class Settings {
                 result.add(throwawayItem);
             }
         }
-        return Util.toArray(Item.class, result);
+        return result.toArray(Item[]::new);
     }
 
     public String[] getWhisperFormats() {

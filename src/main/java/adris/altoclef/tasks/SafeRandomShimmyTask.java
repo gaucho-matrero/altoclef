@@ -2,7 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
 
@@ -31,7 +31,7 @@ public class SafeRandomShimmyTask extends Task {
 
         if (_lookTimer.elapsed()) {
             _lookTimer.reset();
-            LookUtil.randomOrientation(mod);
+            LookHelper.randomOrientation(mod);
         }
 
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
@@ -46,8 +46,8 @@ public class SafeRandomShimmyTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof SafeRandomShimmyTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof SafeRandomShimmyTask;
     }
 
     @Override

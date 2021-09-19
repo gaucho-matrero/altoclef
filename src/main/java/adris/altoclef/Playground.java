@@ -1,10 +1,10 @@
 package adris.altoclef;
 
+import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
-import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.*;
@@ -34,6 +34,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * For testing.
@@ -205,26 +206,6 @@ public class Playground {
                         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
 
                         mod.runUserTask(new CraftGenericTask(recipe));
-                        /*
-                        Item toEquip = Items.BUCKET;//Items.AIR;
-                        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-
-                        InventoryTracker t = mod.getInventoryTracker();
-
-                        // Already equipped
-                        if (t.getItemStackInSlot(target).getItem() == toEquip) {
-                            Debug.logMessage("Already equipped.");
-                        } else {
-                            List<Integer> itemSlots = t.getInventorySlotsWithItem(toEquip);
-                            if (itemSlots.size() != 0) {
-                                int slot = itemSlots.get(0);
-                                t.swapItems(Slot.getFromInventory(slot), target);
-                                Debug.logMessage("Equipped via swap");
-                            } else {
-                                Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
-                            }
-                        }
-                         */
                     }
 
                     private void swap(Slot slot1, Slot slot2) {
@@ -349,6 +330,24 @@ public class Playground {
                         new ItemTarget("netherite_chestplate", 1),
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
+                break;
+            case "whisper": {
+                File check = new File("whisper.txt");
+                try {
+                    FileInputStream fis = new FileInputStream(check);
+                    Scanner sc = new Scanner(fis);
+                    String me = sc.nextLine(),
+                            template = sc.nextLine(),
+                            message = sc.nextLine();
+                    WhisperChecker.MessageResult result = WhisperChecker.tryParse(me, template, message);
+                    Debug.logMessage("Got message: " + result);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            default:
+                mod.logWarning("Test not found: \"" + arg + "\".");
                 break;
         }
     }

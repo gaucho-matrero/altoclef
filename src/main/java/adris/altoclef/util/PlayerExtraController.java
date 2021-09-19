@@ -7,7 +7,6 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
@@ -21,11 +20,9 @@ import net.minecraft.world.World;
 
 public class PlayerExtraController {
 
-    private static final double INTERACT_RANGE = 6;
     public final Action<BlockBrokenEvent> onBlockBroken = new Action<>();
     public final Action<BlockPlaceEvent> onBlockPlaced = new Action<>();
     private final AltoClef _mod;
-    private ClientPlayNetworkHandler _networkHandler;
     private BlockPos _blockBreakPos;
     private double _blockBreakProgress;
 
@@ -76,7 +73,7 @@ public class PlayerExtraController {
     }
 
     public boolean inRange(Entity entity) {
-        return _mod.getPlayer().isInRange(entity, INTERACT_RANGE);
+        return _mod.getPlayer().isInRange(entity, _mod.getModSettings().getEntityReachRange());
     }
 
     public void attack(Entity entity) {

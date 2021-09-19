@@ -3,7 +3,6 @@ package adris.altoclef;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
-import baritone.process.MineProcess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
@@ -94,11 +93,6 @@ public class BotBehaviour {
         current().applyState();
     }
 
-    public void setSearchAnywhereFlag(boolean value) {
-        current().mineProcSearchAnyFlag = value;
-        current().applyState();
-    }
-
     public void setAllowWalkThroughFlowingWater(boolean value) {
         current()._allowWalkThroughFlowingWater = value;
         current().applyState();
@@ -134,8 +128,8 @@ public class BotBehaviour {
         // current.applyState()
     }
 
-    public void allowWalkThroughLava(boolean allow) {
-        current().walkThroughLava = allow;
+    public void allowSwimThroughLava(boolean allow) {
+        current().swimThroughLava = allow;
         current().applyState();
     }
 
@@ -209,7 +203,7 @@ public class BotBehaviour {
         public List<Item> throwawayItems = new ArrayList<>();
         public List<Item> protectedItems = new ArrayList<>();
         public boolean mineScanDroppedItems;
-        public boolean walkThroughLava;
+        public boolean swimThroughLava;
         public boolean allowDiagonalAscend;
         public boolean preferredStairs;
 
@@ -233,7 +227,6 @@ public class BotBehaviour {
 
         // Hard coded stuff
         public RaycastContext.FluidHandling rayFluidHandling;
-        public boolean mineProcSearchAnyFlag;
 
         public State() {
             this(null);
@@ -271,7 +264,7 @@ public class BotBehaviour {
             throwawayItems.addAll(s.acceptableThrowawayItems.value);
             followOffsetDistance = s.followOffsetDistance.value;
             mineScanDroppedItems = s.mineScanDroppedItems.value;
-            walkThroughLava = s.assumeWalkOnLava.value;
+            swimThroughLava = s.assumeWalkOnLava.value;
             allowDiagonalAscend = s.allowDiagonalAscend.value;
             //preferredStairs = s.allowDownward.value;
         }
@@ -292,7 +285,6 @@ public class BotBehaviour {
             allowShears = settings.areShearsAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
-            mineProcSearchAnyFlag = MineProcess.searchAnyFlag;
         }
 
         private void readMinecraftState() {
@@ -307,7 +299,6 @@ public class BotBehaviour {
             s.acceptableThrowawayItems.value.addAll(throwawayItems);
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
-            s.assumeWalkOnLava.value = walkThroughLava;
             s.allowDiagonalAscend.value = allowDiagonalAscend;
 
             // We need an alternrative method to handle this, this method makes navigation much less reliable.
@@ -334,10 +325,10 @@ public class BotBehaviour {
 
             sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
             sa.allowShears(allowShears);
+            sa.allowSwimThroughLava(swimThroughLava);
 
             // Extra / hard coded
             RayTraceUtils.fluidHandling = rayFluidHandling;
-            MineProcess.searchAnyFlag = mineProcSearchAnyFlag;
 
             // Minecraft
             MinecraftClient.getInstance().options.pauseOnLostFocus = pauseOnLostFocus;

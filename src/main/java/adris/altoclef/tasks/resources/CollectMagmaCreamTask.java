@@ -79,8 +79,8 @@ public class CollectMagmaCreamTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectMagmaCreamTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectMagmaCreamTask;
     }
 
     @Override

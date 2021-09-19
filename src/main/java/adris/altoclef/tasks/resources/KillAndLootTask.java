@@ -58,9 +58,8 @@ public class KillAndLootTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof KillAndLootTask) {
-            KillAndLootTask task = (KillAndLootTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof KillAndLootTask task) {
             return task._toKill.equals(_toKill);
         }
         return false;

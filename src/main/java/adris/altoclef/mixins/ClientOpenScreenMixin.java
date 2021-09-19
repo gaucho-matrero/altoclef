@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public final class ClientOpenScreenMixin {
     @Inject(
-            method = "openScreen",
+            method = "setScreen",
             at = @At("HEAD")
     )
     private void onScreenOpenBegin(@Nullable Screen screen, CallbackInfo ci) {
@@ -21,7 +21,7 @@ public final class ClientOpenScreenMixin {
     }
 
     @Inject(
-            method = "openScreen",
+            method = "setScreen",
             at = @At("TAIL")
     )
     private void onScreenOpenEnd(@Nullable Screen screen, CallbackInfo ci) {

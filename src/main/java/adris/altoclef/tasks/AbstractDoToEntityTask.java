@@ -5,7 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
@@ -27,6 +27,13 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
     public AbstractDoToEntityTask(double maintainDistance) {
         this(maintainDistance, 0, Double.POSITIVE_INFINITY);
+    }
+
+    public AbstractDoToEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        this(-1, combatGuardLowerRange, combatGuardLowerFieldRadius);
+    }
+    public AbstractDoToEntityTask() {
+        this(-1);
     }
 
     @Override
@@ -54,10 +61,10 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return null;
         }
 
-        double playerReach = mod.getClientBaritone().getPlayerContext().playerController().getBlockReachDistance();
+        double playerReach = mod.getModSettings().getEntityReachRange();
 
         // TODO: This is basically useless.
-        EntityHitResult result = LookUtil.raycast(mod.getPlayer(), entity, playerReach);
+        EntityHitResult result = LookHelper.raycast(mod.getPlayer(), entity, playerReach);
 
         double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
@@ -67,12 +74,16 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             mod.getMobDefenseChain().resetForceField();
         }
 
-        boolean tooClose = sqDist < _maintainDistance * _maintainDistance;
+        // If we don't specify a maintain distance, default to within 1 block of our reach.
+        double maintainDistance = _maintainDistance >= 0? _maintainDistance : playerReach - 1;
+
+        boolean tooClose = sqDist < maintainDistance * maintainDistance;
+
         // Step away if we're too close
         if (tooClose) {
             //setDebugState("Maintaining distance");
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(_maintainDistance, entity.getBlockPos()));
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
             }
         }
 
@@ -89,16 +100,15 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
             // Move to target
 
-            return new GetToEntityTask(entity, _maintainDistance);
+            return new GetToEntityTask(entity, maintainDistance);
         }
 
         return null;
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof AbstractDoToEntityTask) {
-            AbstractDoToEntityTask task = (AbstractDoToEntityTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof AbstractDoToEntityTask task) {
             if (!doubleCheck(task._maintainDistance, _maintainDistance)) return false;
             if (!doubleCheck(task._combatGuardLowerFieldRadius, _combatGuardLowerFieldRadius)) return false;
             if (!doubleCheck(task._combatGuardLowerRange, _combatGuardLowerRange)) return false;

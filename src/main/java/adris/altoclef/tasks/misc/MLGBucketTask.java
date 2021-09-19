@@ -32,7 +32,7 @@ public class MLGBucketTask extends Task {
         _placedPos = null;
         // hold shift while falling.
         // Look down at first, usually does the trick.
-        mod.getPlayer().pitch = 90;
+        mod.getPlayer().setPitch(90);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class MLGBucketTask extends Task {
                 setDebugState("Waiting to reach target block...");
                 // Look down by default
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
-                mod.getPlayer().pitch = 90;
+                mod.getPlayer().setPitch(90);
             }
             //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
@@ -125,8 +125,8 @@ public class MLGBucketTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof MLGBucketTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof MLGBucketTask;
     }
 
     @Override

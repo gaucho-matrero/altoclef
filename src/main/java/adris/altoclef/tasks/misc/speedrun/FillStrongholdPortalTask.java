@@ -7,7 +7,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.mob.SilverfishEntity;
@@ -48,7 +48,7 @@ public class FillStrongholdPortalTask extends Task {
         }
 
         if (_destroySilverfishSpawner) {
-            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> !(WorldUtil.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
+            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> !(WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
             if (silverfishSpawner != null) {
                 setDebugState("Destroy silverfish spawner");
                 return new DestroyBlockTask(silverfishSpawner);
@@ -61,7 +61,6 @@ public class FillStrongholdPortalTask extends Task {
             return _wanderTask;
         }
         return new DoToClosestBlockTask(
-                () -> mod.getPlayer().getPos(),
                 pos -> new InteractWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
                 pos -> mod.getBlockTracker().getNearestTracking(pos, test -> BeatMinecraftTask.isEndPortalFrameFilled(mod, test) || !mod.getBlockTracker().blockIsValid(test, Blocks.END_PORTAL_FRAME), Blocks.END_PORTAL_FRAME)
         );
@@ -83,9 +82,9 @@ public class FillStrongholdPortalTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof FillStrongholdPortalTask) {
-            return ((FillStrongholdPortalTask) obj)._destroySilverfishSpawner == _destroySilverfishSpawner;
+    protected boolean isEqual(Task other) {
+        if (other instanceof FillStrongholdPortalTask) {
+            return ((FillStrongholdPortalTask) other)._destroySilverfishSpawner == _destroySilverfishSpawner;
         }
         return false;
     }

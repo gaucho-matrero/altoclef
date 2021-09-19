@@ -111,9 +111,9 @@ public class CraftGenericTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof CraftGenericTask) {
-            return ((CraftGenericTask) obj)._recipe.equals(_recipe);
+    protected boolean isEqual(Task other) {
+        if (other instanceof CraftGenericTask) {
+            return ((CraftGenericTask) other)._recipe.equals(_recipe);
         }
         return false;
     }

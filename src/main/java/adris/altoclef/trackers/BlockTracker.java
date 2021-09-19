@@ -4,10 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
@@ -182,7 +181,7 @@ public class BlockTracker extends Tracker {
                     Block b = MinecraftClient.getInstance().world.getBlockState(check).getBlock();
                     boolean valid = false;
                     for (Block type : blocks) {
-                        if (type.is(b)) {
+                        if (type == b) {
                             valid = true;
                             break;
                         }
@@ -289,11 +288,11 @@ public class BlockTracker extends Tracker {
         }
         try {
             for (Block block : blocks) {
-                if (zaWarudo.isAir(pos) && WorldUtil.isAir(block)) {
+                if (zaWarudo.isAir(pos) && WorldHelper.isAir(block)) {
                     return true;
                 }
                 BlockState state = zaWarudo.getBlockState(pos);
-                if (state.getBlock().is(block)) {
+                if (state.getBlock() == block) {
                     return true;
                 }
             }
@@ -455,7 +454,7 @@ public class BlockTracker extends Tracker {
                     continue;
                 }
 
-                double score = BaritoneHelper.calculateGenericHeuristic(position, Util.toVec3d(pos));
+                double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
 
                 boolean currentlyClosest = false;
                 boolean purged = false;
@@ -467,7 +466,7 @@ public class BlockTracker extends Tracker {
                 }
 
                 if (toPurge > 0) {
-                    double sqDist = position.squaredDistanceTo(Util.toVec3d(pos));
+                    double sqDist = position.squaredDistanceTo(WorldHelper.toVec3d(pos));
                     if (sqDist > _cutoffRadius * _cutoffRadius) {
                         // cut this one off.
                         for (Block block : blocks) {
