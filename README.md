@@ -34,6 +34,7 @@ This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
 
 For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect is untested and not affiliated with altoclef, use at your own risk!)
 
+
 ## [Usage Guide](usage.md)
 
 ## [TODO's/Future Features](todos.md)
