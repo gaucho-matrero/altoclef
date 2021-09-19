@@ -316,7 +316,7 @@ public class TaskCatalogue {
             {
                 String b = "obsidian";
                 shapedRecipe3x3("enchanting_table", Items.ENCHANTING_TABLE, 1, o, "book", o, "diamond", b, "diamond", b, b, b);
-                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, o, o, o, o, "ender_eye", o, o, o, o).dontMineIfPresent();
+                shapedRecipe3x3("ender_chest", Items.ENDER_CHEST, 1, b, b, b, b, "ender_eye", b, b, b, b).dontMineIfPresent();
             }
             {
                 String b = "brick";
