@@ -29,6 +29,13 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         this(maintainDistance, 0, Double.POSITIVE_INFINITY);
     }
 
+    public AbstractDoToEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        this(-1, combatGuardLowerRange, combatGuardLowerFieldRadius);
+    }
+    public AbstractDoToEntityTask() {
+        this(-1);
+    }
+
     @Override
     protected void onStart(AltoClef mod) {
         _wanderTask.resetWander();
@@ -67,12 +74,16 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             mod.getMobDefenseChain().resetForceField();
         }
 
-        boolean tooClose = sqDist < _maintainDistance * _maintainDistance;
+        // If we don't specify a maintain distance, default to within 1 block of our reach.
+        double maintainDistance = _maintainDistance >= 0? _maintainDistance : playerReach - 1;
+
+        boolean tooClose = sqDist < maintainDistance * maintainDistance;
+
         // Step away if we're too close
         if (tooClose) {
             //setDebugState("Maintaining distance");
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(_maintainDistance, entity.getBlockPos()));
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
             }
         }
 
@@ -89,7 +100,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
             // Move to target
 
-            return new GetToEntityTask(entity, _maintainDistance);
+            return new GetToEntityTask(entity, maintainDistance);
         }
 
         return null;

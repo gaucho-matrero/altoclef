@@ -134,8 +134,7 @@ public class TerminatorTask extends Task {
                         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                             return stream.filter(toAccept -> shouldPunk(mod, toAccept)).collect(Collectors.toList());
                         }
-                    }
-                            , RUN_AWAY_DISTANCE);
+                    }, RUN_AWAY_DISTANCE);
                 } catch (ConcurrentModificationException e) {
                     // oof
                     Debug.logWarning("Duct tape over ConcurrentModificationException (see log)");
@@ -313,8 +312,7 @@ public class TerminatorTask extends Task {
 
         @Override
         protected boolean isEqual(Task other) {
-            if (other instanceof ScanChunksInRadius) {
-                ScanChunksInRadius scan = (ScanChunksInRadius) other;
+            if (other instanceof ScanChunksInRadius scan) {
                 return scan._center.equals(_center) && Math.abs(scan._radius - _radius) <= 1;
             }
             return false;
@@ -326,7 +324,7 @@ public class TerminatorTask extends Task {
         }
     }
 
-    private class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
+    private static class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
 
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
             super(toRunAwayFrom, distanceToRun, true, 0.1);

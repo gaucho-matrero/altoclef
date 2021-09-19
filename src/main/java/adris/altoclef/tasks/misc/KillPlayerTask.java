@@ -16,7 +16,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     private final IProgressChecker<Double> _distancePlayerCheck = new ProgressCheckerRetry<>(new LinearProgressChecker(5, -2), 3);
 
     public KillPlayerTask(String name) {
-        super(5, 7, 1);
+        super(7, 1);
         _playerName = name;
     }
 
@@ -50,10 +50,8 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     @Override
     protected Entity getEntityTarget(AltoClef mod) {
         if (mod.getEntityTracker().isPlayerLoaded(_playerName)) {
-            setDebugState("Killing player...");
             return mod.getEntityTracker().getPlayerEntity(_playerName);
         }
-        setDebugState("Player not found");
         return null;
     }
 
