@@ -1,9 +1,17 @@
-#Development Guide
+# Development Guide
 
-## Get it Running
+## Get it Running (IDE)
 1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project. Make sure you're using jdk 16 in your Project & Gradle Settings!
 
 2) Run gradle task runClient (In IntelliJ open up the Gradle window and run altoclef/Tasks/fabric/runClient)
+
+## Get it Running (Command line, Linux & maxOS)
+
+1) Git Clone project
+2) `cd` into cloned local repo
+3) `sudo / doas chmod +x gradlew`
+4) `./gradlew build` or `./gradlew runClient`
+
 
 ## Custom Tasks
 [Watch a Rough AltoClef Tutorial Video Here](https://youtu.be/giBjHDZ7HvY)
