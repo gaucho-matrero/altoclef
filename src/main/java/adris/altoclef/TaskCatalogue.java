@@ -182,7 +182,7 @@ public class TaskCatalogue {
             shapedRecipe2x2("blaze_powder", Items.BLAZE_POWDER, 2, "blaze_rod", o, o, o);
             shapedRecipe2x2("ender_eye", Items.ENDER_EYE, 1, "blaze_powder", "ender_pearl", o, o);
             alias("eye_of_ender", "ender_eye");
-            shapedRecipe2x2("fermented_spider_eye", Items.SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
+            shapedRecipe2x2("fermented_spider_eye", Items.FERMENTED_SPIDER_EYE, 1, "brown_mushroom", "sugar", o, "spider_eye");
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
             simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
             // DYES
