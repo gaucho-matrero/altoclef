@@ -79,6 +79,7 @@ public class PlaceBlockNearbyTask extends Task {
         if (current != null && !_cantPlaceHere.test(current)) {
             if (equipBlock(mod)) {
                 if (mod.getControllerExtras().place()) {
+                    _justPlaced = current;
                     return null;
                 }
             }
