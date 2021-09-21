@@ -165,6 +165,8 @@ public class FoodChain extends SingleTaskChain {
         for (ItemStack stack : mod.getInventoryTracker().getAvailableFoods()) {
             FoodComponent f = stack.getItem().getFoodComponent();
             if (f != null) {
+                // do NOT eat protected items
+                if (mod.getBehaviour().isProtected(stack.getItem())) continue;
                 // Ignore spider eyes
                 if (stack.getItem() == Items.SPIDER_EYE) {
                     continue;
