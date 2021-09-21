@@ -26,7 +26,15 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 ## Download
 
+### Official Release
+
 Check [releases](https://github.com/gaucho-matrero/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
+
+### Cutting Edge (has the latest bug fixes)
+
+Check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip`. Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+
+### Versions
 
 This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
 
