@@ -16,7 +16,8 @@ Commands are prefixed with `@`. Here's a list along with their functions:
 | `follow [player=<you>]` | Follow a player. If sent via `/msg`, will follow the player who sent the command. | `@follow TacoTechnica` `/msg Bot follow` |
 | `food [amount]` | Collects `[amount]` units of food (1 unit = 1/2 drumstick). Collects from various sources (animals, crops) | `@food 20` |
 | `gamer` | Beats the game epic style | `@gamer` |
-| `get [item] [quantity=1]` | Gets `[quantity]` units of `[item]` in the bots inventory. Not every resource is get-able. | `@get diamond 3` |
+| `get [item] [quantity=1]` | Gets `[quantity]` units of `[item]` in the bots inventory. Can also pass a comma-separated list to get multiple items (`@get [item1 count1, item2 count2, ...]`). Not every resource is get-able. | `@get diamond 3` `@get [cobblestone 40, wooden_door, glass 4]` |
+| `list` | Prints a list of all get-able items | |
 | `give [player=<you>] [item] [quantity=1]` | Gives `[player]` `[quantity]` units of `[item]`, getting said items if the bot doesn't have them. If sent via `/msg`, will follow the player who sent the command. | `/msg Bot give iron_pickaxe` |
 | `goto [x] [y] [z] [dimension=<current>]` | Goes to (`[x]`,`[y]`, `[z]`) in a given `[dimension]`. Travels to `[dimension]` if not there already. Can also omit coordinates to just go to a dimension. Passing 2 values as coordinates goes to X Z coordinates instead. | `@goto 100 64 100 overworld` `@goto nether` `@goto 100 100` |
 | `inventory [item?]` | Prints the bots inventory, OR how many items of a specific type the bot has. Mostly useful when running through `/msg`. | `/msg Bot inventory` `/msg Bot inventory cobblestone` |

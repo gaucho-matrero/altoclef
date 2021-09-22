@@ -46,7 +46,7 @@ public class AltoClef implements ModInitializer {
     // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
-    private CommandExecutor _commandExecutor;
+    private static CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
     private BotBehaviour _botBehaviour;
@@ -221,14 +221,14 @@ public class AltoClef implements ModInitializer {
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
-            new AltoClefCommands(getCommandExecutor());
+            new AltoClefCommands();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // Main handlers access
-    public CommandExecutor getCommandExecutor() {
+    public static CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
 
