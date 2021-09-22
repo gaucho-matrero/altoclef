@@ -196,7 +196,6 @@ public class MineAndCollectTask extends ResourceTask {
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
-                Debug.logInternal("(temp) interactions are paused");
                 return closestDrop;
             }
 
