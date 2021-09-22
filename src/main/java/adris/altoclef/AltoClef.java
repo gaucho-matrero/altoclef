@@ -137,9 +137,8 @@ public class AltoClef implements ModInitializer {
 
         // Misc wiring
         // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<>(value -> {
-            _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos);
-        }));
+        _extraController.onBlockPlaced.addListener(new ActionListener<>(value ->
+                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos)));
 
 
         initializeCommands();
@@ -273,7 +272,7 @@ public class AltoClef implements ModInitializer {
     // Baritone access
     public Baritone getClientBaritone() {
         if (getPlayer() == null) {
-            return null;
+            return (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
         }
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
