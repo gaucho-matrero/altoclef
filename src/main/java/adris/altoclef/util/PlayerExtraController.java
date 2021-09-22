@@ -7,9 +7,13 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.option.GameOptionsScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -114,6 +118,15 @@ public class PlayerExtraController {
             //return true;
         }
         return false;
+    }
+
+    public void closeScreen() {
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (!(screen instanceof GameMenuScreen)
+        && !(screen instanceof GameOptionsScreen)) {
+            // Close the screen if we're in-game
+            _mod.getPlayer().closeHandledScreen();
+        }
     }
 
     public static class BlockBrokenEvent {

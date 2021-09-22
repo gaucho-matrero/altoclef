@@ -71,7 +71,7 @@ public class PlaceBlockNearbyTask extends Task {
         // -
 
         // Close screen first
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
 
 
         // Try placing where we're looking right now.

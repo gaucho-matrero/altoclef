@@ -114,7 +114,7 @@ public class PlaceSignTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
     }
 
     @Override

@@ -71,7 +71,7 @@ public class CraftInTableTask extends ResourceTask {
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
         if (mod.getPlayer() != null) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
         }
         //mod.getControllerExtras().closeCurrentContainer();
     }
@@ -121,7 +121,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStart(AltoClef mod) {
         super.onStart(mod);
         _craftCount = 0;
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
         _fullCheckFailed = false;
@@ -135,7 +135,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         super.onStop(mod, interruptTask);
         mod.getBehaviour().pop();
         if (AltoClef.inGame()) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
         }
     }
 
@@ -202,7 +202,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
             return null;
         }
 

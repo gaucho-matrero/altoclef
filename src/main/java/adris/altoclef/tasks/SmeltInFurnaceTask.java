@@ -77,7 +77,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close furnace screen
         if (AltoClef.inGame()) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
         }
     }
 
@@ -288,7 +288,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // If we made no progress
             if (_smeltProgressChecker.failed()) {
                 Debug.logMessage("Smelting failed, hopefully re-opening the container will fix this.");
-                mod.getPlayer().closeHandledScreen();
+                mod.getControllerExtras().closeScreen();
                 _smeltProgressChecker.reset();
             }
 

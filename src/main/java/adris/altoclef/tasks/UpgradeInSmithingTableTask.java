@@ -72,7 +72,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         if (mod.getInventoryTracker().isArmorEquipped(_tool.getMatches())) {
             // Exit out of any screen so we can move our armor
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                mod.getPlayer().closeHandledScreen();
+                mod.getControllerExtras().closeScreen();
                 setDebugState("Quickly removing equipped armor");
                 return null;
             }

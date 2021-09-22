@@ -105,7 +105,7 @@ public interface LookHelper {
     private static boolean isCollidingContainer(AltoClef mod) {
 
         if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
             return true;
         }
 
