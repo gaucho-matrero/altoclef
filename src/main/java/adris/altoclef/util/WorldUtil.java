@@ -191,7 +191,7 @@ public interface WorldUtil {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);
             if (be instanceof MobSpawnerBlockEntity) {
                 MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
-                return blockEntity.getLogic().getRenderedEntity();
+                return blockEntity.getLogic().getRenderedEntity(mod.getWorld());
             }
         }
         return null;

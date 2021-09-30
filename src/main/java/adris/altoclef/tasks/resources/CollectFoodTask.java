@@ -11,6 +11,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.WorldUtil;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -19,6 +20,8 @@ import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.FurnaceScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
@@ -65,30 +68,39 @@ public class CollectFoodTask extends Task {
         _unitsNeeded = unitsNeeded;
     }
 
+    private static double getFoodPotential(ItemStack food) {
+        if (food == null) return 0;
+        int count = food.getCount();
+        if (count <= 0) return 0;
+        for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            if (food.getItem() == cookable.getRaw()) {
+                assert cookable.getCooked().getFoodComponent() != null;
+                return count * cookable.getCooked().getFoodComponent().getHunger();
+            }
+        }
+        // We're just an ordinary item.
+        if (food.getItem().isFood()) {
+            assert food.getItem().getFoodComponent() != null;
+            return count * food.getItem().getFoodComponent().getHunger();
+        }
+        return 0;
+    }
+
     // Gets the units of food if we were to convert all of our raw resources to food.
     @SuppressWarnings("RedundantCast")
     private static double calculateFoodPotential(AltoClef mod) {
         double potentialFood = 0;
         for (ItemStack food : mod.getInventoryTracker().getAvailableFoods()) {
-            int count = food.getCount();
-            boolean cookedFound = false;
-            for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                if (food.getItem() == cookable.getRaw()) {
-                    assert cookable.getCooked().getFoodComponent() != null;
-                    potentialFood += count * cookable.getCooked().getFoodComponent().getHunger();
-                    cookedFound = true;
-                    break;
-                }
-            }
-            if (cookedFound) continue;
-            // We're just an ordinary item.
-            if (food.getItem().isFood()) {
-                assert food.getItem().getFoodComponent() != null;
-                potentialFood += count * food.getItem().getFoodComponent().getHunger();
-            }
+            potentialFood += getFoodPotential(food);
         }
-        int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) * 3;
+        int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCountIncludingTable(Items.HAY_BLOCK) * 3;
         potentialFood += Objects.requireNonNull(Items.BREAD.getFoodComponent()).getHunger() * potentialBread;
+        // Check smelting
+        ScreenHandler screen = mod.getPlayer().currentScreenHandler;
+        if (screen instanceof FurnaceScreenHandler) {
+            potentialFood += getFoodPotential(mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS));
+            potentialFood += getFoodPotential(mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT));
+        }
         return potentialFood;
     }
 
@@ -371,11 +383,11 @@ public class CollectFoodTask extends Task {
         }
 
         private Item getRaw() {
-            return TaskCatalogue.getItemMatches(rawFood)[0];
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0];
         }
 
         private Item getCooked() {
-            return TaskCatalogue.getItemMatches(cookedFood)[0];
+            return Objects.requireNonNull(TaskCatalogue.getItemMatches(cookedFood))[0];
         }
 
         public int getCookedUnits() {

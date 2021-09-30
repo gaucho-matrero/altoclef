@@ -96,10 +96,10 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        initializeBaritoneSettings();
-
         // Load settings
         _settings = adris.altoclef.Settings.load();
+
+        initializeBaritoneSettings();
 
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");

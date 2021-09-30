@@ -106,7 +106,7 @@ public class PlayerInteractionFixChain extends TaskChain {
             }
         }
 
-        ItemStack currentStack = mod.getPlayer().inventory.getCursorStack();
+        ItemStack currentStack = mod.getPlayer().currentScreenHandler.getCursorStack();
 
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck

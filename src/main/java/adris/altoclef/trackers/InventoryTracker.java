@@ -5,7 +5,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -32,8 +31,6 @@ public class InventoryTracker extends Tracker {
     private final HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private final List<Integer> _foodSlots = new ArrayList<>();
     private int _emptySlots = 0;
-
-    private final TimerGame _slotActionTimer = new TimerGame(0);
 
     private int _foodPoints = 0;
 
@@ -629,12 +626,12 @@ public class InventoryTracker extends Tracker {
         if (player == null) return null;
 
         if (Slot.isCursor(slot)) {
-            return player.inventory.getCursorStack();
+            return player.currentScreenHandler.getCursorStack().copy();
         }
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-        return (mcSlot != null) ? mcSlot.getStack() : ItemStack.EMPTY;
+        return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
     }
 
     public ItemStack getItemStackInCursorSlot() {
@@ -654,7 +651,8 @@ public class InventoryTracker extends Tracker {
                 // No updating needed, we have nothing.
                 return;
             }
-            PlayerInventory inventory = MinecraftClient.getInstance().player.inventory;
+            PlayerInventory inventory = MinecraftClient.getInstance().player.getInventory();
+            ItemStack cursorStack = MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack().copy();
 
             // - 1. idk
             for (int slot = -1; slot < INVENTORY_SIZE; ++slot) {
@@ -662,7 +660,7 @@ public class InventoryTracker extends Tracker {
                 ItemStack stack;
                 if (isCursorStack) {
                     // Add our cursor stack as well to the list.
-                    stack = inventory.getCursorStack();
+                    stack = cursorStack;
                 } else {
                     stack = inventory.getStack(slot);
                 }

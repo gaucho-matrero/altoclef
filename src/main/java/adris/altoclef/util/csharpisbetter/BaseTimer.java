@@ -30,4 +30,11 @@ public abstract class BaseTimer {
 
     protected abstract double currentTime();
 
+    protected void setPrevTimeForce(double toSet) {
+        _prevTime = toSet;
+    }
+    protected double getPrevTime() {
+        return _prevTime;
+    }
+
 }

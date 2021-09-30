@@ -79,7 +79,6 @@ public class ConstructNetherPortalBucketTask extends Task {
 
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
         mod.getBehaviour().push();
-        mod.getBehaviour().setSearchAnywhereFlag(true);
 
         // Avoid breaking portal frame if we're obsidian.
         // Also avoid placing on the lava + water

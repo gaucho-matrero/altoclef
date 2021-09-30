@@ -130,11 +130,11 @@ public class MineAndCollectTask extends ResourceTask {
     private void makeSureToolIsEquipped(AltoClef mod) {
         if (_cursorStackTimer.elapsed() && !mod.getFoodChain().isTryingToEat()) {
             assert MinecraftClient.getInstance().player != null;
-            ItemStack cursorStack = MinecraftClient.getInstance().player.inventory.getCursorStack();
+            ItemStack cursorStack = MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack();
             if (cursorStack != null && !cursorStack.isEmpty()) {
                 // We have something in our cursor stack
                 Item item = cursorStack.getItem();
-                if (item.isEffectiveOn(mod.getWorld().getBlockState(_subtask.miningPos()))) {
+                if (item.isSuitableFor(mod.getWorld().getBlockState(_subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
                     Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
                     if (item instanceof MiningToolItem) {
