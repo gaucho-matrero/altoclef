@@ -41,30 +41,29 @@ public class SlotHandler {
     }
 
 
-    public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
-        if (!canDoSlotAction()) return ItemStack.EMPTY;
+    public void clickSlot(Slot slot, int mouseButton, SlotActionType type) {
+        if (!canDoSlotAction()) return;
 
         if (slot.getWindowSlot() == -1) {
             Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
-            return null;
+            return;
         }
 
         // NOT THE CASE! We may have something in the cursor slot to place.
         //if (getItemStackInSlot(slot).isEmpty()) return getItemStackInSlot(slot);
 
-        return clickWindowSlot(slot.getWindowSlot(), mouseButton, type);
+        clickWindowSlot(slot.getWindowSlot(), mouseButton, type);
     }
 
-    private ItemStack clickWindowSlot(int windowSlot, int mouseButton, SlotActionType type) {
+    private void clickWindowSlot(int windowSlot, int mouseButton, SlotActionType type) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
-            return null;
+            return;
         }
         inv().setDirty();
         int syncId = player.currentScreenHandler.syncId;
 
-        return _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
-
+        _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
     }
 
     public boolean forceEquipItem(Item toEquip) {
@@ -72,7 +71,7 @@ public class SlotHandler {
         if (canDoSlotAction()) {
 
             // Always equip to the second slot. First + last is occupied by baritone.
-            _mod.getPlayer().inventory.selectedSlot = 1;
+            _mod.getPlayer().getInventory().selectedSlot = 1;
 
             Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
@@ -110,7 +109,7 @@ public class SlotHandler {
                                 || item == Items.CROSSBOW
                                 || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
                                 || item == Items.ENDER_PEARL
-                                || item instanceof FireworkItem
+                                || item instanceof FireworkRocketItem
                                 || item instanceof SpawnEggItem
                                 || item == Items.END_CRYSTAL
                                 || item == Items.EXPERIENCE_BOTTLE
@@ -213,7 +212,7 @@ public class SlotHandler {
                 clickSlot(slot1, 0, SlotActionType.PICKUP);
             }
             // Pick up slot2
-            ItemStack second = clickSlot(slot2, 0, SlotActionType.PICKUP);
+            clickSlot(slot2, 0, SlotActionType.PICKUP);
 
             // slot 1 is now in slot 2
             // slot 2 is now in cursor
