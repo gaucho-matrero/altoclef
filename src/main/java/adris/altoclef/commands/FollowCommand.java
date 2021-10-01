@@ -24,6 +24,6 @@ public class FollowCommand extends Command {
                 return;
             }
         }
-        mod.runUserTask(new FollowPlayerTask(username), nothing -> finish());
+        mod.runUserTask(new FollowPlayerTask(username), this::finish);
     }
 }

@@ -14,6 +14,6 @@ public class FoodCommand extends Command {
 
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)), nothing -> finish());
+        mod.runUserTask(new CollectFoodTask(parser.Get(Integer.class)), this::finish);
     }
 }

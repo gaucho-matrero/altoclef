@@ -15,6 +15,6 @@ public class PunkCommand extends Command {
     @Override
     protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
         String playerName = parser.Get(String.class);
-        mod.runUserTask(new KillPlayerTask(playerName), nothing -> finish());
+        mod.runUserTask(new KillPlayerTask(playerName), this::finish);
     }
 }

@@ -19,10 +19,10 @@ public class LocateStructureCommand extends Command {
         Structure structure = parser.Get(Structure.class);
         switch (structure) {
             case STRONGHOLD:
-                mod.runUserTask(new LocateStrongholdTask(1), nothing -> finish());
+                mod.runUserTask(new LocateStrongholdTask(1), this::finish);
                 break;
             case DESERT_TEMPLE:
-                mod.runUserTask(new LocateDesertTempleTask(), nothing -> finish());
+                mod.runUserTask(new LocateDesertTempleTask(), this::finish);
                 break;
         }
     }

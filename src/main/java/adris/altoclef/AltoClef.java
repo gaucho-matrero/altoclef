@@ -344,11 +344,11 @@ public class AltoClef implements ModInitializer {
 
     // Extra control
     public void runUserTask(Task task) {
-        runUserTask(task, (nothing) -> { });
+        runUserTask(task, () -> { });
     }
 
     @SuppressWarnings("rawtypes")
-    public void runUserTask(Task task, Consumer onFinish) {
+    public void runUserTask(Task task, Runnable onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }
 

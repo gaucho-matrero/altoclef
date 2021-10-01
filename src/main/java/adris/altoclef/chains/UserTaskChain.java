@@ -19,7 +19,7 @@ public class UserTaskChain extends SingleTaskChain {
 
     public final Action<String> onTaskFinish = new Action<>();
     private final Stopwatch _taskStopwatch = new Stopwatch();
-    private Consumer _currentOnFinish = null;
+    private Runnable _currentOnFinish = null;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -82,7 +82,7 @@ public class UserTaskChain extends SingleTaskChain {
         return "User Tasks";
     }
 
-    public void runTask(AltoClef mod, Task task, Consumer onFinish) {
+    public void runTask(AltoClef mod, Task task, Runnable onFinish) {
         _currentOnFinish = onFinish;
         Debug.logMessage("User Task Set: " + task.toString());
         mod.getTaskRunner().enable();
@@ -108,7 +108,7 @@ public class UserTaskChain extends SingleTaskChain {
         Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
         if (_currentOnFinish != null) {
             //noinspection unchecked
-            _currentOnFinish.accept(null);
+            _currentOnFinish.run();
         }
         _currentOnFinish = null;
         onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));

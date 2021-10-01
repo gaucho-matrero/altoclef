@@ -82,7 +82,7 @@ public class GetCommand extends Command {
             targetTask = TaskCatalogue.getSquashedItemTask(items);
         }
         if (targetTask != null) {
-            mod.runUserTask(targetTask, nothing -> finish());
+            mod.runUserTask(targetTask, this::finish);
         } else {
             finish();
         }

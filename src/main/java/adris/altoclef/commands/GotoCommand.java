@@ -80,12 +80,12 @@ public class GotoCommand extends Command {
                     return;
                 }
             }
-            mod.runUserTask(new DefaultGoToDimensionTask(dimension), nothing -> finish());
+            mod.runUserTask(new DefaultGoToDimensionTask(dimension), this::finish);
         } else if (y != EMPTY) {
             BlockPos target = new BlockPos(x, y, z);
-            mod.runUserTask(new GetToBlockTask(target, dimension), nothing1 -> finish());
+            mod.runUserTask(new GetToBlockTask(target, dimension), this::finish);
         } else {
-            mod.runUserTask(new GetToXZTask(x, z, dimension), nothing -> finish());
+            mod.runUserTask(new GetToXZTask(x, z, dimension), this::finish);
         }
     }
 }

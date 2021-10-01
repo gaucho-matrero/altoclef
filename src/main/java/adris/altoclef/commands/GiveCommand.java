@@ -50,7 +50,7 @@ public class GiveCommand extends Command {
         }
         if (target != null) {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
-            mod.runUserTask(new GiveItemToPlayerTask(username, target), nothing -> finish());
+            mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
         } else {
             mod.log("Item not found or task does not exist for item: " + item);
             finish();

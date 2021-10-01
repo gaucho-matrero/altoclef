@@ -12,6 +12,6 @@ public class GamerCommand extends Command {
 
     @Override
     protected void Call(AltoClef mod, ArgParser parser) {
-        mod.runUserTask(new BeatMinecraftTask(), nothing -> finish());
+        mod.runUserTask(new BeatMinecraftTask(), this::finish);
     }
 }
