@@ -305,7 +305,7 @@ public class EntityTracker extends Tracker {
 
                     if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
 
-                        if (isHostileToPlayer(_mod, entity)) {
+                        if (isAngryAtPlayer(entity)) {
 
                             // Check if the mob is facing us or is close enough
                             boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);

@@ -188,6 +188,13 @@ public class Settings {
     private boolean avoidDrowning = true;
 
     /**
+     * If enabled, the bot will "fill in" the tops of holes it enters
+     * if there are hostile mobs nearby, to prevent the mobs from dropping
+     * down and killing the bot slowly.
+     */
+    private boolean deathHoleFill = true;
+
+    /**
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
@@ -444,6 +451,10 @@ public class Settings {
 
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
+    }
+
+    public boolean shouldDeathHoleFill() {
+        return deathHoleFill;
     }
 
     public boolean isAutoEat() {
