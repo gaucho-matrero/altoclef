@@ -1,6 +1,6 @@
 package adris.altoclef.trackers.blacklisting;
 
-import adris.altoclef.util.WorldHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 

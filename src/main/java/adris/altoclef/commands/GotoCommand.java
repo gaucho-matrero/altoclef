@@ -5,15 +5,11 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.tasks.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.GetToXZTask;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.util.Dimension;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Out of all the commands, this one probably demonstrates

@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.misc.SearchWithinBiomeTaks;
+import adris.altoclef.tasks.movement.SearchWithinBiomeTaks;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

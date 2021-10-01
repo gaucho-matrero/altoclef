@@ -2,7 +2,6 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInTableTask;
-import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.SmeltInFurnaceTask;
 import adris.altoclef.tasksystem.Task;

@@ -1,11 +1,11 @@
 package adris.altoclef.tasks.stupid;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.AbstractKillEntityTask;
-import adris.altoclef.tasks.DoToClosestEntityTask;
-import adris.altoclef.tasks.GetToEntityTask;
+import adris.altoclef.tasks.entity.AbstractKillEntityTask;
+import adris.altoclef.tasks.entity.DoToClosestEntityTask;
+import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookHelper;
+import adris.altoclef.util.helpers.LookHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 

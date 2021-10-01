@@ -1,21 +1,17 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
-import adris.altoclef.tasks.AbstractDoToEntityTask;
-import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.entity.ShearSheepTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -113,49 +109,4 @@ public class CollectWoolTask extends ResourceTask {
         return "Collect " + _count + " wool.";
     }
 
-    static class ShearSheepTask extends AbstractDoToEntityTask {
-
-        public ShearSheepTask() {
-            super(0, -1, -1);
-        }
-
-        @Override
-        protected boolean isSubEqual(AbstractDoToEntityTask other) {
-            return other instanceof ShearSheepTask;
-        }
-
-        @Override
-        protected Task onEntityInteract(AltoClef mod, Entity entity) {
-            if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
-                Debug.logWarning("Failed to shear sheep because you have no shears.");
-                return null;
-            }
-            if (mod.getSlotHandler().forceEquipItem(Items.SHEARS)) {
-                mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
-            }
-
-
-            return null;
-        }
-
-        @Override
-        protected Entity getEntityTarget(AltoClef mod) {
-            Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                    (entity) -> {
-                        if (entity instanceof SheepEntity) {
-                            SheepEntity sheep = (SheepEntity) entity;
-                            return !sheep.isShearable() || sheep.isSheared();
-                        }
-
-                        return true;
-                    }, SheepEntity.class
-            );
-            return found;
-        }
-
-        @Override
-        protected String toDebugString() {
-            return "Shearing Sheep";
-        }
-    }
 }

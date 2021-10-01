@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.examples;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.GetToBlockTask;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;

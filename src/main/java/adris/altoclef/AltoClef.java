@@ -1,23 +1,26 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
+import adris.altoclef.chains.*;
+import adris.altoclef.chains.FoodChain;
+import adris.altoclef.chains.MobDefenseChain;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
-import adris.altoclef.tasks.misc.IdleTask;
+import adris.altoclef.tasks.movement.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.tasksystem.chains.*;
 import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.*;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
-import adris.altoclef.util.PlayerExtraController;
-import adris.altoclef.util.WorldHelper;
+import adris.altoclef.util.control.BotBehaviour;
+import adris.altoclef.util.control.PlayerExtraController;
+import adris.altoclef.util.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
+import adris.altoclef.util.helpers.WorldHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -28,7 +31,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.item.Items;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -37,7 +39,6 @@ import net.minecraft.world.chunk.WorldChunk;
 import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.function.Consumer;
 
 public class AltoClef implements ModInitializer {

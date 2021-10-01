@@ -2,12 +2,11 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
-import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 
 import java.util.ArrayList;

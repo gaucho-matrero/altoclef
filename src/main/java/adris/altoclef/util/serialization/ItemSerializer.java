@@ -1,6 +1,6 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.helpers.ItemHelper;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;

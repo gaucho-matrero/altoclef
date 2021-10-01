@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.AbstractDoToEntityTask;
-import adris.altoclef.tasks.AbstractKillEntityTask;
+import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
+import adris.altoclef.tasks.entity.AbstractKillEntityTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;

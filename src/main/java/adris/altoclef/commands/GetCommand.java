@@ -10,10 +10,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class GetCommand extends Command {

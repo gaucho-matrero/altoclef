@@ -1,10 +1,10 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.DoToClosestEntityTask;
-import adris.altoclef.tasks.GetToEntityTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.entity.DoToClosestEntityTask;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
+import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import net.minecraft.entity.passive.ChickenEntity;

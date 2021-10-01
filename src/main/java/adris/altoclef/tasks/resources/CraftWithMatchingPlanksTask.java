@@ -7,7 +7,7 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 
 public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask {

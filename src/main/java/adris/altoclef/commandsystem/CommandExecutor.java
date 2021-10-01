@@ -3,7 +3,6 @@ package adris.altoclef.commandsystem;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
-import java.security.InvalidKeyException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.Consumer;

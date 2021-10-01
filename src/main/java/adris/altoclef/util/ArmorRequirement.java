@@ -1,7 +1,6 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 

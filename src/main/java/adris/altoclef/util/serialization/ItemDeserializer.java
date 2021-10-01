@@ -1,6 +1,6 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.helpers.ItemHelper;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

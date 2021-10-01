@@ -7,7 +7,7 @@ import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 

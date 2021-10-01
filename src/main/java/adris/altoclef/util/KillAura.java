@@ -2,6 +2,7 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.Item;

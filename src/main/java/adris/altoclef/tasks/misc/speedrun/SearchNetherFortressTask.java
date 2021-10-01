@@ -2,7 +2,7 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.SearchChunksExploreTask;
+import adris.altoclef.tasks.movement.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import net.minecraft.block.Blocks;

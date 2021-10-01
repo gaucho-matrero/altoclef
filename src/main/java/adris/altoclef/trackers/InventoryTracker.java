@@ -13,10 +13,8 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.screen.*;
-import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class InventoryTracker extends Tracker {
 

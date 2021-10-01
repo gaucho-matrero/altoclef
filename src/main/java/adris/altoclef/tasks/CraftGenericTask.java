@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasks.slot.ThrowSlotTask;
@@ -17,8 +16,6 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
-
-import java.util.List;
 
 public class CraftGenericTask extends Task {
 

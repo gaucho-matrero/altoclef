@@ -1,6 +1,6 @@
 package adris.altoclef;
 
-import adris.altoclef.tasks.DefaultGoToDimensionTask;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.util.KillAura;
 import adris.altoclef.util.serialization.BlockPosDeserializer;
 import adris.altoclef.util.serialization.BlockPosSerializer;
