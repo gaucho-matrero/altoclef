@@ -150,12 +150,14 @@ public class Settings {
     private boolean mobDefense = true;
 
     /**
-     * Defines how killaura behaves when "mobDefense" is set to true.
+     * Defines how force field behaves when "mobDefense" is set to true.
+     * Note that the force field is not here to KILL mobs, but PUSH THEM AWAY.
      * <p>
      * <p>
      * Strategies:
      * <p>
      * FASTEST: All hostiles are attacked at every possible moment, every frame.
+     * DELAY: Closest hostile is attacked with a sword when your attack is charged up
      * SMART: Closest hostile is attacked at max every 0.2 seconds.
      * OFF: Off
      */
