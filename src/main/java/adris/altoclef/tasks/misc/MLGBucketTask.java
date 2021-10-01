@@ -78,8 +78,7 @@ public class MLGBucketTask extends Task {
                 return null;
             }
 
-            if (!mod.getInventoryTracker().equipItem(Items.WATER_BUCKET)) {
-                Debug.logWarning("Failed to equip bucket for mlg. Oh shit.");
+            if (!mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET)) {
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
             }
 

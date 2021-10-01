@@ -10,6 +10,7 @@ import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.*;
 import adris.altoclef.tasks.misc.speedrun.*;
 import adris.altoclef.tasks.resources.CollectFoodTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.SCP173Task;
@@ -18,6 +19,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -155,6 +157,7 @@ public class Playground {
                 // 24 (armor) + 3*3 (pick) + 2 = 35 diamonds
                 // 2*3 (pick) + 1 = 7 sticks
                 // 4 planks
+                /*
                 mod.runUserTask(TaskCatalogue.getSquashedItemTask(
                         new ItemTarget("diamond_chestplate", 1),
                         new ItemTarget("diamond_leggings", 1),
@@ -164,7 +167,11 @@ public class Playground {
                         new ItemTarget("diamond_sword", 1),
                         new ItemTarget("crafting_table", 1)
                 ));
-                //mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
+                 */
+                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
+                break;
+            case "stacked2":
+                mod.runUserTask(new EquipArmorTask("diamond_chestplate"));
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
@@ -193,41 +200,38 @@ public class Playground {
                 break;
             case "craft":
                 // Test de-equip
-                new Thread() {
-                    @Override
-                    public void run() {
-                        for (int i = 3; i > 0; --i) {
-                            Debug.logMessage(i + "...");
-                            sleepSec(1);
+                new Thread(() -> {
+                    for (int i = 3; i > 0; --i) {
+                        Debug.logMessage(i + "...");
+                        sleepSec(1);
+                    }
+
+                    Item[] c = new Item[]{Items.COBBLESTONE};
+                    Item[] s = new Item[]{Items.STICK};
+                    CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
+
+                    mod.runUserTask(new CraftGenericTask(recipe));
+                    /*
+                    Item toEquip = Items.BUCKET;//Items.AIR;
+                    Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+
+                    InventoryTracker t = mod.getInventoryTracker();
+
+                    // Already equipped
+                    if (t.getItemStackInSlot(target).getItem() == toEquip) {
+                        Debug.logMessage("Already equipped.");
+                    } else {
+                        List<Integer> itemSlots = t.getInventorySlotsWithItem(toEquip);
+                        if (itemSlots.size() != 0) {
+                            int slot = itemSlots.get(0);
+                            t.swapItems(Slot.getFromInventory(slot), target);
+                            Debug.logMessage("Equipped via swap");
+                        } else {
+                            Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
                         }
-
-                        Item[] c = new Item[]{Items.COBBLESTONE};
-                        Item[] s = new Item[]{Items.STICK};
-                        CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
-
-                        mod.runUserTask(new CraftGenericTask(recipe));
                     }
-
-                    private void swap(Slot slot1, Slot slot2) {
-                        mod.getInventoryTracker().clickSlot(slot1);
-
-                        Debug.logMessage("MOVE 1...");
-                        sleepSec(1);
-                        // Pick up slot2
-                        ItemStack second = mod.getInventoryTracker().clickSlot(slot2);
-                        Debug.logMessage("MOVE 2...");
-                        sleepSec(1);
-
-                        // slot 1 is now in slot 2
-                        // slot 2 is now in cursor
-
-                        // If slot 2 is not empty, move it back to slot 1
-                        //if (second != null && !second.isEmpty()) {
-                        mod.getInventoryTracker().clickSlot(slot1);
-                        Debug.logMessage("MOVE 3!");
-                    }
-
-                }.start();
+                     */
+                }).start();
                 //mod.getInventoryTracker().equipItem(Items.AIR);
                 break;
             case "throw":
@@ -279,7 +283,7 @@ public class Playground {
             case "throwaway":
                 Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
                 if (toThrow != null) {
-                    mod.getInventoryTracker().throwSlot(toThrow);
+                    // mod.getInventoryTracker().throwSlot(toThrow);
                     // Equip then throw
                     //mod.getInventoryTracker().equipSlot(toThrow);
                     //mod.getInventoryTracker().equipItem(mod.getInventoryTracker().getItemStackInSlot(toThrow).getItem());
@@ -330,6 +334,9 @@ public class Playground {
                         new ItemTarget("netherite_chestplate", 1),
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
+                break;
+            case "equip":
+                mod.runUserTask(new MoveItemToSlotTask(new ItemTarget("diamond_chestplate", 1), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT));
                 break;
             case "whisper": {
                 File check = new File("whisper.txt");

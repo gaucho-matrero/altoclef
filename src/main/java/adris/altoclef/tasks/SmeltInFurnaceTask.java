@@ -4,6 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectFuelTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasksystem.ITaskWithDowntime;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
@@ -19,6 +22,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.FurnaceScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -240,11 +244,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             if (toMove > 0) {
                 ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial(), toMove);
-                int moved = mod.getInventoryTracker().moveItemToSlot(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
-
-                if (moved != toMove && !_ignoreMaterials) {
-                    Debug.logWarning("Failed to move " + toMove + " materials to the furnace materials slot. Only moved " + moved + ". Will proceed anyway.");
-                }
+                return new MoveItemToSlotTask(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
             }
 
             // Move fuel
@@ -263,18 +263,22 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 if (fuelStack.getItem().equals(fuelToUse)) {
                     targetFuelItemCount -= fuelStack.getCount();
                 }
-                mod.getInventoryTracker().moveItemToSlot(fuelToUse, targetFuelItemCount, FurnaceSlot.INPUT_SLOT_FUEL);
+
+                // Don't grab more than we can
+                targetFuelItemCount = Math.min(targetFuelItemCount, mod.getInventoryTracker().getItemCount(fuelToUse));
+                if (targetFuelItemCount > 0) {
+                    return new MoveItemToSlotTask(new ItemTarget(fuelToUse, targetFuelItemCount), FurnaceSlot.INPUT_SLOT_FUEL);
+                }
             }
 
             // Grab from the output slot
             ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             if (!outputSlot.isEmpty()) {
-                if (!ResourceTask.ensureInventoryFree(mod)) {
-                    Debug.logWarning("FAILED TO FREE INVENTORY for furnace smelting. This is bad.");
-                } else {
-                    mod.getInventoryTracker().grabItem(FurnaceSlot.OUTPUT_SLOT);
-                    _smeltProgressChecker.reset();
+                if (mod.getInventoryTracker().isInventoryFull()) {
+                    return new EnsureFreeInventorySlotTask();
                 }
+                _smeltProgressChecker.reset();
+                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
                 //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
             }
 

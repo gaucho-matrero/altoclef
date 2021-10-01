@@ -11,6 +11,7 @@ import adris.altoclef.trackers.*;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
+import adris.altoclef.util.*;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
 import adris.altoclef.util.PlayerExtraController;
@@ -27,6 +28,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.Items;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -70,6 +72,7 @@ public class AltoClef implements ModInitializer {
     // Misc managers/input
     private MessageSender _messageSender;
     private InputControls _inputControls;
+    private SlotHandler _slotHandler;
     // Butler
     private Butler _butler;
 
@@ -132,6 +135,7 @@ public class AltoClef implements ModInitializer {
         // Misc managers
         _messageSender = new MessageSender();
         _inputControls = new InputControls();
+        _slotHandler = new SlotHandler(this);
 
         _butler = new Butler(this);
 
@@ -308,6 +312,10 @@ public class AltoClef implements ModInitializer {
 
     public MessageSender getMessageSender() {
         return _messageSender;
+    }
+
+    public SlotHandler getSlotHandler() {
+        return _slotHandler;
     }
 
     // Minecraft access

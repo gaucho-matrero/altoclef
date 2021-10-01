@@ -80,10 +80,6 @@ public class InventoryTracker extends Tracker {
         return (double) handler.getCookProgress() / 24.0;
     }
 
-    private static boolean slotIsCursor(Slot slot) {
-        return slot instanceof CursorInventorySlot;
-    }
-
     public int getEmptySlotCount() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -105,6 +101,9 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    public boolean hasItem(ItemTarget target) {
+        return hasItem(target.getMatches());
+    }
     public boolean hasItem(Item... items) {
         ensureUpdated();
         for (Item item : items) {
@@ -204,20 +203,25 @@ public class InventoryTracker extends Tracker {
         return max;
     }
 
-    public List<Integer> getInventorySlotsWithItem(Item... items) {
+    public List<Slot> getInventorySlotsWithItem(Item... items) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            List<Integer> result = new ArrayList<>();
+            List<Slot> result = new ArrayList<>();
             for (Item item : items) {
                 if (_itemSlots.containsKey(item)) {
-                    result.addAll(_itemSlots.get(item));
+                    for (int invSlot : _itemSlots.get(item)) {
+                        result.add(Slot.getFromInventory(invSlot));
+                    }
                 }
             }
             return result;
         }
     }
+    public List<Slot> getInventorySlotsWithItem(ItemTarget target) {
+        return getInventorySlotsWithItem(target.getMatches());
+    }
 
-    public List<Integer> getEmptyInventorySlots() {
+    public List<Slot> getEmptyInventorySlots() {
         return getInventorySlotsWithItem(Items.AIR);
     }
 
@@ -358,11 +362,7 @@ public class InventoryTracker extends Tracker {
                     // Satisfied by default.
                     if (needs == null || needs.isEmpty()) continue;
 
-                    List<Integer> invSlotsWithItem = getInventorySlotsWithItem(needs.getMatches());
-                    List<Slot> slotsWithItem = new ArrayList<>();
-                    for (int invSlot : invSlotsWithItem) {
-                        slotsWithItem.add(Slot.getFromInventory(invSlot));
-                    }
+                    List<Slot> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
 
                     // Other slots may have our crafting supplies.
                     ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
@@ -421,20 +421,24 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public boolean isEquipped(Item ...matches) {
+        return Arrays.asList(matches).contains(getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem());
+    }
+
     @SuppressWarnings("ConstantConditions")
     public Slot getGarbageSlot() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             // Get stuff that's throwaway by default
-            List<Integer> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
+            List<Slot> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
             if (throwawaySlots.size() != 0) {
-                int best = throwawaySlots.stream().min((leftSlot, rightSlot) -> {
-                    ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
-                            right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
+                Slot best = throwawaySlots.stream().min((leftSlot, rightSlot) -> {
+                    ItemStack left = getItemStackInSlot(leftSlot),
+                            right = getItemStackInSlot(rightSlot);
                     return left.getCount() - right.getCount();
                 }).get();
                 Debug.logInternal("THROWING AWAY throwawayable ITEM AT SLOT " + best);
-                return Slot.getFromInventory(best);
+                return best;
             }
 
             // Downgrade pickaxe maybe?
@@ -449,7 +453,7 @@ public class InventoryTracker extends Tracker {
                     if (!_mod.getBehaviour().isProtected(item)) {
                         if (hasItem(item)) {
                             //Debug.logInternal("Throwing away: " + item.getTranslationKey());
-                            return Slot.getFromInventory(getInventorySlotsWithItem(item).get(0));
+                            return getInventorySlotsWithItem(item).get(0);
                         }
                     }
                 }
@@ -534,6 +538,60 @@ public class InventoryTracker extends Tracker {
         return MiningRequirement.HAND;
     }
 
+    private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
+        return getRecipeMapping(Collections.emptyMap(), recipe, 1);
+    }
+
+    // Less garbo version
+    private HashMap<Integer, Integer> getRecipeMapping(Map<Item, Integer> alreadyUsed, CraftingRecipe recipe, int count) {
+        ensureUpdated();
+
+        HashMap<Integer, Integer> result = new HashMap<>();
+
+        HashMap<Item, Integer> usedUp = new HashMap<>(alreadyUsed);
+
+        // Go through each craft slot
+        for (int craftSlot = 0; craftSlot < recipe.getSlotCount(); ++craftSlot) {
+            ItemTarget item = recipe.getSlot(craftSlot);
+            if (item == null || item.isEmpty()) continue;
+
+            // Repeat this collection "count" number of times.
+            for (int i = 0; i < count; ++i) {
+                boolean foundMatch = false;
+                //noinspection SpellCheckingInspection
+                itemsearch:
+                // Check for an item that meets the requirement
+                for (Item match : item.getMatches()) {
+                    // Ensure we have a default used up of zero if not used up yet.
+                    if (!usedUp.containsKey(match)) usedUp.put(match, 0);
+
+                    int toSkip = usedUp.get(match);
+                    for (Slot invSlot : getInventorySlotsWithItem(match)) {
+                        ItemStack stack = getItemStackInSlot(invSlot);
+                        // Skip over items we already used.
+                        // Edge case: We may skip over the entire stack. In that case this stack is used up.
+                        if (toSkip != 0 && toSkip >= stack.getCount()) {
+                            toSkip -= stack.getCount();
+                        } else {
+                            // If we skip over all the items in THIS stack, we will have at least one left over.
+                            // That means we found our guy.
+
+                            result.put(craftSlot, invSlot.getInventorySlot());
+                            usedUp.put(match, usedUp.get(match) + 1);
+                            foundMatch = true;
+                            break itemsearch;
+                        }
+                    }
+                }
+                if (!foundMatch) {
+                    //Debug.logWarning("Failed to find match for craft slot " + craftSlot);
+                    return null;
+                }
+            }
+        }
+
+        return result;
+    }
 
     public int totalFoodScore() {
         ensureUpdated();
@@ -542,334 +600,19 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public ItemStack clickSlot(Slot slot, int mouseButton, SlotActionType type) {
 
-        if (slot.getWindowSlot() == -1) {
-            Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
-            return null;
-        }
-
-        // NOT THE CASE! We may have something in the cursor slot to place.
-        //if (getItemStackInSlot(slot).isEmpty()) return getItemStackInSlot(slot);
-
-        return clickWindowSlot(slot.getWindowSlot(), mouseButton, type);
-    }
-
-    private ItemStack clickWindowSlot(int windowSlot, int mouseButton, SlotActionType type) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null) {
-            return null;
-        }
-        setDirty();
-        int syncId = player.currentScreenHandler.syncId;
-
-        ItemStack stack = ItemStack.EMPTY;
-        if (0 <= windowSlot && windowSlot < player.currentScreenHandler.slots.size()) {
-            stack = player.currentScreenHandler.getSlot(windowSlot).getStack().copy();
-        }
-        _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
-        return stack;
-    }
-
-    public ItemStack clickSlot(Slot slot, SlotActionType type) {
-        return clickSlot(slot, 0, type);
-    }
-
-    public ItemStack clickSlot(Slot slot, int mouseButton) {
-        return clickSlot(slot, mouseButton, SlotActionType.PICKUP);
-    }
-
-    public ItemStack clickSlot(Slot slot) {
-        return clickSlot(slot, 0);
-    }
-
-    /**
-     * @param from   Slot to start moving from
-     * @param to     Slot to move items to
-     * @param amount How many to move
-     * @return The number of items successfully transported
-     */
-    public int moveItems(Slot from, Slot to, int amount) {
-        to.ensureWindowOpened();
-
-        ItemStack fromStack = getItemStackInSlot(from);
-
-        if (fromStack == null || fromStack.isEmpty()) {
-            Debug.logInternal("(From stack is empty or null)");
-            return 0;
-        }
-
-        boolean moveFromCursor = slotIsCursor(from);
-
-        ItemStack toStack = getItemStackInSlot(to);
-        if (toStack != null && !toStack.isEmpty()) {
-            if (!toStack.isItemEqual(fromStack)) {
-                //Debug.logMessage("To was occupied, moved it elsewhere.");
-                // We have stuff in our target slot. Move it out somewhere.
-                clickSlot(to, SlotActionType.QUICK_MOVE);
-                // If we're moving from a cursor slot, the cursor slot should already be moved to "to" after clicking.
-                if (moveFromCursor) {
-                    setDirty();
-                    return getItemStackInSlot(from).getCount();
-                }
-            }
-        }
-
-        // Pickup
-        ItemStack pickedUp;
-        if (moveFromCursor) {
-            // our item is already picked up.
-            pickedUp = getItemStackInSlot(from);
-        } else {
-            pickedUp = clickSlot(from);
-        }
-        //Debug.logMessage("Picked Up " + pickedUp.getCount() + " from slot " + from.getWindowSlot());
-
-        int dropped;
-
-        // Drop
-        if (amount >= pickedUp.getCount()) {
-            // We don't have enough/we have exactly enough, drop everything here
-
-            clickSlot(to);
-            //Debug.logMessage("Dropped it all from slot " + to.getWindowSlot());
-
-            dropped = pickedUp.getCount();
-        } else {
-            // We have too much in our stack, only move what we need.
-            //j = 1;
-            for (int i = 0; i < amount; ++i) {
-                clickSlot(to, 1);
-            }
-            // We've picked up our stack, put it back
-            clickSlot(from);
-            dropped = amount;
-        }
-        setDirty();
-        return dropped;
-    }
-
-    public void swapItems(Slot slot1, Slot slot2) {
-
-        // Pick up slot1
-        if (!slotIsCursor(slot1)) {
-            clickSlot(slot1);
-        }
-        // Pick up slot2
-        clickSlot(slot2);
-
-        // slot 1 is now in slot 2
-        // slot 2 is now in cursor
-
-        // If slot 2 is not empty, move it back to slot 1
-        //if (second != null && !second.isEmpty()) {
-        if (!slotIsCursor(slot1)) {
-            clickSlot(slot1);
-        }
-        setDirty();
-        //}
-    }
-
-    public ItemStack throwSlot(Slot slot) {
-        ensureUpdated();
-        ItemStack pickup = clickSlot(slot);
-        clickWindowSlot(-999, 0, SlotActionType.PICKUP);
-        setDirty();
-        return pickup;
-    }
-
-    public void grabItem(Slot slot) {
-        clickSlot(slot, 1, SlotActionType.QUICK_MOVE);
-    }
-
-    public int moveItemToSlot(ItemTarget toMove, Slot moveTo) {
-        for (Item item : toMove.getMatches()) {
-            if (getItemCount(item) >= toMove.getTargetCount()) {
-                return moveItemToSlot(item, toMove.getTargetCount(), moveTo);
-            }
-        }
-        return 0;
-    }
-
-    // These names aren't confusing
-    public int moveItemToSlot(Item toMove, int moveCount, Slot moveTo) {
-        List<Integer> itemSlots = getInventorySlotsWithItem(toMove);
-        int needsToMove = moveCount;
-        for (Integer slotIndex : itemSlots) {
-            if (needsToMove <= 0) break;
-            Slot current = Slot.getFromInventory(slotIndex);
-            //Debug.logStack();
-            ItemStack stack = getItemStackInSlot(current);
-            //Debug.logMessage("(DEBUG ONLY) index=" + slotIndex + ", " + stack.getItem().getTranslationKey() + ", " + stack.getCount());
-            int moveSize = stack.getCount();
-            if (moveSize > needsToMove) {
-                moveSize = needsToMove;
-            }
-            //Debug.logMessage("MOVING: " + current + " -> " + moveTo);
-            needsToMove -= moveItems(current, moveTo, moveSize);
-        }
-        return moveCount - needsToMove;
-    }
-
-    public boolean isEquipped(Item item) {
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-        return getItemStackInSlot(target).getItem() == item;
-    }
-
-    public boolean equipItem(Item toEquip) {
-        ensureUpdated();
-
-        // Always equip to the second slot. First + last is occupied by baritone.
-        _mod.getPlayer().getInventory().selectedSlot = 1;
-
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-
-        // Already equipped
-        if (getItemStackInSlot(target).getItem() == toEquip) return true;
-
-        List<Integer> itemSlots = getInventorySlotsWithItem(toEquip);
-        if (itemSlots.size() != 0) {
-            int slot = itemSlots.get(0);
-            assert target != null;
-            int hotbar = target.getInventorySlot();
-            if (0 <= hotbar && hotbar < 9) {
-                clickSlot(Objects.requireNonNull(Slot.getFromInventory(slot)), hotbar, SlotActionType.SWAP);
-                //swapItems(Slot.getFromInventory(slot), target);
-                return true;
-            } else {
-                Debug.logWarning("Tried to swap to hotbar that's not a hotbar position! " + hotbar + " (target=" + target + ")");
-                return false;
-            }
-        }
-
-        Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
-        return false;
-    }
-
-    public void deequipHitTool() {
-        deequip(item -> item instanceof ToolItem, true);
-    }
-
-    public void deequipRightClickableItem() {
-        deequip(item ->
-                        item instanceof BucketItem // water,lava,milk,fishes
-                                || item instanceof EnderEyeItem
-                                || item == Items.BOW
-                                || item == Items.CROSSBOW
-                                || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
-                                || item == Items.ENDER_PEARL
-                                || item instanceof FireworkRocketItem
-                                || item instanceof SpawnEggItem
-                                || item == Items.END_CRYSTAL
-                                || item == Items.EXPERIENCE_BOTTLE
-                                || item instanceof PotionItem // also includes splash/lingering
-                                || item == Items.TRIDENT
-                                || item == Items.WRITABLE_BOOK
-                                || item == Items.WRITTEN_BOOK
-                                || item instanceof FishingRodItem
-                                || item instanceof OnAStickItem
-                                || item == Items.COMPASS
-                                || item instanceof EmptyMapItem
-                                || item instanceof Wearable
-                                || item == Items.SHIELD
-                                || item == Items.LEAD
-                ,
-                true
-        );
-    }
-
-    /**
-     * Tries to de-equip any item that we don't want equipped.
-     *
-     * @param isBad: Whether an item is bad/shouldn't be equipped
-     * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
-     */
-    public boolean deequip(Predicate<Item> isBad, boolean preferEmpty) {
-        boolean toolEquipped = false;
-        Item equip = getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
-        if (isBad.test(equip)) {
-            // Pick non tool item or air
-            if (!preferEmpty || getEmptySlotCount() == 0) {
-                for (int i = 0; i < 35; ++i) {
-                    Slot s = Slot.getFromInventory(i);
-                    if (!isBad.test(getItemStackInSlot(s).getItem())) {
-                        equipSlot(s);
-                        return true;
-                    }
-                }
-                return false;
-            } else {
-                equipItem(Items.AIR);
-            }
-        }
-        return true;
-    }
-
-    public void equipSlot(Slot slot) {
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-        swapItems(slot, target);
-    }
-
-    public boolean equipItem(ItemTarget toEquip) {
-        if (toEquip == null) return false;
-        ensureUpdated();
-
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
-        // Already equipped
-        if (toEquip.matches(getItemStackInSlot(target).getItem())) return true;
-
-        for (Item item : toEquip.getMatches()) {
-            if (hasItem(item)) {
-                if (equipItem(item)) return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean ensureFreeInventorySlot() {
-        if (isInventoryFull()) {
-            // Throw away!
-            Slot toThrow = getGarbageSlot();
-            if (toThrow != null) {
-                // Equip then throw
-                throwSlot(toThrow);
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public boolean isInHotBar(Item... items) {
-        for (int invSlot : getInventorySlotsWithItem(items)) {
-            if (0 <= invSlot && invSlot < 9) {
+        for (Slot invSlot : getInventorySlotsWithItem(items)) {
+            if (0 <= invSlot.getInventorySlot() && invSlot.getInventorySlot() < 9) {
                 return true;
             }
         }
         return false;
     }
 
-    public void moveToNonEquippedHotbar(Item item, int offset) {
 
-        if (!hasItem(item)) return;
 
-        assert MinecraftClient.getInstance().player != null;
-        int equipSlot = MinecraftClient.getInstance().player.getInventory().selectedSlot;
-
-        int otherSlot = (equipSlot + 1 + offset) % 9;
-
-        int found = getInventorySlotsWithItem(item).get(0);
-        swapItems(Slot.getFromInventory(found), Slot.getFromInventory(otherSlot));
-    }
-
-    public void refreshInventory() {
-        for (int i = 0; i < INVENTORY_SIZE; ++i) {
-            Slot slot = Slot.getFromInventory(i);
-            clickSlot(slot);
-            clickSlot(slot);
-        }
-    }
 
     public ItemStack getItemStackInSlot(Slot slot) {
 
@@ -881,13 +624,17 @@ public class InventoryTracker extends Tracker {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return null;
 
-        if (slotIsCursor(slot)) {
+        if (Slot.isCursor(slot)) {
             return player.currentScreenHandler.getCursorStack().copy();
         }
 
         //Debug.logMessage("FOOF WINDOW SLOT: " + slot.getWindowSlot() + ", " + slot.getInventorySlot());
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
         return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
+    }
+
+    public ItemStack getItemStackInCursorSlot() {
+        return getItemStackInSlot(new CursorInventorySlot());
     }
 
     @Override

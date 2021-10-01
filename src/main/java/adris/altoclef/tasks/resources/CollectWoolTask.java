@@ -130,10 +130,8 @@ public class CollectWoolTask extends ResourceTask {
                 Debug.logWarning("Failed to shear sheep because you have no shears.");
                 return null;
             }
-            if (mod.getInventoryTracker().equipItem(Items.SHEARS)) {
+            if (mod.getSlotHandler().forceEquipItem(Items.SHEARS)) {
                 mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
-            } else {
-                Debug.logWarning("Failed to equip shears for some reason.");
             }
 
 

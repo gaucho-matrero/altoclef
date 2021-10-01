@@ -1,12 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.slots.Slot;
 
 public class CraftInInventoryTask extends ResourceTask {
 
@@ -46,11 +45,8 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         // Free up inventory
-        if (!mod.getInventoryTracker().ensureFreeInventorySlot()) {
-            if (!_fullCheckFailed) {
-                Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-            }
-            _fullCheckFailed = true;
+        if (mod.getInventoryTracker().isInventoryFull()) {
+            return new EnsureFreeInventorySlotTask();
         }
 
         setDebugState("Crafting in inventory... for " + toGet);

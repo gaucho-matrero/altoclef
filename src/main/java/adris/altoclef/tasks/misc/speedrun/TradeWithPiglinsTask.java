@@ -180,9 +180,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
             setDebugState("Trading with piglin");
 
-            mod.getInventoryTracker().equipItem(Items.GOLD_INGOT);
-            mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
-            _intervalTimeout.reset();
+            if (mod.getSlotHandler().forceEquipItem(Items.GOLD_INGOT)) {
+                mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
+                _intervalTimeout.reset();
+            }
             return null;
         }
 

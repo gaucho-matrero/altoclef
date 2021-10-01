@@ -2,6 +2,9 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.ItemHelper;
@@ -77,14 +80,13 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
                 return null;
             }
             // Take off our armor
-            if (!mod.getInventoryTracker().ensureFreeInventorySlot()) {
-                setDebugState("FAILED TO FREE INVENTORY! Awaiting user input.");
+            if (mod.getInventoryTracker().isInventoryFull()) {
+                return new EnsureFreeInventorySlotTask();
             }
             for (Slot armorSlot : PlayerSlot.ARMOR_SLOTS) {
                 if (_tool.matches(mod.getInventoryTracker().getItemStackInSlot(armorSlot).getItem())) {
-                    mod.getInventoryTracker().clickSlot(armorSlot, 0, SlotActionType.QUICK_MOVE);
                     setDebugState("Quickly removing equipped armor");
-                    return null;
+                    return new ClickSlotTask(armorSlot, 0, SlotActionType.QUICK_MOVE);
                 }
             }
         }
@@ -152,18 +154,15 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             ItemStack currentOutput = mod.getInventoryTracker().getItemStackInSlot(outputSlot);
             // Grab from output
             if (!currentOutput.isEmpty()) {
-                mod.getInventoryTracker().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
-                return null;
+                return new ClickSlotTask(outputSlot, SlotActionType.QUICK_MOVE);
             }
             // Put materials in slot
             if (currentMaterials.isEmpty() || !_material.matches(currentMaterials.getItem())) {
-                mod.getInventoryTracker().moveItemToSlot(new ItemTarget(_material, 1), materialSlot);
-                return null;
+                return new MoveItemToSlotTask(new ItemTarget(_material, 1), materialSlot);
             }
             // Put tool in slot
             if (currentTools.isEmpty() || !_tool.matches(currentTools.getItem())) {
-                mod.getInventoryTracker().moveItemToSlot(new ItemTarget(_tool, 1), toolSlot);
-                return null;
+                return new MoveItemToSlotTask(new ItemTarget(_tool, 1), toolSlot);
             }
 
             setDebugState("PROBLEM: Nothing to do!");

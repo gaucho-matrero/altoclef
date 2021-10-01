@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -102,15 +103,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             }
         }
         if (_freeInventoryIfFull) {
-            boolean weGood = ResourceTask.ensureInventoryFree(mod);
-
-            if (weGood) {
-                _fullCheckFailed = false;
-            } else {
-                if (!_fullCheckFailed) {
-                    Debug.logWarning("Failed to free up inventory as no throwaway-able slot was found. Awaiting user input.");
-                }
-                _fullCheckFailed = true;
+            if (mod.getInventoryTracker().isInventoryFull()) {
+                return new EnsureFreeInventorySlotTask();
             }
         }
 

@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.Function;
@@ -21,5 +22,8 @@ public interface StlHelper {
         }
         result.append("]");
         return result.toString();
+    }
+    static <T> String toString(T[] thing, Function<T, String> toStringFunc) {
+        return toString(Arrays.asList(thing), toStringFunc);
     }
 }

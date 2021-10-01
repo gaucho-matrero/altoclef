@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.WorldHelper;
@@ -16,6 +17,8 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -73,13 +76,12 @@ public class PlaceBlockNearbyTask extends Task {
         // Close screen first
         mod.getControllerExtras().closeScreen();
 
-
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
         if (current != null && !_cantPlaceHere.test(current)) {
-            if (equipBlock(mod)) {
-                if (mod.getControllerExtras().place()) {
-                    _justPlaced = current;
+            setDebugState("Placing since we can...");
+            if (mod.getSlotHandler().forceEquipItem(ItemHelper.blocksToItems(_toPlace))) {
+                if (place(mod, current)) {
                     return null;
                 }
             }
@@ -171,11 +173,34 @@ public class PlaceBlockNearbyTask extends Task {
         return null;
     }
 
-    private boolean equipBlock(AltoClef mod) {
-        for (Block block : _toPlace) {
-            if (!mod.getExtraBaritoneSettings().isInteractionPaused() && mod.getInventoryTracker().hasItem(block.asItem())) {
-                if (mod.getInventoryTracker().equipItem(block.asItem())) return true;
+    private boolean blockEquipped(AltoClef mod) {
+        return mod.getInventoryTracker().isEquipped(ItemHelper.blocksToItems(_toPlace));
+    }
+
+    private boolean place(AltoClef mod, BlockPos targetPlace) {
+        if (!mod.getExtraBaritoneSettings().isInteractionPaused() && blockEquipped(mod)) {
+            // Shift click just for 100% container security.
+            mod.getInputControls().hold(Input.SNEAK);
+
+            //mod.getInputControls().tryPress(Input.CLICK_RIGHT);
+            // This appears to work on servers...
+            // TODO: Helper lol
+            HitResult mouseOver = MinecraftClient.getInstance().crosshairTarget;
+            if (mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
+                return false;
             }
+            Hand hand = Hand.MAIN_HAND;
+            assert MinecraftClient.getInstance().interactionManager != null;
+            if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
+                mod.getPlayer().swingHand(hand);
+                Debug.logMessage("PRESSED");
+                return true;
+            }
+
+            //mod.getControllerExtras().mouseClickOverride(1, true);
+            //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+            _justPlaced = targetPlace;
+            return true;
         }
         return false;
     }

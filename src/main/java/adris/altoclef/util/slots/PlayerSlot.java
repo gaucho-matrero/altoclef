@@ -71,22 +71,6 @@ public class PlayerSlot extends Slot {
     }
 
     @Override
-    public void ensureWindowOpened() {
-        //Debug.logMessage("PLAYER INVENTORY OPENED");
-
-
-        //ClientPlayerInteractionManager controller = MinecraftClient.getInstance().interactionManager;
-
-        //MinecraftClient.getInstance().openScreen(new InventoryScreen(MinecraftClient.getInstance().player));
-
-        //controller.clickButton();
-
-        // Nope. Maybe you gotta send packets?
-        //player.inventory.onOpen(player);
-
-    }
-
-    @Override
     protected String getName() {
         return "Player";
     }

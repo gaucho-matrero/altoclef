@@ -2,6 +2,7 @@ package adris.altoclef.tasks.chest;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
@@ -59,7 +60,10 @@ public class StoreInChestTask extends AbstractDoInChestTask {
                     int end = data.isBig() ? 53 : 26;
                     int emptySlot = -1;
                     for (int slot = start; slot <= end; ++slot) {
-                        if (!handler.getSlot(slot).hasStack() || handler.getSlot(slot).getStack().isEmpty()) {
+                        net.minecraft.screen.slot.Slot cSlot = handler.getSlot(slot);
+                        if (!cSlot.hasStack() || cSlot.getStack().isEmpty()
+                            || (target.matches(cSlot.getStack().getItem()) && cSlot.getStack().getCount() < cSlot.getStack().getMaxCount())
+                        ) {
                             emptySlot = slot;
                             break;
                         }
@@ -70,16 +74,15 @@ public class StoreInChestTask extends AbstractDoInChestTask {
                     }
                     // Move at most (target.targetCount - has) of any one item to empty slot
                     int maxToMove = target.getTargetCount() - has;
-                    List<Integer> availableSlots = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches());
+                    List<Slot> availableSlots = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches());
                     if (availableSlots.size() != 0) {
-                        Slot slotFrom = Slot.getFromInventory(availableSlots.get(0));
+                        Slot slotFrom = availableSlots.get(0);
                         int countInSlot = mod.getInventoryTracker().getItemStackInSlot(slotFrom).getCount();
                         if (countInSlot < maxToMove) {
                             maxToMove = countInSlot;
                         }
                         Slot slotTo = new ChestSlot(emptySlot, data.isBig());
-                        mod.getInventoryTracker().moveItems(slotFrom, slotTo, maxToMove);
-                        return null;
+                        return new MoveItemToSlotTask(new ItemTarget(target, maxToMove), slotTo);
                     }
                 }
             }
