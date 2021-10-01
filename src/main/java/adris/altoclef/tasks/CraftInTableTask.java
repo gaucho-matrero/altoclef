@@ -6,15 +6,15 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,10 +41,6 @@ public class CraftInTableTask extends ResourceTask {
         this(target, recipe, true, false);
     }
 
-    public CraftInTableTask(Item[] items, int count, CraftingRecipe recipe) {
-        this(new ItemTarget(items, count), recipe);
-    }
-
     public CraftInTableTask(Item item, int count, CraftingRecipe recipe) {
         this(new ItemTarget(item, count), recipe);
     }
@@ -54,7 +50,7 @@ public class CraftInTableTask extends ResourceTask {
         for (RecipeTarget target : recipeTargets) {
             result.add(target.getItem());
         }
-        return Util.toArray(ItemTarget.class, result);
+        return result.toArray(ItemTarget[]::new);
     }
 
     @Override
@@ -76,16 +72,15 @@ public class CraftInTableTask extends ResourceTask {
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
         if (mod.getPlayer() != null) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
         }
         //mod.getControllerExtras().closeCurrentContainer();
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CraftInTableTask) {
-            CraftInTableTask other = (CraftInTableTask) obj;
-            return _craftTask.isEqual(other._craftTask);
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CraftInTableTask task) {
+            return _craftTask.isEqual(task._craftTask);
         }
         return false;
     }
@@ -127,7 +122,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStart(AltoClef mod) {
         super.onStart(mod);
         _craftCount = 0;
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
         _fullCheckFailed = false;
@@ -141,7 +136,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         super.onStop(mod, interruptTask);
         mod.getBehaviour().pop();
         if (AltoClef.inGame()) {
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
         }
     }
 
@@ -163,7 +158,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             if (!_collectTask.isFinished(mod)) {
 
                 if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_targets)) {
-                    setDebugState("Collecting materials for: " + Util.arrayToString(_targets));
+                    setDebugState("craft does NOT have RECIPE MATERIALS: " + Arrays.toString(_targets));
                     return _collectTask;
                 }
             }
@@ -177,11 +172,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     }
 
     @Override
-    protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
-        if (obj instanceof DoCraftInTableTask) {
-            DoCraftInTableTask other = (DoCraftInTableTask) obj;
-
-            return Util.arraysEqual(other._targets, _targets);
+    protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
+        if (other instanceof DoCraftInTableTask task) {
+            return Arrays.equals(task._targets, _targets);
         }
         return false;
     }
@@ -197,7 +190,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
-            mod.getPlayer().closeHandledScreen();
+            mod.getControllerExtras().closeScreen();
             return null;
         }
 
@@ -211,6 +204,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             setDebugState("Crafting");
             return new CraftGenericTask(target.getRecipe());
         }
+
         return null;
     }
 
@@ -222,7 +216,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // TODO: If we have an axe, lower the cost.
-        if (mod.getInventoryTracker().hasItem(ItemUtil.LOG) || mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS) >= 4) {
+        if (mod.getInventoryTracker().hasItem(ItemHelper.LOG) || mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
             return 150;
         }
@@ -239,9 +233,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 Collections.addAll(result, materialTarget.getMatches());
             }
         }
-        Item[] returnthing = new Item[result.size()];
-        result.toArray(returnthing);
-        return returnthing;
+
+        return result.toArray(Item[]::new);
     }
 
 }

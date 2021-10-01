@@ -1,7 +1,7 @@
 package adris.altoclef.util.progresscheck;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -42,7 +42,7 @@ public class MovementProgressChecker {
             // If we broke a block, we made progress.
             // We must also delay reseting the distance checker UNTIL we break a block.
             // Because otherwise we risk not failing if we keep retrtying to mine and don't succeed.
-            if (_lastBreakingBlock != null && WorldUtil.isAir(mod, _lastBreakingBlock)) {
+            if (_lastBreakingBlock != null && WorldHelper.isAir(mod, _lastBreakingBlock)) {
                 _distanceChecker.reset();
                 _mineChecker.reset();
             }

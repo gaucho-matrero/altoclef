@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -16,7 +16,6 @@ import net.minecraft.item.Items;
 
 public class FoodChain extends SingleTaskChain {
 
-    private static final int RIGHT_CLICK_KEY = 1 - 100;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
@@ -67,7 +66,7 @@ public class FoodChain extends SingleTaskChain {
             if (toUse != null) {
 
                 // Make sure we're not facing a container
-                if (!LookUtil.tryAvoidingInteractable(mod)) {
+                if (!LookHelper.tryAvoidingInteractable(mod)) {
                     return Float.NEGATIVE_INFINITY;
                 }
 
@@ -166,6 +165,8 @@ public class FoodChain extends SingleTaskChain {
         for (ItemStack stack : mod.getInventoryTracker().getAvailableFoods()) {
             FoodComponent f = stack.getItem().getFoodComponent();
             if (f != null) {
+                // do NOT eat protected items
+                if (mod.getBehaviour().isProtected(stack.getItem())) continue;
                 // Ignore spider eyes
                 if (stack.getItem() == Items.SPIDER_EYE) {
                     continue;

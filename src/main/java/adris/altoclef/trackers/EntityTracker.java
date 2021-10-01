@@ -6,7 +6,7 @@ import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.CachedProjectile;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ProjectileUtil;
+import adris.altoclef.util.ProjectileHelper;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -51,8 +51,8 @@ public class EntityTracker extends Tracker {
 
     public static boolean isHostileToPlayer(AltoClef mod, Entity mob) {
         boolean angry = isAngryAtPlayer(mob);
-        if (mob instanceof LivingEntity) {
-            return angry && ((LivingEntity)mob).canSee(mod.getPlayer());
+        if (mob instanceof LivingEntity entity) {
+            return angry && entity.canSee(mod.getPlayer());
         }
         return angry;
     }
@@ -76,16 +76,14 @@ public class EntityTracker extends Tracker {
         // TODO: Ignore on Peaceful difficulty.
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
-        if (hostile instanceof EndermanEntity) {
-            EndermanEntity enderman = (EndermanEntity) hostile;
+        if (hostile instanceof EndermanEntity enderman) {
             return enderman.isAngryAt(player) && enderman.isAngry();
         }
         // Hoglins by default are pretty mad.
         if (hostile instanceof HoglinEntity) {
             return true;
         }
-        if (hostile instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombie = (ZombifiedPiglinEntity) hostile;
+        if (hostile instanceof ZombifiedPiglinEntity zombie) {
             // Will ALWAYS be false.
             return zombie.hasAngerTime() && zombie.isAngryAt(player);
         }
@@ -93,8 +91,7 @@ public class EntityTracker extends Tracker {
     }
 
     public static boolean isTradingPiglin(Entity entity) {
-        if (entity instanceof PiglinEntity) {
-            PiglinEntity pig = (PiglinEntity) entity;
+        if (entity instanceof PiglinEntity pig) {
             for (ItemStack stack : pig.getItemsHand()) {
                 if (stack.getItem().equals(Items.GOLD_INGOT)) {
                     // We're trading with this one, ignore it.
@@ -296,8 +293,7 @@ public class EntityTracker extends Tracker {
                     _closeEntities.add(entity);
                 }
 
-                if (entity instanceof ItemEntity) {
-                    ItemEntity ientity = (ItemEntity) entity;
+                if (entity instanceof ItemEntity ientity) {
                     Item droppedItem = ientity.getStack().getItem();
 
                     if (!_itemDropLocations.containsKey(droppedItem)) {
@@ -326,10 +322,9 @@ public class EntityTracker extends Tracker {
                     HostileEntity hostile = (HostileEntity) mob;
                 }
                  */
-                } else if (entity instanceof ProjectileEntity) {
+                } else if (entity instanceof ProjectileEntity projEntity) {
                     if (!_mod.getBehaviour().shouldAvoidDodgingProjectile(entity)) {
                         CachedProjectile proj = new CachedProjectile();
-                        ProjectileEntity projEntity = (ProjectileEntity) entity;
 
                         boolean inGround = false;
                         // Get projectile "inGround" variable
@@ -340,13 +335,12 @@ public class EntityTracker extends Tracker {
                         if (!inGround) {
                             proj.position = projEntity.getPos();
                             proj.velocity = projEntity.getVelocity();
-                            proj.gravity = ProjectileUtil.hasGravity(projEntity) ? ProjectileUtil.GRAVITY_ACCEL : 0;
+                            proj.gravity = ProjectileHelper.hasGravity(projEntity) ? ProjectileHelper.GRAVITY_ACCEL : 0;
                             proj.projectileType = projEntity.getClass();
                             _projectiles.add(proj);
                         }
                     }
-                } else if (entity instanceof PlayerEntity) {
-                    PlayerEntity player = (PlayerEntity) entity;
+                } else if (entity instanceof PlayerEntity player) {
                     String name = player.getName().getString();
                     _playerMap.put(name, player);
                     _playerLastCoordinates.put(name, player.getPos());

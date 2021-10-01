@@ -26,10 +26,12 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
             Items.GOLDEN_AXE
     };
 
-    private static final double MAINTAIN_DISTANCE = 3;
-
     public AbstractKillEntityTask() {
-        this(MAINTAIN_DISTANCE, CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
+        this(CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
+    }
+
+    public AbstractKillEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        super(combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
     public AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {

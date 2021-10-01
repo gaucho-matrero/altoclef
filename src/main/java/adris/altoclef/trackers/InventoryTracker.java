@@ -5,7 +5,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.*;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -423,7 +422,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean isEquipped(Item ...matches) {
-        return Util.arrayContains(matches, getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem());
+        return Arrays.asList(matches).contains(getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem());
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -433,11 +432,11 @@ public class InventoryTracker extends Tracker {
             // Get stuff that's throwaway by default
             List<Slot> throwawaySlots = this.getInventorySlotsWithItem(_mod.getModSettings().getThrowawayItems(_mod));
             if (throwawaySlots.size() != 0) {
-                Slot best = Util.minItem(throwawaySlots, (leftSlot, rightSlot) -> {
+                Slot best = throwawaySlots.stream().min((leftSlot, rightSlot) -> {
                     ItemStack left = getItemStackInSlot(leftSlot),
                             right = getItemStackInSlot(rightSlot);
-                    return right.getCount() - left.getCount();
-                });
+                    return left.getCount() - right.getCount();
+                }).get();
                 Debug.logInternal("THROWING AWAY throwawayable ITEM AT SLOT " + best);
                 return best;
             }
@@ -471,26 +470,26 @@ public class InventoryTracker extends Tracker {
                 }
 
                 if (possibleSlots.size() != 0) {
-                    int best = Util.minItem(possibleSlots, (leftSlot, rightSlot) -> {
+                    int best = possibleSlots.stream().min((leftSlot, rightSlot) -> {
                         ItemStack left = getItemStackInSlot(Slot.getFromInventory(leftSlot)),
                                 right = getItemStackInSlot(Slot.getFromInventory(rightSlot));
                         boolean leftIsTool = left.getItem() instanceof ToolItem;
                         boolean rightIsTool = right.getItem() instanceof ToolItem;
                         // Prioritize tools over materials.
                         if (rightIsTool && !leftIsTool) {
-                            return 1;
-                        } else if (leftIsTool && !rightIsTool) {
                             return -1;
+                        } else if (leftIsTool && !rightIsTool) {
+                            return 1;
                         }
                         if (rightIsTool && leftIsTool) {
                             // Prioritize material type, then durability.
                             ToolItem leftTool = (ToolItem) left.getItem();
                             ToolItem rightTool = (ToolItem) right.getItem();
                             if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
-                                return rightTool.getMaterial().getMiningLevel() - leftTool.getMaterial().getMiningLevel();
+                                return leftTool.getMaterial().getMiningLevel() - rightTool.getMaterial().getMiningLevel();
                             }
                             // We want less damage.
-                            return -1 * (right.getDamage() - left.getDamage());
+                            return left.getDamage() - right.getDamage();
                         }
 
                         // Prioritize food over other things if we lack food.
@@ -499,9 +498,9 @@ public class InventoryTracker extends Tracker {
                         boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
                         if (lacksFood) {
                             if (rightIsFood && !leftIsFood) {
-                                return 1;
-                            } else if (leftIsFood && !rightIsFood) {
                                 return -1;
+                            } else if (leftIsFood && !rightIsFood) {
+                                return 1;
                             }
                         }
                         // If both are food, pick the better cost.
@@ -510,12 +509,12 @@ public class InventoryTracker extends Tracker {
                             assert right.getItem().getFoodComponent() != null;
                             int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
                                     rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
-                            return rightCost - leftCost;
+                            return -1 * (leftCost - rightCost);
                         }
 
-                        // Just keep the one with the most quantity, but this doesn't really matter.
-                        return right.getCount() - left.getCount();
-                    });
+                        // Just discard the one with the smallest quantity, but this doesn't really matter.
+                        return left.getCount() - right.getCount();
+                    }).get();
                     Debug.logInternal("THROWING AWAY unused ITEM AT SLOT " + best);
                     return Slot.getFromInventory(best);
                 } else {

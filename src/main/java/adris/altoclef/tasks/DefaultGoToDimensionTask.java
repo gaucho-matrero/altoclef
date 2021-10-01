@@ -71,9 +71,8 @@ public class DefaultGoToDimensionTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DefaultGoToDimensionTask) {
-            DefaultGoToDimensionTask task = (DefaultGoToDimensionTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof DefaultGoToDimensionTask task) {
             return task._target == _target;
         }
         return false;
@@ -115,14 +114,10 @@ public class DefaultGoToDimensionTask extends Task {
             setDebugState("Going to nether portal");
             return new EnterNetherPortalTask(Dimension.NETHER);
         }
-        switch (mod.getModSettings().getOverworldToNetherBehaviour()) {
-            case BUILD_PORTAL_VANILLA:
-                return new ConstructNetherPortalBucketTask();
-            case GO_TO_HOME_BASE:
-                return new GetToBlockTask(mod.getModSettings().getHomeBasePosition());
-        }
-        setDebugState("Overworld->Nether Behaviour " + mod.getModSettings().getOverworldToNetherBehaviour() + " is NOT IMPLEMENTED YET!");
-        return null;
+        return switch (mod.getModSettings().getOverworldToNetherBehaviour()) {
+            case BUILD_PORTAL_VANILLA -> new ConstructNetherPortalBucketTask();
+            case GO_TO_HOME_BASE -> new GetToBlockTask(mod.getModSettings().getHomeBasePosition());
+        };
     }
 
     private Task goToEndTask(AltoClef mod) {
@@ -134,7 +129,7 @@ public class DefaultGoToDimensionTask extends Task {
     private boolean netherPortalIsClose(AltoClef mod) {
         if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
             BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
-            return closest.isWithinDistance(mod.getPlayer().getPos(), 2000);
+            return closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), 2000);
         }
         return false;
     }

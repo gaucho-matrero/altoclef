@@ -8,7 +8,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -34,7 +34,7 @@ public class PlaceSignTask extends Task {
     }
 
     private static boolean isSign(Block block) {
-        for (Block check : ItemUtil.WOOD_SIGNS_ALL) {
+        for (Block check : ItemHelper.WOOD_SIGNS_ALL) {
             if (check == block) return true;
         }
         return false;
@@ -59,7 +59,7 @@ public class PlaceSignTask extends Task {
 
         // Place sign
         if (placeAnywhere()) {
-            return new PlaceBlockNearbyTask(ItemUtil.WOOD_SIGNS_ALL);
+            return new PlaceBlockNearbyTask(ItemHelper.WOOD_SIGNS_ALL);
         } else {
 
             assert MinecraftClient.getInstance().world != null;
@@ -114,7 +114,7 @@ public class PlaceSignTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
     }
 
     @Override
@@ -123,9 +123,8 @@ public class PlaceSignTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof PlaceSignTask) {
-            PlaceSignTask task = (PlaceSignTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof PlaceSignTask task) {
             if (!task._message.equals(_message)) return false;
             if ((task._target == null) != (_target == null)) return false;
             if (task._target != null) {

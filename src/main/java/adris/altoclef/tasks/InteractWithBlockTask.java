@@ -27,11 +27,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class InteractWithBlockTask extends Task {
 
-    private static final int MAX_REACH = 7;
     public final Action TimedOut = new Action();
     private final ItemTarget _toUse;
     private final Direction _direction;
@@ -213,9 +213,8 @@ public class InteractWithBlockTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof InteractWithBlockTask) {
-            InteractWithBlockTask task = (InteractWithBlockTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof InteractWithBlockTask task) {
             if ((task._direction == null) != (_direction == null)) return false;
             if (task._direction != null && !task._direction.equals(_direction)) return false;
             if ((task._toUse == null) != (_toUse == null)) return false;

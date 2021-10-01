@@ -19,7 +19,6 @@ import adris.altoclef.tasks.resources.KillAndLootTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.*;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -126,7 +125,7 @@ public class BeatMinecraftTask extends Task {
         mod.getBehaviour().push();
         // Add some protections so we don't throw these away at any point.
         mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
-        mod.getBehaviour().addProtectedItems(ItemUtil.BED);
+        mod.getBehaviour().addProtectedItems(ItemHelper.BED);
 
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Allow walking on end portal
@@ -214,7 +213,7 @@ public class BeatMinecraftTask extends Task {
                 return new EquipArmorTask(DIAMOND_ARMORS);
             }
             // Get diamond armor + gear first
-            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.LOG) <= 0)) {
+            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemHelper.LOG) <= 0)) {
                 // Get two iron pickaxes first.
                 double ironDurability = 0;
                 if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
@@ -383,7 +382,7 @@ public class BeatMinecraftTask extends Task {
 
         // Make sure we have at least a wooden pickaxe at all times
         // AND materials to craft a new one, so we aren't stuck in a cavern somewhere.
-        int planksCount = 4 * mod.getInventoryTracker().getItemCount(ItemUtil.LOG) + mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS);
+        int planksCount = 4 * mod.getInventoryTracker().getItemCount(ItemHelper.LOG) + mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS);
         int planksNeeded = 3 + (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE) ? 0 : 4) + (mod.getInventoryTracker().getItemCount(Items.STICK) >= 2 ? 0 : 2);
         if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD) || planksCount < planksNeeded) {
             // If we ran out of wood, go get more.
@@ -428,7 +427,7 @@ public class BeatMinecraftTask extends Task {
             toGet.add(new ItemTarget("iron_pickaxe", 1));
         }
         if (toGet.size() != 0) {
-            return TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, toGet));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
+            return TaskCatalogue.getSquashedItemTask(toGet.toArray(ItemTarget[]::new));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
         }
         // Collect water if we don't have it.
         if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
@@ -447,7 +446,7 @@ public class BeatMinecraftTask extends Task {
 
         if (_endBedSpawnPos != null) {
             if (mod.getChunkTracker().isChunkLoaded(_endBedSpawnPos)) {
-                if (!mod.getBlockTracker().blockIsValid(_endBedSpawnPos, Util.itemsToBlocks(ItemUtil.BED))) {
+                if (!mod.getBlockTracker().blockIsValid(_endBedSpawnPos, ItemHelper.itemsToBlocks(ItemHelper.BED))) {
                     Debug.logMessage("BED DESTRUCTION DETECTED: Will assume we need to place a new one.");
                     _endBedSpawnPos = null;
                     _placeBedSpawnTask.resetSleep();
@@ -496,9 +495,7 @@ public class BeatMinecraftTask extends Task {
 
             setDebugState("ENTERING PORTAL");
             return new DoToClosestBlockTask(
-                    () -> mod.getPlayer().getPos(),
                     blockPos -> new GetToBlockTask(blockPos.up(), true),
-                    pos -> mod.getBlockTracker().getNearestTracking(pos, Blocks.END_PORTAL),
                     Blocks.END_PORTAL
             );
         }
@@ -533,8 +530,8 @@ public class BeatMinecraftTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof BeatMinecraftTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof BeatMinecraftTask;
     }
 
     @Override

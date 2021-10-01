@@ -4,12 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.PlayerExtraController;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
@@ -22,7 +22,9 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 public class PlaceBlockNearbyTask extends Task {
@@ -45,7 +47,7 @@ public class PlaceBlockNearbyTask extends Task {
         _cantPlaceHere = cantPlaceHere;
         onBlockPlaced = new ActionListener<>(value ->
         {
-            if (Util.arrayContains(_toPlace, value.blockState.getBlock())) {
+            if (ArrayUtils.contains(_toPlace, value.blockState.getBlock())) {
                 stopPlacing(_mod);
             }
         });
@@ -72,13 +74,13 @@ public class PlaceBlockNearbyTask extends Task {
         // -
 
         // Close screen first
-        mod.getPlayer().closeHandledScreen();
+        mod.getControllerExtras().closeScreen();
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
         if (current != null && !_cantPlaceHere.test(current)) {
             setDebugState("Placing since we can...");
-            if (mod.getSlotHandler().forceEquipItem(Util.blocksToItems(_toPlace))) {
+            if (mod.getSlotHandler().forceEquipItem(ItemHelper.blocksToItems(_toPlace))) {
                 if (place(mod, current)) {
                     return null;
                 }
@@ -94,7 +96,7 @@ public class PlaceBlockNearbyTask extends Task {
         // Fail check
         if (!_progressChecker.check(mod)) {
             Debug.logMessage("Failed placing, wandering and trying again.");
-            LookUtil.randomOrientation(mod);
+            LookHelper.randomOrientation(mod);
             if (_tryPlace != null) {
                 mod.getBlockTracker().requestBlockUnreachable(_tryPlace);
                 _tryPlace = null;
@@ -115,7 +117,7 @@ public class PlaceBlockNearbyTask extends Task {
         // Look in random places to maybe get a random hit
         if (_randomlookTimer.elapsed()) {
             _randomlookTimer.reset();
-            LookUtil.randomOrientation(mod);
+            LookHelper.randomOrientation(mod);
         }
 
         setDebugState("Wandering until we randomly place or find a good place spot.");
@@ -129,22 +131,21 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof PlaceBlockNearbyTask) {
-            PlaceBlockNearbyTask task = (PlaceBlockNearbyTask) obj;
-            return Util.arraysEqual(task._toPlace, _toPlace);
+    protected boolean isEqual(Task other) {
+        if (other instanceof PlaceBlockNearbyTask task) {
+            return Arrays.equals(task._toPlace, _toPlace);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Place " + Util.arrayToString(_toPlace) + " nearby";
+        return "Place " + Arrays.toString(_toPlace) + " nearby";
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _justPlaced != null && Util.arrayContains(_toPlace, mod.getWorld().getBlockState(_justPlaced).getBlock());
+        return _justPlaced != null && ArrayUtils.contains(_toPlace, mod.getWorld().getBlockState(_justPlaced).getBlock());
     }
 
     public BlockPos getPlaced() {
@@ -153,15 +154,14 @@ public class PlaceBlockNearbyTask extends Task {
 
     private BlockPos getCurrentlyLookingBlockPlace(AltoClef mod) {
         HitResult hit = MinecraftClient.getInstance().crosshairTarget;
-        if (hit instanceof BlockHitResult) {
-            BlockHitResult bhit = (BlockHitResult) hit;
+        if (hit instanceof BlockHitResult bhit) {
             BlockPos bpos = bhit.getBlockPos();//.subtract(bhit.getSide().getVector());
             //Debug.logMessage("TEMP: A: " + bpos);
             IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
             if (MovementHelper.canPlaceAgainst(ctx, bpos)) {
                 BlockPos placePos = bhit.getBlockPos().add(bhit.getSide().getVector());
                 // Don't place inside the player.
-                if (WorldUtil.isInsidePlayer(mod, placePos)) {
+                if (WorldHelper.isInsidePlayer(mod, placePos)) {
                     return null;
                 }
                 //Debug.logMessage("TEMP: B (actual): " + placePos);
@@ -174,7 +174,7 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     private boolean blockEquipped(AltoClef mod) {
-        return mod.getInventoryTracker().isEquipped(Util.blocksToItems(_toPlace));
+        return mod.getInventoryTracker().isEquipped(ItemHelper.blocksToItems(_toPlace));
     }
 
     private boolean place(AltoClef mod, BlockPos targetPlace) {
@@ -219,11 +219,11 @@ public class PlaceBlockNearbyTask extends Task {
         BlockPos start = mod.getPlayer().getBlockPos().add(-range, -range, -range);
         BlockPos end = mod.getPlayer().getBlockPos().add(range, range, range);
 
-        for (BlockPos blockPos : WorldUtil.scanRegion(mod, start, end)) {
-            boolean solid = WorldUtil.isSolid(mod, blockPos);
-            boolean inside = WorldUtil.isInsidePlayer(mod, blockPos);
+        for (BlockPos blockPos : WorldHelper.scanRegion(mod, start, end)) {
+            boolean solid = WorldHelper.isSolid(mod, blockPos);
+            boolean inside = WorldHelper.isInsidePlayer(mod, blockPos);
             // We can't break this block.
-            if (solid && !WorldUtil.canBreak(mod, blockPos)) {
+            if (solid && !WorldHelper.canBreak(mod, blockPos)) {
                 continue;
             }
             // We can't place here as defined by user.
@@ -231,10 +231,10 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             // We can't place here.
-            if (mod.getBlockTracker().unreachable(blockPos) || !WorldUtil.canPlace(mod, blockPos)) {
+            if (mod.getBlockTracker().unreachable(blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
                 continue;
             }
-            boolean hasBelow = WorldUtil.isSolid(mod, blockPos.down());
+            boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());
             double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos(), false);
 
             double score = distSq + (solid ? 4 : 0) + (hasBelow ? 0 : 10) + (inside ? 3 : 0);

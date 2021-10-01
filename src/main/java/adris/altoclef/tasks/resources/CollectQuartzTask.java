@@ -48,8 +48,8 @@ public class CollectQuartzTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectQuartzTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectQuartzTask;
     }
 
     @Override

@@ -4,10 +4,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.StlHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -42,19 +43,19 @@ public class MoveItemToSlotTask extends Task {
             ItemStack atTarget = mod.getInventoryTracker().getItemStackInSlot(_destination);
 
             // Items that CAN be moved to that slot.
-            Item[] validItems = Util.toArray(Item.class, Arrays.stream(_toMove.getMatches()).filter(item -> mod.getInventoryTracker().getItemCount(item) >= _toMove.getTargetCount()).collect(Collectors.toList()));
+            Item[] validItems = Arrays.stream(_toMove.getMatches()).filter(item -> mod.getInventoryTracker().getItemCount(item) >= _toMove.getTargetCount()).collect(Collectors.toList()).toArray(Item[]::new);
 
-            if (currentHeld.isEmpty() || !Util.arrayContains(validItems, currentHeld.getItem())) {
+            if (currentHeld.isEmpty() || !Arrays.asList(validItems).contains(currentHeld.getItem())) {
                 // Wrong item held, replace with best match.
                 Slot bestPickup = getBestSlotToPickUp(mod, validItems);
                 if (bestPickup == null) {
-                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + Util.arrayToString(validItems, Item::getTranslationKey));
+                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
                 return new ClickSlotTask(bestPickup);
             }
 
-            int currentlyPlaced = Util.arrayContains(validItems, atTarget.getItem()) ? atTarget.getCount() : 0;
+            int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
             if (currentHeld.getCount() + currentlyPlaced  < _toMove.getTargetCount()) {
                 // Just place all of 'em
                 return new ClickSlotTask(_destination);

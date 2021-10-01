@@ -7,15 +7,17 @@ import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.PlayerExtraController;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
@@ -43,18 +45,18 @@ public class ReplaceBlocksTask extends Task {
         blockBrokenListener = new ActionListener<>(evt -> {
             if (evt.player.equals(MinecraftClient.getInstance().player)) {
                 if (isWithinRange(evt.blockPos)) {
-                    boolean wasAReplacable = Util.arrayContains(_toFind, evt.blockState.getBlock());
+                    boolean wasAReplacable = ArrayUtils.contains(_toFind, evt.blockState.getBlock());
                     if (wasAReplacable) {
-                        Debug.logMessage("ADDED REPLACABLE FORCE: " + evt.blockPos);
+                        Debug.logMessage("ADDED REPLACEABLE FORCE: " + evt.blockPos);
                         _forceReplace.push(evt.blockPos);
                     } else {
-                        Debug.logMessage("Destroyed a non replacable block (delete this print if things are good lol)");
+                        Debug.logMessage("Destroyed a non replaceable block (delete this print if things are good lol)");
                     }
                 } else {
                     Debug.logMessage("Not within range (TODO: DELETE THIS PRINT)");
                 }
             } else {
-                Debug.logMessage("INEQUAL PLAYER (delete this print if things are good lol)");
+                Debug.logMessage("IN-EQUAL PLAYER (delete this print if things are good lol)");
             }
         });
     }
@@ -104,12 +106,12 @@ public class ReplaceBlocksTask extends Task {
             //return TaskCatalogue.getItemTask(_toReplace);
         }
 
-        Block[] blocksToPlace = Util.itemsToBlocks(_toReplace.getMatches());
+        Block[] blocksToPlace = ItemHelper.itemsToBlocks(_toReplace.getMatches());
 
         // If we are forced to replace something we broke, do it now.
         while (!_forceReplace.isEmpty()) {
             BlockPos toReplace = _forceReplace.pop();
-            if (!Util.arrayContains(blocksToPlace, mod.getWorld().getBlockState(toReplace).getBlock())) {
+            if (!ArrayUtils.contains(blocksToPlace, mod.getWorld().getBlockState(toReplace).getBlock())) {
                 _replaceTask = new PlaceBlockTask(toReplace, blocksToPlace);
                 return _replaceTask;
             }
@@ -117,12 +119,12 @@ public class ReplaceBlocksTask extends Task {
 
         // Now replace
         setDebugState("Searching for blocks to replace...");
-        return new DoToClosestBlockTask(
-                () -> mod.getPlayer().getPos(), whereToPlace -> {
-            _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
-            return _replaceTask;
-        },
-                pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore), _toFind)
+        return new DoToClosestBlockTask(whereToPlace -> {
+                _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
+                return _replaceTask;
+            },
+            pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore),
+            _toFind)
         );
     }
 
@@ -133,17 +135,16 @@ public class ReplaceBlocksTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof ReplaceBlocksTask) {
-            ReplaceBlocksTask task = (ReplaceBlocksTask) obj;
-            return task._toReplace.equals(_toReplace) && Util.arraysEqual(task._toFind, _toFind);
+    protected boolean isEqual(Task other) {
+        if (other instanceof ReplaceBlocksTask task) {
+            return task._toReplace.equals(_toReplace) && Arrays.equals(task._toFind, _toFind);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Replacing " + Util.arrayToString(_toFind) + " with " + _toReplace;
+        return "Replacing " + Arrays.toString(_toFind) + " with " + _toReplace;
     }
 
     private boolean isWithinRange(BlockPos pos) {

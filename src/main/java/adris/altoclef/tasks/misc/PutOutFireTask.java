@@ -42,9 +42,8 @@ public class PutOutFireTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof PutOutFireTask) {
-            PutOutFireTask task = (PutOutFireTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof PutOutFireTask task) {
             return (task._firePosition.equals(_firePosition));
         }
         return false;

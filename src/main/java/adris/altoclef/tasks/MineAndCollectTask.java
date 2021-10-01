@@ -8,9 +8,8 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorInventorySlot;
 import adris.altoclef.util.slots.PlayerInventorySlot;
@@ -27,10 +26,7 @@ import net.minecraft.item.MiningToolItem;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MineAndCollectTask extends ResourceTask {
 
@@ -68,7 +64,7 @@ public class MineAndCollectTask extends ResourceTask {
                 result.add(Block.getBlockFromItem(item));
             }
         }
-        return Util.toArray(Block.class, result);
+        return result.toArray(Block[]::new);
     }
 
     @Override
@@ -115,9 +111,8 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
-        if (other instanceof MineAndCollectTask) {
-            MineAndCollectTask task = (MineAndCollectTask) other;
-            return Util.arraysEqual(task._blocksToMine, _blocksToMine);
+        if (other instanceof MineAndCollectTask task) {
+            return Arrays.equals(task._blocksToMine, _blocksToMine);
         }
         return false;
     }
@@ -138,8 +133,7 @@ public class MineAndCollectTask extends ResourceTask {
                     // Our cursor stack would help us mine our current block
                     Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
                     if (item instanceof MiningToolItem) {
-                        if (currentlyEquipped instanceof MiningToolItem) {
-                            MiningToolItem currentPick = (MiningToolItem) currentlyEquipped;
+                        if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;
                             if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
                                 // We can equip a better pickaxe.
@@ -174,12 +168,10 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Vec3d getPos(AltoClef mod, Object obj) {
-            if (obj instanceof BlockPos) {
-                BlockPos b = (BlockPos) obj;
+            if (obj instanceof BlockPos b) {
                 return new Vec3d(b.getX(), b.getY(), b.getZ());
             }
-            if (obj instanceof ItemEntity) {
-                ItemEntity item = (ItemEntity) obj;
+            if (obj instanceof ItemEntity item) {
                 return item.getPos();
             }
             throw new UnsupportedOperationException("Shouldn't try to get the position of object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
@@ -205,7 +197,6 @@ public class MineAndCollectTask extends ResourceTask {
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
-                Debug.logInternal("(temp) interactions are paused");
                 return closestDrop;
             }
 
@@ -236,8 +227,7 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Task getGoalTask(Object obj) {
-            if (obj instanceof BlockPos) {
-                BlockPos newPos = (BlockPos) obj;
+            if (obj instanceof BlockPos newPos) {
                 if (_miningPos == null || !_miningPos.equals(newPos)) {
                     _progressChecker.reset();
                 }
@@ -258,12 +248,10 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected boolean isValid(AltoClef mod, Object obj) {
-            if (obj instanceof BlockPos) {
-                BlockPos b = (BlockPos) obj;
-                return mod.getBlockTracker().blockIsValid(b, _blocks) && WorldUtil.canBreak(mod, b);
+            if (obj instanceof BlockPos b) {
+                return mod.getBlockTracker().blockIsValid(b, _blocks) && WorldHelper.canBreak(mod, b);
             }
-            if (obj instanceof ItemEntity) {
-                ItemEntity drop = (ItemEntity) obj;
+            if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();
                 for (ItemTarget target : _targets) {
                     if (target.matches(item)) return true;
@@ -285,10 +273,9 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         @Override
-        protected boolean isEqual(Task obj) {
-            if (obj instanceof MineOrCollectTask) {
-                MineOrCollectTask task = (MineOrCollectTask) obj;
-                return Util.arraysEqual(task._blocks, _blocks) && Util.arraysEqual(task._targets, _targets);
+        protected boolean isEqual(Task other) {
+            if (other instanceof MineOrCollectTask task) {
+                return Arrays.equals(task._blocks, _blocks) && Arrays.equals(task._targets, _targets);
             }
             return false;
         }

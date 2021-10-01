@@ -7,9 +7,8 @@ import adris.altoclef.tasks.MineAndCollectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.SheepEntity;
@@ -29,7 +28,7 @@ public class CollectWoolTask extends ResourceTask {
     private final Item[] _wools;
 
     public CollectWoolTask(DyeColor[] colors, int count) {
-        super(new ItemTarget(ItemUtil.WOOL, count));
+        super(new ItemTarget(ItemHelper.WOOL, count));
         _colors = new HashSet<>(Arrays.asList(colors));
         _count = count;
         _wools = getWoolColorItems(colors);
@@ -46,7 +45,7 @@ public class CollectWoolTask extends ResourceTask {
     private static Item[] getWoolColorItems(DyeColor[] colors) {
         Item[] result = new Item[colors.length];
         for (int i = 0; i < result.length; ++i) {
-            result[i] = ItemUtil.getColorfulItems(colors[i]).wool;
+            result[i] = ItemHelper.getColorfulItems(colors[i]).wool;
         }
         return result;
     }
@@ -58,7 +57,7 @@ public class CollectWoolTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Util.itemsToBlocks(_wools));
+        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(_wools));
     }
 
     @Override
@@ -69,7 +68,7 @@ public class CollectWoolTask extends ResourceTask {
         // USE DYES + REGULAR WOOL TO CRAFT THE WOOL COLOR!!
 
         // If we find a wool block, break it.
-        Block[] woolBlocks = Util.itemsToBlocks(_wools);
+        Block[] woolBlocks = ItemHelper.itemsToBlocks(_wools);
         if (mod.getBlockTracker().anyFound(woolBlocks)) {
             return new MineAndCollectTask(new ItemTarget(_wools), woolBlocks, MiningRequirement.HAND);
         }
@@ -101,12 +100,12 @@ public class CollectWoolTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Util.itemsToBlocks(_wools));
+        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(_wools));
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectWoolTask && ((CollectWoolTask) obj)._count == _count;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectWoolTask && ((CollectWoolTask) other)._count == _count;
     }
 
     @Override

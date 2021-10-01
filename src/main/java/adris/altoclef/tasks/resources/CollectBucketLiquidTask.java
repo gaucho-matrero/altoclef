@@ -9,8 +9,8 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.LookUtil;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.LookHelper;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.input.Input;
@@ -138,11 +138,11 @@ public class CollectBucketLiquidTask extends ResourceTask {
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
-            if (_toCollect == Blocks.LAVA && !WorldUtil.canBreak(mod, blockPos.up())) {
+            if (_toCollect == Blocks.LAVA && !WorldHelper.canBreak(mod, blockPos.up())) {
                 return true;
             }
 
-            return !WorldUtil.isSourceBlock(mod, blockPos, false);
+            return !WorldHelper.isSourceBlock(mod, blockPos, false);
         }), _toCollect);
 
         // Find nearest water and right click it
@@ -151,10 +151,9 @@ public class CollectBucketLiquidTask extends ResourceTask {
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
 
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), (BlockPos blockpos) -> {
-
+            return new DoToClosestBlockTask((BlockPos blockpos) -> {
                 // Clear above if lava because we can't enter.
-                if (WorldUtil.isSolid(mod, blockpos.up())) {
+                if (WorldHelper.isSolid(mod, blockpos.up())) {
                     if (!_progressChecker.check(mod)) {
                         Debug.logMessage("Failed to break, blacklisting & wandering");
                         mod.getBlockTracker().requestBlockUnreachable(blockpos);
@@ -165,7 +164,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                 }
 
                 // We're close enough AND we see the block!
-                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookUtil.cleanLineOfSight(mod.getPlayer(), blockpos, 5)) {
+                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookHelper.cleanLineOfSight(mod.getPlayer(), blockpos, 5)) {
                     return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 }
                 // Get close enough.
@@ -199,9 +198,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectBucketLiquidTask) {
-            CollectBucketLiquidTask task = (CollectBucketLiquidTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectBucketLiquidTask task) {
             if (task._count != _count) return false;
             return task._toCollect == _toCollect;
         }

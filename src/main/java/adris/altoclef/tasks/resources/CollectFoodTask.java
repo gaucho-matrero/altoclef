@@ -9,7 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.*;
@@ -111,7 +111,10 @@ public class CollectFoodTask extends Task {
         mod.getBehaviour().addProtectedItems(ITEMS_TO_PICK_UP);
         for (CookableFoodTarget food : COOKABLE_FOODS)
             mod.getBehaviour().addProtectedItems(food.getRaw(), food.getCooked());
-        for (CropTarget crop : CROPS) mod.getBehaviour().addProtectedItems(crop.cropItem);
+        for (CropTarget crop : CROPS) {
+            mod.getBehaviour().addProtectedItems(crop.cropItem);
+            mod.getBlockTracker().trackBlock(crop.cropBlock);
+        }
         mod.getBehaviour().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
 
         mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
@@ -219,7 +222,7 @@ public class CollectFoodTask extends Task {
                         }
                     }
                     // Unbreakable.
-                    return !WorldUtil.canBreak(mod, blockPos);
+                    return !WorldHelper.canBreak(mod, blockPos);
                     // We're not wheat so do NOT reject.
                 }), 100);
                 if (t != null) {
@@ -276,6 +279,9 @@ public class CollectFoodTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
         mod.getBlockTracker().stopTracking(Blocks.SWEET_BERRY_BUSH);
+        for (CropTarget crop : CROPS) {
+            mod.getBlockTracker().stopTracking(crop.cropBlock);
+        }
         mod.getBehaviour().pop();
     }
 
@@ -285,9 +291,9 @@ public class CollectFoodTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof CollectFoodTask) {
-            CollectFoodTask task = (CollectFoodTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof CollectFoodTask) {
+            CollectFoodTask task = (CollectFoodTask) other;
             return task._unitsNeeded == _unitsNeeded;
         }
         return false;
@@ -304,7 +310,7 @@ public class CollectFoodTask extends Task {
      */
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
         Predicate<BlockPos> rejectPlus = (blockPos) -> {
-            if (!WorldUtil.canBreak(mod, blockPos)) return true;
+            if (!WorldHelper.canBreak(mod, blockPos)) return true;
             return reject.test(blockPos);
         };
         BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), rejectPlus, blockToCheck);
@@ -317,16 +323,13 @@ public class CollectFoodTask extends Task {
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
-        if (!mod.getBlockTracker().isTracking(blockToCheck)) mod.getBlockTracker().trackBlock(blockToCheck);
         boolean spotted = nearestBlock != null || nearestDrop != null;
         // Collect hay until we have enough.
         if (spotted) {
             if (nearestDrop != null) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
-                //new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), GetToEntityTask::new,)
-                //return new GetToEntityTask(nearestDrop);
             } else {
-                return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
+                return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
                 //return new DestroyBlockTask(nearestBlock);
             }
         }
@@ -338,10 +341,6 @@ public class CollectFoodTask extends Task {
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {
-        //Task itemPickup = pickupTaskOrNull(mod, itemToGrab);
-        //if (itemPickup != null) return itemPickup;
-        //return new DoToClosestEntityTask(() -> mod.getPlayer().getPos(), KillEntityTask::new, entity.getClass());
-        //return new KillEntityTask(entity);
         return new KillAndLootTask(entity.getClass(), new ItemTarget(itemToGrab, 1));
     }
 
@@ -367,6 +366,7 @@ public class CollectFoodTask extends Task {
         return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
     }
 
+    @SuppressWarnings("rawtypes")
     private static class CookableFoodTarget {
         public String rawFood;
         public String cookedFood;
@@ -400,6 +400,7 @@ public class CollectFoodTask extends Task {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static class CookableFoodTargetFish extends CookableFoodTarget {
 
         public CookableFoodTargetFish(String rawFood, String cookedFood, Class mobToKill) {

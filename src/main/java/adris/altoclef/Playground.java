@@ -1,10 +1,10 @@
 package adris.altoclef;
 
+import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
-import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.*;
@@ -36,6 +36,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * For testing.
@@ -336,6 +337,24 @@ public class Playground {
                 break;
             case "equip":
                 mod.runUserTask(new MoveItemToSlotTask(new ItemTarget("diamond_chestplate", 1), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT));
+                break;
+            case "whisper": {
+                File check = new File("whisper.txt");
+                try {
+                    FileInputStream fis = new FileInputStream(check);
+                    Scanner sc = new Scanner(fis);
+                    String me = sc.nextLine(),
+                            template = sc.nextLine(),
+                            message = sc.nextLine();
+                    WhisperChecker.MessageResult result = WhisperChecker.tryParse(me, template, message);
+                    Debug.logMessage("Got message: " + result);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+            default:
+                mod.logWarning("Test not found: \"" + arg + "\".");
                 break;
         }
     }

@@ -61,10 +61,9 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
-        if (other instanceof CraftInInventoryTask) {
-            CraftInInventoryTask t = (CraftInInventoryTask) other;
-            if (!t._recipe.equals(_recipe)) return false;
-            return isCraftingEqual(t);
+        if (other instanceof CraftInInventoryTask task) {
+            if (!task._recipe.equals(_recipe)) return false;
+            return isCraftingEqual(task);
         }
         return false;
     }

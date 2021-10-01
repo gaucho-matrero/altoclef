@@ -36,10 +36,9 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof RunAwayFromHostilesTask) {
-            RunAwayFromHostilesTask other = (RunAwayFromHostilesTask) obj;
-            return Math.abs(other._distanceToRun - _distanceToRun) < 1;
+    protected boolean isEqual(Task other) {
+        if (other instanceof RunAwayFromHostilesTask task) {
+            return Math.abs(task._distanceToRun - _distanceToRun) < 1;
         }
         return false;
     }

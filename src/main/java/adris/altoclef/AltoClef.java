@@ -12,6 +12,10 @@ import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.*;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.InputControls;
+import adris.altoclef.util.PlayerExtraController;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import baritone.Baritone;
@@ -44,7 +48,7 @@ public class AltoClef implements ModInitializer {
     // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
-    private CommandExecutor _commandExecutor;
+    private static CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
     private TrackerManager _trackerManager;
     private BotBehaviour _botBehaviour;
@@ -221,15 +225,14 @@ public class AltoClef implements ModInitializer {
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
-            new AltoClefCommands(getCommandExecutor());
+            new AltoClefCommands();
         } catch (Exception e) {
-            /// ppppbbbbttt
             e.printStackTrace();
         }
     }
 
     // Main handlers access
-    public CommandExecutor getCommandExecutor() {
+    public static CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
 
@@ -273,7 +276,7 @@ public class AltoClef implements ModInitializer {
     // Baritone access
     public Baritone getClientBaritone() {
         if (getPlayer() == null) {
-            return null;
+            return (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
         }
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
@@ -371,7 +374,7 @@ public class AltoClef implements ModInitializer {
         return Dimension.END;
     }
     public Vec3d getOverworldPosition() {
-        return WorldUtil.getOverworldPosition(this, getPlayer().getPos());
+        return WorldHelper.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {

@@ -2,7 +2,7 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +25,7 @@ public class MiscBlockTracker {
 
     public void tick() {
         if (AltoClef.inGame()) {
-            for (BlockPos check : WorldUtil.scanRegion(_mod, _mod.getPlayer().getBlockPos().add(-1, -1, -1), _mod.getPlayer().getBlockPos().add(1, 1, 1))) {
+            for (BlockPos check : WorldHelper.scanRegion(_mod, _mod.getPlayer().getBlockPos().add(-1, -1, -1), _mod.getPlayer().getBlockPos().add(1, 1, 1))) {
                 Block currentBlock = _mod.getWorld().getBlockState(check).getBlock();
                 if (currentBlock == Blocks.NETHER_PORTAL) {
                     // Make sure we get the lowest nether portal, as we can only really enter from the bottom.
@@ -37,7 +37,7 @@ public class MiscBlockTracker {
                         }
                     }
                     BlockPos below = check.down();
-                    if (WorldUtil.isSolid(_mod, below)) {
+                    if (WorldHelper.isSolid(_mod, below)) {
                         _lastNetherPortal.put(_mod.getCurrentDimension(), check);
                     }
                     break;

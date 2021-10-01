@@ -3,7 +3,6 @@ package adris.altoclef.tasksystem.chains;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.EscapeFromLavaTask;
 import adris.altoclef.tasks.SafeRandomShimmyTask;
-import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import baritone.api.utils.input.Input;
@@ -38,11 +37,9 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
         // Lava Escape
         if (isInLavaOhShit(mod)) {
-            mod.getBehaviour().allowWalkThroughLava(true);
             setTask(new EscapeFromLavaTask());
             return 100;
         }
-        mod.getBehaviour().allowWalkThroughLava(false);
 
         // Portal stuck
         if (isStuckInNetherPortal(mod)) {

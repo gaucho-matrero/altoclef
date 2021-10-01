@@ -4,12 +4,15 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemHelper;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Arrays;
 
 /**
  * TO TEST:
@@ -53,21 +56,21 @@ public abstract class DoStuffInContainerTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         if (_openTableTask == null) {
-            _openTableTask = new DoToClosestBlockTask(mod, () -> mod.getPlayer().getPos(), InteractWithBlockTask::new, _containerBlocks);
+            _openTableTask = new DoToClosestBlockTask(InteractWithBlockTask::new, _containerBlocks);
         }
 
         mod.getBlockTracker().trackBlock(_containerBlocks);
 
         // Protect container since we might place it.
         mod.getBehaviour().push();
-        mod.getBehaviour().addProtectedItems(Util.blocksToItems(_containerBlocks));
+        mod.getBehaviour().addProtectedItems(ItemHelper.blocksToItems(_containerBlocks));
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
         // If we're placing, keep on placing.
-        if (mod.getInventoryTracker().hasItem(Util.blocksToItems(_containerBlocks)) && _placeTask.isActive() && !_placeTask.isFinished(mod)) {
+        if (mod.getInventoryTracker().hasItem(ItemHelper.blocksToItems(_containerBlocks)) && _placeTask.isActive() && !_placeTask.isFinished(mod)) {
             setDebugState("Placing container");
             return _placeTask;
         }
@@ -99,7 +102,7 @@ public abstract class DoStuffInContainerTask extends Task {
             }
         }
         if (nearest != null) {
-            costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, Util.toVec3d(nearest));
+            costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, WorldHelper.toVec3d(nearest));
         }
 
         // Make a new container if going to the container is a pretty bad cost.
@@ -117,7 +120,7 @@ public abstract class DoStuffInContainerTask extends Task {
             if (!mod.getInventoryTracker().hasItem(_containerCatalogueName)) {
                 //Debug.logInternal("GRABBING " + _containerCatalogueName);
                 //Debug.logInternal("Cause " + costToWalk + " > " + getCostToMakeNew(mod));
-                //Debug.logInternal("(from " + currentPos + " to " + Util.toVec3d(nearest));
+                //Debug.logInternal("(from " + currentPos + " to " + WorldHelper.toVec3d(nearest));
                 setDebugState("Getting container item");
                 return TaskCatalogue.getItemTask(_containerCatalogueName, 1);
             }
@@ -162,12 +165,11 @@ public abstract class DoStuffInContainerTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DoStuffInContainerTask) {
-            DoStuffInContainerTask other = (DoStuffInContainerTask) obj;
-            if (!Util.arraysEqual(other._containerBlocks, _containerBlocks)) return false;
-            if (!other._containerCatalogueName.equals(_containerCatalogueName)) return false;
-            return isSubTaskEqual(other);
+    protected boolean isEqual(Task other) {
+        if (other instanceof DoStuffInContainerTask task) {
+            if (!Arrays.equals(task._containerBlocks, _containerBlocks)) return false;
+            if (!task._containerCatalogueName.equals(_containerCatalogueName)) return false;
+            return isSubTaskEqual(task);
         }
         return false;
     }
@@ -177,7 +179,7 @@ public abstract class DoStuffInContainerTask extends Task {
         return "Doing stuff in " + _containerCatalogueName + " container";
     }
 
-    protected abstract boolean isSubTaskEqual(DoStuffInContainerTask obj);
+    protected abstract boolean isSubTaskEqual(DoStuffInContainerTask other);
 
     protected abstract boolean isContainerOpen(AltoClef mod);
 

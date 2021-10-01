@@ -6,7 +6,7 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.utils.input.Input;
@@ -80,13 +80,13 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return WorldUtil.isAir(mod, _pos);//;
+        return WorldHelper.isAir(mod, _pos);//;
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DestroyBlockTask) {
-            DestroyBlockTask task = (DestroyBlockTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof DestroyBlockTask) {
+            DestroyBlockTask task = (DestroyBlockTask) other;
             return task._pos.equals(_pos);
         }
         return false;

@@ -12,9 +12,9 @@ public class WhisperChecker {
 
     private static final TimerGame _repeatTimer = new TimerGame(0.1);
 
-    private static final String _lastMessage = null;
+    private static String _lastMessage = null;
 
-    private static MessageResult tryParse(String ourUsername, String whisperFormat, String message) {
+    public static MessageResult tryParse(String ourUsername, String whisperFormat, String message) {
         List<String> parts = new ArrayList<>(Arrays.asList("{from}", "{to}", "{message}"));
 
         // Sort by the order of appearance in whisperFormat.
@@ -71,6 +71,7 @@ public class WhisperChecker {
             return null;
         }
 
+        _lastMessage = msg;
 
         for (String format : mod.getModSettings().getWhisperFormats()) {
             MessageResult check = tryParse(ourUsername, format, msg);

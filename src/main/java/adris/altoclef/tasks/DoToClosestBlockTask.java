@@ -2,11 +2,11 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,15 +20,19 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     private final Function<BlockPos, Task> _getTargetTask;
 
 
-    public DoToClosestBlockTask(AltoClef mod, Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Block... blocks) {
-        this(getOriginSupplier, getTargetTask, (origin) -> mod.getBlockTracker().getNearestTracking(origin, blocks), blocks);
-    }
-
     public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _targetBlocks = blocks;
         _getClosest = getClosestBlock;
+    }
+
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
+        this(null, getTargetTask, getClosestBlock, blocks);
+    }
+
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Block... blocks) {
+        this(getTargetTask, null, blocks);
     }
 
     @Override
@@ -38,12 +42,18 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     @Override
     protected BlockPos getClosestTo(AltoClef mod, Vec3d pos) {
-        return _getClosest.apply(pos);
+        if (_getClosest != null) {
+            return _getClosest.apply(pos);
+        }
+        return mod.getBlockTracker().getNearestTracking(pos, _targetBlocks);
     }
 
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
-        return _getOriginPos.get();
+        if (_getOriginPos != null) {
+            return _getOriginPos.get();
+        }
+        return mod.getPlayer().getPos();
     }
 
     @Override
@@ -70,10 +80,9 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof DoToClosestBlockTask) {
-            DoToClosestBlockTask task = (DoToClosestBlockTask) obj;
-            return Util.arraysEqual(task._targetBlocks, _targetBlocks);
+    protected boolean isEqual(Task other) {
+        if (other instanceof DoToClosestBlockTask task) {
+            return Arrays.equals(task._targetBlocks, _targetBlocks);
         }
         return false;
     }

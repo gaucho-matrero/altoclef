@@ -19,9 +19,9 @@ public class GetToYTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetToYTask) {
-            return ((GetToYTask) obj)._yLevel == _yLevel;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetToYTask task) {
+            return task._yLevel == _yLevel;
         }
         return false;
     }

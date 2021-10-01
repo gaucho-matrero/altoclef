@@ -8,8 +8,8 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.StlHelper;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -19,6 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -103,9 +104,9 @@ public class CollectCropTask extends ResourceTask {
             _emptyCropland.removeIf(blockPos -> !isEmptyCrop(mod, blockPos));
             assert !_emptyCropland.isEmpty();
             return new DoToClosestBlockTask(
-                    () -> mod.getPlayer().getPos(),
                     blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
-                    pos -> Util.minItem(_emptyCropland, (block) -> block.getSquaredDistance(pos, false)), Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
+                    pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))).orElse(null),
+                    Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }
 
         Predicate<BlockPos> invalidCrop = ignoreBlock -> {
@@ -124,7 +125,6 @@ public class CollectCropTask extends ResourceTask {
         // Break crop blocks.
         setDebugState("Breaking crops.");
         return new DoToClosestBlockTask(
-                () -> mod.getPlayer().getPos(),
                 blockPos -> {
                     _emptyCropland.add(blockPos);
                     return new DestroyBlockTask(blockPos);
@@ -158,14 +158,13 @@ public class CollectCropTask extends ResourceTask {
     }
 
     private boolean isEmptyCrop(AltoClef mod, BlockPos pos) {
-        return WorldUtil.isAir(mod, pos);
+        return WorldHelper.isAir(mod, pos);
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectCropTask) {
-            CollectCropTask task = (CollectCropTask) obj;
-            return Util.arraysEqual(task._cropSeed, _cropSeed) && Util.arraysEqual(task._cropBlock, _cropBlock) && task._cropToCollect.equals(_cropToCollect);
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectCropTask task) {
+            return Arrays.equals(task._cropSeed, _cropSeed) && Arrays.equals(task._cropBlock, _cropBlock) && task._cropToCollect.equals(_cropToCollect);
         }
         return false;
     }
@@ -183,8 +182,7 @@ public class CollectCropTask extends ResourceTask {
         }
         // Prune if we're not mature/fully grown wheat.
         BlockState s = mod.getWorld().getBlockState(blockPos);
-        if (s.getBlock() instanceof CropBlock) {
-            CropBlock crop = (CropBlock) s.getBlock();
+        if (s.getBlock() instanceof CropBlock crop) {
             boolean mature = crop.isMature(s);
             if (_wasFullyGrown.contains(blockPos)) {
                 if (!mature) _wasFullyGrown.remove(blockPos);

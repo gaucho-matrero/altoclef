@@ -7,9 +7,9 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 // Collects everything that's catalogued for a recipe.
@@ -95,10 +95,9 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof CollectRecipeCataloguedResourcesTask) {
-            CollectRecipeCataloguedResourcesTask other = (CollectRecipeCataloguedResourcesTask) obj;
-            return Util.arraysEqual(other._targets, _targets);
+    protected boolean isEqual(Task other) {
+        if (other instanceof CollectRecipeCataloguedResourcesTask task) {
+            return Arrays.equals(task._targets, _targets);
         }
         return false;
     }

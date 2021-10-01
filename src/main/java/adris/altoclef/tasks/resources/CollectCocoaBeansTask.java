@@ -56,7 +56,7 @@ public class CollectCocoaBeansTask extends ResourceTask {
         // Break mature cocoa blocks
         if (mod.getBlockTracker().anyFound(invalidCocoaCheck, Blocks.COCOA)) {
             setDebugState("Breaking cocoa blocks");
-            return new DoToClosestBlockTask(() -> mod.getPlayer().getPos(), DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck), Blocks.COCOA);
+            return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck, Blocks.COCOA), Blocks.COCOA);
         }
 
         // Dimension
@@ -75,8 +75,8 @@ public class CollectCocoaBeansTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectCocoaBeansTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectCocoaBeansTask;
     }
 
     @Override

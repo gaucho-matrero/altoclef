@@ -8,7 +8,6 @@ import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.client.MinecraftClient;
@@ -18,6 +17,7 @@ import net.minecraft.screen.PlayerScreenHandler;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.Time;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -63,7 +63,7 @@ public class EquipArmorTask extends Task {
             } else {
                 if (!mod.getInventoryTracker().isArmorEquipped(item)) {
                     if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                        mod.getPlayer().closeHandledScreen();
+                        mod.getControllerExtras().closeScreen();
                     }
                     Slot toMove = PlayerSlot.getEquipSlot(item.getSlotType());
                     if (toMove == null) {
@@ -88,10 +88,9 @@ public class EquipArmorTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof EquipArmorTask) {
-            EquipArmorTask other = (EquipArmorTask) obj;
-            return Util.arraysEqual(other._toEquip, _toEquip);
+    protected boolean isEqual(Task other) {
+        if (other instanceof EquipArmorTask task) {
+            return Arrays.equals(task._toEquip, _toEquip);
         }
         return false;
     }

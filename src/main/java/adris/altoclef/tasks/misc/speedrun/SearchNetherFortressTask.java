@@ -26,8 +26,8 @@ public class SearchNetherFortressTask extends SearchChunksExploreTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof SearchNetherFortressTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof SearchNetherFortressTask;
     }
 
     @Override

@@ -8,8 +8,7 @@ import adris.altoclef.tasks.misc.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.schematic.AbstractSchematic;
 import baritone.api.schematic.ISchematic;
@@ -20,6 +19,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -130,10 +130,9 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     //TODO: Place structure where a leaf block was???? Might need to delete the block first if it's not empty/air/water.
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof PlaceBlockTask) {
-            PlaceBlockTask task = (PlaceBlockTask) obj;
-            return task._target.equals(_target) && task._useThrowaways == _useThrowaways && Util.arraysEqual(task._toPlace, _toPlace);
+    protected boolean isEqual(Task other) {
+        if (other instanceof PlaceBlockTask task) {
+            return task._target.equals(_target) && task._useThrowaways == _useThrowaways && Arrays.equals(task._toPlace, _toPlace);
         }
         return false;
     }
@@ -142,10 +141,10 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
         if (_useThrowaways) {
-            return WorldUtil.isSolid(mod, _target);
+            return WorldHelper.isSolid(mod, _target);
         }
         BlockState state = mod.getWorld().getBlockState(_target);
-        return Util.arrayContains(_toPlace, state.getBlock());
+        return ArrayUtils.contains(_toPlace, state.getBlock());
     }
 
     @Override

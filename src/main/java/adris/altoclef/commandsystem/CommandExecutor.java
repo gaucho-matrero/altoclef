@@ -1,6 +1,7 @@
 package adris.altoclef.commandsystem;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 
 import java.security.InvalidKeyException;
 import java.util.Collection;
@@ -18,11 +19,14 @@ public class CommandExecutor {
         _commandPrefix = commandPrefix;
     }
 
-    public void RegisterNewCommand(Command command) throws InvalidKeyException {
-        if (_commandSheet.containsKey(command.getName())) {
-            throw new InvalidKeyException("Command with name " + command.getName() + " already exists! Can't register that name twice.");
+    public void RegisterNewCommand(Command ...commands) {
+        for (Command command : commands) {
+            if (_commandSheet.containsKey(command.getName())) {
+                Debug.logInternal("Command with name " + command.getName() + " already exists! Can't register that name twice.");
+                continue;
+            }
+            _commandSheet.put(command.getName(), command);
         }
-        _commandSheet.put(command.getName(), command);
     }
 
     public boolean isClientCommand(String line) {

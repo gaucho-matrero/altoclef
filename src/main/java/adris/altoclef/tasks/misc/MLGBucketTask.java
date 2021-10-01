@@ -124,8 +124,8 @@ public class MLGBucketTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof MLGBucketTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof MLGBucketTask;
     }
 
     @Override
