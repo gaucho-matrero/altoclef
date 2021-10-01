@@ -17,7 +17,7 @@ public class ArgParser {
     }
 
     // Given a single line as a String, parse it into a list of keywords
-    public static List<String> SplitLineIntoKeywords(String line) {
+    public static List<String> splitLineIntoKeywords(String line) {
         List<String> result = new ArrayList<String>();
         // By default, it's just spaces. But sometimes we want to count quotes. So do it manually.
         String last_kword = "";
@@ -60,8 +60,8 @@ public class ArgParser {
         return result;
     }
 
-    public void LoadArgs(String line, boolean removeFirst) {
-        List<String> units = SplitLineIntoKeywords(line);
+    public void loadArgs(String line, boolean removeFirst) {
+        List<String> units = splitLineIntoKeywords(line);
         // Discard the first element since, well, it will always be the name of the command.
         if (removeFirst && units.size() != 0) {
             units.remove(0);
@@ -73,7 +73,7 @@ public class ArgParser {
     }
 
     // Get the next argument.
-    public <T> T Get(Class<T> type) throws CommandException {
+    public <T> T get(Class<T> type) throws CommandException {
 
         if (argCounter >= _args.length) {
             throw new CommandException("You tried grabbing more arguments than you had... Bad move.");
@@ -92,7 +92,7 @@ public class ArgParser {
         // If this can be default and we don't have enough (unit) args provided to use this arg, use the default value instead of reading from our arg list.
         int givenArgs = argUnits.length;
         if (arg.hasDefault() && arg.getMinArgCountToUseDefault() >= givenArgs) {
-            return arg.GetDefault(type);
+            return arg.getDefault(type);
         }
 
         if (unitCounter >= argUnits.length) {
@@ -109,7 +109,7 @@ public class ArgParser {
 
         // If our type is not valid, try um handling the defaults.
 
-        return arg.ParseUnit(unit, unitPlusRemaining);
+        return arg.parseUnit(unit, unitPlusRemaining);
     }
 
     public ArgBase[] getArgs() {

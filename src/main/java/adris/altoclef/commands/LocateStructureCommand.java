@@ -15,8 +15,8 @@ public class LocateStructureCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        Structure structure = parser.Get(Structure.class);
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        Structure structure = parser.get(Structure.class);
         switch (structure) {
             case STRONGHOLD:
                 mod.runUserTask(new LocateStrongholdTask(1), this::finish);

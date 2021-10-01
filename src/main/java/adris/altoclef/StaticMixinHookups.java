@@ -49,7 +49,7 @@ public class StaticMixinHookups {
         if (_mod.getCommandExecutor().isClientCommand(line)) {
             e.cancel();
             try {
-                _mod.getCommandExecutor().Execute(line);
+                _mod.getCommandExecutor().execute(line);
             } catch (CommandException ex) {
                 Debug.logWarning(ex.getMessage());
                 //ex.printStackTrace();

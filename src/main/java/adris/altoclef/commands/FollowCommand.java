@@ -13,8 +13,8 @@ public class FollowCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        String username = parser.Get(String.class);
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        String username = parser.get(String.class);
         if (username == null) {
             if (mod.getButler().hasCurrentUser()) {
                 username = mod.getButler().getCurrentUser();

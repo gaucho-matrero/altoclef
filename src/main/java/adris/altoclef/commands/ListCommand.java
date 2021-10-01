@@ -15,7 +15,7 @@ public class ListCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         mod.log("#### LIST OF ALL OBTAINABLE ITEMS ####", MessagePriority.OPTIONAL);
         mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()), MessagePriority.OPTIONAL);
         mod.log("############# END LIST ###############", MessagePriority.OPTIONAL);

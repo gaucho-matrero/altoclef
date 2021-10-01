@@ -10,7 +10,7 @@ public class ReloadSettingsCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) {
+    protected void call(AltoClef mod, ArgParser parser) {
         mod.getButler().reloadLists();
         if (mod.reloadModSettings() != null) {
             mod.log("Reload successful!");

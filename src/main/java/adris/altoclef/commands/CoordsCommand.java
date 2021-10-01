@@ -10,7 +10,7 @@ public class CoordsCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) {
+    protected void call(AltoClef mod, ArgParser parser) {
         mod.log("CURRENT COORDINATES: " + mod.getPlayer().getBlockPos().toShortString() + " (Current dimension: " + mod.getCurrentDimension() + ")");
         finish();
     }

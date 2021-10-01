@@ -12,10 +12,10 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) {
+    protected void call(AltoClef mod, ArgParser parser) {
         mod.log("########## HELP: ##########", MessagePriority.OPTIONAL);
         int padSize = 10;
-        for (Command c : mod.getCommandExecutor().AllCommands()) {
+        for (Command c : mod.getCommandExecutor().allCommands()) {
             StringBuilder line = new StringBuilder();
             //line.append("");
             line.append(c.getName()).append(": ");

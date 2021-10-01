@@ -27,7 +27,7 @@ public class Arg<T> extends ArgBase {
             }
         } else {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!IsInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
+            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
                 throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
             }
         }
@@ -57,7 +57,7 @@ public class Arg<T> extends ArgBase {
     }
 
     // Horrendous chain syntax that I'm only using here.
-    public Arg<T> AsArray() {
+    public Arg<T> asArray() {
         _isArray = true;
         return this;
     }
@@ -69,7 +69,7 @@ public class Arg<T> extends ArgBase {
 ///     name is optional and defaults to "", while text is non optional.
 /// </summary>
     @Override
-    public String GetHelpRepresentation() {
+    public String getHelpRepresentation() {
         if (hasDefault()) {
             if (_showDefault) {
                 return "<" + _name + "=" + Default + ">";
@@ -80,28 +80,28 @@ public class Arg<T> extends ArgBase {
     }
 
     @SuppressWarnings("unchecked")
-    private <V> boolean IsInstanceOf(Class<V> vType, Class<?> t) {
+    private <V> boolean isInstanceOf(Class<V> vType, Class<?> t) {
         return vType == t || vType.isAssignableFrom(t);
     }
 
-    private <V> boolean IsInstancesOf(Class<V> vType, Class<?>... types) {
+    private <V> boolean isInstancesOf(Class<V> vType, Class<?>... types) {
         // I really hate java
 
         for (Class<?> t : types) {
-            if (IsInstanceOf(vType, t)) {
+            if (isInstanceOf(vType, t)) {
                 return true;
             }
         }
         return false;
     }
 
-    private void ParseErrorCheck(boolean good, Object value, String type) throws CommandException {
+    private void parseErrorCheck(boolean good, Object value, String type) throws CommandException {
         if (!good)
             throw new CommandException("Failed to parse the following argument into type " + type + ": " + value + ".");
     }
 
 
-    private <V> V ParseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
+    private <V> V parseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
         // If enum, check from our cached enum dictionary.
         if (isEnum()) {
             unit = unit.toLowerCase();
@@ -114,48 +114,48 @@ public class Arg<T> extends ArgBase {
                 res.delete(res.length() - 1, res.length()); // Remove the last "|"
                 throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
             }
-            return GetConverted(vType, _enumValues.get(unit));
+            return getConverted(vType, _enumValues.get(unit));
         }
 
         // Do number parsing.
-        if (IsInstanceOf(vType, Float.class)) {
+        if (isInstanceOf(vType, Float.class)) {
             try {
-                return GetConverted(vType, Float.parseFloat(unit));
+                return getConverted(vType, Float.parseFloat(unit));
             } catch (NumberFormatException e) {
-                ParseErrorCheck(false, unit, "float");
+                parseErrorCheck(false, unit, "float");
             }
         }
-        if (IsInstanceOf(vType, Double.class)) {
+        if (isInstanceOf(vType, Double.class)) {
             try {
-                return GetConverted(vType, Double.parseDouble(unit));
+                return getConverted(vType, Double.parseDouble(unit));
             } catch (NumberFormatException e) {
-                ParseErrorCheck(false, unit, "double");
+                parseErrorCheck(false, unit, "double");
             }
         }
-        if (IsInstanceOf(vType, Integer.class)) {
+        if (isInstanceOf(vType, Integer.class)) {
             try {
-                return GetConverted(vType, Integer.parseInt(unit));
+                return getConverted(vType, Integer.parseInt(unit));
             } catch (NumberFormatException e) {
-                ParseErrorCheck(false, unit, "int");
+                parseErrorCheck(false, unit, "int");
             }
         }
-        if (IsInstanceOf(vType, Long.class)) {
+        if (isInstanceOf(vType, Long.class)) {
             try {
-                return GetConverted(vType, Long.parseLong(unit));
+                return getConverted(vType, Long.parseLong(unit));
             } catch (NumberFormatException e) {
-                ParseErrorCheck(false, unit, "long");
+                parseErrorCheck(false, unit, "long");
             }
         }
 
         // Now do String parsing.
-        if (IsInstanceOf(vType, String.class)) {
+        if (isInstanceOf(vType, String.class)) {
             // Remove quotes
             if (unit.length() >= 2) {
                 if (unit.charAt(0) == '\"' && unit.charAt(unit.length() - 1) == '\"') {
                     unit = unit.substring(1, unit.length() - 1);
                 }
             }
-            return GetConverted(vType, unit);
+            return getConverted(vType, unit);
         }
 
         // TODO: Array
@@ -203,18 +203,18 @@ public class Arg<T> extends ArgBase {
     }
 
     @Override
-    public Object ParseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
-        return ParseUnitUtil(_tType, unit, unitPlusRemainder);
+    public Object parseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
+        return parseUnitUtil(_tType, unit, unitPlusRemainder);
     }
 
-    public boolean CheckValidUnit(String arg, StringBuilder errorMsg) {
+    public boolean checkValidUnit(String arg, StringBuilder errorMsg) {
         errorMsg.delete(0, errorMsg.length());
         return true;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <V> V GetDefault(Class<V> vType) {
-        return GetConverted(vType, Default);
+    public <V> V getDefault(Class<V> vType) {
+        return getConverted(vType, Default);
     }
 }

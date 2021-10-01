@@ -13,7 +13,7 @@ public class StatusCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) {
+    protected void call(AltoClef mod, ArgParser parser) {
         List<Task> tasks = mod.getUserTaskChain().getTasks();
         if (tasks.size() == 0) {
             mod.log("No tasks currently running.");

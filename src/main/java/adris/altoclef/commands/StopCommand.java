@@ -11,7 +11,7 @@ public class StopCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) {
+    protected void call(AltoClef mod, ArgParser parser) {
         mod.getTaskRunner().disable();
         finish();
     }

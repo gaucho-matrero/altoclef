@@ -18,7 +18,7 @@ public class CommandExecutor {
         _commandPrefix = commandPrefix;
     }
 
-    public void RegisterNewCommand(Command ...commands) {
+    public void registerNewCommand(Command ...commands) {
         for (Command command : commands) {
             if (_commandSheet.containsKey(command.getName())) {
                 Debug.logInternal("Command with name " + command.getName() + " already exists! Can't register that name twice.");
@@ -32,24 +32,24 @@ public class CommandExecutor {
         return line.startsWith(_commandPrefix);
     }
 
-    public void Execute(String line, Consumer onFinish) throws CommandException {
+    public void execute(String line, Consumer onFinish) throws CommandException {
         if (!isClientCommand(line)) return;
         line = line.substring(_commandPrefix.length());
-        Command c = GetCommand(line);
+        Command c = getCommand(line);
         if (c != null) {
             try {
-                c.Run(_mod, line, onFinish);
+                c.run(_mod, line, onFinish);
             } catch (CommandException ae) {
-                throw new CommandException(ae.getMessage() + "\nUsage: " + c.GetHelpRepresentation(), ae);
+                throw new CommandException(ae.getMessage() + "\nUsage: " + c.getHelpRepresentation(), ae);
             }
         }
     }
 
-    public void Execute(String line) throws CommandException {
-        Execute(line, null);
+    public void execute(String line) throws CommandException {
+        execute(line, null);
     }
 
-    private Command GetCommand(String line) throws CommandException {
+    private Command getCommand(String line) throws CommandException {
 
         if (line.length() != 0) {
             String command = line;
@@ -68,11 +68,11 @@ public class CommandExecutor {
 
     }
 
-    public Collection<Command> AllCommands() {
+    public Collection<Command> allCommands() {
         return _commandSheet.values();
     }
 
-    public Command Get(String name) {
+    public Command get(String name) {
         return (_commandSheet.getOrDefault(name, null));
     }
 }

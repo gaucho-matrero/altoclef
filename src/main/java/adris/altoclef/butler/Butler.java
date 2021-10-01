@@ -105,7 +105,7 @@ public class Butler {
             _commandFinished = false;
             _currentUser = username;
             sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-            _mod.getCommandExecutor().Execute("@" + message, (nothing) -> {
+            _mod.getCommandExecutor().execute("@" + message, (nothing) -> {
                 // On finish
                 sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
                 if (!_commandInstantRan) {

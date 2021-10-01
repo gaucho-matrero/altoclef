@@ -14,8 +14,8 @@ public class TestCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        Playground.TEMP_TEST_FUNCTION(mod, parser.Get(String.class));
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        Playground.TEMP_TEST_FUNCTION(mod, parser.get(String.class));
         finish();
     }
 }

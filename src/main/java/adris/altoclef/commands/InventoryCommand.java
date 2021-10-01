@@ -19,8 +19,8 @@ public class InventoryCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        String item = parser.Get(String.class);
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        String item = parser.get(String.class);
         if (item == null) {
             // Print inventory
             // Get item counts

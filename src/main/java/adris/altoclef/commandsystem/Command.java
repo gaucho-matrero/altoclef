@@ -23,11 +23,11 @@ public abstract class Command {
         parser = new ArgParser(args);
     }
 
-    public void Run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
+    public void run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
         _onFinish = onFinish;
         _mod = mod;
-        parser.LoadArgs(line, true);
-        Call(mod, parser);
+        parser.loadArgs(line, true);
+        call(mod, parser);
     }
 
     protected void finish() {
@@ -37,24 +37,24 @@ public abstract class Command {
         _onFinish = null;
     }
 
-    public String GetHelpRepresentation() {
+    public String getHelpRepresentation() {
         StringBuilder sb = new StringBuilder(_name);
         for (ArgBase arg : parser.getArgs()) {
             sb.append(" ");
-            sb.append(arg.GetHelpRepresentation());
+            sb.append(arg.getHelpRepresentation());
         }
         return sb.toString();
     }
 
-    protected void Log(Object message) {
+    protected void log(Object message) {
         Debug.logMessage(message.toString());
     }
 
-    protected void LogError(Object message) {
+    protected void logError(Object message) {
         Debug.logError(message.toString());
     }
 
-    protected abstract void Call(AltoClef mod, ArgParser parser) throws CommandException;
+    protected abstract void call(AltoClef mod, ArgParser parser) throws CommandException;
 
     public String getName() {
         return _name;

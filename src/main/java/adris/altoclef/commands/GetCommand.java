@@ -23,9 +23,9 @@ public class GetCommand extends Command {
 
     // We may ignore our "one item" rule in place of an item array.
     @Override
-    public void Run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
+    public void run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
         try {
-            super.Run(mod, line, onFinish);
+            super.run(mod, line, onFinish);
         } catch (CommandException e) {
             line = line.substring(getName().length() + 1).trim();
             // Might be an array of items...
@@ -89,9 +89,9 @@ public class GetCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        String resourceName = parser.Get(String.class);
-        int count = parser.Get(Integer.class);
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        String resourceName = parser.get(String.class);
+        int count = parser.get(Integer.class);
         if (TaskCatalogue.taskExists(resourceName)) {
             GetItems(mod, new ItemTarget(resourceName, count));
         } else {

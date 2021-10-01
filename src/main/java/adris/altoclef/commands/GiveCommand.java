@@ -18,8 +18,8 @@ public class GiveCommand extends Command {
     }
 
     @Override
-    protected void Call(AltoClef mod, ArgParser parser) throws CommandException {
-        String username = parser.Get(String.class);
+    protected void call(AltoClef mod, ArgParser parser) throws CommandException {
+        String username = parser.get(String.class);
         if (username == null) {
             if (mod.getButler().hasCurrentUser()) {
                 username = mod.getButler().getCurrentUser();
@@ -29,8 +29,8 @@ public class GiveCommand extends Command {
                 return;
             }
         }
-        String item = parser.Get(String.class);
-        int count = parser.Get(Integer.class);
+        String item = parser.get(String.class);
+        int count = parser.get(Integer.class);
         ItemTarget target = null;
         if (TaskCatalogue.taskExists(item)) {
             // Registered item with task.
