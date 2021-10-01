@@ -320,18 +320,28 @@ public class Settings {
 
     /**
      * Where "home base" is for the bot.
-     * Some settings use this value, but by default
-     * this value goes unused, so don't worry
-     * about setting this unless you need it.
+     * Some tasks use this value if you tell them to,
+     * but don't worry about changing this unless you NEED it.
      */
     private BlockPos homeBasePosition = new BlockPos(0, 64, 0);
 
     /**
      * These areas will not be mined.
-     * Used to prevent griefing
-     * or to define a "spawn protection" zone so
-     * the bot doesn't keep trying to break spawn protected
-     * blocks.
+     * Used to prevent griefing, or to define a "spawn protection" zone so
+     * the bot doesn't keep trying to break spawn protected blocks.
+     *
+     * Example: protects two areas. A "spawn" area from (x=-10 z=-10) to (x=10 z=10) and a home base at around (x = 1100, y = 2050)
+     *
+     * areasToProtect : [
+     *      {
+     *          start: "-10, 0, -10",
+     *          end: "10, 255, 10"
+     *      },
+     *      {
+     *          start: "1000, 50, 2000",
+     *          end: "1200, 255, 2100"
+     *      },
+     * ],
      */
     private List<ProtectionRange> areasToProtect = Collections.emptyList();
 
