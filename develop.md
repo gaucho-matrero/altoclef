@@ -1,5 +1,7 @@
 # Development Guide
 
+## To use Alto Clef as a library and quick start making custom commands, check out the [Example Repo Here](https://github.com/gaucho-matrero/altoclef-example)
+
 ## Get it Running (IDE)
 1) Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project. Make sure you're using jdk 16 in your Project & Gradle Settings!
 
@@ -13,10 +15,10 @@
 4) `./gradlew build` or `./gradlew runClient`
 
 
-## Custom Tasks
+## Rough Video Guide/Overview
 [Watch a Rough AltoClef Tutorial Video Here](https://youtu.be/giBjHDZ7HvY)
 
-## Editing Baritone (dev mode)
+## Modifying Baritone (dev mode)
 
 Alto Clef uses a custom fork of baritone that gives you more control over how baritone works.
 If you wish to make edits to that fork you can do so locally if you follow these steps:

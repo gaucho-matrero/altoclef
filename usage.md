@@ -50,9 +50,12 @@ Here's a list of some highlights.
 
 ## Bot Settings
 
-After running the game with the mod once, a file called `altoclef_settings.json` should appear in your `.minecraft` directory.
-This contains `altoclef` related settings. Check [Settings.java](https://github.com/gaucho-matrero/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
+After running the game with the mod once, a file called `altoclef_settings.json` should appear in your `.minecraft` directory. This contains `altoclef` related settings.
+
+Check [Settings.java](https://github.com/gaucho-matrero/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
 for descriptions on what each setting does.
+
+After modifying your local settings, run `@reload_settings` to apply your changes in-game.
 
 
 ## /msg: The Butler System
@@ -66,17 +69,17 @@ located in your `.minecraft` directory. Make sure your name is not found in `alt
 
 To toggle whitelist/blacklist, check the `useButlerBlacklist` and `useButlerWhitelist` settings.
 
-**WARNING:** If you set `useButlerWhitelist` to true, ALL PLAYERS will be able to send commands to the bot. Be extra careful with this one.
+**WARNING:** If you set `useButlerWhitelist` to false, ALL PLAYERS will be able to send commands to the bot. Be extra careful with this one.
 
 ### Expect delayed messages
 
-Due to spam message kick restrictions, the butler will send messages at a delayed rate. Messages to authorized
-users are prioritized.
+Servers auto-kick players that rapidly send messages. For this reason, the butler will send messages at a delayed rate. When sending messages, messages to authorized
+users are prioritized and sent first.
 
 ### Dealing with custom /msg outputs on servers
 
-If the receiver of a `/msg` doesn't get a message that looks like `X whispers to you: Y` and it's not being
-picked up by altoclef, you can add to the `whisperFormats` setting.
+If the server's whisper /msg system doesn't send players a message that looks like `X whispers to you: Y` and it's not being
+picked up by altoclef, you can append the server's custom whisper format in the `whisperFormats` setting.
 
 **NOTE:** At least for now, you must escape brackets and paranthesis. Example: To receive messages that look like `[Player -> me] message` the format string is `\[{from} -> {to}\] {message}`
 
