@@ -2,7 +2,6 @@ package adris.altoclef;
 
 import adris.altoclef.tasks.DefaultGoToDimensionTask;
 import adris.altoclef.util.KillAura;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.serialization.BlockPosDeserializer;
 import adris.altoclef.util.serialization.BlockPosSerializer;
 import adris.altoclef.util.serialization.ItemDeserializer;
@@ -520,7 +519,7 @@ public class Settings {
                 result.add(throwawayItem);
             }
         }
-        return Util.toArray(Item.class, result);
+        return result.toArray(Item[]::new);
     }
 
     public String[] getWhisperFormats() {

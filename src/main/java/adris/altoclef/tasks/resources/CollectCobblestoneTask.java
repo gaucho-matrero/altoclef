@@ -39,10 +39,9 @@ public class CollectCobblestoneTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectCobblestoneTask) {
-            CollectCobblestoneTask other = (CollectCobblestoneTask) obj;
-            return other._count == _count;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectCobblestoneTask task) {
+            return task._count == _count;
         }
         return false;
     }

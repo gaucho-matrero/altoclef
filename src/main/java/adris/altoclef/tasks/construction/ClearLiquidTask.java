@@ -45,9 +45,9 @@ public class ClearLiquidTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof ClearLiquidTask) {
-            ClearLiquidTask task = (ClearLiquidTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof ClearLiquidTask) {
+            ClearLiquidTask task = (ClearLiquidTask) other;
             return task._liquidPos.equals(_liquidPos);
         }
         return false;

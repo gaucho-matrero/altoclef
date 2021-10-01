@@ -57,9 +57,9 @@ public class ClearRegionTask extends Task implements ITaskRequiresGrounded {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof ClearRegionTask) {
-            ClearRegionTask task = (ClearRegionTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof ClearRegionTask) {
+            ClearRegionTask task = (ClearRegionTask) other;
             return (task._from.equals(_from) && task._to.equals(_to));
         }
         return false;

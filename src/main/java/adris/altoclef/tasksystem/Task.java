@@ -119,7 +119,7 @@ public abstract class Task {
     // interruptTask = null if the task stopped cleanly
     protected abstract void onStop(AltoClef mod, Task interruptTask);
 
-    protected abstract boolean isEqual(Task obj);
+    protected abstract boolean isEqual(Task other);
 
     protected abstract String toDebugString();
 
@@ -130,8 +130,8 @@ public abstract class Task {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Task) {
-            return isEqual((Task) obj);
+        if (obj instanceof Task task) {
+            return isEqual(task);
         }
         return false;
     }

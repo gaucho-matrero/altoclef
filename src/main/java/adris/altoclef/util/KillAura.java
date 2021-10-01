@@ -2,12 +2,12 @@ package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.FireballEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controls and applies killaura
@@ -48,11 +48,11 @@ public class KillAura {
                 }
                 if (_hitDelay.elapsed()) {
                     _hitDelay.reset();
-                    Entity toHit = Util.minItem(_targets, (left, right) -> {
-                        double distComp = right.squaredDistanceTo(mod.getPlayer()) - left.squaredDistanceTo(mod.getPlayer());
+                    Optional<Entity> toHit = _targets.stream().min((left, right) -> {
+                        double distComp = left.squaredDistanceTo(mod.getPlayer()) - right.squaredDistanceTo(mod.getPlayer());
                         return (int) Math.signum(distComp);
                     });
-                    attack(mod, toHit);
+                    toHit.ifPresent(entity -> attack(mod, entity));
                 }
                 break;
             case OFF:

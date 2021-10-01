@@ -24,7 +24,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public interface WorldUtil {
+public interface WorldHelper {
+
+    static Vec3d toVec3d(BlockPos pos) {
+        if (pos == null) return null;
+        return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+    }
 
     static Vec3d toVec3d(Vec3i pos) {
         return new Vec3d(pos.getX(), pos.getY(), pos.getZ());

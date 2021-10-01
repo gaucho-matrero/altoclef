@@ -8,7 +8,7 @@ import adris.altoclef.tasks.GoInDirectionXZTask;
 import adris.altoclef.tasks.PickupDroppedItemTask;
 import adris.altoclef.tasks.SearchChunksExploreTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.LookUtil;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -111,7 +111,7 @@ public class LocateStrongholdTask extends Task {
             if (mod.getInventoryTracker().equipItem(Items.ENDER_EYE)) {
                 assert MinecraftClient.getInstance().interactionManager != null;
                 if (_throwTimer.elapsed()) {
-                    if (LookUtil.tryAvoidingInteractable(mod)) {
+                    if (LookHelper.tryAvoidingInteractable(mod)) {
                         MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
                         //MinecraftClient.getInstance().options.keyUse.setPressed(true);
                         _throwTimer.reset();
@@ -123,6 +123,9 @@ public class LocateStrongholdTask extends Task {
             } else {
                 Debug.logWarning("Failed to equip eye of ender to throw.");
             }
+            return null;
+        } else if (!_cachedEyeDirection.hasDelta()) {
+            setDebugState("Waiting for thrown eye to appear...");
             return null;
         }
 
@@ -142,8 +145,8 @@ public class LocateStrongholdTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof LocateStrongholdTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof LocateStrongholdTask;
     }
 
     @Override
@@ -182,7 +185,12 @@ public class LocateStrongholdTask extends Task {
         }
 
         public Vec3d getDelta() {
+            if (_end == null) return Vec3d.ZERO;
             return _end.subtract(_start);
+        }
+
+        public boolean hasDelta() {
+            return _end != null;
         }
     }
 
@@ -206,9 +214,8 @@ public class LocateStrongholdTask extends Task {
         }
 
         @Override
-        protected boolean isEqual(Task obj) {
-            if (obj instanceof SearchStrongholdTask) {
-                SearchStrongholdTask task = (SearchStrongholdTask) obj;
+        protected boolean isEqual(Task other) {
+            if (other instanceof SearchStrongholdTask task) {
                 return task._goTask.equals(_goTask);
             }
             return false;

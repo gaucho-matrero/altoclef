@@ -42,10 +42,9 @@ public class SatisfyMiningRequirementTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof SatisfyMiningRequirementTask) {
-            SatisfyMiningRequirementTask other = (SatisfyMiningRequirementTask) obj;
-            return other._requirement == _requirement;
+    protected boolean isEqual(Task other) {
+        if (other instanceof SatisfyMiningRequirementTask task) {
+            return task._requirement == _requirement;
         }
         return false;
     }

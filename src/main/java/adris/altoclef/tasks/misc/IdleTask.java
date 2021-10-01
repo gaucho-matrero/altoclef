@@ -29,8 +29,8 @@ public class IdleTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof IdleTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof IdleTask;
     }
 
     @Override

@@ -1,11 +1,10 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
@@ -73,7 +72,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         if (mod.getInventoryTracker().isArmorEquipped(_tool.getMatches())) {
             // Exit out of any screen so we can move our armor
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                mod.getPlayer().closeHandledScreen();
+                mod.getControllerExtras().closeScreen();
                 setDebugState("Quickly removing equipped armor");
                 return null;
             }
@@ -100,9 +99,8 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof UpgradeInSmithingTableTask) {
-            UpgradeInSmithingTableTask task = (UpgradeInSmithingTableTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof UpgradeInSmithingTableTask task) {
             return task._tool.equals(_tool) && task._output.equals(_output) && task._material.equals(_material);
         }
         return false;
@@ -123,7 +121,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         }
 
         @Override
-        protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
+        protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
             // inner part, don't care
             return true;
         }
@@ -175,7 +173,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         @Override
         protected double getCostToMakeNew(AltoClef mod) {
             int price = 400;
-            if (mod.getInventoryTracker().hasItem(ItemUtil.LOG) || mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS) >= 4) {
+            if (mod.getInventoryTracker().hasItem(ItemHelper.LOG) || mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS) >= 4) {
                 price -= 125;
             }
             if (mod.getInventoryTracker().getItemCount(Items.FLINT) >= 2) {

@@ -60,6 +60,9 @@ public abstract class GoalRunAwayFromEntities implements Goal {
                 if (cost != 0) {
                     // We want the CLOSER entities to have a bigger weight than the further ones.
                     costSum += 1 / cost;
+                } else {
+                    // Bad >:(
+                    costSum += 1000;
                 }
                 if (counter >= max) break;
             }

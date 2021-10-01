@@ -6,8 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.LookUtil;
-import adris.altoclef.util.csharpisbetter.Util;
+import adris.altoclef.util.LookHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
@@ -35,7 +34,7 @@ public class GiveItemToPlayerTask extends Task {
         for (ItemTarget target : targets) {
             if (target.isCatalogueItem()) result.add(target);
         }
-        _resourceTask = TaskCatalogue.getSquashedItemTask(Util.toArray(ItemTarget.class, result));
+        _resourceTask = TaskCatalogue.getSquashedItemTask(result.toArray(ItemTarget[]::new));
     }
 
     @Override
@@ -52,7 +51,7 @@ public class GiveItemToPlayerTask extends Task {
         if (_droppingItems) {
             // THROW ITEMS
             setDebugState("Throwing items");
-            LookUtil.lookAt(mod, targetPos);
+            LookHelper.lookAt(mod, targetPos);
             for (int i = 0; i < _throwTarget.size(); ++i) {
                 ItemTarget target = _throwTarget.get(i);
                 if (target.getTargetCount() > 0) {
@@ -103,11 +102,10 @@ public class GiveItemToPlayerTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GiveItemToPlayerTask) {
-            GiveItemToPlayerTask task = (GiveItemToPlayerTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GiveItemToPlayerTask task) {
             if (!task._playerName.equals(_playerName)) return false;
-            return Util.arraysEqual(task._targets, _targets);
+            return Arrays.equals(task._targets, _targets);
         }
         return false;
     }

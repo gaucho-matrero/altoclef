@@ -4,7 +4,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CraftWithMatchingPlanksTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import net.minecraft.item.Item;
 
 public class CollectBoatTask extends CraftWithMatchingPlanksTask {
@@ -18,7 +18,7 @@ public class CollectBoatTask extends CraftWithMatchingPlanksTask {
     }
 
     public CollectBoatTask(int count) {
-        this(ItemUtil.WOOD_BOAT, TaskCatalogue.getItemTarget("planks", 1), count);
+        this(ItemHelper.WOOD_BOAT, TaskCatalogue.getItemTarget("planks", 1), count);
     }
 
     private static CraftingRecipe createRecipe(ItemTarget planks) {

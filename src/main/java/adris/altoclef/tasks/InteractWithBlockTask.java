@@ -10,7 +10,6 @@ import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
@@ -28,11 +27,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class InteractWithBlockTask extends Task {
 
-    private static final int MAX_REACH = 7;
     public final Action TimedOut = new Action();
     private final ItemTarget _toUse;
     private final Direction _direction;
@@ -214,9 +213,8 @@ public class InteractWithBlockTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof InteractWithBlockTask) {
-            InteractWithBlockTask task = (InteractWithBlockTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof InteractWithBlockTask task) {
             if ((task._direction == null) != (_direction == null)) return false;
             if (task._direction != null && !task._direction.equals(_direction)) return false;
             if ((task._toUse == null) != (_toUse == null)) return false;
@@ -245,7 +243,7 @@ public class InteractWithBlockTask extends Task {
             if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
                 if (_toUse != null) {
                     if (!mod.getInventoryTracker().equipItem(_toUse)) {
-                        Debug.logWarning("Failed to equip item: " + Util.arrayToString(_toUse.getMatches()));
+                        Debug.logWarning("Failed to equip item: " + Arrays.toString(_toUse.getMatches()));
                     }
                 } else {
                     mod.getInventoryTracker().deequipRightClickableItem();

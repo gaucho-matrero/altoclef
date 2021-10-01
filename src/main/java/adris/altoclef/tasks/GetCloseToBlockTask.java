@@ -52,9 +52,9 @@ public class GetCloseToBlockTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetCloseToBlockTask) {
-            return ((GetCloseToBlockTask) obj)._toApproach.equals(_toApproach);
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetCloseToBlockTask task) {
+            return task._toApproach.equals(_toApproach);
         }
         return false;
     }

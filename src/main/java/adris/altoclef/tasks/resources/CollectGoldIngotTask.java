@@ -57,8 +57,8 @@ public class CollectGoldIngotTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) obj)._count == _count;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectGoldIngotTask && ((CollectGoldIngotTask) other)._count == _count;
     }
 
     @Override

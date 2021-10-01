@@ -34,9 +34,8 @@ public class GetToXZTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetToXZTask) {
-            GetToXZTask task = (GetToXZTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetToXZTask task) {
             return task._x == _x && task._z == _z && task._dimension == _dimension;
         }
         return false;

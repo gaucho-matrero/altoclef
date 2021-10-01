@@ -3,7 +3,7 @@ package adris.altoclef.util.baritone;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.CachedProjectile;
-import adris.altoclef.util.ProjectileUtil;
+import adris.altoclef.util.ProjectileHelper;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.Vec3d;
 
@@ -44,7 +44,7 @@ public class GoalDodgeProjectiles implements Goal {
                 if (isInvalidProjectile(projectile)) continue;
                 try {
                     if (projectile.needsToRecache()) {
-                        projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+                        projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
                     }
                     Vec3d hit = projectile.getCachedHit();
                     //Debug.logMessage("Hit Delta: " + p.subtract(hit));
@@ -74,11 +74,11 @@ public class GoalDodgeProjectiles implements Goal {
                 if (isInvalidProjectile(projectile)) continue;
 
                 if (projectile.needsToRecache()) {
-                    projectile.setCacheHit(ProjectileUtil.calculateArrowClosestApproach(projectile, p));
+                    projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
                 }
                 Vec3d hit = projectile.getCachedHit();
 
-                double arrowPenalty = ProjectileUtil.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
+                double arrowPenalty = ProjectileHelper.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
                 //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
 
                 if (isHitCloseEnough(hit, p)) {

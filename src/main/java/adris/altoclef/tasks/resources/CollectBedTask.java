@@ -7,15 +7,14 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.csharpisbetter.Util;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
 public class CollectBedTask extends CraftWithMatchingWoolTask {
 
-    public static final Block[] BEDS = Util.itemsToBlocks(ItemUtil.BED);
+    public static final Block[] BEDS = ItemHelper.itemsToBlocks(ItemHelper.BED);
 
     private final ItemTarget _visualBedTarget;
 
@@ -30,7 +29,7 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
     }
 
     public CollectBedTask(int count) {
-        this(ItemUtil.BED, TaskCatalogue.getItemTarget("wool", 1), count);
+        this(ItemHelper.BED, TaskCatalogue.getItemTarget("wool", 1), count);
     }
 
     private static CraftingRecipe createBedRecipe(ItemTarget wool) {
@@ -61,15 +60,14 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         // Break beds from the world if possible, that would be pretty fast.
         if (mod.getBlockTracker().anyFound(BEDS)) {
             // Failure + blacklisting is encapsulated within THIS task
-            return new MineAndCollectTask(new ItemTarget(ItemUtil.BED, 1), BEDS, MiningRequirement.HAND);
+            return new MineAndCollectTask(new ItemTarget(ItemHelper.BED, 1), BEDS, MiningRequirement.HAND);
         }
         return super.onResourceTick(mod);
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CollectBedTask) {
-            CollectBedTask task = (CollectBedTask) obj;
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CollectBedTask task) {
             return task._visualBedTarget.equals(_visualBedTarget);
         }
         return false;

@@ -61,8 +61,8 @@ public class ExampleTask2 extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        return obj instanceof ExampleTask2;
+    protected boolean isEqual(Task other) {
+        return other instanceof ExampleTask2;
     }
 
     @Override

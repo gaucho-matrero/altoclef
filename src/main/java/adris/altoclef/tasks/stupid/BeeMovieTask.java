@@ -9,9 +9,9 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.misc.PlaceSignTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -65,7 +65,7 @@ public class BeeMovieTask extends Task {
 
     private static boolean isSign(Block block) {
         if (block == null) return false;
-        Block[] candidates = ItemUtil.WOOD_SIGNS_ALL;
+        Block[] candidates = ItemHelper.WOOD_SIGNS_ALL;
         for (Block candidate : candidates) {
             if (block == candidate) return true;
         }
@@ -110,7 +110,7 @@ public class BeeMovieTask extends Task {
                 setDebugState("Sharpening the axe: Signs");
                 return _extraSignAcquireTask;
             }
-            if (!mod.getInventoryTracker().hasItem(ItemUtil.WOOD_SIGN)) {
+            if (!mod.getInventoryTracker().hasItem(ItemHelper.WOOD_SIGN)) {
                 // Get a bunch of signs in bulk
                 return _extraSignAcquireTask;
             }
@@ -141,7 +141,7 @@ public class BeeMovieTask extends Task {
 
             // Fortify below
             //BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
-            boolean canPlace = WorldUtil.isSolid(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
+            boolean canPlace = WorldHelper.isSolid(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
             if (loaded && !canPlace) {
                 setDebugState("Placing block below for sign placement...");
                 return new PlaceStructureBlockTask(currentSignPos.down());
@@ -181,9 +181,9 @@ public class BeeMovieTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof BeeMovieTask) {
-            return ((BeeMovieTask) obj)._uniqueId.equals(_uniqueId);
+    protected boolean isEqual(Task other) {
+        if (other instanceof BeeMovieTask) {
+            return ((BeeMovieTask) other)._uniqueId.equals(_uniqueId);
         }
         return false;
     }

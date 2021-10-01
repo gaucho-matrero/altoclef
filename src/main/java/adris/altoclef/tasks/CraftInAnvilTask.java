@@ -12,7 +12,7 @@ public class CraftInAnvilTask extends DoStuffInContainerTask {
     }
 
     @Override
-    protected boolean isSubTaskEqual(DoStuffInContainerTask obj) {
+    protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
         throw new NotImplementedException("Anvil Not Implemented, whoops");
     }
 

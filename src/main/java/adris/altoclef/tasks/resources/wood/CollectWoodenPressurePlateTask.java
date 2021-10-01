@@ -4,7 +4,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CraftWithMatchingPlanksTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.ItemUtil;
+import adris.altoclef.util.ItemHelper;
 import net.minecraft.item.Item;
 
 public class CollectWoodenPressurePlateTask extends CraftWithMatchingPlanksTask {
@@ -18,7 +18,7 @@ public class CollectWoodenPressurePlateTask extends CraftWithMatchingPlanksTask 
     }
 
     public CollectWoodenPressurePlateTask(int count) {
-        this(ItemUtil.WOOD_PRESSURE_PLATE, TaskCatalogue.getItemTarget("planks", 1), count);
+        this(ItemHelper.WOOD_PRESSURE_PLATE, TaskCatalogue.getItemTarget("planks", 1), count);
     }
 
 

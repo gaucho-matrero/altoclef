@@ -49,8 +49,8 @@ public class CollectHayBlockTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectHayBlockTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectHayBlockTask;
     }
 
     @Override

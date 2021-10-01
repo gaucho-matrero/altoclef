@@ -1,14 +1,12 @@
 package adris.altoclef.tasks.squashed;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.UpgradeInSmithingTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -80,10 +78,9 @@ public class CataloguedResourceTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        if (obj instanceof CataloguedResourceTask) {
-            CataloguedResourceTask other = (CataloguedResourceTask) obj;
-            return Util.arraysEqual(other._targets, _targets);
+    protected boolean isEqualResource(ResourceTask other) {
+        if (other instanceof CataloguedResourceTask task) {
+            return Arrays.equals(task._targets, _targets);
         }
         return false;
     }

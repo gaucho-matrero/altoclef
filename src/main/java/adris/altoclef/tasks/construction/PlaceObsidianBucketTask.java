@@ -6,7 +6,7 @@ import adris.altoclef.tasks.GetToBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.WorldUtil;
+import adris.altoclef.util.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -69,14 +69,14 @@ public class PlaceObsidianBucketTask extends Task {
         }
 
         if (_currentCastTarget != null) {
-            if (WorldUtil.isSolid(mod, _currentCastTarget)) {
+            if (WorldHelper.isSolid(mod, _currentCastTarget)) {
                 _currentCastTarget = null;
             } else {
                 return new PlaceStructureBlockTask(_currentCastTarget);
             }
         }
         if (_currentDestroyTarget != null) {
-            if (!WorldUtil.isSolid(mod, _currentDestroyTarget)) {
+            if (!WorldHelper.isSolid(mod, _currentDestroyTarget)) {
                 _currentDestroyTarget = null;
             } else {
                 return new DestroyBlockTask(_currentDestroyTarget);
@@ -84,13 +84,13 @@ public class PlaceObsidianBucketTask extends Task {
         }
 
         // Build the cast frame
-        if (_currentCastTarget != null && WorldUtil.isSolid(mod, _currentCastTarget)) {
+        if (_currentCastTarget != null && WorldHelper.isSolid(mod, _currentCastTarget)) {
             // Current cast frame already built.
             _currentCastTarget = null;
         }
         for (Vec3i castPosRelative : CAST_FRAME) {
             BlockPos castPos = _pos.add(castPosRelative);
-            if (!WorldUtil.isSolid(mod, castPos)) {
+            if (!WorldHelper.isSolid(mod, castPos)) {
                 _currentCastTarget = castPos;
                 return null;
             }
@@ -99,19 +99,19 @@ public class PlaceObsidianBucketTask extends Task {
         // Cast frame built. Now, place lava.
         if (mod.getWorld().getBlockState(_pos).getBlock() != Blocks.LAVA) {
 
-            if (WorldUtil.isSolid(mod, _pos)) {
+            if (WorldHelper.isSolid(mod, _pos)) {
                 setDebugState("Clearing space around lava");
                 _currentDestroyTarget = _pos;
                 return null;
                 //return new DestroyBlockTask(framePos);
             }
             // Clear the upper two as well, to make placing more reliable.
-            if (WorldUtil.isSolid(mod, _pos.up())) {
+            if (WorldHelper.isSolid(mod, _pos.up())) {
                 setDebugState("Clearing space around lava");
                 _currentDestroyTarget = _pos.up();
                 return null;
             }
-            if (WorldUtil.isSolid(mod, _pos.up(2))) {
+            if (WorldHelper.isSolid(mod, _pos.up(2))) {
                 setDebugState("Clearing space around lava");
                 _currentDestroyTarget = _pos.up(2);
                 return null;
@@ -139,13 +139,13 @@ public class PlaceObsidianBucketTask extends Task {
         if (mod.getWorld().getBlockState(waterCheck).getBlock() != Blocks.WATER) {
             setDebugState("Placing water for cast");
 
-            if (WorldUtil.isSolid(mod, waterCheck)) {
+            if (WorldHelper.isSolid(mod, waterCheck)) {
                 _currentDestroyTarget = waterCheck;
                 return null;
                 //return new DestroyBlockTask(waterCheck);
 
             }
-            if (WorldUtil.isSolid(mod, waterCheck.up())) {
+            if (WorldHelper.isSolid(mod, waterCheck.up())) {
                 _currentDestroyTarget = waterCheck.up();
                 return null;
                 //return new DestroyBlockTask(waterCheck.up());
@@ -174,9 +174,9 @@ public class PlaceObsidianBucketTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof PlaceObsidianBucketTask) {
-            return ((PlaceObsidianBucketTask)obj)._pos.equals(_pos);
+    protected boolean isEqual(Task other) {
+        if (other instanceof PlaceObsidianBucketTask task) {
+            return task._pos.equals(_pos);
         }
         return false;
     }

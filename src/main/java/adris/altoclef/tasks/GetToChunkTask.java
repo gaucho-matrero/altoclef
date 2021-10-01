@@ -23,9 +23,9 @@ public class GetToChunkTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetToChunkTask) {
-            return ((GetToChunkTask) obj)._pos.equals(_pos);
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetToChunkTask task) {
+            return task._pos.equals(_pos);
         }
         return false;
     }

@@ -31,11 +31,10 @@ public class EquipCommand extends Command {
         boolean found = false;
         for (Item tryEquip : items) {
             if (mod.getInventoryTracker().hasItem(tryEquip)) {
-                if (tryEquip instanceof ArmorItem) {
-                    ArmorItem armor = (ArmorItem) tryEquip;
+                if (tryEquip instanceof ArmorItem armor) {
                     if (mod.getInventoryTracker().isArmorEquipped(armor)) {
                         // Ensure we have the player inventory accessible, not possible when another screen is open.
-                        mod.getPlayer().closeHandledScreen();
+                        mod.getControllerExtras().closeScreen();
                         // Deequip armor
                         //Debug.logInternal("DE-EQUIPPING ARMOR");
                         List<Integer> emptyInv = mod.getInventoryTracker().getEmptyInventorySlots();

@@ -3,6 +3,7 @@ package adris.altoclef.util;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
@@ -12,7 +13,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public interface ItemUtil {
+public interface ItemHelper {
+
+    static String stripItemName(Item item) {
+        String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
+        for (String possible : possibilities) {
+            if (item.getTranslationKey().startsWith(possible)) {
+                return item.getTranslationKey().substring(possible.length());
+            }
+        }
+        return item.getTranslationKey();
+    }
+
+    static Item[] blocksToItems(Block[] blocks) {
+        Item[] result = new Item[blocks.length];
+        for (int i = 0; i < blocks.length; ++i) {
+            result[i] = blocks[i].asItem();
+        }
+        return result;
+    }
+
+    static Block[] itemsToBlocks(Item[] items) {
+        ArrayList<Block> result = new ArrayList<>();
+        for (Item item : items) {
+            if (item instanceof BlockItem) {
+                Block b = Block.getBlockFromItem(item);
+                if (b != null && b != Blocks.AIR) {
+                    result.add(b);
+                }
+            }
+        }
+        return result.toArray(Block[]::new);
+    }
+
     Item[] PLANKS = new Item[]{Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS, Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS};
     Item[] LEAVES = new Item[]{Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES};
     Item[] WOOD_BUTTON = new Item[]{Items.ACACIA_BUTTON, Items.BIRCH_BUTTON, Items.CRIMSON_BUTTON, Items.DARK_OAK_BUTTON, Items.OAK_BUTTON, Items.JUNGLE_BUTTON, Items.SPRUCE_BUTTON, Items.WARPED_BUTTON};
@@ -160,14 +193,6 @@ public interface ItemUtil {
             name = name.substring("item.minecraft.".length());
         }
         return name;
-    }
-
-    static Block[] itemsToBlocks(Item... items) {
-        Block[] result = new Block[items.length];
-        for (int i = 0; i < items.length; ++i) {
-            result[i] = Block.getBlockFromItem(items[i]);
-        }
-        return result;
     }
 
     class ColorfulItems {

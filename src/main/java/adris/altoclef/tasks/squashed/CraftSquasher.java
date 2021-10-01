@@ -3,7 +3,6 @@ package adris.altoclef.tasks.squashed;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +21,6 @@ public class CraftSquasher extends TypeSquasher<CraftInTableTask> {
 
         //Debug.logMessage("Squashed " + targetRecipies.size());
 
-        return Collections.singletonList(new CraftInTableTask(Util.toArray(RecipeTarget.class, targetRecipies)));
+        return Collections.singletonList(new CraftInTableTask(targetRecipies.toArray(RecipeTarget[]::new)));
     }
 }

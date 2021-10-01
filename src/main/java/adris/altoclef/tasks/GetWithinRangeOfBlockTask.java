@@ -22,10 +22,9 @@ public class GetWithinRangeOfBlockTask extends CustomBaritoneGoalTask {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetWithinRangeOfBlockTask) {
-            GetWithinRangeOfBlockTask other = (GetWithinRangeOfBlockTask) obj;
-            return other._blockPos.equals(_blockPos) && other._range == _range;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetWithinRangeOfBlockTask task) {
+            return task._blockPos.equals(_blockPos) && task._range == _range;
         }
         return false;
     }

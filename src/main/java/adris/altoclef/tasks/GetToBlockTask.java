@@ -57,10 +57,9 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof GetToBlockTask) {
-            GetToBlockTask other = (GetToBlockTask) obj;
-            return other._position.equals(_position) && other._preferStairs == _preferStairs && other._dimension == _dimension;
+    protected boolean isEqual(Task other) {
+        if (other instanceof GetToBlockTask task) {
+            return task._position.equals(_position) && task._preferStairs == _preferStairs && task._dimension == _dimension;
         }
         return false;
     }

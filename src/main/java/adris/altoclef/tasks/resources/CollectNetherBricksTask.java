@@ -54,8 +54,8 @@ public class CollectNetherBricksTask extends ResourceTask {
     }
 
     @Override
-    protected boolean isEqualResource(ResourceTask obj) {
-        return obj instanceof CollectNetherBricksTask;
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectNetherBricksTask;
     }
 
     @Override

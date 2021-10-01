@@ -47,9 +47,8 @@ public class FollowPlayerTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof FollowPlayerTask) {
-            FollowPlayerTask task = (FollowPlayerTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof FollowPlayerTask task) {
             return task._playerName.equals(_playerName);
         }
         return false;

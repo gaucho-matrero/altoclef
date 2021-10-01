@@ -7,11 +7,12 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Arrays;
 
 public class PickupFromChestTask extends AbstractDoInChestTask {
 
@@ -59,16 +60,15 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
     }
 
     @Override
-    protected boolean isSubEqual(AbstractDoInChestTask obj) {
-        if (obj instanceof PickupFromChestTask) {
-            PickupFromChestTask task = (PickupFromChestTask) obj;
-            return Util.arraysEqual(task._targets, _targets);
+    protected boolean isSubEqual(AbstractDoInChestTask other) {
+        if (other instanceof PickupFromChestTask task) {
+            return Arrays.equals(task._targets, _targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Picking up from chest: " + Util.arrayToString(_targets);
+        return "Picking up from chest: " + Arrays.toString(_targets);
     }
 }

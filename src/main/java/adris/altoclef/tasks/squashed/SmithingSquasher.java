@@ -6,7 +6,6 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.UpgradeInSmithingTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.Util;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.slots.SmithingTableSlot;
 import net.minecraft.item.ItemStack;
@@ -27,7 +26,7 @@ public class SmithingSquasher extends TypeSquasher<UpgradeInSmithingTableTask> {
             units.add(task.getMaterials());
             units.add(task.getTools());
         }
-        result.add(new GetMaterialsTask(Util.toArray(ItemTarget.class, units)));
+        result.add(new GetMaterialsTask(units.toArray(ItemTarget[]::new)));
         // Afterwards, perform the smithing.
         result.addAll(tasks);
         return result;
@@ -72,7 +71,7 @@ public class SmithingSquasher extends TypeSquasher<UpgradeInSmithingTableTask> {
                     resultingTargets.set(i, new ItemTarget(target, target.getTargetCount() - smithingTableCount));
                 }
             }
-            return new CataloguedResourceTask(Util.toArray(ItemTarget.class, resultingTargets));
+            return new CataloguedResourceTask(resultingTargets.toArray(ItemTarget[]::new));
         }
 
         @Override
@@ -81,7 +80,7 @@ public class SmithingSquasher extends TypeSquasher<UpgradeInSmithingTableTask> {
         }
 
         @Override
-        protected boolean isEqualResource(ResourceTask obj) {
+        protected boolean isEqualResource(ResourceTask other) {
             return true; // item targets are the only difference
         }
 

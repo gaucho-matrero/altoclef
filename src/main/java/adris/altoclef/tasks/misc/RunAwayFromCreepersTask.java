@@ -23,9 +23,8 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
     @SuppressWarnings("RedundantIfStatement")
     @Override
-    protected boolean isEqual(Task obj) {
-        if (obj instanceof RunAwayFromCreepersTask) {
-            RunAwayFromCreepersTask task = (RunAwayFromCreepersTask) obj;
+    protected boolean isEqual(Task other) {
+        if (other instanceof RunAwayFromCreepersTask task) {
             //if (task._mob.getPos().squaredDistanceTo(_mob.getPos()) > 0.5) return false;
             if (Math.abs(task._distanceToRun - _distanceToRun) > 1) return false;
             return true;

@@ -5,7 +5,7 @@ import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
-public class ProjectileUtil {
+public class ProjectileHelper {
 
     public static final double GRAVITY_ACCEL = 0.05000000074505806D;
 

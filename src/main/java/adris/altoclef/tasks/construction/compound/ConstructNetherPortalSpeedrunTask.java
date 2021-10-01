@@ -324,8 +324,8 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     }
 
     @Override
-    protected boolean isEqual(adris.altoclef.tasksystem.Task obj) {
-        return obj instanceof ConstructNetherPortalSpeedrunTask;
+    protected boolean isEqual(adris.altoclef.tasksystem.Task other) {
+        return other instanceof ConstructNetherPortalSpeedrunTask;
     }
 
     @Override
