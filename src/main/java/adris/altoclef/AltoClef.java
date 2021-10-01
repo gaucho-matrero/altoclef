@@ -34,14 +34,16 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 
+import java.util.ArrayDeque;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.Stack;
 import java.util.function.Consumer;
 
 public class AltoClef implements ModInitializer {
 
     // Static access to altoclef
-    public static final Action<AltoClef> onInitialize = new Action<>();
-    public static final Action<AltoClef> onPostTick = new Action<>();
+    private static final Queue<Consumer<AltoClef>> _postInitQueue = new ArrayDeque<>();
 
     public final Action<String> onGameMessage = new Action<>();
     public final Action<String> onGameOverlayMessage = new Action<>();
@@ -148,12 +150,13 @@ public class AltoClef implements ModInitializer {
         initializeCommands();
 
         Playground.IDLE_TEST_INIT_FUNCTION(this);
-
-        onInitialize.invoke(this);
+        runEnqueuedPostInits();
     }
 
     // Client tick
     public void onClientTick() {
+        runEnqueuedPostInits();
+
         _inputControls.onTickPre();
 
         // TODO: should this go here?
@@ -167,8 +170,6 @@ public class AltoClef implements ModInitializer {
         _messageSender.tick();
 
         _inputControls.onTickPost();
-
-        onPostTick.invoke(this);
     }
 
     public void onClientRenderOverlay(MatrixStack matrixStack) {
@@ -295,6 +296,7 @@ public class AltoClef implements ModInitializer {
 
     public adris.altoclef.Settings reloadModSettings() {
         adris.altoclef.Settings result = adris.altoclef.Settings.load();
+        //noinspection ConstantConditions
         if (result != null) {
             _settings = result;
         }
@@ -341,8 +343,7 @@ public class AltoClef implements ModInitializer {
 
     // Extra control
     public void runUserTask(Task task) {
-        runUserTask(task, (nothing) -> {
-        });
+        runUserTask(task, (nothing) -> { });
     }
 
     @SuppressWarnings("rawtypes")
@@ -399,4 +400,16 @@ public class AltoClef implements ModInitializer {
         return _onChunkLoad;
     }
 
+    private void runEnqueuedPostInits() {
+        synchronized (_postInitQueue) {
+            while (!_postInitQueue.isEmpty()) {
+                _postInitQueue.poll().accept(this);
+            }
+        }
+    }
+    public static void subscribeToPostInit(Consumer<AltoClef> onPostInit) {
+        synchronized (_postInitQueue) {
+            _postInitQueue.add(onPostInit);
+        }
+    }
 }
