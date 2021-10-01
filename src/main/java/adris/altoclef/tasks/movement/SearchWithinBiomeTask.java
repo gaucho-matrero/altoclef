@@ -5,11 +5,14 @@ import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
 
-public class SearchWithinBiomeTaks extends SearchChunksExploreTask {
+/**
+ * Explores/Loads all chunks of a biome.
+ */
+public class SearchWithinBiomeTask extends SearchChunksExploreTask {
 
     private final Biome.Category _toSearch;
 
-    public SearchWithinBiomeTaks(Biome.Category toSearch) {
+    public SearchWithinBiomeTask(Biome.Category toSearch) {
         _toSearch = toSearch;
     }
 
@@ -21,8 +24,8 @@ public class SearchWithinBiomeTaks extends SearchChunksExploreTask {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof SearchWithinBiomeTaks) {
-            return ((SearchWithinBiomeTaks) other)._toSearch == _toSearch;
+        if (other instanceof SearchWithinBiomeTask task) {
+            return task._toSearch == _toSearch;
         }
         return false;
     }

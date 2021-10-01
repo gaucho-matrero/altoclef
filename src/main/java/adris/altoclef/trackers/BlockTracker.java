@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Blocks tracks the way I want it, When I want it.
+ * Tracks blocks the way I want it, when I want it.
  */
 public class BlockTracker extends Tracker {
 
@@ -250,12 +250,9 @@ public class BlockTracker extends Tracker {
             if (MinecraftClient.getInstance().world != null) {
                 for (BlockPos pos : found) {
                     Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
-
                     if (_trackingBlocks.containsKey(block)) {
                         //Debug.logInternal("Good: " + block + " at " + pos);
                         currentCache().addBlock(block, pos);
-                    } else {
-                        //Debug.logInternal("INVALID??? FOUND: " + block + " at " + pos);
                     }
                 }
 

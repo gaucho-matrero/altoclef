@@ -29,6 +29,9 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.Optional;
 
+/**
+ * Left or Right click on a block on a particular (or any) side of the block.
+ */
 public class InteractWithBlockTask extends Task {
 
     public final Action TimedOut = new Action();
@@ -169,20 +172,20 @@ public class InteractWithBlockTask extends Task {
         ICustomGoalProcess proc = mod.getClientBaritone().getCustomGoalProcess();
 
         switch (rightClick(mod)) {
-            case CANT_REACH:
+            case CANT_REACH -> {
                 // Get to our goal then
                 if (!proc.isActive()) {
                     proc.setGoalAndPath(moveGoal);
                 }
                 _clickTimer.reset();
-                break;
-            case WAIT_FOR_CLICK:
+            }
+            case WAIT_FOR_CLICK -> {
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
                 _clickTimer.reset();
-                break;
-            case CLICK_ATTEMPTED:
+            }
+            case CLICK_ATTEMPTED -> {
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
@@ -193,7 +196,7 @@ public class InteractWithBlockTask extends Task {
                     mod.getBlockTracker().requestBlockUnreachable(_target);
                     return _wanderTask;
                 }
-                break;
+            }
         }
 
         return null;

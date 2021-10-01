@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * The parent for all "collect an item" tasks.
+ *
+ * If the target item is on the ground or in a chest, will grab from those sources first.
+ */
 public abstract class ResourceTask extends Task {
 
     protected final ItemTarget[] _itemTargets;

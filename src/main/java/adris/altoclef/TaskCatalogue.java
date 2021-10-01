@@ -21,6 +21,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings({"rawtypes"})
+/**
+ * Contains a hardcoded list of ALL obtainable resources.
+ *
+ * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
+ *
+ * Call `TaskCatalogue.getItemTask` to return a task given a resource key.
+ * Call `TaskCatalogue.getSquashedItemTask` to return a task that gets multiple resources, combining their steps.
+ */
 public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();

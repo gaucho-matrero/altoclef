@@ -8,6 +8,9 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
+/**
+ * Removes a liquid source block at a position.
+ */
 public class ClearLiquidTask extends Task {
 
     private final BlockPos _liquidPos;
@@ -46,8 +49,7 @@ public class ClearLiquidTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof ClearLiquidTask) {
-            ClearLiquidTask task = (ClearLiquidTask) other;
+        if (other instanceof ClearLiquidTask task) {
             return task._liquidPos.equals(_liquidPos);
         }
         return false;

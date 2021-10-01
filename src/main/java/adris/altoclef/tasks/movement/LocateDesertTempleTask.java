@@ -27,7 +27,7 @@ public class LocateDesertTempleTask extends Task {
             setDebugState("Going to found desert temple");
             return new GetToBlockTask(_finalPos, false);
         }
-        return new SearchWithinBiomeTaks(Biome.Category.DESERT);
+        return new SearchWithinBiomeTask(Biome.Category.DESERT);
     }
 
     @Override

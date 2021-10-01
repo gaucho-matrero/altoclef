@@ -11,13 +11,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Searches/explores a continuous "blob" of chunks, attempting to load in ALL nearby chunks that are part of this "blob"
+ *
+ * You must define a function that determines whether a chunk is to be included within this "blob".
+ *
+ * For instance, if you wish to explore an entire desert, this function will return whether a chunk is a desert chunk.
+ */
 public abstract class SearchChunksExploreTask extends Task {
 
     private final Object _searcherMutex = new Object();
     private final Set<ChunkPos> _alreadyExplored = new HashSet<>();
     private ChunkSearchTask _searcher;
     private AltoClef _mod;
-    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>(this::onChunkLoad);
+    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<>(this::onChunkLoad);
 
     // Virtual
     protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {

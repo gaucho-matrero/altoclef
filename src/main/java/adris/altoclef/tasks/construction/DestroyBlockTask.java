@@ -13,6 +13,9 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * Destroy a block at a position.
+ */
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _pos;
@@ -85,8 +88,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof DestroyBlockTask) {
-            DestroyBlockTask task = (DestroyBlockTask) other;
+        if (other instanceof DestroyBlockTask task) {
             return task._pos.equals(_pos);
         }
         return false;

@@ -5,6 +5,9 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.MiningRequirement;
 
+/**
+ * Make sure we have a tool at or above a mining level.
+ */
 public class SatisfyMiningRequirementTask extends Task {
 
     private final MiningRequirement _requirement;

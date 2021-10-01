@@ -28,9 +28,12 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Smelt in a furnace, placing a furnace & collecting fuel as needed.
+ */
 // Ref
 // https://minecraft.gamepedia.com/Smelting
-
 public class SmeltInFurnaceTask extends ResourceTask {
 
     private final SmeltTarget[] _targets;

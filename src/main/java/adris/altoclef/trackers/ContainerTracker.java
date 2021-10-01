@@ -26,9 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Keeps track of items that are in containers. Uses the blocktracker to verify container existance.
+ * Keeps track of items that are in containers. Uses the blocktracker to verify container existence.
  */
-
 public class ContainerTracker extends Tracker {
 
     private final ChestMap _chestMap;

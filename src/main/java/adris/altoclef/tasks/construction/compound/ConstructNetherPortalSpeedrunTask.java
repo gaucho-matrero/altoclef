@@ -23,13 +23,13 @@ import net.minecraft.util.math.Vec3i;
 import java.util.HashSet;
 
 @SuppressWarnings("ALL")
+@Deprecated
 /**
- * NOTE: This is somewhat unreliable, I'd give it roughly 70% odds of success at best.
+ * NOTE: This is unreliable, I'd give it roughly 70% odds of success at best.
  * The problem here is that the water source ocassionally spills everywhere, and this causes
  * Baritone to get stuck
  * Use "ConstructNetherPortalBucketTask" which is much more methodical and doesn't have this pitfall.
  */
-@Deprecated
 public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem.Task {
 
     // The "portalable" region includes the portal (1 x 6 x 4 structure) and an outer buffer for its construction and water bullshit.

@@ -24,6 +24,11 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.HashSet;
 
+/**
+ * Build a nether portal by casting each piece with water + lava.
+ *
+ * Currently the most reliable portal building method.
+ */
 public class ConstructNetherPortalBucketTask extends Task {
 
     // Order here matters

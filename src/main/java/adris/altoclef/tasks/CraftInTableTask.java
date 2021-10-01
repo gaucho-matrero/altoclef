@@ -19,7 +19,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ * Crafts an item in a crafting table, obtaining and placing the table down if none was found.
+ */
 public class CraftInTableTask extends ResourceTask {
 
     private final RecipeTarget[] _targets;

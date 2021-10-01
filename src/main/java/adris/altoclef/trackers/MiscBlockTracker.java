@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Sometimes we want very specific things, I don't want to pollute other trackers to add these.
+ * Sometimes we want to track specific block related things, like the last nether portal we used.
+ * I don't want to pollute other trackers to add these.
  */
 public class MiscBlockTracker {
 

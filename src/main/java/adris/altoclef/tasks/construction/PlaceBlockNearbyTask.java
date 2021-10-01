@@ -27,6 +27,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+/**
+ * Place a type of block nearby, anywhere.
+ *
+ * Also known as the "bear strats" task.
+ */
 public class PlaceBlockNearbyTask extends Task {
 
     private final Block[] _toPlace;

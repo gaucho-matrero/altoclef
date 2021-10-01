@@ -13,6 +13,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
+/**
+ * Interacts with an entity while maintaining distance.
+ *
+ * The interaction is abstract.
+ */
 public abstract class AbstractDoToEntityTask extends Task implements ITaskRequiresGrounded {
     protected final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
     private final double _maintainDistance;

@@ -8,7 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * Some generic tasks require us to go to the nether.
+ * Some generic tasks require us to go to the nether/overworld/end.
  * <p>
  * The user should be able to specify how this should be done in settings
  * (ex, craft a new portal from scratch or check particular portal areas first or highway or whatever)

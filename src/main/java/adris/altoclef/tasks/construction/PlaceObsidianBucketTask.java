@@ -13,6 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
+/**
+ * Places obsidian at a position using buckets and a cast.
+ */
 public class PlaceObsidianBucketTask extends Task {
 
     public static final Vec3i[] CAST_FRAME = new Vec3i[]{

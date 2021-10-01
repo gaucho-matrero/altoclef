@@ -32,6 +32,11 @@ import java.util.List;
 @SuppressWarnings("ALL")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+/**
+ * The settings file, loaded and used across the codebase.
+ *
+ * Each setting is documented.
+ */
 public class Settings {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";

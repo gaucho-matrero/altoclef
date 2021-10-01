@@ -14,21 +14,11 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 
-/**
- * TO TEST:
- * - Do stuff in container works ALL THE WAY up until opening the container
- * - Crafting table placed down, goes to it
- * - Crafting table far away, goes to it
- * - Crafting table non existant, makes one
- * - Crafting table SUPER far away, makes one
- * TO DO NEXT:
- * - Craft recipe in the table just like with CraftInInventoryTask
- * - Test crafting a wooden pickaxe
- * - Test crafting a stone pickaxe
- * - Test crafting 2 stone pickaxes. Make sure we __delay__ the crafting table stuff until we get all resources.
- */
 
 @SuppressWarnings("ConstantConditions")
+/**
+ * Interacts with a container, obtaining and placing one if none were found nearby.
+ */
 public abstract class DoStuffInContainerTask extends Task {
 
     private final String _containerCatalogueName;

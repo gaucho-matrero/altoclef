@@ -3,7 +3,9 @@ package adris.altoclef;
 import adris.altoclef.commands.*;
 import adris.altoclef.commandsystem.CommandException;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
+/**
+ * Initializes altoclef's built in commands.
+ */
 public class AltoClefCommands {
 
     public AltoClefCommands() throws CommandException {

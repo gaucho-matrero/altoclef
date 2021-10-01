@@ -7,6 +7,9 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 
+/**
+ * Turns a baritone goal into a task.
+ */
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
 
     private final boolean _wander;

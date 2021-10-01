@@ -19,6 +19,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
+/**
+ * Build a nether portal with obsidian blocks.
+ */
 public class ConstructNetherPortalObsidianTask extends Task {
 
     // There's some code duplication between here and ConstructNetherPortalBucketTask...

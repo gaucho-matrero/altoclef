@@ -16,6 +16,9 @@ import net.minecraft.screen.*;
 
 import java.util.*;
 
+/**
+ * Keeps track of the player's inventory items
+ */
 public class InventoryTracker extends Tracker {
 
     // https://minecraft.gamepedia.com/Inventory.

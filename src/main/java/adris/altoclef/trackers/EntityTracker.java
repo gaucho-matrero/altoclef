@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")
+/**
+ * Keeps track of entities so we can search/grab them.
+ */
 public class EntityTracker extends Tracker {
 
     private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();

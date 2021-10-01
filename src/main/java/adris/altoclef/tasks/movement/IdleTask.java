@@ -4,6 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Playground;
 import adris.altoclef.tasksystem.Task;
 
+/**
+ * Do nothing.
+ */
 public class IdleTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {

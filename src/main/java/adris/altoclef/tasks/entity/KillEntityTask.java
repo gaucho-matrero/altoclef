@@ -3,6 +3,9 @@ package adris.altoclef.tasks.entity;
 import adris.altoclef.AltoClef;
 import net.minecraft.entity.Entity;
 
+/**
+ * Kill a specific entity
+ */
 public class KillEntityTask extends AbstractKillEntityTask {
 
     private final Entity _target;

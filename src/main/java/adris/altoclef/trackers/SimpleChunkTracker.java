@@ -14,7 +14,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-// Keeps track of currently loaded chunks. That's it.
+/**
+ * Keeps track of currently loaded chunks. That's it.
+ */
 public class SimpleChunkTracker {
 
     private final AltoClef _mod;

@@ -17,6 +17,11 @@ import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 
+/**
+ * Assuming a crafting screen is open, crafts a recipe.
+ *
+ * Not useful for custom tasks.
+ */
 public class CraftGenericTask extends Task {
 
     private final CraftingRecipe _recipe;

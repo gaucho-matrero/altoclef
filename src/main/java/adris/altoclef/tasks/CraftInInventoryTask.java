@@ -8,6 +8,9 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 
+/**
+ * Crafts an item within the 2x2 inventory crafting grid.
+ */
 public class CraftInInventoryTask extends ResourceTask {
 
     private final CraftingRecipe _recipe;

@@ -15,7 +15,6 @@ import net.minecraft.util.math.Vec3d;
 /**
  * Call this when the place you're currently at is bad for some reason and you just wanna get away.
  */
-
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     private final float _distanceToWander;

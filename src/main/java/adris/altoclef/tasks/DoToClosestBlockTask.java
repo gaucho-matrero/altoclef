@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Finds the closest reachable block and passes that block to a task.
+ */
 public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos> {
 
     private final Block[] _targetBlocks;

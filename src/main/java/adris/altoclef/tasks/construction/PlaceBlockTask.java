@@ -24,6 +24,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Place a block type at a position
+ */
 public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     private static final int MIN_MATERIALS = 1;

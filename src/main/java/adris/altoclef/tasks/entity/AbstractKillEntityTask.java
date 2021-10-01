@@ -6,6 +6,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
+/**
+ * Attacks an entity, but the target entity must be specified.
+ */
 public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     private static final double OTHER_FORCE_FIELD_RANGE = 2;
