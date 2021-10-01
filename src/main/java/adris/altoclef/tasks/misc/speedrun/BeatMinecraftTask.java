@@ -64,8 +64,7 @@ public class BeatMinecraftTask extends Task {
             new ItemTarget("diamond_helmet", 1),
             new ItemTarget("diamond_boots", 1),
             new ItemTarget("diamond_pickaxe", 3),
-            new ItemTarget("diamond_sword", 1),
-            new ItemTarget("log", 20)
+            new ItemTarget("diamond_sword", 1)
     );
     private final Task _prepareForDiamondCollectionTask = TaskCatalogue.getSquashedItemTask(
             new ItemTarget("iron_pickaxe", 3)
@@ -214,7 +213,7 @@ public class BeatMinecraftTask extends Task {
                 return new EquipArmorTask(DIAMOND_ARMORS);
             }
             // Get diamond armor + gear first
-            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD) || (needsToGoToNether && mod.getInventoryTracker().getItemCountIncludingTable(ItemUtil.LOG) <= 0)) {
+            if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
                 // Get two iron pickaxes first.
                 double ironDurability = 0;
                 if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) >= 3) {
@@ -379,19 +378,6 @@ public class BeatMinecraftTask extends Task {
         assert _netherPrepareTaskJustPick != null;
         if (_netherPrepareTaskJustPick.isActive() && !_netherPrepareTaskJustPick.isFinished(mod)) {
             //return _netherPrepareTaskJustPick;
-        }
-
-        // Make sure we have at least a wooden pickaxe at all times
-        // AND materials to craft a new one, so we aren't stuck in a cavern somewhere.
-        int planksCount = 4 * mod.getInventoryTracker().getItemCount(ItemUtil.LOG) + mod.getInventoryTracker().getItemCount(ItemUtil.PLANKS);
-        int planksNeeded = 3 + (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE) ? 0 : 4) + (mod.getInventoryTracker().getItemCount(Items.STICK) >= 2 ? 0 : 2);
-        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD) || planksCount < planksNeeded) {
-            // If we ran out of wood, go get more.
-            if (planksCount >= planksNeeded) {
-                //return _netherPrepareTaskJustPick;
-            } else {
-                //return _netherPrepareTaskWood;
-            }
         }
 
         // Blaze rods
