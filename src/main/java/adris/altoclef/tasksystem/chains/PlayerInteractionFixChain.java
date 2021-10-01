@@ -125,7 +125,9 @@ public class PlayerInteractionFixChain extends TaskChain {
             if (mod.getInventoryTracker().isInventoryFull()) {
                 Slot garbage = mod.getInventoryTracker().getGarbageSlot();
                 if (garbage != null) {
-                    mod.getSlotHandler().clickSlot(garbage, 0, SlotActionType.PICKUP);
+                    if (!Slot.isCursor(garbage)) {
+                        mod.getSlotHandler().clickSlot(garbage, 0, SlotActionType.PICKUP);
+                    }
                     mod.getSlotHandler().clickSlot(Slot.getFromInventory(-9999), 0, SlotActionType.PICKUP);
                     Debug.logMessage("Cursor stack edge case: Full inventory. Attempted to drop.");
                 } else {

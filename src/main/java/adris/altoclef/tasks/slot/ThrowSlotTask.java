@@ -18,7 +18,8 @@ public class ThrowSlotTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        _clickFirstFlag = true;
+        // Click if we're NOT throwing the cursor slot.
+        _clickFirstFlag = !Slot.isCursor(_slot);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class ThrowSlotTask extends Task {
             _clickFirstFlag = false;
             return new ClickSlotTask(_slot);
         }
-        return new ClickSlotTask(new PlayerSlot(-999), 0, SlotActionType.PICKUP);
+        return new ClickSlotTask(new PlayerSlot(-999));
     }
 
     @Override
