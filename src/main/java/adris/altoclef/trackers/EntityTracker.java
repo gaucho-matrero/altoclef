@@ -106,16 +106,21 @@ public class EntityTracker extends Tracker {
     }
 
     public ItemEntity getClosestItemDrop(Vec3d position, Item... items) {
+        return getClosestItemDrop(position, entity -> false, items);
+    }
+    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget... items) {
+        return getClosestItemDrop(position, entity -> false, items);
+    }
+    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> ignorePredicate, Item... items) {
         ensureUpdated();
         ItemTarget[] tempTargetList = new ItemTarget[items.length];
         for (int i = 0; i < items.length; ++i) {
             tempTargetList[i] = new ItemTarget(items[i], 9999999);
         }
-        return getClosestItemDrop(position, tempTargetList);
-        //return getClosestItemDrop(position, ItemTarget.getItemArray(_mod, targets));
+        return getClosestItemDrop(position, ignorePredicate, tempTargetList);
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget... targets) {
+    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> ignorePredicate, ItemTarget... targets) {
         ensureUpdated();
         if (targets.length == 0) {
             Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
@@ -134,6 +139,7 @@ public class EntityTracker extends Tracker {
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
                     if (_entityBlacklist.unreachable(entity)) continue;
                     if (!entity.getStack().getItem().equals(item)) continue;
+                    if (ignorePredicate.test(entity)) continue;
 
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
                     if (cost < minCost) {
@@ -279,6 +285,7 @@ public class EntityTracker extends Tracker {
             // Loop through all entities and track 'em
             for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
 
+                // Catalogue based on type. Some types may get "squashed" or combined together into one.
                 Class type = entity.getClass();
                 type = squashType(type);
 
@@ -286,8 +293,8 @@ public class EntityTracker extends Tracker {
 
                 // Don't catalogue our own player.
                 if (type == PlayerEntity.class && entity.equals(_mod.getPlayer())) continue;
+
                 if (!_entityMap.containsKey(type)) {
-                    //Debug.logInternal("NEW TYPE: " + type);
                     _entityMap.put(type, new ArrayList<>());
                 }
                 _entityMap.get(type).add(entity);
