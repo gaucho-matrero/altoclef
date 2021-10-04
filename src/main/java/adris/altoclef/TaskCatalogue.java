@@ -15,6 +15,7 @@ import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -33,6 +34,7 @@ public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
     private static final HashMap<String, CataloguedResource> _nameToResourceTask = new HashMap<>();
+    private static final HashMap<Item, CataloguedResource> _itemToResourceTask = new HashMap<>();
     private static final HashSet<Item> _resourcesObtainable = new HashSet<>();
 
     static {
@@ -591,18 +593,14 @@ public class TaskCatalogue {
         _nameToResourceTask.put(name, result);
         _nameToItemMatches.put(name, matches);
         _resourcesObtainable.addAll(Arrays.asList(matches));
+
+        // If this resource is just one item, consider it collectable.
+        if (matches.length == 1) {
+            _itemToResourceTask.put(matches[0], result);
+        }
+
         return result;
     }
-
-    /*private static void put(String name, Item match, TaskFactory factory) {
-        put(name, new Item[]{match}, factory);
-    }*/
-
-    /*
-    static ResourceTask getItemTask(Item item, int count) {
-        return getItemTask(ItemTarget.trimItemName(item.getTranslationKey()), count);
-    }
-    */
 
     // This is here so that we can use strings for item targets (optionally) and stuff like that.
     public static Item[] getItemMatches(String name) {
@@ -632,16 +630,34 @@ public class TaskCatalogue {
             return null;
         }
 
-        CataloguedResource catalogueValue = _nameToResourceTask.get(name);
-        return catalogueValue.getResource(count);
+        return _nameToResourceTask.get(name).getResource(count);
+    }
+
+    public static ResourceTask getItemTask(Item item, int count) {
+        if (!taskExists(item)) {
+            Debug.logWarning("Task " + item + " does not exist. Error possibly.");
+            Debug.logStack();
+            return null;
+        }
+
+        return _itemToResourceTask.get(item).getResource(count);
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
-        return getItemTask(target.getCatalogueName(), target.getTargetCount());
+        if (target.isCatalogueItem()) {
+            return getItemTask(target.getCatalogueName(), target.getTargetCount());
+        } else if (target.getMatches().length == 1) {
+            return getItemTask(target.getMatches()[0], target.getTargetCount());
+        } else {
+            return getSquashedItemTask(target);
+        }
     }
 
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
+    }
+    public static boolean taskExists(Item item) {
+        return _itemToResourceTask.containsKey(item);
     }
 
     public static Collection<String> resourceNames() {
