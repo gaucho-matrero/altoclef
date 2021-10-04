@@ -30,6 +30,7 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class CollectBucketLiquidTask extends ResourceTask {
 
@@ -135,7 +136,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
-        Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), blockPos -> {
+        Predicate<BlockPos> isSourceLiquid = blockPos -> {
             if (_blacklist.contains(blockPos)) return false;
             if (mod.getBlockTracker().unreachable(blockPos)) return false;
             if (mod.getBlockTracker().unreachable(blockPos.up())) return false; // We may try reaching the block above.
@@ -147,10 +148,10 @@ public class CollectBucketLiquidTask extends ResourceTask {
             }
 
             return WorldHelper.isSourceBlock(mod, blockPos, false);
-        }, _toCollect);
+        };
 
         // Find nearest water and right click it
-        if (getNearestLiquid.apply(mod.getPlayer().getPos()) != null) {
+        if (mod.getBlockTracker().anyFound(isSourceLiquid, _toCollect)) {
             // We want to MINIMIZE this distance to liquid.
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
@@ -178,8 +179,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     wasWandering = true;
                 }
                 return new GetCloseToBlockTask(blockPos.up());
-            }, getNearestLiquid, _toCollect);
-            //return task;
+            }, isSourceLiquid, _toCollect);
         }
 
         // Dimension

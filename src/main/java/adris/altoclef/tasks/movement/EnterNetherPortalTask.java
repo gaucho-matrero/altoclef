@@ -73,22 +73,20 @@ public class EnterNetherPortalTask extends Task {
             _portalTimeout.reset();
         }
 
-        Function<Vec3d, BlockPos> getClosestPortal = pos -> mod.getBlockTracker().getNearestTracking(pos,
-                block -> {
-                    // REQUIRE that there be solid ground beneath us, not more portal.
-                    if (!mod.getChunkTracker().isChunkLoaded(block)) {
-                        // Eh just assume it's good for now
-                        return true;
-                    }
-                    BlockPos below = block.down();
-                    boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
-                    return canStand && _goodPortal.test(block);
-                },
-                Blocks.NETHER_PORTAL);
+        Predicate<BlockPos> standablePortal = blockPos -> {
+            // REQUIRE that there be solid ground beneath us, not more portal.
+            if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
+                // Eh just assume it's good for now
+                return true;
+            }
+            BlockPos below = blockPos.down();
+            boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
+            return canStand && _goodPortal.test(blockPos);
+        };
 
-        if (getClosestPortal.apply(mod.getPlayer().getPos()) != null) {
+        if (mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos, false), getClosestPortal, Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos, false), standablePortal, Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;

@@ -331,8 +331,7 @@ public class CollectFoodTask extends Task {
             if (nearestDrop != null) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
             } else {
-                return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, acceptPlus, blockToCheck), blockToCheck);
-                //return new DestroyBlockTask(nearestBlock);
+                return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
             }
         }
         return null;
