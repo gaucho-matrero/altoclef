@@ -94,7 +94,7 @@ public class StoreInAnyChestTask extends Task {
                         }
                         return new StoreInChestTask(blockPos, _targets);
                     },
-                    pos -> mod.getBlockTracker().getNearestTracking(pos, validChest, Blocks.CHEST),
+                    validChest,
                     Blocks.CHEST);
         }
 

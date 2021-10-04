@@ -56,7 +56,7 @@ public class CollectCocoaBeansTask extends ResourceTask {
         // Break mature cocoa blocks
         if (mod.getBlockTracker().anyFound(validCocoa, Blocks.COCOA)) {
             setDebugState("Breaking cocoa blocks");
-            return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, validCocoa, Blocks.COCOA), Blocks.COCOA);
+            return new DoToClosestBlockTask(DestroyBlockTask::new, validCocoa, Blocks.COCOA);
         }
 
         // Dimension

@@ -106,6 +106,7 @@ public class CollectCropTask extends ResourceTask {
             return new DoToClosestBlockTask(
                     blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
                     pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))).orElse(null),
+                    _emptyCropland::contains,
                     Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }
 
@@ -130,7 +131,9 @@ public class CollectCropTask extends ResourceTask {
                 blockPos -> {
                     _emptyCropland.add(blockPos);
                     return new DestroyBlockTask(blockPos);
-                }, pos -> mod.getBlockTracker().getNearestTracking(pos, validCrop, _cropBlock)
+                },
+                validCrop,
+                _cropBlock
         );
     }
 

@@ -123,7 +123,8 @@ public class ReplaceBlocksTask extends Task {
                 _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
                 return _replaceTask;
             },
-            pos -> mod.getBlockTracker().getNearestTracking(pos, this::isWithinRange, _toFind)
+            this::isWithinRange,
+            _toFind
         );
     }
 
