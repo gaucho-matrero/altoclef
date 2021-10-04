@@ -124,10 +124,10 @@ public class BlockTracker extends Tracker {
         }
     }
 
-    public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
+    public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
         updateState();
         synchronized (_scanMutex) {
-            return currentCache().anyFound(isInvalidTest, blocks);
+            return currentCache().anyFound(isValidTest, blocks);
         }
     }
 
@@ -348,11 +348,11 @@ public class BlockTracker extends Tracker {
             return false;
         }
 
-        public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
+        public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) {
                     for (BlockPos pos : _cachedBlocks.get(block)) {
-                        if (!isInvalidTest.test(pos)) {
+                        if (isValidTest.test(pos)) {
                             return true;
                         }
                     }
