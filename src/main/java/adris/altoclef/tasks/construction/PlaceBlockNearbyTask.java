@@ -40,16 +40,16 @@ public class PlaceBlockNearbyTask extends Task {
     private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
 
     private final TimerGame _randomlookTimer = new TimerGame(0.25);
-    private final Predicate<BlockPos> _cantPlaceHere;
+    private final Predicate<BlockPos> _canPlaceHere;
     private BlockPos _justPlaced; // Where we JUST placed a block.
     private BlockPos _tryPlace;   // Where we should TRY placing a block.
     // Oof, necesarry for the onBlockPlaced action.
     private AltoClef _mod;
     private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced;
 
-    public PlaceBlockNearbyTask(Predicate<BlockPos> cantPlaceHere, Block... toPlace) {
+    public PlaceBlockNearbyTask(Predicate<BlockPos> canPlaceHere, Block... toPlace) {
         _toPlace = toPlace;
-        _cantPlaceHere = cantPlaceHere;
+        _canPlaceHere = canPlaceHere;
         onBlockPlaced = new ActionListener<>(value ->
         {
             if (ArrayUtils.contains(_toPlace, value.blockState.getBlock())) {
@@ -59,7 +59,7 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     public PlaceBlockNearbyTask(Block... toPlace) {
-        this(blockPos -> false, toPlace);
+        this(blockPos -> true, toPlace);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class PlaceBlockNearbyTask extends Task {
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
-        if (current != null && !_cantPlaceHere.test(current)) {
+        if (current != null && _canPlaceHere.test(current)) {
             setDebugState("Placing since we can...");
             if (mod.getSlotHandler().forceEquipItem(ItemHelper.blocksToItems(_toPlace))) {
                 if (place(mod, current)) {
@@ -232,7 +232,7 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             // We can't place here as defined by user.
-            if (!_cantPlaceHere.test(blockPos)) {
+            if (!_canPlaceHere.test(blockPos)) {
                 continue;
             }
             // We can't place here.

@@ -16,10 +16,10 @@ public class KillAndLootTask extends ResourceTask {
 
     private final Task _killTask;
 
-    public KillAndLootTask(Class toKill, Predicate<Entity> ignorePredicate, ItemTarget... itemTargets) {
+    public KillAndLootTask(Class toKill, Predicate<Entity> shouldKill, ItemTarget... itemTargets) {
         super(itemTargets.clone());
         _toKill = toKill;
-        _killTask = new KillEntitiesTask(ignorePredicate, _toKill);
+        _killTask = new KillEntitiesTask(shouldKill, _toKill);
     }
 
     public KillAndLootTask(Class toKill, ItemTarget... itemTargets) {

@@ -135,19 +135,19 @@ public class CollectBucketLiquidTask extends ResourceTask {
             return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
         }
 
-        Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), (blockPos -> {
-            if (_blacklist.contains(blockPos)) return true;
-            if (mod.getBlockTracker().unreachable(blockPos)) return true;
-            if (mod.getBlockTracker().unreachable(blockPos.up())) return true; // We may try reaching the block above.
+        Function<Vec3d, BlockPos> getNearestLiquid = ppos -> mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), blockPos -> {
+            if (_blacklist.contains(blockPos)) return false;
+            if (mod.getBlockTracker().unreachable(blockPos)) return false;
+            if (mod.getBlockTracker().unreachable(blockPos.up())) return false; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
             if (_toCollect == Blocks.LAVA && !WorldHelper.canBreak(mod, blockPos.up())) {
-                return true;
+                return false;
             }
 
-            return !WorldHelper.isSourceBlock(mod, blockPos, false);
-        }), _toCollect);
+            return WorldHelper.isSourceBlock(mod, blockPos, false);
+        }, _toCollect);
 
         // Find nearest water and right click it
         if (getNearestLiquid.apply(mod.getPlayer().getPos()) != null) {
@@ -155,29 +155,29 @@ public class CollectBucketLiquidTask extends ResourceTask {
             setDebugState("Trying to collect...");
             //Debug.logMessage("TEST: " + RayTraceUtils.fluidHandling);
 
-            return new DoToClosestBlockTask((BlockPos blockpos) -> {
+            return new DoToClosestBlockTask(blockPos -> {
                 // Clear above if lava because we can't enter.
-                if (WorldHelper.isSolid(mod, blockpos.up())) {
+                if (WorldHelper.isSolid(mod, blockPos.up())) {
                     if (!_progressChecker.check(mod)) {
                         Debug.logMessage("Failed to break, blacklisting & wandering");
-                        mod.getBlockTracker().requestBlockUnreachable(blockpos);
-                        _blacklist.add(blockpos);
+                        mod.getBlockTracker().requestBlockUnreachable(blockPos);
+                        _blacklist.add(blockPos);
                         return _wanderTask;
                     }
-                    return new DestroyBlockTask(blockpos.up());
+                    return new DestroyBlockTask(blockPos.up());
                 }
 
                 // We're close enough AND we see the block!
-                if (blockpos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookHelper.cleanLineOfSight(mod.getPlayer(), blockpos, 5)) {
-                    return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockpos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
+                if (blockPos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookHelper.cleanLineOfSight(mod.getPlayer(), blockPos, 5)) {
+                    return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockPos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 }
                 // Get close enough.
                 // up because if we go below we'll try to move next to the liquid (for lava, not a good move)
                 if (this.thisOrChildAreTimedOut() && !wasWandering) {
-                    mod.getBlockTracker().requestBlockUnreachable(blockpos.up());
+                    mod.getBlockTracker().requestBlockUnreachable(blockPos.up());
                     wasWandering = true;
                 }
-                return new GetCloseToBlockTask(blockpos.up());
+                return new GetCloseToBlockTask(blockPos.up());
             }, getNearestLiquid, _toCollect);
             //return task;
         }

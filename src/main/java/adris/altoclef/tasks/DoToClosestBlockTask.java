@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**

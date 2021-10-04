@@ -203,12 +203,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // Override this if our materials must be acquired in a special way.
         // virtual
         protected Task getMaterialTask(ItemTarget target) {
-            if (target.isCatalogueItem()) {
-                return TaskCatalogue.getItemTask(target.getCatalogueName(), target.getTargetCount());
-            } else {
-                Debug.logWarning("Smelt in furnace: material target is not catalogued: " + target + ". Override getMaterialTask or make sure the given material is catalogued!");
-                return null;
-            }
+            return TaskCatalogue.getItemTask(target);
         }
 
         @Override
