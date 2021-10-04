@@ -30,9 +30,9 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 ### Nightly Release (Recommended) (has the latest bug fixes)
 
-[Nightly Release Download Link](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip).
+Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-1.0-SNAPSHOT.jar`.
 
-If the above doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
 
 ### Long Term Release
 
