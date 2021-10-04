@@ -38,9 +38,9 @@ public class CollectCocoaBeansTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
-        Predicate<BlockPos> invalidCocoaCheck = (blockPos) -> {
+        Predicate<BlockPos> validCocoa = (blockPos) -> {
             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                return !_wasFullyGrown.contains(blockPos);
+                return _wasFullyGrown.contains(blockPos);
             }
 
             BlockState s = mod.getWorld().getBlockState(blockPos);
@@ -50,13 +50,13 @@ public class CollectCocoaBeansTask extends ResourceTask {
             } else {
                 if (mature) _wasFullyGrown.add(blockPos);
             }
-            return !mature;
+            return mature;
         };
 
         // Break mature cocoa blocks
-        if (mod.getBlockTracker().anyFound(invalidCocoaCheck, Blocks.COCOA)) {
+        if (mod.getBlockTracker().anyFound(validCocoa, Blocks.COCOA)) {
             setDebugState("Breaking cocoa blocks");
-            return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCocoaCheck, Blocks.COCOA), Blocks.COCOA);
+            return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, validCocoa, Blocks.COCOA), Blocks.COCOA);
         }
 
         // Dimension

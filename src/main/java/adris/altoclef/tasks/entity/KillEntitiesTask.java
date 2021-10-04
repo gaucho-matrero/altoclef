@@ -9,8 +9,8 @@ import java.util.function.Predicate;
  */
 public class KillEntitiesTask extends DoToClosestEntityTask {
 
-    public KillEntitiesTask(Predicate<Entity> ignorePredicate, Class... entities) {
-        super(KillEntityTask::new, ignorePredicate, entities);
+    public KillEntitiesTask(Predicate<Entity> shouldKill, Class... entities) {
+        super(KillEntityTask::new, shouldKill, entities);
     }
 
     public KillEntitiesTask(Class... entities) {

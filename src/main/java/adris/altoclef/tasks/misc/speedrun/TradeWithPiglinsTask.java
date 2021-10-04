@@ -191,20 +191,20 @@ public class TradeWithPiglinsTask extends ResourceTask {
         protected Entity getEntityTarget(AltoClef mod) {
             // Ignore trading piglins
             Entity found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                    (entity) -> {
+                    entity -> {
                         if (_blacklisted.contains(entity)
                                 || EntityTracker.isTradingPiglin(entity)
                                 || (entity instanceof LivingEntity && ((LivingEntity) entity).isBaby())
                                 || (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
-                            return true;
+                            return false;
                         }
 
                         if (AVOID_HOGLINS) {
                             // Avoid trading if hoglin is anywhere remotely nearby.
                             Entity closestHoglin = mod.getEntityTracker().getClosestEntity(entity.getPos(), HoglinEntity.class);
-                            return closestHoglin != null && closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS);
+                            return closestHoglin == null || !closestHoglin.isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS);
                         }
-                        return false;
+                        return true;
                     }, PiglinEntity.class
             );
             if (found == null) {

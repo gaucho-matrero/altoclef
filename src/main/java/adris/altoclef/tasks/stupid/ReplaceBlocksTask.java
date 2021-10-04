@@ -101,7 +101,7 @@ public class ReplaceBlocksTask extends Task {
                 setDebugState("No replaceable blocks found, wandering.");
                 return new TimeoutWanderTask();
             }
-            _collectMaterialsTask = TaskCatalogue.getItemTask(_toReplace.getCatalogueName(), need);
+            _collectMaterialsTask = TaskCatalogue.getItemTask(new ItemTarget(_toReplace, need));
             return _collectMaterialsTask;
             //return TaskCatalogue.getItemTask(_toReplace);
         }
@@ -123,8 +123,7 @@ public class ReplaceBlocksTask extends Task {
                 _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
                 return _replaceTask;
             },
-            pos -> mod.getBlockTracker().getNearestTracking(pos, ignore -> !isWithinRange(ignore),
-            _toFind)
+            pos -> mod.getBlockTracker().getNearestTracking(pos, this::isWithinRange, _toFind)
         );
     }
 

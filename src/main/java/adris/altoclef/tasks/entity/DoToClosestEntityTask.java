@@ -23,25 +23,25 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     private final Function<Entity, Task> _getTargetTask;
 
-    private final Predicate<Entity> _ignorePredicate;
+    private final Predicate<Entity> _shouldInteractWith;
 
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class... entities) {
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Class... entities) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
-        _ignorePredicate = ignorePredicate;
+        _shouldInteractWith = shouldInteractWith;
         _targetEntities = entities;
     }
 
     public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class... entities) {
-        this(getOriginSupplier, getTargetTask, entity -> false, entities);
+        this(getOriginSupplier, getTargetTask, entity -> true, entities);
     }
 
-    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Predicate<Entity> ignorePredicate, Class... entities) {
-        this(null, getTargetTask, ignorePredicate, entities);
+    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Class... entities) {
+        this(null, getTargetTask, shouldInteractWith, entities);
     }
 
     public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Class... entities) {
-        this(null, getTargetTask, entity -> false, entities);
+        this(null, getTargetTask, entity -> true, entities);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     @Override
     protected Entity getClosestTo(AltoClef mod, Vec3d pos) {
         if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
-        return mod.getEntityTracker().getClosestEntity(pos, _ignorePredicate, _targetEntities);
+        return mod.getEntityTracker().getClosestEntity(pos, _shouldInteractWith, _targetEntities);
     }
 
     @Override

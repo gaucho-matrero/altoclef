@@ -132,10 +132,10 @@ public class BlockTracker extends Tracker {
     }
 
     public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
-        return getNearestTracking(pos, (p) -> false, blocks);
+        return getNearestTracking(pos, p -> true, blocks);
     }
 
-    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isInvalidTest, Block... blocks) {
+    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
         for (Block block : blocks) {
             if (!_trackingBlocks.containsKey(block)) {
                 Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
@@ -145,7 +145,7 @@ public class BlockTracker extends Tracker {
         // Make sure we've scanned the first time if we need to.
         updateState();
         synchronized (_scanMutex) {
-            return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
+            return currentCache().getNearest(_mod, pos, isValidTest, blocks);
         }
     }
 
@@ -427,7 +427,7 @@ public class BlockTracker extends Tracker {
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isInvalid, Block... blocks) {
+        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isValid, Block... blocks) {
             if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
@@ -443,7 +443,7 @@ public class BlockTracker extends Tracker {
             boolean closestPurged = false;
 
             for (BlockPos pos : blockList) {
-                if (isInvalid.test(pos)) continue;
+                if (!isValid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
