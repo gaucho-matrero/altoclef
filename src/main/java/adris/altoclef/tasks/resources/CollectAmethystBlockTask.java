@@ -1,0 +1,59 @@
+package adris.altoclef.tasks.resources;
+
+import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.CraftingRecipe;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+
+public class CollectAmethystBlockTask extends ResourceTask {
+
+    private final int _count;
+
+    public CollectAmethystBlockTask(int targetCount) {
+        super(Items.AMETHYST_BLOCK, targetCount);
+        _count = targetCount;
+    }
+
+    @Override
+    protected boolean shouldAvoidPickingUp(AltoClef mod) {
+        return false;
+    }
+
+    @Override
+    protected void onResourceStart(AltoClef mod) {
+
+    }
+
+    @Override
+    protected Task onResourceTick(AltoClef mod) {
+        if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.AMETHYST_SHARD) >= 4) {
+            int target = mod.getInventoryTracker().getItemCount(Items.AMETHYST_BLOCK) + 1;
+            ItemTarget s = new ItemTarget("amethyst_shard", 1);
+            return new CraftInInventoryTask(new ItemTarget(Items.AMETHYST_BLOCK, target), CraftingRecipe.newShapedRecipe("amethyst_block", new ItemTarget[]{s, s, s, s}, 1));
+        }
+        return new MineAndCollectTask(new ItemTarget(new Item[]{Items.AMETHYST_BLOCK, Items.AMETHYST_SHARD}), new Block[]{Blocks.AMETHYST_BLOCK, Blocks.AMETHYST_CLUSTER}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);
+    }
+
+    @Override
+    protected void onResourceStop(AltoClef mod, Task interruptTask) {
+
+    }
+
+    @Override
+    protected boolean isEqualResource(ResourceTask other) {
+        return other instanceof CollectAmethystBlockTask;
+    }
+
+    @Override
+    protected String toDebugStringName() {
+        return "Collecting " + _count + " Amethyst Blocks.";
+    }
+}
