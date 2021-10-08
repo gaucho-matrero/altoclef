@@ -28,11 +28,14 @@ armor_stand
 arrow
 azure_bluet
 baked_potato
+bamboo
+barrel
 bed
 beef
 beetroot
 beetroot_seeds
 beetroot_soup
+bell
 birch_boat
 birch_button
 birch_door
@@ -48,6 +51,7 @@ birch_stairs
 birch_trapdoor
 black_bed
 black_wool
+blast_furnace
 blaze_powder
 blaze_rod
 blue_bed
@@ -75,9 +79,11 @@ bucket
 cactus
 cake
 calcite
+campfire
 carrot
 carrot_on_a_stick
 carved_pumpkin
+cartography_table
 cauldron
 charcoal
 chest
@@ -85,6 +91,7 @@ chest_minecart
 chicken
 chiseled_deepslate
 chiseled_nether_bricks
+chiseled_red_sandstone
 chiseled_sandstone
 chiseled_stone_bricks
 clay_ball
@@ -104,6 +111,7 @@ cocoa_beans
 cod
 comparator
 compass
+composter
 cooked_beef
 cooked_chicken
 cooked_cod
@@ -137,6 +145,7 @@ crossbow
 cut_copper
 cut_copper_slab
 cut_copper_stairs
+cut_red_sandstone
 cut_sandstone
 cut_sandstone_slab
 cyan_bed
@@ -202,9 +211,11 @@ fermented_spider_eye
 fern
 fire_charge
 fishing_rod
+fletching_table
 flint
 flint_and_steel
 flower
+flower_banner_pattern
 flower_pot
 furnace
 furnace_minecart
@@ -243,6 +254,7 @@ gray_wool
 green_bed
 green_dye
 green_wool
+grindstone
 gunpowder
 hay_block
 heavy_weighted_pressure_plate
@@ -259,6 +271,7 @@ iron_helmet
 iron_hoe
 iron_ingot
 iron_leggings
+iron_nugget
 iron_pick
 iron_pickaxe
 iron_shovel
@@ -281,6 +294,7 @@ jungle_slab
 jungle_stairs
 jungle_trapdoor
 ladder
+lantern
 lapis
 lapis_lazuli
 large_fern
@@ -290,6 +304,7 @@ leather
 leather_boots
 leather_chestplate
 leather_helmet
+leather_horse_armor
 leather_leggings
 leaves
 lectern
@@ -306,6 +321,7 @@ lily_pad
 lime_bed
 lime_wool
 log
+loom
 magenta_bed
 magenta_wool
 magma_block
@@ -318,6 +334,10 @@ minecart_with_chest
 minecart_with_furnace
 minecart_with_hopper
 minecart_with_tnt
+mossy_cobblestone
+mossy_cobblestone_slab
+mossy_cobblestone_stairs
+mossy_cobblestone_wall
 mossy_stone_brick_slab
 mossy_stone_brick_stairs
 mossy_stone_brick_wall
@@ -331,6 +351,7 @@ nether_brick_slab
 nether_brick_stairs
 nether_brick_wall
 nether_bricks
+nether_wart
 netherite_axe
 netherite_block
 netherite_boots
@@ -396,6 +417,11 @@ pumpkin_pie
 purple_bed
 purple_wool
 quartz
+quartz_block
+quartz_bricks
+quartz_pillar
+quartz_slab
+quartz_stairs
 rabbit
 rabbit_foot
 rabbit_hide
@@ -407,6 +433,9 @@ raw_gold_block
 raw_iron_block
 red_bed
 red_mushroom
+red_nether_bricks
+red_sand
+red_sandstone
 red_tulip
 red_wool
 redstone
@@ -426,13 +455,19 @@ shield
 sign
 slime_ball
 slime_block
+smoker
+smooth_quartz
+smooth_red_sandstone
 smooth_sandstone
 smooth_sandstone_slab
 smooth_sandstone_stairs
 smooth_stone
 smooth_stone_slab
+soul_campfire
+soul_lantern
 soul_sand
 soul_soil
+soul_torch
 spider_eye
 spruce_boat
 spruce_button
