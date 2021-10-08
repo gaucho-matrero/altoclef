@@ -162,7 +162,6 @@ public class TaskCatalogue {
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
-            smelt("smooth_basalt", Items.SMOOTH_BASALT, "basalt");
             smelt("green_dye", Items.GREEN_DYE, "cactus");
             simple("gold_ingot", Items.GOLD_INGOT, CollectGoldIngotTask::new).anyDimension(); // accounts for nether too
             shapedRecipe3x3Block("iron_block", Items.IRON_BLOCK, "iron_ingot");
