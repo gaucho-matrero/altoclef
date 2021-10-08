@@ -48,7 +48,12 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 return TaskCatalogue.getItemTask("gold_ingot", (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
             case NETHER:
                 setDebugState("Mining nuggies");
-                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
+                if (mod.getBlockTracker().getKnownLocations(Blocks.NETHER_GOLD_ORE).size() >= 1) {
+                    return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE},MiningRequirement.WOOD);
+                }
+                else {
+                    return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.GILDED_BLACKSTONE},MiningRequirement.WOOD);
+                }
             case END:
                 setDebugState("Going to overworld");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
