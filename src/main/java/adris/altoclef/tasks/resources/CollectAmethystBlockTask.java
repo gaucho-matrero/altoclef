@@ -9,6 +9,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -29,7 +30,14 @@ public class CollectAmethystBlockTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+        mod.getBlockTracker().trackBlock(Blocks.BUDDING_AMETHYST);
 
+        // Bot will not break Budding Amethyst
+        mod.getBehaviour().push();
+        mod.getBehaviour().avoidBlockBreaking(blockPos -> {
+            BlockState s = mod.getWorld().getBlockState(blockPos);
+            return s.getBlock() == Blocks.BUDDING_AMETHYST;
+        });
     }
 
     @Override

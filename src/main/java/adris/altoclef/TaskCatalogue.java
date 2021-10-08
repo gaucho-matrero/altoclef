@@ -155,6 +155,7 @@ public class TaskCatalogue {
             }
             shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
+            smelt("deepslate", Items.DEEPSLATE, "cobbled_deepslate").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
             smelt("iron_ingot", Items.IRON_INGOT, "raw_iron");
@@ -293,6 +294,7 @@ public class TaskCatalogue {
             smith("netherite_axe", Items.NETHERITE_AXE, "netherite_ingot", "diamond_axe");
             smith("netherite_shovel", Items.NETHERITE_SHOVEL, "netherite_ingot", "diamond_shovel");
             smith("netherite_sword", Items.NETHERITE_SWORD, "netherite_ingot", "diamond_sword");
+            smith("netherite_hoe", Items.NETHERITE_HOE, "netherite_ingot", "diamond_hoe");
             shapedRecipe3x3("bow", Items.BOW, 1, "string", s, o, "string", o, s, "string", s, o);
             shapedRecipe3x3("arrow", Items.ARROW, 4, "flint", o, o, s, o, o, "feather", o, o);
             {
@@ -320,6 +322,7 @@ public class TaskCatalogue {
             alias("iron_pick", "iron_pickaxe");
             alias("gold_pick", "gold_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
+            alias("netherite_pick", "diamond_pickaxe");
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
