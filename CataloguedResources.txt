@@ -90,6 +90,7 @@ carrot_on_a_stick
 carved_pumpkin
 cartography_table
 cauldron
+chain
 charcoal
 chest
 chest_minecart
@@ -328,6 +329,7 @@ lily_of_the_valley
 lily_pad
 lime_bed
 lime_wool
+lodestone
 log
 loom
 magenta_bed
@@ -410,6 +412,8 @@ polished_andesite_slab
 polished_andesite_stairs
 polished_basalt
 polished_blackstone
+polished_blackstone_button
+polished_blackstone_pressure_plate
 polished_blackstone_slab
 polished_blackstone_stairs
 polished_blackstone_wall
@@ -478,6 +482,8 @@ slime_block
 smoker
 smooth_basalt
 smooth_quartz
+smooth_quartz_slab
+smooth_quartz_stairs
 smooth_red_sandstone
 smooth_sandstone
 smooth_sandstone_slab

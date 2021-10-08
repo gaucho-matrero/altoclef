@@ -194,7 +194,7 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
-            shapedRecipe2x2("glowstone", Items.GLOWSTONE, 1, "glowstone_dust", "glowstone_dust", "glowstone_dust", "glowstone_dust").dontMineIfPresent();
+            shapedRecipe2x2Block("glowstone", Items.GLOWSTONE, "glowstone_dust").dontMineIfPresent();
             smelt("netherite_scrap", Items.NETHERITE_SCRAP, "ancient_debris");
             shapedRecipe3x3("netherite_ingot", Items.NETHERITE_INGOT, 1, "netherite_scrap", "netherite_scrap", "netherite_scrap", "netherite_scrap", "gold_ingot", "gold_ingot", "gold_ingot", "gold_ingot", o);
             simple("gold_nugget", Items.GOLD_NUGGET, CollectGoldNuggetsTask::new);
@@ -206,26 +206,26 @@ public class TaskCatalogue {
             shapedRecipe2x2("bone_meal", Items.BONE_MEAL, 3, "bone", o, o, o);
             shapedRecipe2x2("melon_seeds", Items.MELON_SEEDS, 1, "melon_slice", o, o, o);
             simple("hay_block", Items.HAY_BLOCK, CollectHayBlockTask::new).dontMineIfPresent();
-            shapedRecipe2x2("polished_andesite", Items.POLISHED_ANDESITE, 4, "andesite", "andesite", "andesite", "andesite");
-            shapedRecipe2x2("polished_diorite", Items.POLISHED_DIORITE, 4, "diorite", "diorite", "diorite", "diorite");
-            shapedRecipe2x2("polished_granite", Items.POLISHED_GRANITE, 4, "granite", "granite", "granite", "granite");
-            shapedRecipe2x2("quartz_block", Items.QUARTZ_BLOCK, 1, "quartz", "quartz", "quartz", "quartz");
-            shapedRecipe2x2("polished_blackstone", Items.POLISHED_BLACKSTONE, 4, "blackstone", "blackstone", "blackstone", "blackstone");
-            shapedRecipe2x2("polished_blackstone_bricks", Items.POLISHED_BLACKSTONE_BRICKS, 4, "polished_blackstone", "polished_blackstone", "polished_blackstone", "polished_blackstone");
-            shapedRecipe2x2("polished_basalt", Items.POLISHED_BASALT, 4, "basalt", "basalt", "basalt", "basalt");
-            shapedRecipe2x2("polished_deepslate", Items.POLISHED_DEEPSLATE, 4, "cobbled_deepslate", "cobbled_deepslate", "cobbled_deepslate", "cobbled_deepslate");
-            shapedRecipe2x2("deepslate_bricks", Items.DEEPSLATE_BRICKS, 4, "polished_deepslate", "polished_deepslate", "polished_deepslate", "polished_deepslate");
-            shapedRecipe2x2("deepslate_tiles", Items.DEEPSLATE_TILES, 4, "deepslate_bricks", "deepslate_bricks", "deepslate_bricks", "deepslate_bricks");
-            shapedRecipe2x2("cut_copper", Items.CUT_COPPER, 4, "copper_block", "copper_block", "copper_block", "copper_block");
-            shapedRecipe2x2("cut_sandstone", Items.CUT_SANDSTONE, 4, "sandstone", "sandstone", "sandstone", "sandstone");
-            shapedRecipe2x2("cut_red_sandstone", Items.CUT_RED_SANDSTONE, 4, "red_sandstone", "red_sandstone", "red_sandstone", "red_sandstone");
-            shapedRecipe2x2("quartz_bricks", Items.QUARTZ_BRICKS, 4, "quartz_block", "quartz_block", "quartz_block", "quartz_block");
+            shapedRecipe2x2Block("polished_andesite", Items.POLISHED_ANDESITE, 4, "andesite");
+            shapedRecipe2x2Block("polished_diorite", Items.POLISHED_DIORITE, 4, "diorite");
+            shapedRecipe2x2Block("polished_granite", Items.POLISHED_GRANITE, 4, "granite");
+            shapedRecipe2x2Block("quartz_block", Items.QUARTZ_BLOCK, "quartz");
+            shapedRecipe2x2Block("polished_blackstone", Items.POLISHED_BLACKSTONE, 4, "blackstone");
+            shapedRecipe2x2Block("polished_blackstone_bricks", Items.POLISHED_BLACKSTONE_BRICKS, 4, "polished_blackstone");
+            shapedRecipe2x2Block("polished_basalt", Items.POLISHED_BASALT, 4, "basalt");
+            shapedRecipe2x2Block("polished_deepslate", Items.POLISHED_DEEPSLATE, 4, "cobbled_deepslate");
+            shapedRecipe2x2Block("deepslate_bricks", Items.DEEPSLATE_BRICKS, 4, "polished_deepslate");
+            shapedRecipe2x2Block("deepslate_tiles", Items.DEEPSLATE_TILES, 4, "deepslate_bricks");
+            shapedRecipe2x2Block("cut_copper", Items.CUT_COPPER, 4, "copper_block");
+            shapedRecipe2x2Block("cut_sandstone", Items.CUT_SANDSTONE, 4, "sandstone");
+            shapedRecipe2x2Block("cut_red_sandstone", Items.CUT_RED_SANDSTONE, 4, "red_sandstone");
+            shapedRecipe2x2Block("quartz_bricks", Items.QUARTZ_BRICKS, 4, "quartz_block");
             shapedRecipe2x2("quartz_pillar", Items.QUARTZ_PILLAR, 4, "quartz_block", o, "quartz_block", o);
-            shapedRecipe2x2("stone_bricks", Items.STONE_BRICKS, 4, "stone", "stone", "stone", "stone");
+            shapedRecipe2x2Block("stone_bricks", Items.STONE_BRICKS, 4, "stone");
             shapedRecipe2x2("mossy_stone_bricks", Items.MOSSY_STONE_BRICKS, 1, "stone_bricks", "vine", o, o);
             shapedRecipe2x2("mossy_cobblestone", Items.MOSSY_COBBLESTONE, 1, "cobblestone", "vine", o, o);
             simple("nether_bricks", Items.NETHER_BRICKS, CollectNetherBricksTask::new).dontMineIfPresent();
-            shapedRecipe2x2("red_nether_bricks", Items.RED_NETHER_BRICKS, 4, "nether_wart", "nether_brick", "nether_brick", "nether_wart");
+            shapedRecipe2x2Block("red_nether_bricks", Items.RED_NETHER_BRICKS, 4, "nether_wart");
             smelt("cracked_stone_bricks", Items.CRACKED_STONE_BRICKS, "stone_bricks");
             smelt("cracked_nether_bricks", Items.CRACKED_NETHER_BRICKS, "nether_bricks");
             smelt("cracked_polished_blackstone_bricks", Items.CRACKED_POLISHED_BLACKSTONE_BRICKS, "polished_blackstone_bricks");
@@ -302,6 +302,8 @@ public class TaskCatalogue {
             shapedRecipeWall("red_nether_brick_wall", Items.RED_NETHER_BRICK_WALL, "red_nether_bricks");
             shapedRecipeSlab("quartz_slab", Items.QUARTZ_SLAB, "quartz_block");
             shapedRecipeStairs("quartz_stairs", Items.QUARTZ_STAIRS, "quartz_block");
+            shapedRecipeSlab("smooth_quartz_slab", Items.SMOOTH_QUARTZ_SLAB, "smooth_quartz");
+            shapedRecipeStairs("smooth_quartz_stairs", Items.SMOOTH_QUARTZ_STAIRS, "smooth_quartz");
             shapedRecipeSlab("blackstone_slab", Items.BLACKSTONE_SLAB, "blackstone");
             shapedRecipeStairs("blackstone_stairs", Items.BLACKSTONE_STAIRS, "blackstone");
             shapedRecipeWall("blackstone_wall", Items.BLACKSTONE_WALL, "blackstone");
@@ -428,7 +430,7 @@ public class TaskCatalogue {
                 shapedRecipe3x3("iron_door", Items.IRON_DOOR, 3, i, i, o, i, i, o, i, i, o);
                 shapedRecipe3x3("iron_bars", Items.IRON_BARS, 16, i, i, i, i, i, i, o, o, o);
                 shapedRecipe3x3("blast_furnace", Items.BLAST_FURNACE, 1, i, i, i, i, "furnace", i, m, m, m);
-                shapedRecipe2x2("iron_trapdoor", Items.IRON_TRAPDOOR, 1, i, i, i, i);
+                shapedRecipe2x2Block("iron_trapdoor", Items.IRON_TRAPDOOR, i);
             }
             shapedRecipe3x3("armor_stand", Items.ARMOR_STAND, 1, s, s, s, o, s, o, s, "smooth_stone_slab", s);
             {
@@ -439,7 +441,7 @@ public class TaskCatalogue {
             {
                 String b = "brick";
                 shapedRecipe3x3("flower_pot", Items.FLOWER_POT, 1, b, o, b, o, b, o, o, o, o);
-                shapedRecipe2x2("bricks", Items.BRICKS, 1, b, b, b, b);
+                shapedRecipe2x2Block("bricks", Items.BRICKS, b);
                 shapedRecipeSlab("brick_slab", Items.BRICK_SLAB, b);
                 shapedRecipeStairs("brick_stairs", Items.BRICK_STAIRS, b);
                 shapedRecipeStairs("brick_wall", Items.BRICK_WALL, "brick");
@@ -691,6 +693,14 @@ public class TaskCatalogue {
 
     private static CataloguedResource shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
         return shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
+    }
+
+    private static CataloguedResource shapedRecipe2x2Block(String name, Item match, String material) {
+        return shapedRecipe2x2(name, match, 1, material, material, material, material);
+    }
+
+    private static CataloguedResource shapedRecipe2x2Block(String name, Item match, int outputCount, String material) {
+        return shapedRecipe2x2(name, match, outputCount, material, material, material, material);
     }
 
     private static CataloguedResource shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
