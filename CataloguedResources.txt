@@ -28,7 +28,6 @@ armor_stand
 arrow
 azure_bluet
 baked_potato
-bamboo
 barrel
 basalt
 bed
@@ -173,6 +172,7 @@ dark_oak_slab
 dark_oak_stairs
 dark_oak_trapdoor
 daylight_detector
+dead_bush
 deepslate
 deepslate_brick_slab
 deepslate_brick_stairs
@@ -463,6 +463,7 @@ red_tulip
 red_wool
 redstone
 redstone_block
+redstone_lamp
 redstone_torch
 repeater
 rose_bush
@@ -479,6 +480,7 @@ shroomlight
 sign
 slime_ball
 slime_block
+smithing_table
 smoker
 smooth_basalt
 smooth_quartz
@@ -582,5 +584,6 @@ wooden_stairs
 wooden_sword
 wooden_trapdoor
 wool
+writable_book
 yellow_bed
 yellow_wool

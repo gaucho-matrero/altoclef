@@ -52,7 +52,7 @@ public class CollectAmethystBlockTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+        mod.getBlockTracker().stopTracking(Blocks.BUDDING_AMETHYST);
     }
 
     @Override

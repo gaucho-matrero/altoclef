@@ -274,6 +274,7 @@ public class Settings {
             Items.DIORITE,
             Items.ANDESITE,
             Items.GRANITE,
+            Items.TUFF,
             Items.COBBLESTONE,
             Items.DIRT,
             Items.GRAVEL,

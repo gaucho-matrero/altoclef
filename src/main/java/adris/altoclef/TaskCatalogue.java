@@ -133,6 +133,7 @@ public class TaskCatalogue {
             shear("tall_grass", Blocks.TALL_GRASS, Items.TALL_GRASS).dontMineIfPresent();
             shear("fern", Blocks.FERN, Items.FERN).dontMineIfPresent();
             shear("large_fern", Blocks.LARGE_FERN, Items.LARGE_FERN).dontMineIfPresent();
+            shear("dead_bush", Blocks.DEAD_BUSH, Items.DEAD_BUSH).dontMineIfPresent();
             shear("glow_lichen", Blocks.GLOW_LICHEN, Items.GLOW_LICHEN).dontMineIfPresent();
             // Flowers
             simple("flower", ItemHelper.FLOWER, CollectFlowerTask::new);
@@ -193,6 +194,7 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("redstone_block", Items.REDSTONE_BLOCK, "redstone");
             shapedRecipe3x3Block("coal_block", Items.COAL_BLOCK, "coal");
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
+            shapedRecipe3x3Block("lapis_block", Items.LAPIS_BLOCK, "lapis_lazuli");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
             shapedRecipe2x2Block("glowstone", Items.GLOWSTONE, "glowstone_dust").dontMineIfPresent();
             smelt("netherite_scrap", Items.NETHERITE_SCRAP, "ancient_debris");
@@ -240,7 +242,8 @@ public class TaskCatalogue {
             }
             shapedRecipe3x3("paper", Items.PAPER, 3, "sugar_cane", "sugar_cane", "sugar_cane", o, o, o, o, o, o);
             shapedRecipe2x2("book", Items.BOOK, 1, "paper", "paper", "paper", "leather");
-            shapedRecipe2x2("book_and_quill", Items.WRITABLE_BOOK, 1, "book", "ink_sac", o, "feather");
+            shapedRecipe2x2("writable_book", Items.WRITABLE_BOOK, 1, "book", "ink_sac", o, "feather");
+            alias("book_and_quill", "writable_book");
             shapedRecipe3x3("bowl", Items.BOWL, 4, p, o, p, o, p, o, o, o, o);
             shapedRecipe2x2("blaze_powder", Items.BLAZE_POWDER, 2, "blaze_rod", o, o, o);
             shapedRecipe2x2("ender_eye", Items.ENDER_EYE, 1, "blaze_powder", "ender_pearl", o, o);
@@ -449,6 +452,7 @@ public class TaskCatalogue {
             shapedRecipe3x3("ladder", Items.LADDER, 3, s, o, s, s, s, s, s, o, s);
             shapedRecipe3x3("jukebox", Items.JUKEBOX, 1, p, p, p, p, "diamond", p, p, p, p);
             shapedRecipe3x3("note_block", Items.NOTE_BLOCK, 1, p, p, p, p, "redstone", p, p, p, p);
+            shapedRecipe3x3("redstone_lamp", Items.REDSTONE_LAMP, 1, o, "redstone", o, "redstone", "glowstone", "redstone", o, "redstone", o);
             shapedRecipe3x3("bookshelf", Items.BOOKSHELF, 1, p, p, p, "book", "book", "book", p, p, p);
             shapedRecipe2x2("loom", Items.LOOM, 1, "string", "string", p, p);
             {
