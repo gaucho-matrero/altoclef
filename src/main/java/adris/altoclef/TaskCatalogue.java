@@ -69,7 +69,7 @@ public class TaskCatalogue {
             mine("redstone", MiningRequirement.IRON, new Block[]{Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE}, Items.REDSTONE);
             mine("lapis_lazuli", MiningRequirement.IRON, new Block[]{Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE}, Items.LAPIS_LAZULI);
             alias("lapis", "lapis_lazuli");
-            mine("amethyst_shard", MiningRequirement.HAND, Blocks.AMETHYST_CLUSTER, Items.AMETHYST_SHARD);
+            mine("amethyst_shard", MiningRequirement.WOOD, Blocks.AMETHYST_CLUSTER, Items.AMETHYST_SHARD);
             mine("pointed_dripstone", MiningRequirement.WOOD, Blocks.POINTED_DRIPSTONE, Items.POINTED_DRIPSTONE);
             mine("sand", Blocks.SAND, Items.SAND);
             mine("red_sand", Blocks.RED_SAND, Items.RED_SAND);
@@ -79,6 +79,7 @@ public class TaskCatalogue {
             mine("gilded_blackstone", MiningRequirement.STONE, Blocks.GILDED_BLACKSTONE, Items.GILDED_BLACKSTONE).forceDimension(Dimension.NETHER);
             simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("red_sandstone", Items.RED_SANDSTONE, CollectRedSandstoneTask::new).dontMineIfPresent();
+            simple("coarse_dirt", Items.COARSE_DIRT, CollectCoarseDirtTask::new).dontMineIfPresent();
             simple("amethyst_block", Items.AMETHYST_BLOCK, CollectAmethystBlockTask::new).dontMineIfPresent();
             simple("dripstone_block", Items.DRIPSTONE_BLOCK, CollectDripstoneBlockTask::new).dontMineIfPresent();
             simple("flint", Items.FLINT, CollectFlintTask::new);

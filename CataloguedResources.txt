@@ -305,6 +305,7 @@ jungle_trapdoor
 ladder
 lantern
 lapis
+lapis_block
 lapis_lazuli
 large_fern
 lava_bucket

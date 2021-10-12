@@ -10,6 +10,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -48,12 +49,7 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 return TaskCatalogue.getItemTask("gold_ingot", (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
             case NETHER:
                 setDebugState("Mining nuggies");
-                if (mod.getBlockTracker().getKnownLocations(Blocks.NETHER_GOLD_ORE).size() >= 1) {
-                    return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE},MiningRequirement.WOOD);
-                }
-                else {
-                    return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.GILDED_BLACKSTONE},MiningRequirement.WOOD);
-                }
+                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE, Blocks.GILDED_BLACKSTONE},MiningRequirement.WOOD);
             case END:
                 setDebugState("Going to overworld");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
