@@ -26,19 +26,21 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 ## Download
 
-### Official Release
+**Note:** After installing, please move/delete your old baritone configurations if you have any. Preexisting baritone configurations will interfere with altoclef and introduce bugs. This will be fixed in the future.
 
-Check [releases](https://github.com/gaucho-matrero/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
+### Nightly Release (Recommended) (has the latest bug fixes)
 
-### Cutting Edge (has the latest bug fixes)
+Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-1.0-SNAPSHOT.jar`.
 
-Check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip`. Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+
+### Long Term Release
+
+[Check releases](https://github.com/gaucho-matrero/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
 
 ### Versions
 
 This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
-
-**Note:** After installing, please move/delete your old baritone configurations if you have any. Preexisting baritone configurations will interfere with altoclef and introduce bugs. This will be fixed in the future.
 
 For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect is untested and not affiliated with altoclef, use at your own risk!)
 
