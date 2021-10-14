@@ -7,6 +7,7 @@ import net.minecraft.block.MapColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.DyeColor;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public interface ItemHelper {
 
     Block[] WOOD_SIGNS_ALL = new Block[]{Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN};
 
-    Map<Item, Item> _logToPlanks = new HashMap<Item, Item>() {
+    Map<Item, Item> _logToPlanks = new HashMap<>() {
         {
             put(Items.ACACIA_LOG, Items.ACACIA_PLANKS);
             put(Items.BIRCH_LOG, Items.BIRCH_PLANKS);
@@ -194,6 +195,10 @@ public interface ItemHelper {
             name = name.substring("item.minecraft.".length());
         }
         return name;
+    }
+
+    static boolean areShearsEffective(Block b) {
+        return BlockTags.LEAVES.contains(b) || b == Blocks.COBWEB || b == Blocks.GRASS || b == Blocks.TALL_GRASS || b == Blocks.LILY_PAD || b == Blocks.FERN || b == Blocks.DEAD_BUSH || b ==Blocks.VINE || b == Blocks.TRIPWIRE || BlockTags.WOOL.contains(b);
     }
 
     class ColorfulItems {

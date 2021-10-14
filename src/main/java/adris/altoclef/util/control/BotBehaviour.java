@@ -5,13 +5,16 @@ import adris.altoclef.Debug;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -89,6 +92,11 @@ public class BotBehaviour {
         current().applyState();
     }
 
+    public void forceUseTool(BiPredicate<BlockState, ItemStack> pred) {
+        current().forceUseTools.add(pred);
+        current().applyState();
+    }
+
     public void setRayTracingFluidHandling(RaycastContext.FluidHandling fluidHandling) {
         current().rayFluidHandling = fluidHandling;
         //Debug.logMessage("OOF: " + fluidHandling);
@@ -158,11 +166,6 @@ public class BotBehaviour {
         return false;
     }
 
-    public void allowShears(boolean allow) {
-        current().allowShears = allow;
-        current().applyState();
-    }
-
     /// Stack management
     public void push() {
         if (_states.isEmpty()) {
@@ -221,8 +224,8 @@ public class BotBehaviour {
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
+        public List<BiPredicate<BlockState, ItemStack>> forceUseTools = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
-        public boolean allowShears;
 
         // Minecraft config
         public boolean pauseOnLostFocus = true;
@@ -280,11 +283,11 @@ public class BotBehaviour {
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
                     synchronized (settings.getPropertiesMutex()) {
                         allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
+                        forceUseTools = new ArrayList<>(settings.getForceUseToolPredicates());
                     }
                 }
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
-            allowShears = settings.areShearsAllowed();
 
             rayFluidHandling = RayTraceUtils.fluidHandling;
         }
@@ -321,12 +324,13 @@ public class BotBehaviour {
                     synchronized (sa.getPropertiesMutex()) {
                         sa.getForceWalkOnPredicates().clear();
                         sa.getForceWalkOnPredicates().addAll(allowWalking);
+                        sa.getForceUseToolPredicates().clear();
+                        sa.getForceUseToolPredicates().addAll(forceUseTools);
                     }
                 }
             }
 
             sa.setFlowingWaterPass(_allowWalkThroughFlowingWater);
-            sa.allowShears(allowShears);
             sa.allowSwimThroughLava(swimThroughLava);
 
             // Extra / hard coded

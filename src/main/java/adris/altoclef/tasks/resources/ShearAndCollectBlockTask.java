@@ -5,6 +5,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -26,7 +27,9 @@ public class ShearAndCollectBlockTask extends MineAndCollectTask {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBehaviour().allowShears(true);
+        mod.getBehaviour().forceUseTool((blockState, itemStack) ->
+                itemStack.getItem() == Items.SHEARS && ItemHelper.areShearsEffective(blockState.getBlock())
+        );
         super.onStart(mod);
     }
 
