@@ -274,16 +274,21 @@ public class Settings {
             Items.DIORITE,
             Items.ANDESITE,
             Items.GRANITE,
+            Items.TUFF,
             Items.COBBLESTONE,
             Items.DIRT,
             Items.GRAVEL,
+            Items.COBBLED_DEEPSLATE,
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
             Items.NETHERRACK,
             Items.MAGMA_BLOCK,
             Items.SOUL_SOIL,
             Items.SOUL_SAND,
             Items.NETHER_BRICKS,
-            Items.NETHER_BRICK
+            Items.NETHER_BRICK,
+            Items.BASALT,
+            Items.BLACKSTONE
+            
     );
 
     /**
