@@ -7,6 +7,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.helpers.StlHelper;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
@@ -538,6 +539,8 @@ public class BlockTracker extends Tracker {
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
+                            // TODO: Use StlHelper
+
                             .sorted((BlockPos left, BlockPos right) -> {
                                 double leftDist = left.getSquaredDistance(playerPos, false);
                                 double rightDist = right.getSquaredDistance(playerPos, false);

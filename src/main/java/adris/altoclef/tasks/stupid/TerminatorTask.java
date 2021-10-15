@@ -173,7 +173,7 @@ public class TerminatorTask extends Task {
                         Debug.logWarning("This should never happen.");
                         return _scanTask;
                     },
-                    ignore -> !shouldPunk(mod, (PlayerEntity) ignore),
+                    interact -> shouldPunk(mod, (PlayerEntity) interact),
                     PlayerEntity.class
                 );
             }

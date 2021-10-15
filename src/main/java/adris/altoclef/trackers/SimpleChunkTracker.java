@@ -73,6 +73,9 @@ public class SimpleChunkTracker {
     }
 
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {
-        scanChunk(chunk, (block) -> false);
+        scanChunk(chunk, (block) -> {
+            onBlock.accept(block);
+            return false;
+        });
     }
 }
