@@ -200,7 +200,18 @@ public interface ItemHelper {
     }
 
     static boolean areShearsEffective(Block b) {
-        return BlockTags.LEAVES.contains(b) || b == Blocks.COBWEB || b == Blocks.GRASS || b == Blocks.TALL_GRASS || b == Blocks.LILY_PAD || b == Blocks.FERN || b == Blocks.DEAD_BUSH || b ==Blocks.VINE || b == Blocks.TRIPWIRE || BlockTags.WOOL.contains(b);
+        return
+                BlockTags.LEAVES.contains(b)
+                        || b == Blocks.COBWEB
+                        || b == Blocks.GRASS
+                        || b == Blocks.TALL_GRASS
+                        || b == Blocks.LILY_PAD
+                        || b == Blocks.FERN
+                        || b == Blocks.DEAD_BUSH
+                        || b ==Blocks.VINE
+                        || b == Blocks.TRIPWIRE
+                        || BlockTags.WOOL.contains(b)
+                        || b == Blocks.NETHER_SPROUTS;
     }
 
     class ColorfulItems {
