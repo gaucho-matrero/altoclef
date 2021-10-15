@@ -388,9 +388,9 @@ public class TaskCatalogue {
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
             alias("iron_pick", "iron_pickaxe");
-            alias("gold_pick", "gold_pickaxe");
+            alias("gold_pick", "golden_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
-            alias("netherite_pick", "diamond_pickaxe");
+            alias("netherite_pick", "netherite_pickaxe");
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
@@ -820,8 +820,12 @@ public class TaskCatalogue {
     }
 
     private static void alias(String newName, String original) {
-        _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
-        _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
+        if (!_nameToResourceTask.containsKey(original) || !_nameToItemMatches.containsKey(original)) {
+            Debug.logWarning("Invalid resource: " + original + ". Will not create alias.");
+        } else {
+            _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
+            _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
+        }
     }
 
     private static ItemTarget t(String cataloguedName) {
