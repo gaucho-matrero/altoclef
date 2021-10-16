@@ -21,7 +21,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings({"rawtypes"})
-/**
+/*
  * Contains a hardcoded list of ALL obtainable resources.
  *
  * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
@@ -44,7 +44,7 @@ public class TaskCatalogue {
 
             /// RAW RESOURCES
             mine("log", MiningRequirement.HAND, ItemHelper.LOG, ItemHelper.LOG).anyDimension();
-            woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
+            woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND), true);
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.DIRT_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             simple("cobbled_deepslate", Items.COBBLED_DEEPSLATE, CollectCobbledDeepslateTask::new).dontMineIfPresent();
@@ -125,7 +125,18 @@ public class TaskCatalogue {
             colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             // Misc greenery
             shear("leaves", ItemHelper.itemsToBlocks(ItemHelper.LEAVES), ItemHelper.LEAVES).dontMineIfPresent();
-            for (CataloguedResource resource : woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves)))) {
+            for (CataloguedResource resource : woodTasks(
+                    "leaves",
+                    woodItems -> woodItems.leaves,
+                    (woodItems, count) -> {
+                        if (woodItems.isNetherWood()) {
+                            // Nether "leaves" aren't sheared, they can simply be mined.
+                            return new MineAndCollectTask(woodItems.leaves, count, new Block[]{Block.getBlockFromItem(woodItems.leaves)}, MiningRequirement.HAND).forceDimension(Dimension.NETHER);
+                        } else {
+                            return new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves));
+                        }
+                    })
+            ) {
                 resource.dontMineIfPresent();
             }
             mine("bamboo", Blocks.BAMBOO, Items.BAMBOO);
@@ -168,7 +179,15 @@ public class TaskCatalogue {
 
             // MATERIALS
             simple("planks", ItemHelper.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
-            for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count), true)) {
+            // Per-tree Planks. At the moment, nether planks need to be specified that their logs are in the nether.
+            for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> {
+                CollectPlanksTask result = new CollectPlanksTask(wood.planks, count);
+                if (wood.isNetherWood()) {
+                    // Kinda jank
+                    result.logsInNether();
+                }
+                return result;
+            }, true)) {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
             }
@@ -778,22 +797,26 @@ public class TaskCatalogue {
         }
     }
 
-    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+    private static CataloguedResource[] woodTasks(Function<ItemHelper.WoodItems, String> getCatalogueName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
         List<CataloguedResource> result = new ArrayList<>();
         for (WoodType woodType : WoodType.values()) {
             ItemHelper.WoodItems woodItems = ItemHelper.getWoodItems(woodType);
-            String prefix = woodItems.prefix;
-            CataloguedResource t = put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count));
-            if (requireNetherForNetherStuff) {
-                if (woodItems.isNetherWood()) {
-                    t.forceDimension(Dimension.NETHER);
-                }
+            Item match = getMatch.apply(woodItems);
+            String cataloguedName = getCatalogueName.apply(woodItems);
+            if (match == null) continue;
+            boolean isNether = woodItems.isNetherWood();
+            CataloguedResource t = put(cataloguedName, new Item[]{match}, count -> getTask.apply(woodItems, count));
+            if (requireNetherForNetherStuff && isNether) {
+                t.forceDimension(Dimension.NETHER);
             }
             result.add(t);
         }
         return result.toArray(CataloguedResource[]::new);
     }
 
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+        return woodTasks(woodItem -> woodItem.prefix + "_" + baseName, getMatch, getTask, requireNetherForNetherStuff);
+    }
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }
