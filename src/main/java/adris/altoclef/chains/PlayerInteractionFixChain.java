@@ -49,7 +49,7 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
-        if (_betterToolTimer.elapsed()) {
+        if (mod.getUserTaskChain().isActive() && _betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
             _betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
