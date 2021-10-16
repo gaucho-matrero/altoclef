@@ -111,9 +111,10 @@ public class PlayerInteractionFixChain extends TaskChain {
             if (_lastHandStack == null || !ItemStack.areEqual(currentStack, _lastHandStack)) {
                 // We're holding a new item in our stack!
                 _stackHeldTimeout.reset();
-                _lastHandStack = currentStack;
+                _lastHandStack = currentStack.copy();
             }
         } else {
+            _stackHeldTimeout.reset();
             _lastHandStack = null;
         }
 
