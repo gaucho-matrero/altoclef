@@ -28,10 +28,11 @@ public class ItemTarget {
         if (catalogueName == null) return;
         _catalogueName = catalogueName;
         _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
-        _targetCount = targetCount;
         if (_itemMatches == null) {
             Debug.logError("Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!");
+            _itemMatches = new Item[0];
         }
+        _targetCount = targetCount;
     }
 
     public ItemTarget(String catalogueName) {
