@@ -30,13 +30,7 @@ public class GiveItemToPlayerTask extends Task {
     public GiveItemToPlayerTask(String player, ItemTarget... targets) {
         _playerName = player;
         _targets = targets;
-
-        // Some targets may not exist, so ignore the resources for them!
-        List<ItemTarget> result = new ArrayList<>();
-        for (ItemTarget target : targets) {
-            if (target.isCatalogueItem()) result.add(target);
-        }
-        _resourceTask = TaskCatalogue.getSquashedItemTask(result.toArray(ItemTarget[]::new));
+        _resourceTask = TaskCatalogue.getSquashedItemTask(targets);
     }
 
     @Override

@@ -236,7 +236,7 @@ public class MobDefenseChain extends SingleTaskChain {
                         // We can deal with it.
                         _runAwayTask = null;
                         setTask(new KillEntitiesTask(
-                                entity -> !toDealWith.contains(entity),
+                                toDealWith::contains,
                                 // Oof
                                 HOSTILE_ANNOYING_CLASSES));
                         return 65;

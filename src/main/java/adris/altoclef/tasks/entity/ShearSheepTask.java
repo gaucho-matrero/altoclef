@@ -36,12 +36,11 @@ public class ShearSheepTask extends AbstractDoToEntityTask {
     @Override
     protected Entity getEntityTarget(AltoClef mod) {
         return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
-                (entity) -> {
+                entity -> {
                     if (entity instanceof SheepEntity sheep) {
-                        return !sheep.isShearable() || sheep.isSheared();
+                        return sheep.isShearable() && !sheep.isSheared();
                     }
-
-                    return true;
+                    return false;
                 }, SheepEntity.class
         );
     }

@@ -104,9 +104,9 @@ public class CollectObsidianTask extends ResourceTask {
             return _forceCompleteTask;
         }
 
-        Predicate<BlockPos> badObsidian = (blockPos ->
-                !blockPos.isWithinDistance(mod.getPlayer().getPos(), 800)
-                || !WorldHelper.canBreak(mod, blockPos)
+        Predicate<BlockPos> goodObsidian = (blockPos ->
+                blockPos.isWithinDistance(mod.getPlayer().getPos(), 800)
+                && WorldHelper.canBreak(mod, blockPos)
         );
 
         /*
@@ -123,7 +123,7 @@ public class CollectObsidianTask extends ResourceTask {
             }
         }
          */
-        if (/*obsidianNearby || */mod.getBlockTracker().anyFound(badObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+        if (/*obsidianNearby || */mod.getBlockTracker().anyFound(goodObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
             /*
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);

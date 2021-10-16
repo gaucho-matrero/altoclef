@@ -215,18 +215,17 @@ public class CollectFoodTask extends Task {
                     if (b instanceof CropBlock) {
                         boolean isWheat = !(b instanceof PotatoesBlock || b instanceof CarrotsBlock || b instanceof BeetrootsBlock);
                         if (isWheat) {
-
                             // Chunk needs to be loaded for wheat maturity to be checked.
                             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                                return true;
+                                return false;
                             }
                             // Prune if we're not mature/fully grown wheat.
                             CropBlock crop = (CropBlock) b;
-                            return !crop.isMature(s);
+                            return crop.isMature(s);
                         }
                     }
                     // Unbreakable.
-                    return !WorldHelper.canBreak(mod, blockPos);
+                    return WorldHelper.canBreak(mod, blockPos);
                     // We're not wheat so do NOT reject.
                 }), 100);
                 if (t != null) {
@@ -296,8 +295,7 @@ public class CollectFoodTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof CollectFoodTask) {
-            CollectFoodTask task = (CollectFoodTask) other;
+        if (other instanceof CollectFoodTask task) {
             return task._unitsNeeded == _unitsNeeded;
         }
         return false;
@@ -312,12 +310,12 @@ public class CollectFoodTask extends Task {
      * Returns a task that mines a block and picks up its output.
      * Returns null if task cannot reasonably run.
      */
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
-        Predicate<BlockPos> rejectPlus = (blockPos) -> {
-            if (!WorldHelper.canBreak(mod, blockPos)) return true;
-            return reject.test(blockPos);
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> accept, double maxRange) {
+        Predicate<BlockPos> acceptPlus = (blockPos) -> {
+            if (!WorldHelper.canBreak(mod, blockPos)) return false;
+            return accept.test(blockPos);
         };
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), rejectPlus, blockToCheck);
+        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
 
         if (nearestBlock != null && !nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
             nearestBlock = null;
@@ -333,15 +331,14 @@ public class CollectFoodTask extends Task {
             if (nearestDrop != null) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
             } else {
-                return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
-                //return new DestroyBlockTask(nearestBlock);
+                return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
             }
         }
         return null;
     }
 
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, double maxRange) {
-        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (toReject) -> false, maxRange);
+        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, toAccept -> true, maxRange);
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {

@@ -133,12 +133,8 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
     // Virtual
     protected Task getAllSameResourcesTask(AltoClef mod) {
-        if (_sameResourceTarget.isCatalogueItem()) {
-            ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget.getCatalogueName());
-            return TaskCatalogue.getItemTask(infinityVersion);
-        }
-        Debug.logWarning("ItemTarget for same resource is not catalogued: " + _sameResourceTarget);
-        return null;
+        ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget, 999999);
+        return TaskCatalogue.getItemTask(infinityVersion);
     }
 
     // Virtual

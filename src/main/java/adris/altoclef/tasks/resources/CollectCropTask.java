@@ -28,7 +28,7 @@ public class CollectCropTask extends ResourceTask {
 
     private final ItemTarget _cropToCollect;
     private final Item[] _cropSeed;
-    private final Predicate<BlockPos> _ignoreBreak;
+    private final Predicate<BlockPos> _canBreak;
     private final Block[] _cropBlock;
 
     private final Set<BlockPos> _emptyCropland = new HashSet<>();
@@ -38,17 +38,17 @@ public class CollectCropTask extends ResourceTask {
     // To prevent infinite chunk-unload-reload loop bug
     private final HashSet<BlockPos> _wasFullyGrown = new HashSet<>();
 
-    public CollectCropTask(ItemTarget cropToCollect, Block[] cropBlock, Item[] cropSeed, Predicate<BlockPos> ignoreBreak) {
+    public CollectCropTask(ItemTarget cropToCollect, Block[] cropBlock, Item[] cropSeed, Predicate<BlockPos> canBreak) {
         super(cropToCollect);
         _cropToCollect = cropToCollect;
         _cropSeed = cropSeed;
-        _ignoreBreak = ignoreBreak;
+        _canBreak = canBreak;
         _cropBlock = cropBlock;
         _collectSeedTask = new PickupDroppedItemTask(new ItemTarget(cropSeed, 1), true);
     }
 
     public CollectCropTask(ItemTarget cropToCollect, Block[] cropBlock, Item... cropSeed) {
-        this(cropToCollect, cropBlock, cropSeed, ignore -> false);
+        this(cropToCollect, cropBlock, cropSeed, canBreak -> true);
     }
 
     public CollectCropTask(ItemTarget cropToCollect, Block cropBlock, Item... cropSeed) {
@@ -106,19 +106,22 @@ public class CollectCropTask extends ResourceTask {
             return new DoToClosestBlockTask(
                     blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
                     pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))).orElse(null),
+                    _emptyCropland::contains,
                     Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }
 
-        Predicate<BlockPos> invalidCrop = ignoreBlock -> {
-            if (_ignoreBreak.test(ignoreBlock)) return true;
+        Predicate<BlockPos> validCrop = blockPos -> {
+            if (!_canBreak.test(blockPos)) return false;
             // Breaking immature crops will only yield one output! This is a bad move.
-            if (mod.getModSettings().shouldReplantCrops() && !isMature(mod, ignoreBlock)) return true;
+            if (mod.getModSettings().shouldReplantCrops() && !isMature(mod, blockPos)) return false;
             // Wheat must be mature always.
-            return mod.getWorld().getBlockState(ignoreBlock).getBlock() == Blocks.WHEAT && !isMature(mod, ignoreBlock);
+            if (mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.WHEAT)
+                return isMature(mod, blockPos);
+            return true;
         };
 
         // Dimension
-        if (isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(invalidCrop, _cropBlock)) {
+        if (isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(validCrop, _cropBlock)) {
             return getToCorrectDimensionTask(mod);
         }
 
@@ -128,7 +131,9 @@ public class CollectCropTask extends ResourceTask {
                 blockPos -> {
                     _emptyCropland.add(blockPos);
                     return new DestroyBlockTask(blockPos);
-                }, pos -> mod.getBlockTracker().getNearestTracking(pos, invalidCrop, _cropBlock)
+                },
+                validCrop,
+                _cropBlock
         );
     }
 

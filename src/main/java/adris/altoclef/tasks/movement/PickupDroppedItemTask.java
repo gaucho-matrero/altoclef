@@ -147,7 +147,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         return mod.getEntityTracker().getClosestItemDrop(
                 pos,
                 // Don't go for falling item drops, they slow down baritone.
-                entity -> !entity.isOnGround() && !entity.isTouchingWater(),
+                entity -> entity.isOnGround() || entity.isTouchingWater(),
                 _itemTargets);
     }
 
