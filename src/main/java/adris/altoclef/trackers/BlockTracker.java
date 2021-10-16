@@ -132,10 +132,15 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    public BlockPos getNearestTracking(Block... blocks) {
+        return getNearestTracking(_mod.getPlayer().getPos(), blocks);
+    }
     public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, p -> true, blocks);
     }
-
+    public BlockPos getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
+        return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
+    }
     public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
         for (Block block : blocks) {
             if (!_trackingBlocks.containsKey(block)) {
