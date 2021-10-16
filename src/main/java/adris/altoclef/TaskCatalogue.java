@@ -128,6 +128,7 @@ public class TaskCatalogue {
             for (CataloguedResource resource : woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves)))) {
                 resource.dontMineIfPresent();
             }
+            mine("bamboo", Blocks.BAMBOO, Items.BAMBOO);
             shear("vine", Blocks.VINE, Items.VINE).dontMineIfPresent();
             shear("grass", Blocks.GRASS, Items.GRASS).dontMineIfPresent();
             shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD).dontMineIfPresent();
