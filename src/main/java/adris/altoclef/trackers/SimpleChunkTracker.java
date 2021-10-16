@@ -54,13 +54,21 @@ public class SimpleChunkTracker {
         return result;
     }
 
-    public boolean scanChunk(ChunkPos chunk, Predicate<BlockPos> onBlock) {
+    /**
+     * Loops through every block in a chunk if it is loaded.
+     * If the chunk isn't loaded, it doesn't scan anything.
+     *
+     * @param chunk The chunk pos to scan
+     * @param onBlockStop Run for every block until it returns true, where it stops scanning.
+     * @return whether `onBlockStop` returned true at any point.
+     */
+    public boolean scanChunk(ChunkPos chunk, Predicate<BlockPos> onBlockStop) {
         if (!isChunkLoaded(chunk)) return false;
         //Debug.logInternal("SCANNED CHUNK " + chunk.toString());
         for (int xx = chunk.getStartX(); xx <= chunk.getEndX(); ++xx) {
             for (int yy = 0; yy <= 255; ++yy) {
                 for (int zz = chunk.getStartZ(); zz <= chunk.getEndZ(); ++zz) {
-                    if (onBlock.test(new BlockPos(xx, yy, zz))) return true;
+                    if (onBlockStop.test(new BlockPos(xx, yy, zz))) return true;
                 }
             }
         }
