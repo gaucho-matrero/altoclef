@@ -38,7 +38,7 @@ public class CollectHayBlockTask extends ResourceTask {
             return new MineAndCollectTask(Items.HAY_BLOCK, _count, new Block[]{Blocks.HAY_BLOCK}, MiningRequirement.HAND);
         }
 
-        ItemTarget w = new ItemTarget("wheat", 1);
+        ItemTarget w = new ItemTarget(Items.WHEAT, 1);
         return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, _count), CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w, w, w, w, w, w, w, w, w}, 1));
     }
 

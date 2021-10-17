@@ -52,7 +52,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 if (neededCream > currentBlazePowderPotential) {
                     // Kill blazes as no magma cube was found.
                     setDebugState("Getting blaze powder");
-                    return TaskCatalogue.getItemTask("blaze_powder", neededCream - currentCream);
+                    return TaskCatalogue.getItemTask(Items.BLAZE_POWDER, neededCream - currentCream);
                 }
                 setDebugState("Going back to overworld to kill slimes, we have enough blaze powder and no nearby magma cubes.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
@@ -60,7 +60,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 int currentSlime = mod.getInventoryTracker().getItemCount(Items.SLIME_BALL);
                 if (neededCream > currentSlime) {
                     setDebugState("Getting slime balls");
-                    return TaskCatalogue.getItemTask("slime_ball", neededCream - currentCream);
+                    return TaskCatalogue.getItemTask(Items.SLIME_BALL, neededCream - currentCream);
                 }
                 setDebugState("Going to nether to get blaze powder and/or kill magma cubes");
                 return new DefaultGoToDimensionTask(Dimension.NETHER);

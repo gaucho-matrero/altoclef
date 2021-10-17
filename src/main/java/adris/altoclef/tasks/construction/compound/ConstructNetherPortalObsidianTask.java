@@ -115,7 +115,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
         // Get obsidian if we don't have.
         if (mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) < neededObsidian) {
             setDebugState("Getting obsidian");
-            return TaskCatalogue.getItemTask("obsidian", neededObsidian);
+            return TaskCatalogue.getItemTask(Items.OBSIDIAN, neededObsidian);
         }
 
         // Find spot
@@ -132,7 +132,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
         // Get flint and steel
         if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
             setDebugState("Getting flint and steel");
-            return TaskCatalogue.getItemTask("flint_and_steel", 1);
+            return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
         }
 
         // Place frame
@@ -154,7 +154,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
         }
 
         // Flint and steel
-        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1), Direction.UP, _origin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _origin.down(), true);
     }
 
     @Override

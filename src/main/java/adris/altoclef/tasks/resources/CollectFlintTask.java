@@ -48,7 +48,7 @@ public class CollectFlintTask extends ResourceTask {
         }
 
         // We don't have gravel and we need to search for flint. Grab some!
-        return TaskCatalogue.getItemTask("gravel", 1);
+        return TaskCatalogue.getItemTask(Items.GRAVEL, 1);
     }
 
     @Override

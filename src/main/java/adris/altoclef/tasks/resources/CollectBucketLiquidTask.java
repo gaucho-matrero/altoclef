@@ -133,7 +133,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
-            return TaskCatalogue.getItemTask("bucket", bucketsNeeded);
+            return TaskCatalogue.getItemTask(Items.BUCKET, bucketsNeeded);
         }
 
         Predicate<BlockPos> isSourceLiquid = blockPos -> {

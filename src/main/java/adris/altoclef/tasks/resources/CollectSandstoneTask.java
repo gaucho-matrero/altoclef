@@ -36,7 +36,7 @@ public class CollectSandstoneTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.SAND) >= 4) {
             int target = mod.getInventoryTracker().getItemCount(Items.SANDSTONE) + 1;
-            ItemTarget s = new ItemTarget("sand", 1);
+            ItemTarget s = new ItemTarget(Items.SAND, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.SANDSTONE, target), CraftingRecipe.newShapedRecipe("sandstone", new ItemTarget[]{s, s, s, s}, 1));
         }
         return new MineAndCollectTask(new ItemTarget(new Item[]{Items.SANDSTONE, Items.SAND}), new Block[]{Blocks.SANDSTONE, Blocks.SAND}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);

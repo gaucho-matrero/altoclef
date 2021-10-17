@@ -64,7 +64,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
             return _goldTask;
         }
         if (!mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
-            if (_goldTask == null) _goldTask = TaskCatalogue.getItemTask("gold_ingot", _goldBuffer);
+            if (_goldTask == null) _goldTask = TaskCatalogue.getItemTask(Items.GOLD_INGOT, _goldBuffer);
             return _goldTask;
         }
 

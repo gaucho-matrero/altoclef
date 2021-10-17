@@ -107,7 +107,7 @@ public class StoreInAnyChestTask extends Task {
                 return WorldHelper.isAir(mod, canPlace.up()) || WorldHelper.canBreak(mod, canPlace.up());
             }, Blocks.CHEST);
         }
-        return TaskCatalogue.getItemTask("chest", 1);
+        return TaskCatalogue.getItemTask(Items.CHEST, 1);
     }
 
     @Override

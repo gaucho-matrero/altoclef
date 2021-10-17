@@ -76,7 +76,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                             }
                         } else {
                             // Eh just try collecting water the regular way if all else fails.
-                            setTask(TaskCatalogue.getItemTask("water_bucket", 1));
+                            setTask(TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1));
                         }
                         mod.getBehaviour().pop();
                         return 60;

@@ -46,8 +46,8 @@ public class CollectCoarseDirtTask extends ResourceTask {
         }
         else {
             int target = _count;
-            ItemTarget d = new ItemTarget("dirt", 1);
-            ItemTarget g = new ItemTarget("gravel", 1);
+            ItemTarget d = new ItemTarget(Items.DIRT, 1);
+            ItemTarget g = new ItemTarget(Items.GRAVEL, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.COARSE_DIRT, target), CraftingRecipe.newShapedRecipe("coarse_dirt", new ItemTarget[]{d, g, g, d}, 4));
         }
     }

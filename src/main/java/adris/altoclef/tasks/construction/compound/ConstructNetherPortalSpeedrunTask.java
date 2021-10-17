@@ -97,7 +97,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     };
     private static final Vec3i WATER_SOURCE_ORIGIN = new Vec3i(1, 3, 0);
     private final TimerGame _lavaSearchTimer = new TimerGame(5);
-    private final adris.altoclef.tasksystem.Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
+    private final adris.altoclef.tasksystem.Task _collectLavaTask = TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
     private final TimerGame _placeLavaWeCanBreakAgainTimer = new TimerGame(5);
     private final TimerGame _specialBottomCaseCloserTimer = new TimerGame(10);
     private final TimerGame _specialBottomCaseCloserTimerForcePlace = new TimerGame(5);
@@ -146,20 +146,20 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         // Get bucket if we don't have one.
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             setDebugState("Getting bucket");
-            return TaskCatalogue.getItemTask("bucket", 1);
+            return TaskCatalogue.getItemTask(Items.BUCKET, 1);
         }
 
         // Get flint & steel if we don't have one
         if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
             setDebugState("Getting flint & steel");
-            return TaskCatalogue.getItemTask("flint_and_steel", 1);
+            return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
         }
 
         boolean needsToLookForPortal = _portalOrigin == null;
         if (needsToLookForPortal) {
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Getting water");
-                return TaskCatalogue.getItemTask("water_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
             boolean foundSpot = false;
@@ -216,7 +216,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
             if (MinecraftClient.getInstance().world.getBlockState(waterSourcePos).getBlock() != Blocks.WATER) {
                 if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                     setDebugState("Getting water");
-                    return TaskCatalogue.getItemTask("water_bucket", 1);
+                    return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
                 }
                 setDebugState("Placing water: " + waterSourcePos);
                 _isPlacingLiquid = true;
@@ -295,7 +295,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1), Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _portalOrigin.down(), true);
 
         // Pick up water
         // Clear inner portal area
@@ -527,7 +527,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
             }
 
             // Place lava there
-            return new InteractWithBlockTask(new ItemTarget("lava_bucket", 1), fromWhere, placeOn, below);
+            return new InteractWithBlockTask(new ItemTarget(Items.LAVA_BUCKET, 1), fromWhere, placeOn, below);
         }
 
         private boolean isSatisfied(BlockPos portalOrigin) {

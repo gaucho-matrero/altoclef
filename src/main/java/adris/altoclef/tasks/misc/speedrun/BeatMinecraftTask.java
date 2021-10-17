@@ -36,16 +36,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * This is the big kahoona. Plays the whole game.
  */
 public class BeatMinecraftTask extends Task {
-
-    /// TUNABLE PROPERTIES
-    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
 
     private static final boolean STORE_BLAZE_RODS_IN_CHEST = true; // If true, will store blaze rods in chest while collecting ender pearls.
 
@@ -62,19 +61,19 @@ public class BeatMinecraftTask extends Task {
     private final LocateStrongholdTask _strongholdLocater = new LocateStrongholdTask(TARGET_ENDER_EYES);
     // Get 3 diamond picks, because the nether SUCKS
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("diamond_chestplate", 1),
-            new ItemTarget("diamond_leggings", 1),
-            new ItemTarget("diamond_helmet", 1),
-            new ItemTarget("diamond_boots", 1),
-            new ItemTarget("diamond_pickaxe", 3),
-            new ItemTarget("diamond_sword", 1)
+            new ItemTarget(Items.DIAMOND_CHESTPLATE, 1),
+            new ItemTarget(Items.DIAMOND_LEGGINGS, 1),
+            new ItemTarget(Items.DIAMOND_HELMET, 1),
+            new ItemTarget(Items.DIAMOND_BOOTS, 1),
+            new ItemTarget(Items.DIAMOND_PICKAXE, 3),
+            new ItemTarget(Items.DIAMOND_SWORD, 1)
     );
     private final Task _prepareForDiamondCollectionTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("iron_pickaxe", 3)
+            new ItemTarget(Items.IRON_PICKAXE, 3)
     );
-    private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask("wooden_pickaxe", 1);
+    private final Task _netherPrepareTaskJustPick = TaskCatalogue.getItemTask(Items.WOODEN_PICKAXE, 1);
     private final Task _netherPrepareTaskWood = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("wooden_pickaxe", 1),
+            new ItemTarget(Items.WOODEN_PICKAXE, 1),
             new ItemTarget("log", 10)
     );
     private final PlaceBedAndSetSpawnTask _placeBedSpawnTask = new PlaceBedAndSetSpawnTask();
@@ -96,21 +95,11 @@ public class BeatMinecraftTask extends Task {
     private Dimension _prevDimension = Dimension.OVERWORLD;
 
     public static boolean diamondArmorEquipped(AltoClef mod) {
-        for (String armor : DIAMOND_ARMORS) {
-            //noinspection ConstantConditions
-            if (!mod.getInventoryTracker().isArmorEquipped(TaskCatalogue.getItemMatches(armor)[0])) return false;
-        }
-        return true;
+        return Arrays.stream(ItemHelper.DIAMOND_ARMORS).allMatch(item -> mod.getInventoryTracker().isArmorEquipped(item));
     }
 
     public static boolean hasDiamondArmor(AltoClef mod) {
-        for (String armor : DIAMOND_ARMORS) {
-            //noinspection ConstantConditions
-            Item item = TaskCatalogue.getItemMatches(armor)[0];
-            if (mod.getInventoryTracker().isArmorEquipped(item)) continue;
-            if (!mod.getInventoryTracker().hasItem(item)) return false;
-        }
-        return true;
+        return Arrays.stream(ItemHelper.DIAMOND_ARMORS).allMatch(item -> mod.getInventoryTracker().hasItem(item) || mod.getInventoryTracker().isArmorEquipped(item));
     }
 
     public static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
@@ -213,7 +202,7 @@ public class BeatMinecraftTask extends Task {
 
             // Equip diamond armor asap
             if (hasDiamondArmor(mod) && !diamondArmorEquipped(mod)) {
-                return new EquipArmorTask(DIAMOND_ARMORS);
+                return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
             }
             // Get diamond armor + gear first
             if (!hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
@@ -408,20 +397,20 @@ public class BeatMinecraftTask extends Task {
     private Task getMaterialsBeforeEndTask(AltoClef mod) {
         List<ItemTarget> toGet = new ArrayList<>();
         if (!mod.getInventoryTracker().hasItem(Items.IRON_SWORD, Items.DIAMOND_SWORD)) {
-            toGet.add(new ItemTarget("iron_sword", 1));
+            toGet.add(new ItemTarget(Items.IRON_SWORD, 1));
         }
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET, Items.WATER_BUCKET)) {
-            toGet.add(new ItemTarget("bucket", 1));
+            toGet.add(new ItemTarget(Items.BUCKET, 1));
         }
         if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.IRON)) {
-            toGet.add(new ItemTarget("iron_pickaxe", 1));
+            toGet.add(new ItemTarget(Items.IRON_PICKAXE, 1));
         }
         if (toGet.size() != 0) {
             return TaskCatalogue.getSquashedItemTask(toGet.toArray(ItemTarget[]::new));//new SatisfyMiningRequirementTask(MiningRequirement.IRON);
         }
         // Collect water if we don't have it.
         if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-            return TaskCatalogue.getItemTask("water_bucket", 1);
+            return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
         }
         return null;
     }

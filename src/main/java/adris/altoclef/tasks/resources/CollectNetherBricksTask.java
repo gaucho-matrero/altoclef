@@ -43,7 +43,7 @@ public class CollectNetherBricksTask extends ResourceTask {
             return new MineAndCollectTask(Items.NETHER_BRICKS, _count, new Block[]{Blocks.NETHER_BRICKS}, MiningRequirement.WOOD);
         }
 
-        ItemTarget b = new ItemTarget("nether_brick", 1);
+        ItemTarget b = new ItemTarget(Items.NETHER_BRICK, 1);
         return new CraftInInventoryTask(new ItemTarget(Items.NETHER_BRICK, _count), CraftingRecipe.newShapedRecipe("nether_brick", new ItemTarget[]{b, b, b, b}, 1));
     }
 

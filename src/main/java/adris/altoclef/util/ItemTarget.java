@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class ItemTarget {
 
-    // Want to avoid int max to prevent overflow or something
     private static final int BASICALLY_INFINITY = 99999999;
+
     public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
     private Item[] _itemMatches;
     private int _targetCount;
@@ -22,6 +22,7 @@ public class ItemTarget {
     public ItemTarget(Item[] items, int targetCount) {
         _itemMatches = items;
         _targetCount = targetCount;
+        _infinite = false;
     }
 
     public ItemTarget(String catalogueName, int targetCount) {
@@ -36,8 +37,7 @@ public class ItemTarget {
     }
 
     public ItemTarget(String catalogueName) {
-        this(catalogueName, BASICALLY_INFINITY);
-        _infinite = true;
+        this(catalogueName, 1);
     }
 
     public ItemTarget(Item item, int targetCount) {
@@ -45,13 +45,11 @@ public class ItemTarget {
     }
 
     public ItemTarget(Item[] items) {
-        this(items, BASICALLY_INFINITY);
-        _infinite = true;
+        this(items, 1);
     }
 
     public ItemTarget(Item item) {
-        this(item, BASICALLY_INFINITY);
-        _infinite = true;
+        this(item, 1);
     }
 
     public ItemTarget(ItemTarget toCopy, int newCount) {
@@ -60,6 +58,11 @@ public class ItemTarget {
         _catalogueName = toCopy._catalogueName;
         _targetCount = newCount;
         _infinite = toCopy._infinite;
+    }
+
+    public ItemTarget infinite() {
+        _infinite = true;
+        return this;
     }
 
     public static Item[] getMatches(ItemTarget... targets) {
@@ -75,6 +78,9 @@ public class ItemTarget {
     }
 
     public int getTargetCount() {
+        if (_infinite) {
+            return BASICALLY_INFINITY;
+        }
         return _targetCount;
     }
 
@@ -148,6 +154,8 @@ public class ItemTarget {
         }
         if (!_infinite && !isEmpty()) {
             result.append(" x ").append(_targetCount);
+        } else if (_infinite) {
+            result.append(" x infinity");
         }
 
         return result.toString();

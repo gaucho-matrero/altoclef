@@ -104,7 +104,7 @@ public class BeeMovieTask extends Task {
         if (_sharpenTheAxe) {
             if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
                 setDebugState("Sharpening the axe: Tools");
-                return new CataloguedResourceTask(new ItemTarget("diamond_axe", 1), new ItemTarget("diamond_shovel", 1), new ItemTarget("diamond_pickaxe", 1));
+                return new CataloguedResourceTask(new ItemTarget(Items.DIAMOND_AXE, 1), new ItemTarget("diamond_shovel", 1), new ItemTarget("diamond_pickaxe", 1));
             }
             if (_extraSignAcquireTask.isActive() && !_extraSignAcquireTask.isFinished(mod)) {
                 setDebugState("Sharpening the axe: Signs");

@@ -17,6 +17,7 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
@@ -45,18 +46,17 @@ public class TerminatorTask extends Task {
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
 
-    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("diamond_chestplate", 1),
-            new ItemTarget("diamond_leggings", 1),
-            new ItemTarget("diamond_helmet", 1),
-            new ItemTarget("diamond_boots", 1),
-            new ItemTarget("diamond_pickaxe", 1),
-            new ItemTarget("diamond_shovel", 1),
-            new ItemTarget("diamond_sword", 1)
+            new ItemTarget(Items.DIAMOND_CHESTPLATE, 1),
+            new ItemTarget(Items.DIAMOND_LEGGINGS, 1),
+            new ItemTarget(Items.DIAMOND_HELMET, 1),
+            new ItemTarget(Items.DIAMOND_BOOTS, 1),
+            new ItemTarget(Items.DIAMOND_PICKAXE, 1),
+            new ItemTarget(Items.DIAMOND_SHOVEL, 1),
+            new ItemTarget(Items.DIAMOND_SWORD, 1)
     );
     private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("iron_pickaxe", 3)
+            new ItemTarget(Items.IRON_PICKAXE, 3)
     );
     private final Task _foodTask = new CollectFoodTask(100);
     private final TimerGame _runAwayExtraTime = new TimerGame(10);
@@ -154,7 +154,7 @@ public class TerminatorTask extends Task {
 
             // Get water to MLG if we are pushed off
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
             // Get some food so we can last a little longer.
             if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
@@ -182,7 +182,7 @@ public class TerminatorTask extends Task {
         // Get stacked first
         // Equip diamond armor asap
         if (BeatMinecraftTask.hasDiamondArmor(mod) && !BeatMinecraftTask.diamondArmorEquipped(mod)) {
-            return new EquipArmorTask(DIAMOND_ARMORS);
+            return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
         }
         // Get diamond armor + gear first
         if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {

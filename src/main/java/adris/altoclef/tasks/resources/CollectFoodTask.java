@@ -154,17 +154,17 @@ public class CollectFoodTask extends Task {
             // - If we have raw foods, smelt all of them
 
             // Convert Hay+Wheat -> Bread
-            if (mod.getInventoryTracker().getItemCount(Items.WHEAT) > 3) {
+            if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.WHEAT) >= 3) {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
+                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD).infinite(), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
                 return _currentResourceTask;
             }
-            if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
+            if (mod.getInventoryTracker().getItemCountIncludingTable(Items.HAY_BLOCK) >= 1) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
+                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT).infinite(), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
                 return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods
