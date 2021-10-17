@@ -28,7 +28,8 @@ public abstract class AbstractObjectBlacklist<T> {
         BlacklistEntry entry = _entries.get(item);
         double newDistance = getPos(item).squaredDistanceTo(mod.getPlayer().getPos());
         MiningRequirement newTool = mod.getInventoryTracker().getCurrentMiningRequirement();
-        if (newTool.ordinal() > entry.bestTool.ordinal() || newDistance < entry.bestDistanceSq) {
+        // For distance, add a slight threshold so it doesn't reset EVERY time we move a tiny bit closer.
+        if (newTool.ordinal() > entry.bestTool.ordinal() || (newDistance < entry.bestDistanceSq - 1)) {
             if (newTool.ordinal() > entry.bestTool.ordinal()) entry.bestTool = newTool;
             if (newDistance < entry.bestDistanceSq) entry.bestDistanceSq = newDistance;
             entry.numberOfFailures = 0;
