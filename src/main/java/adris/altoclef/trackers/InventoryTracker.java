@@ -1,5 +1,6 @@
 package adris.altoclef.trackers;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
@@ -276,13 +277,23 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    private static boolean isNormalFuel(Item item) {
+        return Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item);
+    }
+    private static boolean shouldCountAsFuel(AltoClef mod, boolean forceNormalFuel, Item item) {
+        if (forceNormalFuel) {
+            // Knowingly ignore "protected" items here, as we _only_ care about specific fuel sources.
+            return isNormalFuel(item);
+        }
+        return !mod.getBehaviour().isProtected(item) && getFuelAmount(item) > 0;
+    }
+
     public double getTotalFuel(boolean forceNormalFuel) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             double total = 0;
             for (Item item : _itemCounts.keySet()) {
-                boolean normalGood = (forceNormalFuel && Arrays.asList(NORMAL_ACCEPTED_FUEL).contains(item));
-                if ((!forceNormalFuel || normalGood) && (forceNormalFuel || !_mod.getBehaviour().isProtected(item))) {
+                if (shouldCountAsFuel(_mod, forceNormalFuel, item)) {
                     total += getFuelAmount(item) * _itemCounts.get(item);
                 }
             }
@@ -294,12 +305,16 @@ public class InventoryTracker extends Tracker {
                 for (int craftSlotIndex = 0; craftSlotIndex < (bigCrafting ? 9 : 4); ++craftSlotIndex) {
                     Slot craftSlot = bigCrafting ? CraftingTableSlot.getInputSlot(craftSlotIndex, true) : PlayerSlot.getCraftInputSlot(craftSlotIndex);
                     ItemStack stack = getItemStackInSlot(craftSlot);
-                    total += getFuelAmount(stack.getItem()) * stack.getCount();
+                    if (shouldCountAsFuel(_mod, forceNormalFuel, stack.getItem())) {
+                        total += getFuelAmount(stack.getItem()) * stack.getCount();
+                    }
                 }
                 // Also check output slot
                 Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
                 ItemStack stack = getItemStackInSlot(outputSlot);
-                total += getFuelAmount(stack.getItem()) * stack.getCount();
+                if (shouldCountAsFuel(_mod, forceNormalFuel, stack.getItem())) {
+                    total += getFuelAmount(stack.getItem()) * stack.getCount();
+                }
             }
 
             return total;
