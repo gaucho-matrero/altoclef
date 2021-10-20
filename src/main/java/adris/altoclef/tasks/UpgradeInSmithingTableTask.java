@@ -118,7 +118,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         private final TimerGame _invTimer;
 
         public UpgradeInSmithingTableInternalTask() {
-            super(Blocks.SMITHING_TABLE, "smithing_table");
+            super(Blocks.SMITHING_TABLE, new ItemTarget("smithing_table"));
             _invTimer = new TimerGame(0);
         }
 

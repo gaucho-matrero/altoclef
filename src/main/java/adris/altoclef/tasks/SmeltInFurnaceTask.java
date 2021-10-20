@@ -118,7 +118,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         private boolean _ranOutOfMaterials = false;
 
         public DoSmeltInFurnaceTask(SmeltTarget target) {
-            super(Blocks.FURNACE, "furnace");
+            super(Blocks.FURNACE, new ItemTarget("furnace"));
             _target = target;
         }
 

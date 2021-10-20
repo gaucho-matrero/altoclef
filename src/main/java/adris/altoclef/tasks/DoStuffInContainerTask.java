@@ -22,7 +22,6 @@ import java.util.Arrays;
  */
 public abstract class DoStuffInContainerTask extends Task {
 
-    // TODO: Replace with ItemTarget
     private final ItemTarget _containerTarget;
     private final Block[] _containerBlocks;
 
