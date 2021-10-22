@@ -15,6 +15,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
@@ -100,9 +101,9 @@ public class KillEnderDragonTask extends Task {
         }
 
         // If not equipped diamond armor and we have any, equip it.
-        for (String armor : DIAMOND_ARMORS) {
+        for (Item armor : ItemHelper.DIAMOND_ARMORS) {
             try {
-                if (mod.getInventoryTracker().hasItem(armor) && !mod.getInventoryTracker().isArmorEquipped(Objects.requireNonNull(TaskCatalogue.getItemMatches(armor))[0])) {
+                if (mod.getInventoryTracker().hasItem(armor) && !mod.getInventoryTracker().isArmorEquipped(armor)) {
                     setDebugState("Equipping " + armor);
                     return new EquipArmorTask(armor);
                 }

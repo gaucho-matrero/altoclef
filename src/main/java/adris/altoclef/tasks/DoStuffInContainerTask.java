@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -16,12 +17,12 @@ import java.util.Arrays;
 
 
 @SuppressWarnings("ConstantConditions")
-/**
+/*
  * Interacts with a container, obtaining and placing one if none were found nearby.
  */
 public abstract class DoStuffInContainerTask extends Task {
 
-    private final String _containerCatalogueName;
+    private final ItemTarget _containerTarget;
     private final Block[] _containerBlocks;
 
     private final PlaceBlockNearbyTask _placeTask;
@@ -32,15 +33,15 @@ public abstract class DoStuffInContainerTask extends Task {
     private BlockPos _cachedContainerPosition = null;
     private Task _openTableTask;
 
-    public DoStuffInContainerTask(Block[] containerBlocks, String containerCatalogueName) {
+    public DoStuffInContainerTask(Block[] containerBlocks, ItemTarget containerTarget) {
         _containerBlocks = containerBlocks;
-        _containerCatalogueName = containerCatalogueName;
+        _containerTarget = containerTarget;
 
         _placeTask = new PlaceBlockNearbyTask(_containerBlocks);
     }
 
-    public DoStuffInContainerTask(Block containerBlock, String containerCatalogueName) {
-        this(new Block[]{containerBlock}, containerCatalogueName);
+    public DoStuffInContainerTask(Block containerBlock, ItemTarget containerTarget) {
+        this(new Block[]{containerBlock}, containerTarget);
     }
 
     @Override
@@ -107,15 +108,12 @@ public abstract class DoStuffInContainerTask extends Task {
             _cachedContainerPosition = null;
 
             // Get if we don't have...
-            if (!mod.getInventoryTracker().hasItem(_containerCatalogueName)) {
-                //Debug.logInternal("GRABBING " + _containerCatalogueName);
-                //Debug.logInternal("Cause " + costToWalk + " > " + getCostToMakeNew(mod));
-                //Debug.logInternal("(from " + currentPos + " to " + WorldHelper.toVec3d(nearest));
+            if (!mod.getInventoryTracker().hasItem(_containerTarget)) {
                 setDebugState("Getting container item");
-                return TaskCatalogue.getItemTask(_containerCatalogueName, 1);
+                return TaskCatalogue.getItemTask(_containerTarget);
             }
 
-            setDebugState("Placing container... Oof.");
+            setDebugState("Placing container...");
 
             _justPlacedTimer.reset();
             // Now place!
@@ -158,7 +156,7 @@ public abstract class DoStuffInContainerTask extends Task {
     protected boolean isEqual(Task other) {
         if (other instanceof DoStuffInContainerTask task) {
             if (!Arrays.equals(task._containerBlocks, _containerBlocks)) return false;
-            if (!task._containerCatalogueName.equals(_containerCatalogueName)) return false;
+            if (!task._containerTarget.equals(_containerTarget)) return false;
             return isSubTaskEqual(task);
         }
         return false;
@@ -166,7 +164,7 @@ public abstract class DoStuffInContainerTask extends Task {
 
     @Override
     protected String toDebugString() {
-        return "Doing stuff in " + _containerCatalogueName + " container";
+        return "Doing stuff in " + _containerTarget + " container";
     }
 
     protected abstract boolean isSubTaskEqual(DoStuffInContainerTask other);

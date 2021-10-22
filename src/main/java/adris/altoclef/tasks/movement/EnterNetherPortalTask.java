@@ -21,23 +21,23 @@ public class EnterNetherPortalTask extends Task {
     private final TimerGame _portalTimeout = new TimerGame(10);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
 
-    private final Predicate<BlockPos> _badPortal;
+    private final Predicate<BlockPos> _goodPortal;
 
     private boolean _leftPortal;
 
-    public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension, Predicate<BlockPos> badPortal) {
+    public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension, Predicate<BlockPos> goodPortal) {
         if (targetDimension == Dimension.END)
             throw new IllegalArgumentException("Can't build a nether portal to the end.");
         _getPortalTask = getPortalTask;
         _targetDimension = targetDimension;
-        _badPortal = badPortal;
+        _goodPortal = goodPortal;
     }
 
-    public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> badPortal) {
-        this(null, targetDimension, badPortal);
+    public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> goodPortal) {
+        this(null, targetDimension, goodPortal);
     }
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
-        this(getPortalTask, targetDimension, blockPos -> false);
+        this(getPortalTask, targetDimension, blockPos -> true);
     }
     public EnterNetherPortalTask(Dimension targetDimension) {
         this(null, targetDimension);
@@ -73,21 +73,20 @@ public class EnterNetherPortalTask extends Task {
             _portalTimeout.reset();
         }
 
-        Function<Vec3d, BlockPos> getClosestPortal = pos -> mod.getBlockTracker().getNearestTracking(pos,
-                block -> {
-                    // REQUIRE that there be solid ground beneath us, not more portal.
-                    if (!mod.getChunkTracker().isChunkLoaded(block)) {
-                        return false;
-                    }
-                    BlockPos below = block.down();
-                    boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
-                    return !canStand || _badPortal.test(block);
-                },
-                Blocks.NETHER_PORTAL);
+        Predicate<BlockPos> standablePortal = blockPos -> {
+            // REQUIRE that there be solid ground beneath us, not more portal.
+            if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
+                // Eh just assume it's good for now
+                return true;
+            }
+            BlockPos below = blockPos.down();
+            boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
+            return canStand && _goodPortal.test(blockPos);
+        };
 
-        if (getClosestPortal.apply(mod.getPlayer().getPos()) != null) {
+        if (mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
             setDebugState("Going to found portal");
-            return new DoToClosestBlockTask(blockpos -> new GetToBlockTask(blockpos, false), getClosestPortal, Blocks.NETHER_PORTAL);
+            return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos, false), standablePortal, Blocks.NETHER_PORTAL);
         }
         setDebugState("Getting our portal");
         return _getPortalTask;
@@ -105,8 +104,7 @@ public class EnterNetherPortalTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof EnterNetherPortalTask) {
-            EnterNetherPortalTask task = (EnterNetherPortalTask) other;
+        if (other instanceof EnterNetherPortalTask task) {
             //noinspection ConstantConditions
             return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
         }

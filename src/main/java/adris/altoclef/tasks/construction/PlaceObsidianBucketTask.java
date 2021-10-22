@@ -67,7 +67,7 @@ public class PlaceObsidianBucketTask extends Task {
         if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             // The only excuse is that we have lava at our position.
             if (!mod.getBlockTracker().blockIsValid(_pos, Blocks.LAVA)) {
-                return TaskCatalogue.getItemTask("lava_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
             }
         }
 
@@ -122,7 +122,7 @@ public class PlaceObsidianBucketTask extends Task {
 
             // Make sure we have water, juuust in case we have another creeper appear run end here
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
             // Don't place lava at our position!
@@ -135,7 +135,7 @@ public class PlaceObsidianBucketTask extends Task {
 
             setDebugState("Placing lava for cast");
 
-            return new InteractWithBlockTask(new ItemTarget("lava_bucket", 1), Direction.WEST, _pos.add(1, 0, 0), false);
+            return new InteractWithBlockTask(new ItemTarget(Items.LAVA_BUCKET, 1), Direction.WEST, _pos.add(1, 0, 0), false);
         }
         // Lava placed, Now, place water.
         BlockPos waterCheck = _pos.up();
@@ -161,7 +161,7 @@ public class PlaceObsidianBucketTask extends Task {
                 return new GetToBlockTask(targetPos, false);
             }
 
-            return new InteractWithBlockTask(new ItemTarget("water_bucket", 1), Direction.WEST, _pos.add(1, 1, 0), true);
+            return new InteractWithBlockTask(new ItemTarget(Items.WATER_BUCKET, 1), Direction.WEST, _pos.add(1, 1, 0), true);
         }
         return null;
     }

@@ -99,7 +99,7 @@ public class LocateStrongholdTask extends Task {
 
             if (!mod.getInventoryTracker().hasItem(Items.ENDER_EYE)) {
                 setDebugState("Collecting eye of ender.");
-                return TaskCatalogue.getItemTask("eye_of_ender", 1);
+                return TaskCatalogue.getItemTask(Items.ENDER_EYE, 1);
             }
 
             setDebugState("Throwing eye.");

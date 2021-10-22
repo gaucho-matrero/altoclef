@@ -183,10 +183,10 @@ public class MineAndCollectTask extends ResourceTask {
         protected Object getClosestTo(AltoClef mod, Vec3d pos) {
             BlockPos closestBlock = null;
             if (mod.getBlockTracker().anyFound(_blocks)) {
-                closestBlock = mod.getBlockTracker().getNearestTracking(pos, (check) -> {
-                    if (_blacklist.contains(check)) return true;
+                closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
+                    if (_blacklist.contains(check)) return false;
                     // Filter out blocks that will get us into trouble. TODO: Blacklist
-                    return !MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check);
+                    return MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check);
                 }, _blocks);
             }
             ItemEntity closestDrop = null;

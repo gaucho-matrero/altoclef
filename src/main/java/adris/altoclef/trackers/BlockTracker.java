@@ -7,6 +7,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.helpers.StlHelper;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
@@ -124,18 +125,23 @@ public class BlockTracker extends Tracker {
         }
     }
 
-    public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
+    public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
         updateState();
         synchronized (_scanMutex) {
-            return currentCache().anyFound(isInvalidTest, blocks);
+            return currentCache().anyFound(isValidTest, blocks);
         }
     }
 
-    public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
-        return getNearestTracking(pos, (p) -> false, blocks);
+    public BlockPos getNearestTracking(Block... blocks) {
+        return getNearestTracking(_mod.getPlayer().getPos(), blocks);
     }
-
-    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isInvalidTest, Block... blocks) {
+    public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
+        return getNearestTracking(pos, p -> true, blocks);
+    }
+    public BlockPos getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
+        return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
+    }
+    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
         for (Block block : blocks) {
             if (!_trackingBlocks.containsKey(block)) {
                 Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
@@ -145,7 +151,7 @@ public class BlockTracker extends Tracker {
         // Make sure we've scanned the first time if we need to.
         updateState();
         synchronized (_scanMutex) {
-            return currentCache().getNearest(_mod, pos, isInvalidTest, blocks);
+            return currentCache().getNearest(_mod, pos, isValidTest, blocks);
         }
     }
 
@@ -348,11 +354,11 @@ public class BlockTracker extends Tracker {
             return false;
         }
 
-        public boolean anyFound(Predicate<BlockPos> isInvalidTest, Block... blocks) {
+        public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
             for (Block block : blocks) {
                 if (_cachedBlocks.containsKey(block)) {
                     for (BlockPos pos : _cachedBlocks.get(block)) {
-                        if (!isInvalidTest.test(pos)) {
+                        if (isValidTest.test(pos)) {
                             return true;
                         }
                     }
@@ -427,7 +433,7 @@ public class BlockTracker extends Tracker {
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isInvalid, Block... blocks) {
+        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isValid, Block... blocks) {
             if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
                 return null;
@@ -443,7 +449,7 @@ public class BlockTracker extends Tracker {
             boolean closestPurged = false;
 
             for (BlockPos pos : blockList) {
-                if (isInvalid.test(pos)) continue;
+                if (!isValid.test(pos)) continue;
 
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
@@ -538,6 +544,8 @@ public class BlockTracker extends Tracker {
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
+                            // TODO: Use StlHelper
+
                             .sorted((BlockPos left, BlockPos right) -> {
                                 double leftDist = left.getSquaredDistance(playerPos, false);
                                 double rightDist = right.getSquaredDistance(playerPos, false);

@@ -97,7 +97,7 @@ public class CollectFoodTask extends Task {
         for (ItemStack food : mod.getInventoryTracker().getAvailableFoods()) {
             potentialFood += getFoodPotential(food);
         }
-        int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCountIncludingTable(Items.HAY_BLOCK) * 3;
+        int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) * 3;
         potentialFood += Objects.requireNonNull(Items.BREAD.getFoodComponent()).getHunger() * potentialBread;
         // Check smelting
         ScreenHandler screen = mod.getPlayer().currentScreenHandler;
@@ -154,17 +154,17 @@ public class CollectFoodTask extends Task {
             // - If we have raw foods, smelt all of them
 
             // Convert Hay+Wheat -> Bread
-            if (mod.getInventoryTracker().getItemCount(Items.WHEAT) > 3) {
+            if (mod.getInventoryTracker().getItemCount(Items.WHEAT) >= 3) {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
+                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD).infinite(), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
                 return _currentResourceTask;
             }
-            if (mod.getInventoryTracker().hasItem(Items.HAY_BLOCK)) {
+            if (mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) >= 1) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
+                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT).infinite(), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
                 return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods
@@ -215,18 +215,17 @@ public class CollectFoodTask extends Task {
                     if (b instanceof CropBlock) {
                         boolean isWheat = !(b instanceof PotatoesBlock || b instanceof CarrotsBlock || b instanceof BeetrootsBlock);
                         if (isWheat) {
-
                             // Chunk needs to be loaded for wheat maturity to be checked.
                             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                                return true;
+                                return false;
                             }
                             // Prune if we're not mature/fully grown wheat.
                             CropBlock crop = (CropBlock) b;
-                            return !crop.isMature(s);
+                            return crop.isMature(s);
                         }
                     }
                     // Unbreakable.
-                    return !WorldHelper.canBreak(mod, blockPos);
+                    return WorldHelper.canBreak(mod, blockPos);
                     // We're not wheat so do NOT reject.
                 }), 100);
                 if (t != null) {
@@ -296,8 +295,7 @@ public class CollectFoodTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof CollectFoodTask) {
-            CollectFoodTask task = (CollectFoodTask) other;
+        if (other instanceof CollectFoodTask task) {
             return task._unitsNeeded == _unitsNeeded;
         }
         return false;
@@ -312,12 +310,12 @@ public class CollectFoodTask extends Task {
      * Returns a task that mines a block and picks up its output.
      * Returns null if task cannot reasonably run.
      */
-    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> reject, double maxRange) {
-        Predicate<BlockPos> rejectPlus = (blockPos) -> {
-            if (!WorldHelper.canBreak(mod, blockPos)) return true;
-            return reject.test(blockPos);
+    private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, Predicate<BlockPos> accept, double maxRange) {
+        Predicate<BlockPos> acceptPlus = (blockPos) -> {
+            if (!WorldHelper.canBreak(mod, blockPos)) return false;
+            return accept.test(blockPos);
         };
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), rejectPlus, blockToCheck);
+        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
 
         if (nearestBlock != null && !nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
             nearestBlock = null;
@@ -333,15 +331,14 @@ public class CollectFoodTask extends Task {
             if (nearestDrop != null) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
             } else {
-                return new DoToClosestBlockTask(DestroyBlockTask::new, pos -> mod.getBlockTracker().getNearestTracking(pos, rejectPlus, blockToCheck), blockToCheck);
-                //return new DestroyBlockTask(nearestBlock);
+                return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
             }
         }
         return null;
     }
 
     private Task pickupBlockTaskOrNull(AltoClef mod, Block blockToCheck, Item itemToGrab, double maxRange) {
-        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, (toReject) -> false, maxRange);
+        return pickupBlockTaskOrNull(mod, blockToCheck, itemToGrab, toAccept -> true, maxRange);
     }
 
     private Task killTaskOrNull(AltoClef mod, Entity entity, Item itemToGrab) {

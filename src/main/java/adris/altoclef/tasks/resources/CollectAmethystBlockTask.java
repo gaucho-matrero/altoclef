@@ -42,9 +42,9 @@ public class CollectAmethystBlockTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.AMETHYST_SHARD) >= 4) {
+        if (mod.getInventoryTracker().getItemCount(Items.AMETHYST_SHARD) >= 4) {
             int target = mod.getInventoryTracker().getItemCount(Items.AMETHYST_BLOCK) + 1;
-            ItemTarget s = new ItemTarget("amethyst_shard", 1);
+            ItemTarget s = new ItemTarget(Items.AMETHYST_SHARD, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.AMETHYST_BLOCK, target), CraftingRecipe.newShapedRecipe("amethyst_block", new ItemTarget[]{s, s, s, s}, 1));
         }
         return new MineAndCollectTask(new ItemTarget(new Item[]{Items.AMETHYST_BLOCK, Items.AMETHYST_SHARD}), new Block[]{Blocks.AMETHYST_BLOCK, Blocks.AMETHYST_CLUSTER}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);

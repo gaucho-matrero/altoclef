@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")
-/**
+/*
  * Keeps track of entities so we can search/grab them.
  */
 public class EntityTracker extends Tracker {
@@ -105,22 +105,28 @@ public class EntityTracker extends Tracker {
         return false;
     }
 
+    public ItemEntity getClosestItemDrop(Item... items) {
+        return getClosestItemDrop(_mod.getPlayer().getPos(), items);
+    }
     public ItemEntity getClosestItemDrop(Vec3d position, Item... items) {
-        return getClosestItemDrop(position, entity -> false, items);
+        return getClosestItemDrop(position, entity -> true, items);
     }
     public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget... items) {
-        return getClosestItemDrop(position, entity -> false, items);
+        return getClosestItemDrop(position, entity -> true, items);
     }
-    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> ignorePredicate, Item... items) {
+    public ItemEntity getClosestItemDrop(Predicate<ItemEntity> acceptPredicate, Item... items) {
+        return getClosestItemDrop(_mod.getPlayer().getPos(), acceptPredicate, items);
+    }
+    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, Item... items) {
         ensureUpdated();
         ItemTarget[] tempTargetList = new ItemTarget[items.length];
         for (int i = 0; i < items.length; ++i) {
             tempTargetList[i] = new ItemTarget(items[i], 9999999);
         }
-        return getClosestItemDrop(position, ignorePredicate, tempTargetList);
+        return getClosestItemDrop(position, acceptPredicate, tempTargetList);
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> ignorePredicate, ItemTarget... targets) {
+    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, ItemTarget... targets) {
         ensureUpdated();
         if (targets.length == 0) {
             Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
@@ -139,7 +145,7 @@ public class EntityTracker extends Tracker {
                 for (ItemEntity entity : _itemDropLocations.get(item)) {
                     if (_entityBlacklist.unreachable(entity)) continue;
                     if (!entity.getStack().getItem().equals(item)) continue;
-                    if (ignorePredicate.test(entity)) continue;
+                    if (!acceptPredicate.test(entity)) continue;
 
                     float cost = (float) BaritoneHelper.calculateGenericHeuristic(position, entity.getPos());
                     if (cost < minCost) {
@@ -152,11 +158,16 @@ public class EntityTracker extends Tracker {
         return closestEntity;
     }
 
-    public Entity getClosestEntity(Vec3d position, Class... entityTypes) {
-        return this.getClosestEntity(position, (entity) -> false, entityTypes);
+    public Entity getClosestEntity(Class... entityTypes) {
+        return getClosestEntity(_mod.getPlayer().getPos(), entityTypes);
     }
-
-    public Entity getClosestEntity(Vec3d position, Predicate<Entity> ignore, Class... entityTypes) {
+    public Entity getClosestEntity(Vec3d position, Class... entityTypes) {
+        return this.getClosestEntity(position, (entity) -> true, entityTypes);
+    }
+    public Entity getClosestEntity(Predicate<Entity> acceptPredicate, Class... entityTypes) {
+        return getClosestEntity(_mod.getPlayer().getPos(), acceptPredicate, entityTypes);
+    }
+    public Entity getClosestEntity(Vec3d position, Predicate<Entity> acceptPredicate, Class... entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
         for (Class toFind : entityTypes) {
@@ -164,7 +175,7 @@ public class EntityTracker extends Tracker {
                 for (Entity entity : _entityMap.get(toFind)) {
                     // Don't accept entities that no longer exist
                     if (!entity.isAlive()) continue;
-                    if (ignore.test(entity)) continue;
+                    if (!acceptPredicate.test(entity)) continue;
                     double cost = entity.squaredDistanceTo(position);
                     if (cost < minCost) {
                         minCost = cost;
@@ -285,10 +296,11 @@ public class EntityTracker extends Tracker {
             // Loop through all entities and track 'em
             for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
 
-                // Catalogue based on type. Some types may get "squashed" or combined together into one.
+                // Catalogue based on type. Some types may get "squashed" or combined into one.
                 Class type = entity.getClass();
                 type = squashType(type);
 
+                //noinspection ConstantConditions
                 if (entity == null || !entity.isAlive()) continue;
 
                 // Don't catalogue our own player.
@@ -311,8 +323,8 @@ public class EntityTracker extends Tracker {
                     }
                     _itemDropLocations.get(droppedItem).add(ientity);
                 } else if (entity instanceof MobEntity) {
-                    //MobEntity mob = (MobEntity) entity;
 
+                    //noinspection ConstantConditions
                     if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
 
                         if (isHostileToPlayer(_mod, entity)) {
@@ -326,12 +338,6 @@ public class EntityTracker extends Tracker {
                             }
                         }
                     }
-
-                /*
-                if (mob instanceof HostileEntity) {
-                    HostileEntity hostile = (HostileEntity) mob;
-                }
-                 */
                 } else if (entity instanceof ProjectileEntity projEntity) {
                     if (!_mod.getBehaviour().shouldAvoidDodgingProjectile(entity)) {
                         CachedProjectile proj = new CachedProjectile();

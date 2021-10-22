@@ -17,6 +17,7 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
@@ -45,22 +46,21 @@ public class TerminatorTask extends Task {
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
 
-    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
     private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("diamond_chestplate", 1),
-            new ItemTarget("diamond_leggings", 1),
-            new ItemTarget("diamond_helmet", 1),
-            new ItemTarget("diamond_boots", 1),
-            new ItemTarget("diamond_pickaxe", 1),
-            new ItemTarget("diamond_shovel", 1),
-            new ItemTarget("diamond_sword", 1)
+            new ItemTarget(Items.DIAMOND_CHESTPLATE, 1),
+            new ItemTarget(Items.DIAMOND_LEGGINGS, 1),
+            new ItemTarget(Items.DIAMOND_HELMET, 1),
+            new ItemTarget(Items.DIAMOND_BOOTS, 1),
+            new ItemTarget(Items.DIAMOND_PICKAXE, 1),
+            new ItemTarget(Items.DIAMOND_SHOVEL, 1),
+            new ItemTarget(Items.DIAMOND_SWORD, 1)
     );
     private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget("iron_pickaxe", 3)
+            new ItemTarget(Items.IRON_PICKAXE, 3)
     );
     private final Task _foodTask = new CollectFoodTask(100);
     private final TimerGame _runAwayExtraTime = new TimerGame(10);
-    private final Predicate<PlayerEntity> _ignoreTerminate;
+    private final Predicate<PlayerEntity> _canTerminate;
     private final ScanChunksInRadius _scanTask;
     private final TimerGame _funnyMessageTimer = new TimerGame(10);
     private Vec3d _closestPlayerLastPos;
@@ -68,13 +68,13 @@ public class TerminatorTask extends Task {
     private Task _runAwayTask;
     private String _currentVisibleTarget;
 
-    public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> ignorePredicate) {
-        _ignoreTerminate = ignorePredicate;
+    public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> canTerminate) {
+        _canTerminate = canTerminate;
         _scanTask = new ScanChunksInRadius(center, scanRadius);
     }
 
     public TerminatorTask(BlockPos center, double scanRadius) {
-        this(center, scanRadius, ignore -> false);
+        this(center, scanRadius, accept -> true);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class TerminatorTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        PlayerEntity closest = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toIgnore -> !shouldPunk(mod, (PlayerEntity) toIgnore), PlayerEntity.class);
+        PlayerEntity closest = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class);
 
         if (closest != null) {
             _closestPlayerLastPos = closest.getPos();
@@ -108,21 +108,18 @@ public class TerminatorTask extends Task {
             }
 
             // See if there's anyone nearby.
-            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> {
-                if (!shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe)) {
-                    return true;
-                }
-                if (entityIgnoreMaybe.isInRange(mod.getPlayer(), 15)) {
-                    // We're close, count us.
+            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityAccept -> {
+                if (!shouldPunk(mod, (PlayerEntity) entityAccept)) {
                     return false;
+                }
+                if (entityAccept.isInRange(mod.getPlayer(), 15)) {
+                    // We're close, count us.
+                    return true;
                 } else {
                     // Too far away.
-                    if (!entityIgnoreMaybe.isInRange(mod.getPlayer(), FEAR_DISTANCE)) return true;
+                    if (!entityAccept.isInRange(mod.getPlayer(), FEAR_DISTANCE)) return false;
                     // We may be far and obstructed, check.
-                    boolean seesPlayer = LookHelper.seesPlayer(entityIgnoreMaybe, mod.getPlayer(), FEAR_SEE_DISTANCE);
-
-                    //Debug.logInternal("SEES: " + entityIgnoreMaybe.getName().getString() + " : " + entityIgnoreMaybe + " : " + entityIgnoreMaybe.distanceTo(mod.getPlayer()));
-                    return !seesPlayer;
+                    return LookHelper.seesPlayer(entityAccept, mod.getPlayer(), FEAR_SEE_DISTANCE);
                 }
             }, PlayerEntity.class) != null) {
                 // RUN!
@@ -157,14 +154,14 @@ public class TerminatorTask extends Task {
 
             // Get water to MLG if we are pushed off
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask("water_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
             // Get some food so we can last a little longer.
             if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
                 return _foodTask;
             }
 
-            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), entityIgnoreMaybe -> !shouldPunk(mod, (PlayerEntity) entityIgnoreMaybe), PlayerEntity.class) != null) {
+            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class) != null) {
                 setDebugState("Punking.");
                 return new DoToClosestEntityTask(
                     entity -> {
@@ -176,7 +173,7 @@ public class TerminatorTask extends Task {
                         Debug.logWarning("This should never happen.");
                         return _scanTask;
                     },
-                    ignore -> !shouldPunk(mod, (PlayerEntity) ignore),
+                    interact -> shouldPunk(mod, (PlayerEntity) interact),
                     PlayerEntity.class
                 );
             }
@@ -185,7 +182,7 @@ public class TerminatorTask extends Task {
         // Get stacked first
         // Equip diamond armor asap
         if (BeatMinecraftTask.hasDiamondArmor(mod) && !BeatMinecraftTask.diamondArmorEquipped(mod)) {
-            return new EquipArmorTask(DIAMOND_ARMORS);
+            return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
         }
         // Get diamond armor + gear first
         if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
@@ -241,7 +238,7 @@ public class TerminatorTask extends Task {
     private boolean shouldPunk(AltoClef mod, PlayerEntity player) {
         if (player == null || player.isDead()) return false;
         if (player.isCreative() || player.isSpectator()) return false;
-        return !mod.getButler().isUserAuthorized(player.getName().getString()) && !_ignoreTerminate.test(player);
+        return !mod.getButler().isUserAuthorized(player.getName().getString()) && _canTerminate.test(player);
     }
 
     private void tryDoFunnyMessageTo(AltoClef mod, PlayerEntity player) {

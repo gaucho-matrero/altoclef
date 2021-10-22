@@ -15,13 +15,14 @@ import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings({"rawtypes"})
-/**
+/*
  * Contains a hardcoded list of ALL obtainable resources.
  *
  * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
@@ -33,6 +34,7 @@ public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
     private static final HashMap<String, CataloguedResource> _nameToResourceTask = new HashMap<>();
+    private static final HashMap<Item, CataloguedResource> _itemToResourceTask = new HashMap<>();
     private static final HashSet<Item> _resourcesObtainable = new HashSet<>();
 
     static {
@@ -44,7 +46,7 @@ public class TaskCatalogue {
 
             /// RAW RESOURCES
             mine("log", MiningRequirement.HAND, ItemHelper.LOG, ItemHelper.LOG).anyDimension();
-            woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND));
+            woodTasks("log", wood -> wood.log, (wood, count) -> new MineAndCollectTask(wood.log, count, new Block[]{Block.getBlockFromItem(wood.log)}, MiningRequirement.HAND), true);
             mine("dirt", MiningRequirement.HAND, new Block[]{Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.DIRT_PATH}, Items.DIRT);
             simple("cobblestone", Items.COBBLESTONE, CollectCobblestoneTask::new).dontMineIfPresent();
             simple("cobbled_deepslate", Items.COBBLED_DEEPSLATE, CollectCobbledDeepslateTask::new).dontMineIfPresent();
@@ -125,9 +127,21 @@ public class TaskCatalogue {
             colorfulTasks("wool", color -> color.wool, (color, count) -> new CollectWoolTask(color.color, count));
             // Misc greenery
             shear("leaves", ItemHelper.itemsToBlocks(ItemHelper.LEAVES), ItemHelper.LEAVES).dontMineIfPresent();
-            for (CataloguedResource resource : woodTasks("leaves", woodItems -> woodItems.leaves, (woodItems, count) -> new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves)))) {
+            for (CataloguedResource resource : woodTasks(
+                    "leaves",
+                    woodItems -> woodItems.leaves,
+                    (woodItems, count) -> {
+                        if (woodItems.isNetherWood()) {
+                            // Nether "leaves" aren't sheared, they can simply be mined.
+                            return new MineAndCollectTask(woodItems.leaves, count, new Block[]{Block.getBlockFromItem(woodItems.leaves)}, MiningRequirement.HAND).forceDimension(Dimension.NETHER);
+                        } else {
+                            return new ShearAndCollectBlockTask(woodItems.leaves, count, Block.getBlockFromItem(woodItems.leaves));
+                        }
+                    })
+            ) {
                 resource.dontMineIfPresent();
             }
+            mine("bamboo", Blocks.BAMBOO, Items.BAMBOO);
             shear("vine", Blocks.VINE, Items.VINE).dontMineIfPresent();
             shear("grass", Blocks.GRASS, Items.GRASS).dontMineIfPresent();
             shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD).dontMineIfPresent();
@@ -167,7 +181,15 @@ public class TaskCatalogue {
 
             // MATERIALS
             simple("planks", ItemHelper.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
-            for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> new CollectPlanksTask(wood.planks, count), true)) {
+            // Per-tree Planks. At the moment, nether planks need to be specified that their logs are in the nether.
+            for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> {
+                CollectPlanksTask result = new CollectPlanksTask(wood.planks, count);
+                if (wood.isNetherWood()) {
+                    // Kinda jank
+                    result.logsInNether();
+                }
+                return result;
+            }, true)) {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
             }
@@ -388,9 +410,9 @@ public class TaskCatalogue {
             alias("wooden_pick", "wooden_pickaxe");
             alias("stone_pick", "stone_pickaxe");
             alias("iron_pick", "iron_pickaxe");
-            alias("gold_pick", "gold_pickaxe");
+            alias("gold_pick", "golden_pickaxe");
             alias("diamond_pick", "diamond_pickaxe");
-            alias("netherite_pick", "diamond_pickaxe");
+            alias("netherite_pick", "netherite_pickaxe");
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
@@ -591,18 +613,14 @@ public class TaskCatalogue {
         _nameToResourceTask.put(name, result);
         _nameToItemMatches.put(name, matches);
         _resourcesObtainable.addAll(Arrays.asList(matches));
+
+        // If this resource is just one item, consider it collectable.
+        if (matches.length == 1) {
+            _itemToResourceTask.put(matches[0], result);
+        }
+
         return result;
     }
-
-    /*private static void put(String name, Item match, TaskFactory factory) {
-        put(name, new Item[]{match}, factory);
-    }*/
-
-    /*
-    static ResourceTask getItemTask(Item item, int count) {
-        return getItemTask(ItemTarget.trimItemName(item.getTranslationKey()), count);
-    }
-    */
 
     // This is here so that we can use strings for item targets (optionally) and stuff like that.
     public static Item[] getItemMatches(String name) {
@@ -632,16 +650,34 @@ public class TaskCatalogue {
             return null;
         }
 
-        CataloguedResource catalogueValue = _nameToResourceTask.get(name);
-        return catalogueValue.getResource(count);
+        return _nameToResourceTask.get(name).getResource(count);
+    }
+
+    public static ResourceTask getItemTask(Item item, int count) {
+        if (!taskExists(item)) {
+            Debug.logWarning("Task " + item + " does not exist. Error possibly.");
+            Debug.logStack();
+            return null;
+        }
+
+        return _itemToResourceTask.get(item).getResource(count);
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
-        return getItemTask(target.getCatalogueName(), target.getTargetCount());
+        if (target.isCatalogueItem()) {
+            return getItemTask(target.getCatalogueName(), target.getTargetCount());
+        } else if (target.getMatches().length == 1) {
+            return getItemTask(target.getMatches()[0], target.getTargetCount());
+        } else {
+            return getSquashedItemTask(target);
+        }
     }
 
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
+    }
+    public static boolean taskExists(Item item) {
+        return _itemToResourceTask.containsKey(item);
     }
 
     public static Collection<String> resourceNames() {
@@ -777,22 +813,26 @@ public class TaskCatalogue {
         }
     }
 
-    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+    private static CataloguedResource[] woodTasks(Function<ItemHelper.WoodItems, String> getCatalogueName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
         List<CataloguedResource> result = new ArrayList<>();
         for (WoodType woodType : WoodType.values()) {
             ItemHelper.WoodItems woodItems = ItemHelper.getWoodItems(woodType);
-            String prefix = woodItems.prefix;
-            CataloguedResource t = put(prefix + "_" + baseName, new Item[]{getMatch.apply(woodItems)}, count -> getTask.apply(woodItems, count));
-            if (requireNetherForNetherStuff) {
-                if (woodItems.isNetherWood()) {
-                    t.forceDimension(Dimension.NETHER);
-                }
+            Item match = getMatch.apply(woodItems);
+            String cataloguedName = getCatalogueName.apply(woodItems);
+            if (match == null) continue;
+            boolean isNether = woodItems.isNetherWood();
+            CataloguedResource t = put(cataloguedName, new Item[]{match}, count -> getTask.apply(woodItems, count));
+            if (requireNetherForNetherStuff && isNether) {
+                t.forceDimension(Dimension.NETHER);
             }
             result.add(t);
         }
         return result.toArray(CataloguedResource[]::new);
     }
 
+    private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
+        return woodTasks(woodItem -> woodItem.prefix + "_" + baseName, getMatch, getTask, requireNetherForNetherStuff);
+    }
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }
@@ -820,8 +860,12 @@ public class TaskCatalogue {
     }
 
     private static void alias(String newName, String original) {
-        _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
-        _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
+        if (!_nameToResourceTask.containsKey(original) || !_nameToItemMatches.containsKey(original)) {
+            Debug.logWarning("Invalid resource: " + original + ". Will not create alias.");
+        } else {
+            _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
+            _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
+        }
     }
 
     private static ItemTarget t(String cataloguedName) {

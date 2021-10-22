@@ -38,7 +38,7 @@ public class CollectQuartzTask extends ResourceTask {
         }
 
         setDebugState("Mining");
-        return new MineAndCollectTask(new ItemTarget("quartz", _count), new Block[]{Blocks.NETHER_QUARTZ_ORE}, MiningRequirement.WOOD);
+        return new MineAndCollectTask(new ItemTarget(Items.QUARTZ, _count), new Block[]{Blocks.NETHER_QUARTZ_ORE}, MiningRequirement.WOOD);
     }
 
     @Override

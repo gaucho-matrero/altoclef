@@ -48,7 +48,7 @@ public class FillStrongholdPortalTask extends Task {
         }
 
         if (_destroySilverfishSpawner) {
-            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> !(WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
+            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> (WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
             if (silverfishSpawner != null) {
                 setDebugState("Destroy silverfish spawner");
                 return new DestroyBlockTask(silverfishSpawner);
@@ -62,7 +62,8 @@ public class FillStrongholdPortalTask extends Task {
         }
         return new DoToClosestBlockTask(
                 pos -> new InteractWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
-                pos -> mod.getBlockTracker().getNearestTracking(pos, test -> BeatMinecraftTask.isEndPortalFrameFilled(mod, test) || !mod.getBlockTracker().blockIsValid(test, Blocks.END_PORTAL_FRAME), Blocks.END_PORTAL_FRAME)
+                test -> !BeatMinecraftTask.isEndPortalFrameFilled(mod, test),
+                Blocks.END_PORTAL_FRAME
         );
     }
 

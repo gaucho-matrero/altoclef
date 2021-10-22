@@ -35,11 +35,11 @@ public class ExampleTask extends Task {
          */
 
         if (mod.getInventoryTracker().getItemCount(Items.STONE_PICKAXE) < _numberOfStonePickaxesToGrab) {
-            return TaskCatalogue.getItemTask("stone_pickaxe", _numberOfStonePickaxesToGrab);
+            return TaskCatalogue.getItemTask(Items.STONE_PICKAXE, _numberOfStonePickaxesToGrab);
         }
 
         if (!mod.getInventoryTracker().hasItem(Items.COBBLESTONE)) {
-            return TaskCatalogue.getItemTask("cobblestone", 1);
+            return TaskCatalogue.getItemTask(Items.COBBLESTONE, 1);
         }
 
         if (mod.getChunkTracker().isChunkLoaded(_whereToPlaceCobblestone)) {

@@ -33,7 +33,7 @@ public class CollectMilkTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         // Make sure we have a bucket.
         if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
-            return TaskCatalogue.getItemTask("bucket", 1);
+            return TaskCatalogue.getItemTask(Items.BUCKET, 1);
         }
         // Dimension
         if (!mod.getEntityTracker().entityFound(CowEntity.class) && isInWrongDimension(mod)) {

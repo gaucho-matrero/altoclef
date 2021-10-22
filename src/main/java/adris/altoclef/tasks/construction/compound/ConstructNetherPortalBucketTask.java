@@ -67,7 +67,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(5);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(25);
     // Stored here to cache lava blacklist
-    private final Task _collectLavaTask = TaskCatalogue.getItemTask("lava_bucket", 1);
+    private final Task _collectLavaTask = TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
     private final TimerGame _refreshTimer = new TimerGame(11);
     private BlockPos _portalOrigin = null;
 
@@ -141,14 +141,14 @@ public class ConstructNetherPortalBucketTask extends Task {
         if (bucketCount < 2) {
             setDebugState("Getting buckets");
             _progressChecker.reset();
-            return TaskCatalogue.getItemTask("bucket", 2);
+            return TaskCatalogue.getItemTask(Items.BUCKET, 2);
         }
 
         // Get flint & steel if we don't have one
         if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
             setDebugState("Getting flint & steel");
             _progressChecker.reset();
-            return TaskCatalogue.getItemTask("flint_and_steel", 1);
+            return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
         }
 
         boolean needsToLookForPortal = _portalOrigin == null;
@@ -158,7 +158,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Getting water");
                 _progressChecker.reset();
-                return TaskCatalogue.getItemTask("water_bucket", 1);
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
             boolean foundSpot = false;
@@ -229,7 +229,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractWithBlockTask(new ItemTarget("flint_and_steel", 1), Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _portalOrigin.down(), true);
     }
 
     @Override

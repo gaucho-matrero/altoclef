@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -22,20 +23,24 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     private final Function<BlockPos, Task> _getTargetTask;
 
+    private final Predicate<BlockPos> _isValid;
 
-    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
+    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
-        _targetBlocks = blocks;
         _getClosest = getClosestBlock;
+        _isValid = isValid;
+        _targetBlocks = blocks;
     }
 
-    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Block... blocks) {
-        this(null, getTargetTask, getClosestBlock, blocks);
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
+        this(null, getTargetTask, getClosestBlock, isValid, blocks);
     }
-
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Predicate<BlockPos> isValid, Block... blocks) {
+        this(null, getTargetTask, null, isValid, blocks);
+    }
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Block... blocks) {
-        this(getTargetTask, null, blocks);
+        this(getTargetTask, null, blockPos -> true, blocks);
     }
 
     @Override
@@ -48,7 +53,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         if (_getClosest != null) {
             return _getClosest.apply(pos);
         }
-        return mod.getBlockTracker().getNearestTracking(pos, _targetBlocks);
+        return mod.getBlockTracker().getNearestTracking(pos, _isValid, _targetBlocks);
     }
 
     @Override
@@ -68,7 +73,9 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     protected boolean isValid(AltoClef mod, BlockPos obj) {
         // Assume we're valid since we're in the same chunk.
         if (!mod.getChunkTracker().isChunkLoaded(obj)) return true;
-
+        // Our valid predicate
+        if (_isValid != null && !_isValid.test(obj)) return false;
+        // Correct block
         return mod.getBlockTracker().blockIsValid(obj, _targetBlocks);
     }
 

@@ -32,11 +32,11 @@ public class CollectGoldIngotTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.OVERWORLD) {
-            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, _count), new ItemTarget("raw_gold", _count)));
+            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, _count), new ItemTarget(Items.RAW_GOLD, _count)));
         } else if (mod.getCurrentDimension() == Dimension.NETHER) {
             // If we have enough nuggets, craft them.
-            int nuggs = mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_NUGGET);
-            int nuggs_needed = _count * 9 - mod.getInventoryTracker().getItemCountIncludingTable(Items.GOLD_INGOT) * 9;
+            int nuggs = mod.getInventoryTracker().getItemCount(Items.GOLD_NUGGET);
+            int nuggs_needed = _count * 9 - mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) * 9;
             if (nuggs >= nuggs_needed) {
                 ItemTarget n = new ItemTarget(Items.GOLD_NUGGET);
                 CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("gold_ingot", new ItemTarget[]{

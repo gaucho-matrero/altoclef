@@ -7,6 +7,7 @@ import net.minecraft.block.MapColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.DyeColor;
 
 import java.util.ArrayList;
@@ -73,9 +74,15 @@ public interface ItemHelper {
 
     Item[] FLOWER = new Item[]{Items.ALLIUM, Items.AZURE_BLUET, Items.BLUE_ORCHID, Items.CORNFLOWER, Items.DANDELION, Items.LILAC, Items.LILY_OF_THE_VALLEY, Items.ORANGE_TULIP, Items.OXEYE_DAISY, Items.PINK_TULIP, Items.POPPY, Items.PEONY, Items.RED_TULIP, Items.ROSE_BUSH, Items.SUNFLOWER, Items.WHITE_TULIP};
 
+    Item[] LEATHER_ARMORS = new Item[]{Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_HELMET, Items.LEATHER_BOOTS};
+    Item[] GOLDEN_ARMORS = new Item[]{Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_HELMET, Items.GOLDEN_BOOTS};
+    Item[] IRON_ARMORS = new Item[]{Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_HELMET, Items.IRON_BOOTS};
+    Item[] DIAMOND_ARMORS = new Item[]{Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_HELMET, Items.DIAMOND_BOOTS};
+    Item[] NETHERITE_ARMORS = new Item[]{Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_HELMET, Items.NETHERITE_BOOTS};
+
     Block[] WOOD_SIGNS_ALL = new Block[]{Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN};
 
-    Map<Item, Item> _logToPlanks = new HashMap<Item, Item>() {
+    Map<Item, Item> _logToPlanks = new HashMap<>() {
         {
             put(Items.ACACIA_LOG, Items.ACACIA_PLANKS);
             put(Items.BIRCH_LOG, Items.BIRCH_PLANKS);
@@ -196,6 +203,21 @@ public interface ItemHelper {
             name = name.substring("item.minecraft.".length());
         }
         return name;
+    }
+
+    static boolean areShearsEffective(Block b) {
+        return
+                BlockTags.LEAVES.contains(b)
+                        || b == Blocks.COBWEB
+                        || b == Blocks.GRASS
+                        || b == Blocks.TALL_GRASS
+                        || b == Blocks.LILY_PAD
+                        || b == Blocks.FERN
+                        || b == Blocks.DEAD_BUSH
+                        || b ==Blocks.VINE
+                        || b == Blocks.TRIPWIRE
+                        || BlockTags.WOOL.contains(b)
+                        || b == Blocks.NETHER_SPROUTS;
     }
 
     class ColorfulItems {

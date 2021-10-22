@@ -42,17 +42,19 @@ public class StoreInAnyChestTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        Predicate<BlockPos> invalidChest = chest -> {
+        Predicate<BlockPos> validChest = chest -> {
 
             // If block above can't be broken, we can't open this one.
-            if (!WorldHelper.canBreak(mod, chest.up())) return true;
+            if (WorldHelper.isSolid(mod, chest.up()) && !WorldHelper.canBreak(mod, chest.up())) return false;
 
             ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(chest);
-            if (data != null && data.isFull()) return true;
+            if (data != null && data.isFull()) return false;
 
             if (mod.getModSettings().shouldAvoidSearchingForDungeonChests()) {
-                if (_dungeonChests.contains(chest)) return true;
-                if (_nonDungeonChests.contains(chest)) return false;
+                boolean cachedDungeon = _dungeonChests.contains(chest) && !_nonDungeonChests.contains(chest);
+                if (cachedDungeon) {
+                    return false;
+                }
                 // Spawner
                 int range = 6;
                 for (int dx = -range; dx <= range; ++dx) {
@@ -60,16 +62,16 @@ public class StoreInAnyChestTask extends Task {
                         BlockPos offset = chest.add(dx, 0, dz);
                         if (mod.getWorld().getBlockState(offset).getBlock() == Blocks.SPAWNER) {
                             _dungeonChests.add(chest);
-                            return true;
+                            return false;
                         }
                     }
                 }
                 _nonDungeonChests.add(chest);
             }
-            return false;
+            return true;
         };
 
-        if (mod.getBlockTracker().anyFound(invalidChest, Blocks.CHEST)) {
+        if (mod.getBlockTracker().anyFound(validChest, Blocks.CHEST)) {
 
             setDebugState("Going to chest and depositing items");
 
@@ -92,7 +94,7 @@ public class StoreInAnyChestTask extends Task {
                         }
                         return new StoreInChestTask(blockPos, _targets);
                     },
-                    pos -> mod.getBlockTracker().getNearestTracking(pos, invalidChest, Blocks.CHEST),
+                    validChest,
                     Blocks.CHEST);
         }
 
@@ -100,13 +102,12 @@ public class StoreInAnyChestTask extends Task {
         // Craft + place chest nearby
         setDebugState("Placing chest nearby");
         if (mod.getInventoryTracker().hasItem(Items.CHEST)) {
-            return new PlaceBlockNearbyTask(cantPlace -> {
+            return new PlaceBlockNearbyTask(canPlace -> {
                 // Above must be air OR breakable.
-                if (WorldHelper.isAir(mod, cantPlace.up())) return false;
-                return !WorldHelper.canBreak(mod, cantPlace.up());
+                return WorldHelper.isAir(mod, canPlace.up()) || WorldHelper.canBreak(mod, canPlace.up());
             }, Blocks.CHEST);
         }
-        return TaskCatalogue.getItemTask("chest", 1);
+        return TaskCatalogue.getItemTask(Items.CHEST, 1);
     }
 
     @Override

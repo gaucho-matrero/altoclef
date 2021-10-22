@@ -36,7 +36,7 @@ public class CollectFlintTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         // We might just want to mine the closest gravel.
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), ignoreGravel -> !WorldHelper.fallingBlockSafeToBreak(ignoreGravel) || !WorldHelper.canBreak(mod, ignoreGravel), Blocks.GRAVEL);
+        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), validGravel -> WorldHelper.fallingBlockSafeToBreak(validGravel) && WorldHelper.canBreak(mod, validGravel), Blocks.GRAVEL);
         if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
             return new DoToClosestBlockTask(DestroyBlockTask::new, Blocks.GRAVEL);
         }
@@ -48,7 +48,7 @@ public class CollectFlintTask extends ResourceTask {
         }
 
         // We don't have gravel and we need to search for flint. Grab some!
-        return TaskCatalogue.getItemTask("gravel", 1);
+        return TaskCatalogue.getItemTask(Items.GRAVEL, 1);
     }
 
     @Override

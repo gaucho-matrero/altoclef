@@ -101,17 +101,19 @@ public class CraftInTableTask extends ResourceTask {
 
 class DoCraftInTableTask extends DoStuffInContainerTask {
 
+    private final float CRAFT_RESET_TIMER_BONUS_SECONDS = 10;
+
     private final RecipeTarget[] _targets;
 
     private final boolean _collect;
 
     private final CollectRecipeCataloguedResourcesTask _collectTask;
-    private final TimerGame _craftResetTimer = new TimerGame(10);
+    private final TimerGame _craftResetTimer = new TimerGame(CRAFT_RESET_TIMER_BONUS_SECONDS);
     private boolean _fullCheckFailed = false;
     private int _craftCount;
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
-        super(Blocks.CRAFTING_TABLE, "crafting_table");
+        super(Blocks.CRAFTING_TABLE, new ItemTarget("crafting_table"));
         _collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
         _targets = targets;
         _collect = collect;
@@ -191,12 +193,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected Task containerSubTask(AltoClef mod) {
         //Debug.logMessage("GOT TO TABLE. Crafting...");
 
+        _craftResetTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay() * 10 + CRAFT_RESET_TIMER_BONUS_SECONDS);
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getControllerExtras().closeScreen();
             return null;
         }
-
 
         for (RecipeTarget target : _targets) {
             if (mod.getInventoryTracker().targetMet(target.getItem())) continue;

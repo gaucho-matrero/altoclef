@@ -109,7 +109,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             // We may need to convert our raw materials into our "matching" materials.
             int trueCanCraftTotal = 0;
             for (Item sameCheck : _sameResourceTarget.getMatches()) {
-                int trueCount = mod.getInventoryTracker().getItemCountIncludingTable(false, sameCheck);
+                int trueCount = mod.getInventoryTracker().getItemCount(sameCheck);
                 int trueCanCraft = (trueCount / _sameResourcePerRecipe) * _recipe.outputCount();
                 trueCanCraftTotal += trueCanCraft;
             }
@@ -133,17 +133,13 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
     // Virtual
     protected Task getAllSameResourcesTask(AltoClef mod) {
-        if (_sameResourceTarget.isCatalogueItem()) {
-            ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget.getCatalogueName());
-            return TaskCatalogue.getItemTask(infinityVersion);
-        }
-        Debug.logWarning("ItemTarget for same resource is not catalogued: " + _sameResourceTarget);
-        return null;
+        ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget, 999999);
+        return TaskCatalogue.getItemTask(infinityVersion);
     }
 
     // Virtual
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {
-        return mod.getInventoryTracker().getItemCountIncludingTable(sameItem);
+        return mod.getInventoryTracker().getItemCount(sameItem);
     }
 
     // Virtual

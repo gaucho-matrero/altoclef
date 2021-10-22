@@ -176,10 +176,10 @@ public class Playground {
                         new ItemTarget("crafting_table", 1)
                 ));
                  */
-                mod.runUserTask(new EquipArmorTask("diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"));
+                mod.runUserTask(new EquipArmorTask(Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_HELMET, Items.DIAMOND_BOOTS));
                 break;
             case "stacked2":
-                mod.runUserTask(new EquipArmorTask("diamond_chestplate"));
+                mod.runUserTask(new EquipArmorTask(Items.DIAMOND_CHESTPLATE));
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);

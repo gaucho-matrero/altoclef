@@ -35,19 +35,19 @@ public class CollectCoarseDirtTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        double c = Math.ceil(Double.valueOf(_count-mod.getInventoryTracker().getItemCountIncludingTable(false, Items.COARSE_DIRT)) / 4) * 2; // Minimum number of dirt / gravel needed to complete the recipe, accounting for coarse dirt already collected.
+        double c = Math.ceil(Double.valueOf(_count-mod.getInventoryTracker().getItemCount(Items.COARSE_DIRT)) / 4) * 2; // Minimum number of dirt / gravel needed to complete the recipe, accounting for coarse dirt already collected.
         BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.COARSE_DIRT);
 
         // If not enough dirt and gravel for the recipe, and coarse dirt within a certain distance, collect coarse dirt
-        if (!(mod.getInventoryTracker().getItemCountIncludingTable(false, Items.DIRT) >= c  && 
-            mod.getInventoryTracker().getItemCountIncludingTable(false, Items.GRAVEL) >= c) && 
+        if (!(mod.getInventoryTracker().getItemCount(Items.DIRT) >= c  && 
+            mod.getInventoryTracker().getItemCount(Items.GRAVEL) >= c) && 
             closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_COARSE_DIRT)) { 
             return new MineAndCollectTask(new ItemTarget(Items.COARSE_DIRT), new Block[]{Blocks.COARSE_DIRT}, MiningRequirement.HAND).forceDimension(Dimension.OVERWORLD);
         }
         else {
             int target = _count;
-            ItemTarget d = new ItemTarget("dirt", 1);
-            ItemTarget g = new ItemTarget("gravel", 1);
+            ItemTarget d = new ItemTarget(Items.DIRT, 1);
+            ItemTarget g = new ItemTarget(Items.GRAVEL, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.COARSE_DIRT, target), CraftingRecipe.newShapedRecipe("coarse_dirt", new ItemTarget[]{d, g, g, d}, 4));
         }
     }
