@@ -82,7 +82,7 @@ public class InventoryTracker extends Tracker {
         return (double) handler.getCookProgress() / 24.0;
     }
 
-    public int getEmptySlotCount() {
+    public int getEmptyInventorySlotCount() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             return _emptySlots;
@@ -90,17 +90,11 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean isInventoryFull() {
-        return getEmptySlotCount() <= 0;
+        return getEmptyInventorySlotCount() <= 0;
     }
 
     public boolean hasItem(Item item) {
-        ensureUpdated();
-        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            if (item instanceof ArmorItem) {
-                if (isArmorEquipped(item)) return true;
-            }
-            return _itemCounts.containsKey(item);
-        }
+        return getItemCount(item) > 0;
     }
 
     public boolean hasItem(ItemTarget target) {
@@ -123,9 +117,8 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
-    public int getItemCount(Item item) {
+    private int getInventoryItemCount(Item item) {
         ensureUpdated();
-        if (!hasItem(item)) return 0;
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             int count = 0;
             if (_itemCounts.containsKey(item)) {
@@ -143,11 +136,11 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-    public int getItemCount(Item... items) {
+    private int getInventoryItemCount(Item... items) {
         ensureUpdated();
         int sum = 0;
         for (Item match : items) {
-            sum += getItemCount(match);
+            sum += getInventoryItemCount(match);
         }
         return sum;
 
@@ -157,20 +150,8 @@ public class InventoryTracker extends Tracker {
         return getItemCount(target.getMatches());
     }
 
-    public int getItemCountIncludingTable(ItemTarget... targets) {
-        int sum = 0;
-        for (ItemTarget target : targets) {
-            sum += getItemCountIncludingTable(target.getMatches());
-        }
-        return sum;
-    }
-
-    public int getItemCountIncludingTable(Item... items) {
-        return getItemCountIncludingTable(true, items);
-    }
-
-    public int getItemCountIncludingTable(boolean includeOutput, Item... items) {
-        int result = getItemCount(items);
+    public int getItemCount(Item... items) {
+        int result = getInventoryItemCount(items);
         ScreenHandler screen = _mod.getPlayer().currentScreenHandler;
         if (screen instanceof PlayerScreenHandler || screen instanceof CraftingScreenHandler) {
             boolean bigCrafting = (screen instanceof CraftingScreenHandler);
@@ -181,14 +162,6 @@ public class InventoryTracker extends Tracker {
                     if (stack.getItem() == item) {
                         result += stack.getCount();
                     }
-                }
-            }
-            if (includeOutput) {
-                // Also check output slot
-                Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-                ItemStack stack = getItemStackInSlot(outputSlot);
-                for (Item item : items) {
-                    if (stack.getItem() == item) result += stack.getCount();
                 }
             }
         }
@@ -231,7 +204,7 @@ public class InventoryTracker extends Tracker {
         ensureUpdated();
 
         for (ItemTarget target : targets) {
-            if (getItemCountIncludingTable(false, target.getMatches()) < target.getTargetCount()) {
+            if (getItemCount(target.getMatches()) < target.getTargetCount()) {
                 return false;
             }
         }

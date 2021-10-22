@@ -175,12 +175,12 @@ public class BeatMinecraftTask extends Task {
 
     private Task overworldTick(AltoClef mod) {
 
-        int eyes = mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) + portalEyesInFrame(mod);
-        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + eyes) / 2;
+        int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) + portalEyesInFrame(mod);
+        int rodsNeeded = TARGET_BLAZE_RODS - (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) + eyes) / 2;
         int rodsInPosession = getBlazeRodsInPosession(mod);
 
         //int pearlsNeeded = TARGET_ENDER_PEARLS - eyes;
-        boolean needsToGoToNether = rodsInPosession < rodsNeeded;// || mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded;
+        boolean needsToGoToNether = rodsInPosession < rodsNeeded;// || mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded;
 
         if (STORE_BLAZE_RODS_IN_CHEST && !isEndPortalOpened(mod)) {
             // If we have a place with blaze rods, set our "safety" position to that chest.
@@ -250,7 +250,7 @@ public class BeatMinecraftTask extends Task {
 
         // Locate stronghold portal if we can.
         if (!endPortalLocated()) {
-            if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_EYE) > 1 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
+            if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) > 1 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
                 setDebugState("Locating end portal.");
                 return _strongholdLocater;
             } else {
@@ -320,7 +320,7 @@ public class BeatMinecraftTask extends Task {
                 }
                 // eyes already accounts for portal eyes in frame.
                 int pearlsNeeded = targetPearls - eyes;
-                if (mod.getInventoryTracker().getItemCountIncludingTable(Items.ENDER_PEARL) < pearlsNeeded) {
+                if (mod.getInventoryTracker().getItemCount(Items.ENDER_PEARL) < pearlsNeeded) {
                     if (STORE_BLAZE_RODS_IN_CHEST) {
                         // Chest handling: Store blaze rods in a chest if we have any.
                         if (mod.getInventoryTracker().hasItem(Items.BLAZE_ROD)) {
@@ -336,8 +336,8 @@ public class BeatMinecraftTask extends Task {
                 if (mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) < powderNeeded) {
                     if (STORE_BLAZE_RODS_IN_CHEST) {
                         // Chest handling: Grab blaze rods if we don't have enough.
-                        if (mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD) < TARGET_BLAZE_RODS && _safetyBlazeRodChestPos != null) {
-                            int needed = TARGET_BLAZE_RODS - mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
+                        if (mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD) < TARGET_BLAZE_RODS && _safetyBlazeRodChestPos != null) {
+                            int needed = TARGET_BLAZE_RODS - mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
                             setDebugState("Picking up stored blaze rods");
                             return new PickupFromChestTask(_safetyBlazeRodChestPos, new ItemTarget(Items.BLAZE_ROD, needed));
                         }
@@ -373,7 +373,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Blaze rods
-        int powderCount = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_POWDER) + getBlazeRodsInPosession(mod) * 2;
+        int powderCount = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) + getBlazeRodsInPosession(mod) * 2;
         if (powderCount < TARGET_BLAZE_RODS * 2) {
             setDebugState("Collecting Blaze Rods");
             return _blazeCollection;
@@ -485,7 +485,7 @@ public class BeatMinecraftTask extends Task {
     }
 
     private int getBlazeRodsInPosession(AltoClef mod) {
-        int rodsInPosession = mod.getInventoryTracker().getItemCountIncludingTable(Items.BLAZE_ROD);
+        int rodsInPosession = mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
         if (STORE_BLAZE_RODS_IN_CHEST) {
             if (_safetyBlazeRodChestPos != null) {
                 ContainerTracker.ChestData chest = mod.getContainerTracker().getChestMap().getCachedChestData(_safetyBlazeRodChestPos);

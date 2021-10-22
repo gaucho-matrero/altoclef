@@ -42,7 +42,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             // null = empty which is always met.
             if (target == null) continue;
 
-            int weNeed = target.getItem().getTargetCount() - mod.getInventoryTracker().getItemCountIncludingTable(target.getItem());
+            int weNeed = target.getItem().getTargetCount() - mod.getInventoryTracker().getItemCount(target.getItem());
 
             if (weNeed > 0) {
                 CraftingRecipe recipe = target.getRecipe();

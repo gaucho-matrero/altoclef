@@ -34,7 +34,7 @@ public class CollectRedSandstoneTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.RED_SAND) >= 4) {
+        if (mod.getInventoryTracker().getItemCount(Items.RED_SAND) >= 4) {
             int target = mod.getInventoryTracker().getItemCount(Items.RED_SANDSTONE) + 1;
             ItemTarget s = new ItemTarget(Items.RED_SAND, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.RED_SANDSTONE, target), CraftingRecipe.newShapedRecipe("red_sandstone", new ItemTarget[]{s, s, s, s}, 1));

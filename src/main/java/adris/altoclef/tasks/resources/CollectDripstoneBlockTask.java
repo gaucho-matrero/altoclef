@@ -34,7 +34,7 @@ public class CollectDripstoneBlockTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (mod.getInventoryTracker().getItemCountIncludingTable(false, Items.POINTED_DRIPSTONE) >= 4) {
+        if (mod.getInventoryTracker().getItemCount(Items.POINTED_DRIPSTONE) >= 4) {
             int target = mod.getInventoryTracker().getItemCount(Items.DRIPSTONE_BLOCK) + 1;
             ItemTarget s = new ItemTarget(Items.POINTED_DRIPSTONE, 1);
             return new CraftInInventoryTask(new ItemTarget(Items.DRIPSTONE_BLOCK, target), CraftingRecipe.newShapedRecipe("dri", new ItemTarget[]{s, s, s, s}, 1));

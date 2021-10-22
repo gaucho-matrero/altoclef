@@ -141,7 +141,7 @@ public class SlotHandler {
         Item equip = inv().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
         if (isBad.test(equip)) {
             // Pick non tool item or air
-            if (!preferEmpty || inv().getEmptySlotCount() == 0) {
+            if (!preferEmpty || inv().getEmptyInventorySlotCount() == 0) {
                 for (int i = 0; i < 35; ++i) {
                     Slot s = Slot.getFromInventory(i);
                     if (!isBad.test(inv().getItemStackInSlot(s).getItem())) {

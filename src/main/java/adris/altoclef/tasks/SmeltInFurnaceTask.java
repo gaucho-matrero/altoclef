@@ -157,7 +157,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // If materials are already in the furnace, we need less of them.
             if (!_ignoreMaterials) {
                 int materialsNeeded = _target.getMaterial().getTargetCount();
-                materialsNeeded -= mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
+                materialsNeeded -= mod.getInventoryTracker().getItemCount(_target.getItem());
                 if (_currentFurnace != null) {
                     if (_target.getMaterial().matches(_currentFurnace.materials.getItem())) {
                         materialsNeeded -= _currentFurnace.materials.getCount();
@@ -179,7 +179,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // SPECIAL CASE: If we are OR WERE searching for a crafting table, we need to hide planks as a source of fuel!
             // Otherwise, planks will be protected/unprotected and fuel will be needed/not needed in an infinite back+forth.
 
-            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCountIncludingTable(_target.getItem());
+            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCount(_target.getItem());
 
             double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
 
