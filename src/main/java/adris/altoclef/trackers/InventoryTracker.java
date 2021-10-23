@@ -7,6 +7,8 @@ import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.slots.*;
+import baritone.utils.ToolSet;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -415,7 +417,7 @@ public class InventoryTracker extends Tracker {
     }
 
     public boolean isEquipped(Item ...matches) {
-        return Arrays.asList(matches).contains(getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem());
+        return Arrays.asList(matches).contains(getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem());
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -531,6 +533,30 @@ public class InventoryTracker extends Tracker {
         return MiningRequirement.HAND;
     }
 
+    public Slot getBestToolSlot(BlockState state) {
+        Slot bestToolSlot = null;
+        double highestSpeed = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < InventoryTracker.INVENTORY_SIZE; ++i) {
+            Slot slot = PlayerInventorySlot.getFromInventory(i);
+            ItemStack stack = _mod.getInventoryTracker().getItemStackInSlot(slot);
+            if (stack.getItem() instanceof ToolItem) {
+                double speed = ToolSet.calculateSpeedVsBlock(stack, state);
+                if (speed > highestSpeed) {
+                    highestSpeed = speed;
+                    bestToolSlot = slot;
+                }
+            }
+            if (stack.getItem() == Items.SHEARS) {
+                // Shears take priority over leaf blocks.
+                if (ToolSet.areShearsEffective(state.getBlock())) {
+                    bestToolSlot = slot;
+                    break;
+                }
+            }
+        }
+        return bestToolSlot;
+    }
+
     private HashMap<Integer, Integer> getRecipeMapping(CraftingRecipe recipe) {
         return getRecipeMapping(Collections.emptyMap(), recipe, 1);
     }
@@ -593,8 +619,6 @@ public class InventoryTracker extends Tracker {
         }
     }
 
-
-
     public boolean isInHotBar(Item... items) {
         for (Slot invSlot : getInventorySlotsWithItem(items)) {
             if (0 <= invSlot.getInventorySlot() && invSlot.getInventorySlot() < 9) {
@@ -603,9 +627,6 @@ public class InventoryTracker extends Tracker {
         }
         return false;
     }
-
-
-
 
     public ItemStack getItemStackInSlot(Slot slot) {
 
@@ -687,5 +708,4 @@ public class InventoryTracker extends Tracker {
     protected void reset() {
         // Dirty clears everything
     }
-
 }

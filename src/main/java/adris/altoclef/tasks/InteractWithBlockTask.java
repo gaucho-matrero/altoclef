@@ -10,6 +10,7 @@ import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
@@ -80,37 +81,6 @@ public class InteractWithBlockTask extends Task {
 
     public InteractWithBlockTask(BlockPos target) {
         this(null, null, target, Input.CLICK_RIGHT, false, false);
-    }
-
-    public static Optional<Rotation> getReach(BlockPos target, Direction side) {
-        Optional<Rotation> reachable;
-        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
-        if (side == null) {
-            assert MinecraftClient.getInstance().player != null;
-            reachable = RotationUtils.reachable(ctx.player(), target, ctx.playerController().getBlockReachDistance());
-        } else {
-            Vec3i sideVector = side.getVector();
-            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
-
-            Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
-
-            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
-            reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
-
-            // Check for right angle
-            if (reachable.isPresent()) {
-                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
-                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
-                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
-
-                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
-                if (dot < 0) {
-                    // We're perpendicular and cannot face.
-                    return Optional.empty();
-                }
-            }
-        }
-        return reachable;
     }
 
     private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
@@ -253,15 +223,6 @@ public class InteractWithBlockTask extends Task {
                 if (_shiftClick) {
                     mod.getInputControls().hold(Input.SNEAK);
                 }
-                //System.out.println(this.ctx.player().playerScreenHandler);
-
-                /*
-                if (this.arrivalTickCount++ > 20 || _cancelRightClick) {
-                    _failed = true;
-                    this.logDirect("Right click timed out/cancelled");
-                    return ClickResponse.CLICK_ATTEMPTED;
-                }
-                 */
             }
             return ClickResponse.WAIT_FOR_CLICK;
         }
@@ -272,7 +233,7 @@ public class InteractWithBlockTask extends Task {
     }
 
     public Optional<Rotation> getCurrentReach() {
-        return getReach(_target, _direction);
+        return LookHelper.getReach(_target, _direction);
     }
 
     private enum ClickResponse {
