@@ -103,6 +103,7 @@ clay_ball
 clock
 coal
 coal_block
+coarse_dirt
 cobbled_deepslate
 cobbled_deepslate_slab
 cobbled_deepslate_stairs
