@@ -13,7 +13,6 @@ import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
@@ -86,7 +85,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
         if (!_progressChecker.check(mod)) {
             _progressChecker.reset();
-            if (_currentDrop != null) {
+            if (_currentDrop != null && !_currentDrop.getStack().isEmpty()) {
                 // We might want to get a pickaxe first.
                 if (!isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst() && !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
                     Debug.logMessage("Failed to pick up drop, will try to collect a stone pickaxe first and try again!");
@@ -158,12 +157,15 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected Task getGoalTask(ItemEntity obj) {
-        if (!obj.equals(_currentDrop) && isGettingPickaxeFirstFlag && _collectingPickaxeForThisResource) {
-            Debug.logMessage("New goal, no longer collecting a pickaxe.");
-            _collectingPickaxeForThisResource = false;
-            isGettingPickaxeFirstFlag = false;
+        if (!obj.equals(_currentDrop)) {
+            _currentDrop = obj;
+            _progressChecker.reset();
+            if (isGettingPickaxeFirstFlag && _collectingPickaxeForThisResource) {
+                Debug.logMessage("New goal, no longer collecting a pickaxe.");
+                _collectingPickaxeForThisResource = false;
+                isGettingPickaxeFirstFlag = false;
+            }
         }
-        _currentDrop = obj;
         return new GetToEntityTask(obj);
     }
 
