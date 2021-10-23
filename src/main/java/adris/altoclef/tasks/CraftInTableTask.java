@@ -199,7 +199,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
 
         for (RecipeTarget target : _targets) {
-            if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
+            if (mod.getInventoryTracker().targetsMet(target.getItem())) continue;
             if (mod.getInventoryTracker().isInventoryFull()) {
                 setDebugState("Freeing inventory before crafting...");
                 return new EnsureFreeInventorySlotTask();

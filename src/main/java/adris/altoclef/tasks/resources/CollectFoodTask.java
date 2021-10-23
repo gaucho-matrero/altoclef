@@ -329,7 +329,7 @@ public class CollectFoodTask extends Task {
         // Collect hay until we have enough.
         if (spotted) {
             if (nearestDrop != null) {
-                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE, true);
+                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE);
             } else {
                 return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
             }

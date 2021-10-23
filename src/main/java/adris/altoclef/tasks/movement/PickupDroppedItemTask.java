@@ -44,6 +44,9 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     public PickupDroppedItemTask(Item item, int targetCount, boolean freeInventoryIfFull) {
         this(new ItemTarget(item, targetCount), freeInventoryIfFull);
     }
+    public PickupDroppedItemTask(Item item, int targetCount) {
+        this(item, targetCount, true);
+    }
 
     public static boolean isIsGettingPickaxeFirst(AltoClef mod) {
         return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();

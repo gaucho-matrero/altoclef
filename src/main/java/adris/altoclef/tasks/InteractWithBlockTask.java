@@ -13,19 +13,15 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
-import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.process.ICustomGoalProcess;
-import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.RotationUtils;
 import baritone.api.utils.input.Input;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.Optional;
@@ -79,8 +75,28 @@ public class InteractWithBlockTask extends Task {
         this(toUse, target, false);
     }
 
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
+        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, interactOffset, shiftClick);
+    }
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
+        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, shiftClick);
+    }
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, boolean walkInto) {
+        this(new ItemTarget(toUse, 1), direction, target, walkInto);
+    }
+    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
+        this(new ItemTarget(toUse, 1), target, walkInto, interactOffset);
+    }
+    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto) {
+        this(new ItemTarget(toUse, 1), target, walkInto);
+    }
+    public InteractWithBlockTask(Item toUse, BlockPos target) {
+        this(new ItemTarget(toUse, 1), target);
+    }
+
+
     public InteractWithBlockTask(BlockPos target) {
-        this(null, null, target, Input.CLICK_RIGHT, false, false);
+        this(ItemTarget.EMPTY, null, target, Input.CLICK_RIGHT, false, false);
     }
 
     private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
@@ -119,7 +135,7 @@ public class InteractWithBlockTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         // Get our use item first
-        if (_toUse != null && !mod.getInventoryTracker().targetMet(_toUse)) {
+        if (!ItemTarget.nullOrEmpty(_toUse) && !mod.getInventoryTracker().targetsMet(_toUse)) {
             _moveChecker.reset();
             _clickTimer.reset();
             return TaskCatalogue.getItemTask(_toUse);

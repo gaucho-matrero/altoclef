@@ -49,7 +49,7 @@ public class CataloguedResourceTask extends ResourceTask {
         for (ResourceTask task : _tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
                 // If we failed to meet this task's targets, do the task.
-                if (!mod.getInventoryTracker().targetMet(target)) return task;
+                if (!mod.getInventoryTracker().targetsMet(target)) return task;
             }
         }
         return null;
@@ -59,7 +59,7 @@ public class CataloguedResourceTask extends ResourceTask {
     public boolean isFinished(AltoClef mod) {
         for (ResourceTask task : _tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
-                if (!mod.getInventoryTracker().targetMet(target)) return false;
+                if (!mod.getInventoryTracker().targetsMet(target)) return false;
             }
         }
         // All targets are met.

@@ -206,7 +206,7 @@ public class InventoryTracker extends Tracker {
         return getInventorySlotsWithItem(Items.AIR);
     }
 
-    public boolean targetMet(ItemTarget... targets) {
+    public boolean targetsMet(ItemTarget... targets) {
         ensureUpdated();
 
         for (ItemTarget target : targets) {

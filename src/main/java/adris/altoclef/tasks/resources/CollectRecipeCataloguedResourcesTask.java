@@ -82,7 +82,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             int count = catalogueCount.get(catalogueMaterialName);
             if (count > 0) {
                 ItemTarget itemTarget = new ItemTarget(catalogueMaterialName, count);
-                if (!mod.getInventoryTracker().targetMet(itemTarget)) {
+                if (!mod.getInventoryTracker().targetsMet(itemTarget)) {
                     setDebugState("Getting " + itemTarget);
                     return TaskCatalogue.getItemTask(catalogueMaterialName, count);
                 }
