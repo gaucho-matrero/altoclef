@@ -1,6 +1,8 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import baritone.api.BaritoneAPI;
+import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -13,12 +15,47 @@ import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 
+import java.util.Optional;
+
 public interface LookHelper {
+
+    static Optional<Rotation> getReach(BlockPos target, Direction side) {
+        Optional<Rotation> reachable;
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
+        if (side == null) {
+            assert MinecraftClient.getInstance().player != null;
+            reachable = RotationUtils.reachable(ctx.player(), target, ctx.playerController().getBlockReachDistance());
+        } else {
+            Vec3i sideVector = side.getVector();
+            Vec3d centerOffset = new Vec3d(0.5 + sideVector.getX() * 0.5, 0.5 + sideVector.getY() * 0.5, 0.5 + sideVector.getZ() * 0.5);
+
+            Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
+
+            //reachable(this.ctx.player(), _target, this.ctx.playerController().getBlockReachDistance());
+            reachable = RotationUtils.reachableOffset(ctx.player(), target, sidePoint, ctx.playerController().getBlockReachDistance(), false);
+
+            // Check for right angle
+            if (reachable.isPresent()) {
+                // Note: If sneak, use RotationUtils.inferSneakingEyePosition
+                Vec3d camPos = ctx.player().getCameraPosVec(1.0F);
+                Vec3d vecToPlayerPos = camPos.subtract(sidePoint);
+
+                double dot = vecToPlayerPos.normalize().dotProduct(new Vec3d(sideVector.getX(), sideVector.getY(), sideVector.getZ()));
+                if (dot < 0) {
+                    // We're perpendicular and cannot face.
+                    return Optional.empty();
+                }
+            }
+        }
+        return reachable;
+    }
+
+    static Optional<Rotation> getReach(BlockPos target) {
+        return getReach(target, null);
+    }
 
     static EntityHitResult raycast(Entity from, Entity to, double reachDistance) {
         Vec3d fromPos = getCameraPos(from),

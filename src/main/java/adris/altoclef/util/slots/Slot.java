@@ -117,9 +117,11 @@ public abstract class Slot {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Slot slot = (Slot) o;
-        return getInventorySlot() == slot.getInventorySlot() && getWindowSlot() == slot.getWindowSlot();
+        if (o == null) return false;
+        if (o instanceof Slot slot) {
+            return getInventorySlot() == slot.getInventorySlot() && getWindowSlot() == slot.getWindowSlot();
+        }
+        return false;
     }
 
     @Override

@@ -133,7 +133,7 @@ public class MineAndCollectTask extends ResourceTask {
                 Item item = cursorStack.getItem();
                 if (item.isSuitableFor(mod.getWorld().getBlockState(_subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
-                    Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+                    Item currentlyEquipped = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem();
                     if (item instanceof MiningToolItem) {
                         if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;

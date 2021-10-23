@@ -55,7 +55,7 @@ public abstract class ResourceTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
-        return mod.getInventoryTracker().targetMet(_itemTargets);
+        return mod.getInventoryTracker().targetsMet(_itemTargets);
     }
 
     @Override

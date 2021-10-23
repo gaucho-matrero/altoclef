@@ -62,7 +62,7 @@ public class CarveThenCollectTask extends ResourceTask {
             return new DoToClosestBlockTask(DestroyBlockTask::new, _targetBlocks);
         }
         // Collect our "carve with" item (can be shears, axe, whatever)
-        if (!mod.getInventoryTracker().targetMet(_carveWith)) {
+        if (!mod.getInventoryTracker().targetsMet(_carveWith)) {
             setDebugState("Collect our carve tool");
             return TaskCatalogue.getItemTask(_carveWith);
         }

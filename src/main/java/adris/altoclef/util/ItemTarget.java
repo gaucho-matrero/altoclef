@@ -65,6 +65,10 @@ public class ItemTarget {
         return this;
     }
 
+    public static boolean nullOrEmpty(ItemTarget target) {
+        return target == null || target == EMPTY;
+    }
+
     public static Item[] getMatches(ItemTarget... targets) {
         Set<Item> result = new HashSet<>();
         for (ItemTarget target : targets) {

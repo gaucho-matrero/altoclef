@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import net.minecraft.item.Item;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -33,7 +34,9 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     protected Task onTick(AltoClef mod) {
         // TODO: Cache this once instead of doing it every frame.
 
+        // Stuff to get, both catalogued + individual items.
         HashMap<String, Integer> catalogueCount = new HashMap<>();
+        HashMap<Item, Integer> itemCount = new HashMap<>();
 
         for (RecipeTarget target : _targets) {
             // Ignore this recipe if we have its item.
@@ -50,21 +53,23 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
                 for (int i = 0; i < recipe.getSlotCount(); ++i) {
                     ItemTarget slot = recipe.getSlot(i);
                     if (slot == null || slot.isEmpty()) continue;
+                    int numberOfRepeats = (int) Math.floor(-0.1 + (double) weNeed / target.getRecipe().outputCount()) + 1;
                     if (!slot.isCatalogueItem()) {
-                        if (!_ignoreUncataloguedSlots) {
-                            Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
-                                    + " is not catalogued. Please define an explicit"
-                                    + " collectRecipeSubTask() function for this task."
-                            );
+                        if (slot.getMatches().length != 1) {
+                            if (!_ignoreUncataloguedSlots) {
+                                Debug.logWarning("Recipe collection for recipe " + recipe + " slot " + i
+                                        + " is not catalogued. Please define an explicit"
+                                        + " collectRecipeSubTask() function for this item target:" + slot
+                                );
+                            }
+                        } else {
+                            Item item = slot.getMatches()[0];
+                            itemCount.put(item, itemCount.getOrDefault(item, 0) + numberOfRepeats);
                         }
                     } else {
                         String targetName = slot.getCatalogueName();
-                        if (!catalogueCount.containsKey(targetName)) {
-                            catalogueCount.put(targetName, 0);
-                        }
                         // How many "repeats" of a recipe we will need.
-                        int numberOfRepeats = (int) Math.floor(-0.1 + (double) weNeed / target.getRecipe().outputCount()) + 1;
-                        catalogueCount.put(targetName, catalogueCount.get(targetName) + numberOfRepeats);
+                        catalogueCount.put(targetName, catalogueCount.getOrDefault(targetName, 0) + numberOfRepeats);
                     }
                 }
             }
@@ -77,9 +82,18 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             int count = catalogueCount.get(catalogueMaterialName);
             if (count > 0) {
                 ItemTarget itemTarget = new ItemTarget(catalogueMaterialName, count);
-                if (!mod.getInventoryTracker().targetMet(itemTarget)) {
+                if (!mod.getInventoryTracker().targetsMet(itemTarget)) {
                     setDebugState("Getting " + itemTarget);
                     return TaskCatalogue.getItemTask(catalogueMaterialName, count);
+                }
+            }
+        }
+        for (Item item : itemCount.keySet()) {
+            int count = itemCount.get(item);
+            if (count > 0) {
+                if (mod.getInventoryTracker().getItemCount(item) < count) {
+                    setDebugState("Getting " + item.getTranslationKey());
+                    return TaskCatalogue.getItemTask(item, count);
                 }
             }
         }

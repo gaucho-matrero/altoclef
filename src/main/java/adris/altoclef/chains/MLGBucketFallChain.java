@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.Items;
@@ -57,14 +58,13 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                         // Allow looking at fluids
                         mod.getBehaviour().push();
                         mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
-                        Optional<Rotation> reach = InteractWithBlockTask.getReach(toInteract, Direction.UP);
+                        Optional<Rotation> reach = LookHelper.getReach(toInteract, Direction.UP);
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
                                 if (mod.getSlotHandler().forceEquipItem(new ItemTarget(Items.BUCKET, 1))) {
                                     if (_pickupRepeatTimer.elapsed()) {
                                         // Pick up
-                                        //Debug.logMessage("PICK");
                                         _pickupRepeatTimer.reset();
                                         mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                                         _wasPickingUp = true;

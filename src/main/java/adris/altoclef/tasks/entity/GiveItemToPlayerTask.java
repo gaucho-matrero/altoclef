@@ -67,7 +67,7 @@ public class GiveItemToPlayerTask extends Task {
             return null;
         }
 
-        if (!mod.getInventoryTracker().targetMet(_targets)) {
+        if (!mod.getInventoryTracker().targetsMet(_targets)) {
             setDebugState("Collecting resources...");
             return _resourceTask;
         }
