@@ -188,6 +188,10 @@ public class InventoryTracker extends Tracker {
                         result.add(Slot.getFromInventory(invSlot));
                     }
                 }
+                // If item is in our cursor, consider that a valid slot.
+                if (item == getItemStackInCursorSlot().getItem()) {
+                    result.add(new CursorInventorySlot());
+                }
             }
             return result;
         }
