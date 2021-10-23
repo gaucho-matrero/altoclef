@@ -109,7 +109,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     private final CollectRecipeCataloguedResourcesTask _collectTask;
     private final TimerGame _craftResetTimer = new TimerGame(CRAFT_RESET_TIMER_BONUS_SECONDS);
-    private boolean _fullCheckFailed = false;
     private int _craftCount;
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
@@ -130,7 +129,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         mod.getControllerExtras().closeScreen();
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
-        _fullCheckFailed = false;
 
         // Reset our "finished" value in the collect recipe thing.
         _collectTask.reset();
@@ -223,7 +221,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // TODO: If we have an axe, lower the cost.
         if (mod.getInventoryTracker().hasItem(ItemHelper.LOG) || mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
-            return 150;
+            return 15;
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
         return 300;
