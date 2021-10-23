@@ -97,7 +97,6 @@ public class TaskCatalogue {
             mob("rotten_flesh", Items.ROTTEN_FLESH, ZombieEntity.class);
             mob("rabbit_foot", Items.RABBIT_FOOT, RabbitEntity.class);
             mob("rabbit_hide", Items.RABBIT_HIDE, RabbitEntity.class);
-            mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class);
             mob("slime_ball", Items.SLIME_BALL, SlimeEntity.class);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
             mob("glow_ink_sac", Items.GLOW_INK_SAC, GlowSquidEntity.class); // Warning, this probably won't work.
@@ -275,8 +274,6 @@ public class TaskCatalogue {
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
             shapedRecipe2x2("flower_banner_pattern", Items.FLOWER_BANNER_PATTERN, 1, "paper", "oxeye_daisy", o, o);
             simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
-            // DYES
-            smelt("green_dye", Items.GREEN_DYE, "cactus");
             // Slabs + Stairs + Walls
             shapedRecipeSlab("cobblestone_slab", Items.COBBLESTONE_SLAB, "cobblestone");
             shapedRecipeStairs("cobblestone_stairs", Items.COBBLESTONE_STAIRS, "cobblestone");
@@ -388,7 +385,7 @@ public class TaskCatalogue {
                 shapedRecipe2x2("shears", Items.SHEARS, 1, i, o, o, i);
                 shapedRecipe2x2("iron_nugget", Items.IRON_NUGGET, 9, i, o, o, o);
                 shapedRecipe3x3("compass", Items.COMPASS, 1, o, i, o, i, "redstone", i, o, i, o);
-                shapedRecipe3x3("shield", Items.SHEARS, 1, p, i, p, p, p, p, o, p, o);
+                shapedRecipe3x3("shield", Items.SHIELD, 1, p, i, p, p, p, p, o, p, o);
                 String g = "gold_ingot";
                 shapedRecipe3x3("clock", Items.CLOCK, 1, o, g, o, g, "redstone", g, o, g, o);
             }
@@ -435,7 +432,7 @@ public class TaskCatalogue {
             {
                 String c = "cobblestone";
                 shapedRecipe3x3("furnace", Items.FURNACE, 1, c, c, c, c, o, c, c, c, c).dontMineIfPresent();
-                shapedRecipe3x3("dropper", Items.DISPENSER, 1, c, c, c, c, o, c, c, "redstone", c);
+                shapedRecipe3x3("dropper", Items.DROPPER, 1, c, c, c, c, o, c, c, "redstone", c);
                 shapedRecipe3x3("dispenser", Items.DISPENSER, 1, c, c, c, c, "bow", c, c, "redstone", c);
                 shapedRecipe3x3("brewing_stand", Items.BREWING_STAND, 1, o, o, o, o, "blaze_rod", o, c, c, c);
                 shapedRecipe3x3("piston", Items.PISTON, 1, p, p, p, c, "iron_ingot", c, c, "redstone", c);
@@ -531,7 +528,6 @@ public class TaskCatalogue {
             alias("fence", "wooden_fence");
             alias("fence_gate", "wooden_fence_gate");
 
-            shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, "stone", "stone", o, o);
             shapedRecipe2x2("heavy_weighted_pressure_plate", Items.HEAVY_WEIGHTED_PRESSURE_PLATE, 1, "iron_ingot", "iron_ingot", o, o);
             shapedRecipe2x2("light_weighted_pressure_plate", Items.LIGHT_WEIGHTED_PRESSURE_PLATE, 1, "gold_ingot", "gold_ingot", o, o);
 
@@ -610,12 +606,18 @@ public class TaskCatalogue {
             result.mineIfPresent();
         }
         result.forceDimension(Dimension.OVERWORLD);
+        if (_nameToResourceTask.containsKey(name)) {
+            throw new IllegalStateException("Tried cataloguing " + name + " twice!");
+        }
         _nameToResourceTask.put(name, result);
         _nameToItemMatches.put(name, matches);
         _resourcesObtainable.addAll(Arrays.asList(matches));
 
         // If this resource is just one item, consider it collectable.
         if (matches.length == 1) {
+            if (_itemToResourceTask.containsKey(matches[0])) {
+                throw new IllegalStateException("Tried cataloguing " + matches[0].getTranslationKey() + " twice!");
+            }
             _itemToResourceTask.put(matches[0], result);
         }
 
