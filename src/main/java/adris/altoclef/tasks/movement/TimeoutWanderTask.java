@@ -5,22 +5,50 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
-import net.minecraft.block.FenceBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Call this when the place you're currently at is bad for some reason and you just wanna get away.
  */
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
+    private static final HashSet<Block> ANNOYING_STUCK_BLOCKS;
+    static {
+        ANNOYING_STUCK_BLOCKS = new HashSet<>();
+        ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.WOOD_FENCE).map(Block::getBlockFromItem).toList());
+        ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.FLOWER).map(Block::getBlockFromItem).toList());
+        ANNOYING_STUCK_BLOCKS.addAll(Arrays.asList(Blocks.VINE,
+                Blocks.NETHER_SPROUTS,
+                Blocks.CAVE_VINES,
+                Blocks.CAVE_VINES_PLANT,
+                Blocks.TWISTING_VINES,
+                Blocks.TWISTING_VINES_PLANT,
+                Blocks.WEEPING_VINES_PLANT,
+                Blocks.LADDER,
+                Blocks.BIG_DRIPLEAF,
+                Blocks.BIG_DRIPLEAF_STEM,
+                Blocks.SMALL_DRIPLEAF,
+                Blocks.TALL_GRASS,
+                Blocks.SNOW,
+                Blocks.GRASS
+        ));
+    }
+
     private final float _distanceToWander;
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final boolean _increaseRange;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
+
     private Vec3d _origin;
     private boolean _executingPlanB = false;
     private boolean _forceExplore;
@@ -71,8 +99,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInFence(mod) != null) {
-            setDebugState("Getting unstuck from fence. Yes this happens.");
+        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
+            setDebugState("Getting unstuck from block.");
             return _unstuckTask;
         }
 
@@ -95,11 +123,11 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             //_distanceProgressChecker.reset();
             _progressChecker.reset();
 
-            BlockPos fenceStuck = stuckInFence(mod);
-            if (fenceStuck != null) {
+            BlockPos blockStuck = stuckInBlock(mod);
+            if (blockStuck != null) {
                 _failCounter++;
-                Debug.logMessage("Failed exploring, found fence nearby.");
-                _unstuckTask = getFenceUnstuckTask(mod, fenceStuck);
+                Debug.logMessage("Failed exploring, found stuck block nearby.");
+                _unstuckTask = getFenceUnstuckTask(mod, blockStuck);
                 return _unstuckTask;
             }
 
@@ -171,31 +199,29 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         return "Wander for " + (_distanceToWander + _wanderDistanceExtension) + " blocks";
     }
 
-    // This happens all the time in mineshafts.
-    private BlockPos stuckInFence(AltoClef mod) {
+    // This happens all the time in mineshafts and swamps/jungles
+    private BlockPos stuckInBlock(AltoClef mod) {
         BlockPos p = mod.getPlayer().getBlockPos();
-        if (isFence(mod, p)) return p;
-        if (isFence(mod, p.up())) return p.up();
+        if (isAnnoying(mod, p)) return p;
+        if (isAnnoying(mod, p.up())) return p.up();
         BlockPos[] toCheck = generateSides(p);
         for (BlockPos check : toCheck) {
-            if (isFence(mod, check)) {
+            if (isAnnoying(mod, check)) {
                 return check;
             }
         }
         BlockPos[] toCheckHigh = generateSides(p.up());
-        //Debug.logMessage("oof: " + p.toShortString());
         for (BlockPos check : toCheckHigh) {
-            //Block temp = mod.getWorld().getBlockState(check).getBlock();
-            //Debug.logMessage(check.toShortString() + " = " + temp.getTranslationKey() + " : " + temp.getClass());
-            if (isFence(mod, check)) {
+            if (isAnnoying(mod, check)) {
                 return check;
             }
         }
         return null;
     }
 
-    private boolean isFence(AltoClef mod, BlockPos pos) {
-        return mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock;
+    private boolean isAnnoying(AltoClef mod, BlockPos pos) {
+        return ANNOYING_STUCK_BLOCKS.contains(mod.getWorld().getBlockState(pos).getBlock());
+        //mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock;
     }
 
     private Task getFenceUnstuckTask(AltoClef mod, BlockPos fencePos) {
