@@ -57,7 +57,7 @@ public class LocateStrongholdTask extends Task {
         // Pick up eye if we need to/want to.
         if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
             setDebugState("Picking up dropped ender eye.");
-            return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes, true);
+            return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
         }
 
         // Handle thrown eye

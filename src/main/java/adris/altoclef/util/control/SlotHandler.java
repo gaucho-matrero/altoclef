@@ -137,8 +137,7 @@ public class SlotHandler {
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
     public boolean forceDeequip(Predicate<Item> isBad, boolean preferEmpty) {
-        boolean toolEquipped = false;
-        Item equip = inv().getItemStackInSlot(PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND)).getItem();
+        Item equip = inv().getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem();
         if (isBad.test(equip)) {
             // Pick non tool item or air
             if (!preferEmpty || inv().getEmptyInventorySlotCount() == 0) {
@@ -157,7 +156,7 @@ public class SlotHandler {
         return true;
     }
     public void forceEquipSlot(Slot slot) {
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        Slot target = PlayerInventorySlot.getEquipSlot();
         forceSwapItems(slot, target);
     }
 
@@ -167,7 +166,7 @@ public class SlotHandler {
     public boolean forceEquipItem(ItemTarget toEquip) {
         if (toEquip == null) return false;
 
-        Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        Slot target = PlayerInventorySlot.getEquipSlot();
         // Already equipped
         if (toEquip.matches(inv().getItemStackInSlot(target).getItem())) return true;
 

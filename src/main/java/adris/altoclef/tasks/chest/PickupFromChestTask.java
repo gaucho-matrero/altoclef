@@ -41,7 +41,7 @@ public class PickupFromChestTask extends AbstractDoInChestTask {
                 return null;
             }
             for (ItemTarget target : _targets) {
-                if (!mod.getInventoryTracker().targetMet(target)) {
+                if (!mod.getInventoryTracker().targetsMet(target)) {
                     for (Item mightMove : target.getMatches()) {
                         // Pick up all items that might fit our criteria.
                         if (data.hasItem(mightMove)) {

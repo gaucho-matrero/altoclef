@@ -4,16 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.input.Input;
-import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ToolItem;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.List;
@@ -54,32 +50,17 @@ public class PlayerInteractionFixChain extends TaskChain {
             _betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
-                Slot bestToolSlot = null;
-                double highestSpeed = Double.NEGATIVE_INFINITY;
-                for (int i = 0; i < InventoryTracker.INVENTORY_SIZE; ++i) {
-                    Slot slot = PlayerInventorySlot.getFromInventory(i);
-                    ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(slot);
-                    if (stack.getItem() instanceof ToolItem) {
-                        double speed = ToolSet.calculateSpeedVsBlock(stack, state);
-                        if (speed > highestSpeed) {
-                            highestSpeed = speed;
-                            bestToolSlot = slot;
-                        }
-                    }
-                    if (stack.getItem() == Items.SHEARS) {
-                        // Shears take priority over leaf blocks.
-                        if (ToolSet.areShearsEffective(state.getBlock())) {
-                            bestToolSlot = slot;
-                            break;
-                        }
-                    }
-                }
+                Slot bestToolSlot = mod.getInventoryTracker().getBestToolSlot(state);
+                Slot currentEquipped = PlayerInventorySlot.getEquipSlot();
 
-                // Only accept tools OUTSIDE OF HOTBAR!
+                // if baritone is running, only accept tools OUTSIDE OF HOTBAR!
                 // Baritone will take care of tools inside the hotbar.
-                if (bestToolSlot != null && bestToolSlot.getInventorySlot() >= 9) {
-                    Debug.logMessage("Found better tool in inventory, equipping.");
-                    mod.getSlotHandler().forceEquipSlot(bestToolSlot);
+                if (bestToolSlot != null && !bestToolSlot.equals(currentEquipped)) {
+                    boolean isAllowedToManage = !mod.getClientBaritone().getPathingBehavior().isPathing() || bestToolSlot.getInventorySlot() >= 9;
+                    if (isAllowedToManage) {
+                        Debug.logMessage("Found better tool in inventory, equipping.");
+                        mod.getSlotHandler().forceEquipSlot(bestToolSlot);
+                    }
                 }
             }
         }

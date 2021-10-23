@@ -53,6 +53,9 @@ public class PlayerSlot extends Slot {
         }
         return null;
     }
+    public static Slot getEquipSlot() {
+        return getEquipSlot(EquipmentSlot.MAINHAND);
+    }
 
     @Override
     public int inventorySlotToWindowSlot(int inventorySlot) {

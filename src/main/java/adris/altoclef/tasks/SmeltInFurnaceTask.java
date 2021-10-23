@@ -168,7 +168,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     materialsNeeded -= _currentFurnace.output.getCount();
                 }
                 ItemTarget neededMaterials = new ItemTarget(_target.getMaterial(), materialsNeeded);
-                if (!mod.getInventoryTracker().targetMet(neededMaterials)) {
+                if (!mod.getInventoryTracker().targetsMet(neededMaterials)) {
                     setDebugState("Collecting materials: " + neededMaterials);
                     return getMaterialTask(neededMaterials);
                 }
