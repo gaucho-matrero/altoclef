@@ -35,11 +35,10 @@ public class EquipArmorTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        ItemTarget[] targets = new ItemTarget[_toEquip.length];
-        boolean armorMet = Arrays.stream(_toEquip).allMatch(target -> mod.getInventoryTracker().targetMet(targets));
+        boolean armorMet = Arrays.stream(_toEquip).allMatch(target -> mod.getInventoryTracker().targetMet(target));
         if (!armorMet) {
             setDebugState("Obtaining armor");
-            return new CataloguedResourceTask(targets);
+            return new CataloguedResourceTask(_toEquip);
         }
 
         setDebugState("Equipping armor");
