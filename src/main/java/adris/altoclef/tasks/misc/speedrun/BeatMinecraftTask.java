@@ -116,7 +116,7 @@ public class BeatMinecraftTask extends Task {
         _forceState = ForceState.NONE;
         mod.getBehaviour().push();
         // Add some protections so we don't throw these away at any point.
-        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND);
+        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.DIAMOND, Items.OBSIDIAN, Items.FLINT_AND_STEEL);
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
 
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
@@ -356,6 +356,11 @@ public class BeatMinecraftTask extends Task {
     }
 
     private Task netherTick(AltoClef mod) {
+
+        if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) > 11 && (_strongholdLocater.isActive() || _strongholdLocater.isSearching()) && !_strongholdLocater.isFinished(mod)) {
+            setDebugState("Locating end portal.");
+            return _strongholdLocater;
+        }
 
         // Keep track of our portal so we may return to it.
         if (_cachedPortalInNether == null) {
