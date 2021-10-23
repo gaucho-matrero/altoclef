@@ -283,7 +283,7 @@ public class BotBehaviour {
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
                     synchronized (settings.getPropertiesMutex()) {
                         allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
-                        //forceUseTools = new ArrayList<>(settings.getForceUseToolPredicates());
+                        forceUseTools = new ArrayList<>(settings.getForceUseToolPredicates());
                     }
                 }
             }
@@ -324,8 +324,8 @@ public class BotBehaviour {
                     synchronized (sa.getPropertiesMutex()) {
                         sa.getForceWalkOnPredicates().clear();
                         sa.getForceWalkOnPredicates().addAll(allowWalking);
-                        //sa.getForceUseToolPredicates().clear();
-                        //sa.getForceUseToolPredicates().addAll(forceUseTools);
+                        sa.getForceUseToolPredicates().clear();
+                        sa.getForceUseToolPredicates().addAll(forceUseTools);
                     }
                 }
             }
