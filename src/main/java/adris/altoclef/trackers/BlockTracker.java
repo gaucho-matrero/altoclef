@@ -66,42 +66,50 @@ public class BlockTracker extends Tracker {
 
     @Override
     protected void reset() {
-        _trackingBlocks.clear();
+        synchronized (_trackingBlocks) {
+            _trackingBlocks.clear();
+        }
         for (PosCache cache : _caches.values()) {
             cache.clear();
         }
     }
 
     public boolean isTracking(Block block) {
-        return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
+        synchronized (_trackingBlocks) {
+            return _trackingBlocks.containsKey(block) && _trackingBlocks.get(block) > 0;
+        }
     }
 
     public void trackBlock(Block... blocks) {
-        for (Block block : blocks) {
-            if (!_trackingBlocks.containsKey(block)) {
-                // We're tracking a new block, so we're not updated.
-                setDirty();
-                _trackingBlocks.put(block, 0);
-                // Force a rescan if these are new blocks and we aren't doing this like every frame.
-                if (_forceElapseTimer.elapsed()) {
-                    _timer.forceElapse();
-                    _forceElapseTimer.reset();
+        synchronized (_trackingBlocks) {
+            for (Block block : blocks) {
+                if (!_trackingBlocks.containsKey(block)) {
+                    // We're tracking a new block, so we're not updated.
+                    setDirty();
+                    _trackingBlocks.put(block, 0);
+                    // Force a rescan if these are new blocks and we aren't doing this like every frame.
+                    if (_forceElapseTimer.elapsed()) {
+                        _timer.forceElapse();
+                        _forceElapseTimer.reset();
+                    }
                 }
+                _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
             }
-            _trackingBlocks.put(block, _trackingBlocks.get(block) + 1);
         }
     }
 
     public void stopTracking(Block... blocks) {
-        for (Block block : blocks) {
-            if (_trackingBlocks.containsKey(block)) {
-                int current = _trackingBlocks.get(block);
-                if (current == 0) {
-                    Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
-                } else {
-                    _trackingBlocks.put(block, current - 1);
-                    if (_trackingBlocks.get(block) <= 0) {
-                        _trackingBlocks.remove(block);
+        synchronized (_trackingBlocks) {
+            for (Block block : blocks) {
+                if (_trackingBlocks.containsKey(block)) {
+                    int current = _trackingBlocks.get(block);
+                    if (current == 0) {
+                        Debug.logWarning("Untracked block " + block + " more times than necessary. BlockTracker stack is unreliable from this point on.");
+                    } else {
+                        _trackingBlocks.put(block, current - 1);
+                        if (_trackingBlocks.get(block) <= 0) {
+                            _trackingBlocks.remove(block);
+                        }
                     }
                 }
             }
@@ -142,10 +150,12 @@ public class BlockTracker extends Tracker {
         return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
     }
     public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
-        for (Block block : blocks) {
-            if (!_trackingBlocks.containsKey(block)) {
-                Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
-                return null;
+        synchronized (_trackingBlocks) {
+            for (Block block : blocks) {
+                if (!_trackingBlocks.containsKey(block)) {
+                    Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
+                    return null;
+                }
             }
         }
         // Make sure we've scanned the first time if we need to.
@@ -229,9 +239,12 @@ public class BlockTracker extends Tracker {
     }
 
     private void rescanWorld(CalculationContext ctx) {
-        Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
-        Block[] blocksToScan = new Block[_trackingBlocks.size()];
-        _trackingBlocks.keySet().toArray(blocksToScan);
+        Block[] blocksToScan;
+        synchronized (_trackingBlocks) {
+            Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
+            blocksToScan = new Block[_trackingBlocks.size()];
+            _trackingBlocks.keySet().toArray(blocksToScan);
+        }
 
         List<BlockPos> knownBlocks;
         synchronized (_scanMutex) {
@@ -256,9 +269,11 @@ public class BlockTracker extends Tracker {
             if (MinecraftClient.getInstance().world != null) {
                 for (BlockPos pos : found) {
                     Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
-                    if (_trackingBlocks.containsKey(block)) {
-                        //Debug.logInternal("Good: " + block + " at " + pos);
-                        currentCache().addBlock(block, pos);
+                    synchronized (_trackingBlocks) {
+                        if (_trackingBlocks.containsKey(block)) {
+                            //Debug.logInternal("Good: " + block + " at " + pos);
+                            currentCache().addBlock(block, pos);
+                        }
                     }
                 }
 
