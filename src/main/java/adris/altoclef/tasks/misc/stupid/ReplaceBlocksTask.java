@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.stupid;
+package adris.altoclef.tasks.misc.stupid;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
