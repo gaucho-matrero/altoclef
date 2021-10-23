@@ -464,13 +464,12 @@ public class BlockTracker extends Tracker {
             boolean closestPurged = false;
 
             for (BlockPos pos : blockList) {
-                if (!isValid.test(pos)) continue;
-
                 // If our current block isn't valid, fix it up. This cleans while we're iterating.
                 if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
                     removeBlock(pos, blocks);
                     continue;
                 }
+                if (!isValid.test(pos)) continue;
 
                 double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
 
