@@ -171,7 +171,7 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected Vec3d getPos(AltoClef mod, Object obj) {
             if (obj instanceof BlockPos b) {
-                return new Vec3d(b.getX(), b.getY(), b.getZ());
+                return WorldHelper.toVec3d(b);
             }
             if (obj instanceof ItemEntity item) {
                 return item.getPos();

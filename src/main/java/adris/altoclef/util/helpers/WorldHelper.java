@@ -29,7 +29,7 @@ public interface WorldHelper {
 
     static Vec3d toVec3d(BlockPos pos) {
         if (pos == null) return null;
-        return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+        return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
     }
 
     static Vec3d toVec3d(Vec3i pos) {
@@ -148,7 +148,7 @@ public interface WorldHelper {
     }
 
     static Iterable<BlockPos> scanRegion(AltoClef mod, BlockPos start, BlockPos end) {
-        return () -> new Iterator<BlockPos>() {
+        return () -> new Iterator<>() {
             int x = start.getX(), y = start.getY(), z = start.getZ();
 
             @Override
@@ -195,8 +195,7 @@ public interface WorldHelper {
         BlockState state = mod.getWorld().getBlockState(pos);
         if (state.getBlock() instanceof SpawnerBlock) {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);
-            if (be instanceof MobSpawnerBlockEntity) {
-                MobSpawnerBlockEntity blockEntity = (MobSpawnerBlockEntity) be;
+            if (be instanceof MobSpawnerBlockEntity blockEntity) {
                 return blockEntity.getLogic().getRenderedEntity(mod.getWorld());
             }
         }

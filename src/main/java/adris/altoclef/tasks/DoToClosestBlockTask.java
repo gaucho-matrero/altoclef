@@ -2,6 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -45,7 +46,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     @Override
     protected Vec3d getPos(AltoClef mod, BlockPos obj) {
-        return new Vec3d(obj.getX(), obj.getY(), obj.getZ());
+        return WorldHelper.toVec3d(obj);
     }
 
     @Override

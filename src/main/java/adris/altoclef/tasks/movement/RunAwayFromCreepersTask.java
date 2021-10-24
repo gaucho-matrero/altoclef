@@ -57,7 +57,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         @Override
         protected double getCostOfEntity(Entity entity, int x, int y, int z) {
             if (entity instanceof CreeperEntity) {
-                return MobDefenseChain.getCreeperSafety(new Vec3d(x, y, z), (CreeperEntity) entity);
+                return MobDefenseChain.getCreeperSafety(new Vec3d(x + 0.5, y + 0.5, z + 0.5), (CreeperEntity) entity);
             }
             return super.getCostOfEntity(entity, x, y, z);
         }

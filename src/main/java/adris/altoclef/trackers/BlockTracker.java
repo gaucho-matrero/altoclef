@@ -141,7 +141,8 @@ public class BlockTracker extends Tracker {
     }
 
     public BlockPos getNearestTracking(Block... blocks) {
-        return getNearestTracking(_mod.getPlayer().getPos(), blocks);
+        // Add juuust a little, to prevent digging down all the time/bias towards blocks BELOW the player
+        return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), blocks);
     }
     public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, p -> true, blocks);
