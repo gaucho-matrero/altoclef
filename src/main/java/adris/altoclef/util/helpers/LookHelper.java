@@ -113,6 +113,10 @@ public interface LookHelper {
         }
         return isSneaking ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
     }
+    static Vec3d getCameraPos(AltoClef mod) {
+        IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
+        return ctx.player().getCameraPosVec(1);
+    }
 
     //  1: Looking straight at pos
     //  0: pos is 90 degrees to the side
@@ -168,4 +172,15 @@ public interface LookHelper {
         Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), toLook, mod.getClientBaritone().getPlayerContext().playerRotations());
         mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
     }
+    static void lookAt(AltoClef mod, BlockPos toLook, Direction side) {
+        Vec3d target = new Vec3d(toLook.getX() + 0.5, toLook.getY(), toLook.getZ() + 0.5);
+        if (side != null) {
+            target.add(side.getVector().getX() * 0.5, side.getVector().getY() * 0.5, side.getVector().getZ() * 0.5);
+        }
+        lookAt(mod, target);
+    }
+    static void lookAt(AltoClef mod, BlockPos toLook) {
+        lookAt(mod, toLook, null);
+    }
+
 }

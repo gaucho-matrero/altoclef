@@ -320,6 +320,9 @@ public class Playground {
                 mod.runUserTask(new PlaceBedAndSetSpawnTask());
                 break;
             case "dragon":
+                mod.runUserTask(new KillEnderDragonWithBedsTask());
+                break;
+            case "dragon-old":
                 mod.runUserTask(new KillEnderDragonTask());
                 break;
             case "chest":

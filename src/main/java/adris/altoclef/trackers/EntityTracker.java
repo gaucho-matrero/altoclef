@@ -8,6 +8,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.helpers.ProjectileHelper;
+import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -22,10 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 @SuppressWarnings("rawtypes")
@@ -206,6 +204,14 @@ public class EntityTracker extends Tracker {
             if (itemDropped(target.getMatches())) return true;
         }
         return false;
+    }
+
+    public List<ItemEntity> getDroppedItems() {
+        ensureUpdated();
+        return _itemDropLocations.values().stream().reduce(new ArrayList<>(), (result, drops) -> {
+            result.addAll(drops);
+            return result;
+        });
     }
 
     public boolean entityFound(Class... types) {
