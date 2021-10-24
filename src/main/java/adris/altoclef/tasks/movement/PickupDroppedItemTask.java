@@ -21,6 +21,9 @@ import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
 
+    // Am starting to regret not making this a singleton
+    private AltoClef _mod;
+
     private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
     // Not clean practice, but it helps keep things self contained I think.
     private static boolean isGettingPickaxeFirstFlag = false;
@@ -68,6 +71,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected Task onTick(AltoClef mod) {
+        _mod = mod;
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Wandering after blacklisting item...");
             _progressChecker.reset();
@@ -102,11 +106,6 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                 _blacklist.add(_currentDrop);
                 mod.getEntityTracker().requestEntityUnreachable(_currentDrop);
                 return _wanderTask;
-            }
-        }
-        if (_freeInventoryIfFull) {
-            if (mod.getInventoryTracker().isInventoryFull()) {
-                return new EnsureFreeInventorySlotTask();
             }
         }
 
@@ -167,6 +166,14 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                 Debug.logMessage("New goal, no longer collecting a pickaxe.");
                 _collectingPickaxeForThisResource = false;
                 isGettingPickaxeFirstFlag = false;
+            }
+        }
+        // Ensure our inventory is free if we're close
+        if (obj.isInRange(_mod.getPlayer(), 0.5f)) {
+            if (_freeInventoryIfFull) {
+                if (_mod.getInventoryTracker().isInventoryFull()) {
+                    return new EnsureFreeInventorySlotTask();
+                }
             }
         }
         return new GetToEntityTask(obj);
