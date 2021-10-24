@@ -8,7 +8,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.helpers.ProjectileHelper;
-import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -33,7 +32,6 @@ import java.util.function.Predicate;
 public class EntityTracker extends Tracker {
 
     private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
-
     private final HashMap<Class, List<Entity>> _entityMap = new HashMap<>();
 
     private final List<Entity> _closeEntities = new ArrayList<>();
@@ -46,16 +44,26 @@ public class EntityTracker extends Tracker {
 
     private final EntityLocateBlacklist _entityBlacklist = new EntityLocateBlacklist();
 
+    private final HashMap<PlayerEntity, List<Entity>> _entitiesCollidingWithPlayerAccumulator = new HashMap<>();
+    private final HashMap<PlayerEntity, HashSet<Entity>> _entitiesCollidingWithPlayer = new HashMap<>();
+
     public EntityTracker(TrackerManager manager) {
         super(manager);
     }
 
-    public static boolean isHostileToPlayer(AltoClef mod, Entity mob) {
-        boolean angry = isAngryAtPlayer(mob);
-        if (mob instanceof LivingEntity entity) {
-            return angry && entity.canSee(mod.getPlayer());
+    public void registerPlayerCollision(PlayerEntity player, Entity entity) {
+        if (!_entitiesCollidingWithPlayerAccumulator.containsKey(player)) {
+            _entitiesCollidingWithPlayerAccumulator.put(player, new ArrayList<>());
         }
-        return angry;
+        _entitiesCollidingWithPlayerAccumulator.get(player).add(entity);
+    }
+
+    public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
+        boolean hostile = isGenerallyHostileToPlayer(mob);
+        if (mob instanceof LivingEntity entity) {
+            return hostile && entity.canSee(mod.getPlayer());
+        }
+        return hostile;
     }
 
     /**
@@ -73,14 +81,14 @@ public class EntityTracker extends Tracker {
         return type;
     }
 
-    public static boolean isAngryAtPlayer(Entity hostile) {
+    public static boolean isGenerallyHostileToPlayer(Entity hostile) {
         // TODO: Ignore on Peaceful difficulty.
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
         if (hostile instanceof EndermanEntity enderman) {
             return enderman.isAngryAt(player) && enderman.isAngry();
         }
-        // Hoglins by default are pretty mad.
+        // TODO: Ignore if wearing any gold armor.
         if (hostile instanceof HoglinEntity) {
             return true;
         }
@@ -101,6 +109,13 @@ public class EntityTracker extends Tracker {
             }
         }
         return false;
+    }
+
+    public boolean isCollidingWithPlayer(PlayerEntity player, Entity entity) {
+        return _entitiesCollidingWithPlayer.containsKey(player) && _entitiesCollidingWithPlayer.get(player).contains(entity);
+    }
+    public boolean isCollidingWithPlayer(Entity entity) {
+        return isCollidingWithPlayer(_mod.getPlayer(), entity);
     }
 
     public ItemEntity getClosestItemDrop(Item... items) {
@@ -299,6 +314,14 @@ public class EntityTracker extends Tracker {
             _playerMap.clear();
             if (MinecraftClient.getInstance().world == null) return;
 
+            // Store/Register All accumulated player collisions for this frame.
+            _entitiesCollidingWithPlayer.clear();
+            for (Map.Entry<PlayerEntity, List<Entity>> collisions : _entitiesCollidingWithPlayerAccumulator.entrySet()) {
+                _entitiesCollidingWithPlayer.put(collisions.getKey(), new HashSet<>());
+                _entitiesCollidingWithPlayer.get(collisions.getKey()).addAll(collisions.getValue());
+            }
+            _entitiesCollidingWithPlayerAccumulator.clear();
+
             // Loop through all entities and track 'em
             for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
 
@@ -333,7 +356,7 @@ public class EntityTracker extends Tracker {
                     //noinspection ConstantConditions
                     if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
 
-                        if (isHostileToPlayer(_mod, entity)) {
+                        if (isAngryAtPlayer(_mod, entity)) {
 
                             // Check if the mob is facing us or is close enough
                             boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);

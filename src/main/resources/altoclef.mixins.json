@@ -6,14 +6,14 @@
   "mixins": [
     "AbstractFurnaceScreenHandlerAccessor",
     "BlockModifiedByPlayerMixin",
+    "ClientBlockBreakAccessor",
     "ClientConnectionAccessor",
     "ClientInteractWithBlockMixin",
     "ClientPlayerInteractionAccessor",
     "ClientUIMixin",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",
-    "WorldBlockModifiedMixin",
-    "ClientBlockBreakAccessor"
+    "WorldBlockModifiedMixin"
   ],
   "client": [
     "ChatInputMixin",
@@ -22,6 +22,7 @@
     "ClientOpenScreenMixin",
     "ClientTickMixin",
     "EntryMixin",
+    "PlayerCollidesWithEntityMixin",
     "LoadChunkMixin"
   ],
   "injectors": {

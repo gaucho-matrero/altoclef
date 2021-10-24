@@ -158,9 +158,9 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     }
 
     @Override
-    protected Task getGoalTask(ItemEntity obj) {
-        if (!obj.equals(_currentDrop)) {
-            _currentDrop = obj;
+    protected Task getGoalTask(ItemEntity itemEntity) {
+        if (!itemEntity.equals(_currentDrop)) {
+            _currentDrop = itemEntity;
             _progressChecker.reset();
             if (isGettingPickaxeFirstFlag && _collectingPickaxeForThisResource) {
                 Debug.logMessage("New goal, no longer collecting a pickaxe.");
@@ -169,14 +169,15 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             }
         }
         // Ensure our inventory is free if we're close
-        if (obj.isInRange(_mod.getPlayer(), 0.5f)) {
+        boolean touching = _mod.getEntityTracker().isCollidingWithPlayer(itemEntity);
+        if (touching) {
             if (_freeInventoryIfFull) {
                 if (_mod.getInventoryTracker().isInventoryFull()) {
                     return new EnsureFreeInventorySlotTask();
                 }
             }
         }
-        return new GetToEntityTask(obj);
+        return new GetToEntityTask(itemEntity);
     }
 
     @Override

@@ -5,6 +5,7 @@ import baritone.api.event.events.ChatEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -46,10 +47,10 @@ public class StaticMixinHookups {
     // Every chat message can be interrupted by us
     public static void onChat(ChatEvent e) {
         String line = e.getMessage();
-        if (_mod.getCommandExecutor().isClientCommand(line)) {
+        if (AltoClef.getCommandExecutor().isClientCommand(line)) {
             e.cancel();
             try {
-                _mod.getCommandExecutor().execute(line);
+                AltoClef.getCommandExecutor().execute(line);
             } catch (CommandException ex) {
                 Debug.logWarning(ex.getMessage());
                 //ex.printStackTrace();
@@ -112,5 +113,9 @@ public class StaticMixinHookups {
 
     public static void onGameOverlayMessage(String message) {
         _mod.onGameOverlayMessage.invoke(message);
+    }
+
+    public static void onPlayerCollidedWithEntity(PlayerEntity player, Entity entity) {
+        _mod.getEntityTracker().registerPlayerCollision(player, entity);
     }
 }
