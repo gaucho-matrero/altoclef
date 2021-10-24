@@ -23,7 +23,7 @@ public class ThrowSlotTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_clickFirstFlag) {
+        if (_clickFirstFlag || mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty()) {
             _clickFirstFlag = false;
             return new ClickSlotTask(_slot);
         }
