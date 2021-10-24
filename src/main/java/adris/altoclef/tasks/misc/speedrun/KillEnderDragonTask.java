@@ -229,7 +229,7 @@ public class KillEnderDragonTask extends Task {
                 _hitResetTimer.reset();
                 Debug.logInternal("HIT");
                 mod.getInputControls().tryPress(Input.CLICK_LEFT);
-                mod.getPlayer().swingHand(Hand.MAIN_HAND);
+                //mod.getPlayer().swingHand(Hand.MAIN_HAND);
             }
             if (_hitHoldTimer.elapsed()) {
                 if (!_wasReleased) {
