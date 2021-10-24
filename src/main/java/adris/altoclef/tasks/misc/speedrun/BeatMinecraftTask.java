@@ -441,7 +441,7 @@ public class BeatMinecraftTask extends Task {
         if (_endBedSpawnPos == null) {
             boolean closeEnoughToPortal = false;
             if (_endPortalFrame.size() != 0) {
-                closeEnoughToPortal = _endPortalFrame.get(0).isWithinDistance(mod.getPlayer().getPos(), 200);
+                closeEnoughToPortal = _endPortalFrame.get(0).isWithinDistance(mod.getPlayer().getPos(), 50);
             }
             if (_placeBedSpawnTask.isFinished(mod)) {
                 _endBedSpawnPos = _placeBedSpawnTask.getBedSleptPos();

@@ -37,7 +37,7 @@ public class LocateStrongholdTask extends Task {
 
     private static final int EYE_RETHROW_DISTANCE = 10; // target distance to stronghold guess before rethrowing
 
-    private static final int SECOND_EYE_THROW_DISTANCE = 50; // target distance between first throw and second throw
+    private static final int SECOND_EYE_THROW_DISTANCE = 30; // target distance between first throw and second throw
 
     private static final int PORTAL_TARGET_HEIGHT = 48; // target height for educated portal 
 
@@ -220,21 +220,19 @@ public class LocateStrongholdTask extends Task {
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
                 }
                 if (_netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
-                    if (_portalBuildRange != 20) {
+                    if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
-                        Debug.logMessage("_portalBuildRange set to " + _portalBuildRange);
                     }
                     if (mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL) != null) {
                         _cachedEducatedPortal = mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL);
                     }
                     if (!_netherGoalReached) {
                         _netherGoalReached = true;
-                        Debug.logMessage("goal reached");
+                        Debug.logMessage("Educated coords reached");
                     }
                     if (mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), 3, Blocks.OBSIDIAN) != null && _educatedPortalStart == null) {
                         _educatedPortalStart = mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), 2, Blocks.OBSIDIAN);
                         _netherGoalPos = _educatedPortalStart;
-                        Debug.logMessage("_netherGoalPos moved to portal start");
                     }
                     setDebugState("Building portal");
                     return new ConstructNetherPortalObsidianTask();
