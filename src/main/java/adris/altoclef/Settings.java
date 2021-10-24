@@ -279,6 +279,7 @@ public class Settings {
             Items.DIRT,
             Items.GRAVEL,
             Items.COBBLED_DEEPSLATE,
+            Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES,
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
             Items.NETHERRACK,
             Items.MAGMA_BLOCK,
@@ -288,7 +289,6 @@ public class Settings {
             Items.NETHER_BRICK,
             Items.BASALT,
             Items.BLACKSTONE
-            
     );
 
     /**
