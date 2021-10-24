@@ -15,7 +15,6 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.ItemHelper;
-import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -27,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,29 +36,31 @@ public class BeatMinecraft2Task extends Task {
 
     private static final Block[] TRACK_BLOCKS = new Block[] {
             Blocks.END_PORTAL_FRAME,
-            Blocks.END_PORTAL
+            Blocks.END_PORTAL,
+            Blocks.CRAFTING_TABLE // For pearl trading + gold crafting
     };
 
-    private static final int FOOD_UNITS = 30;
+    private static final int FOOD_UNITS = 120;
     private static final int MIN_FOOD_UNITS = 10;
 
-    private static final ItemTarget[] COLLECT_EYE_GEAR = StlHelper.combine(
+    private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(ItemHelper.DIAMOND_ARMORS),
             toItemTargets(Items.GOLDEN_BOOTS),
             toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE, 3)
+            toItemTargets(Items.DIAMOND_PICKAXE, 3),
+            toItemTargets(Items.CRAFTING_TABLE)
     );
-    private static final ItemTarget[] COLLECT_EYE_GEAR_MIN = StlHelper.combine(
+    private static final ItemTarget[] COLLECT_EYE_GEAR_MIN = combine(
             toItemTargets(ItemHelper.DIAMOND_ARMORS),
             toItemTargets(Items.GOLDEN_BOOTS),
             toItemTargets(Items.DIAMOND_SWORD),
             toItemTargets(Items.DIAMOND_PICKAXE, 1)
     );
-    private static final ItemTarget[] IRON_GEAR = StlHelper.combine(
+    private static final ItemTarget[] IRON_GEAR = combine(
             toItemTargets(Items.IRON_SWORD),
             toItemTargets(Items.IRON_PICKAXE, 2)
     );
-    private static final ItemTarget[] IRON_GEAR_MIN = StlHelper.combine(
+    private static final ItemTarget[] IRON_GEAR_MIN = combine(
             toItemTargets(Items.IRON_SWORD)
     );
 
@@ -69,6 +71,7 @@ public class BeatMinecraft2Task extends Task {
     private final boolean _shouldSetSpawnNearEndPortal;
 
     private BlockPos _endPortalCenterLocation;
+    private boolean _ranStrongholdLocator;
     private boolean _endPortalOpened;
     private BlockPos _bedSpawnLocation;
 
@@ -78,6 +81,7 @@ public class BeatMinecraft2Task extends Task {
 
     private Task _foodTask;
     private Task _gearTask;
+    private Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
     private final Task _locateStrongholdTask;
     private boolean _collectingEyes;
@@ -98,7 +102,7 @@ public class BeatMinecraft2Task extends Task {
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(TRACK_BLOCKS);
         mod.getBehaviour().push();
-        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL);
+        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.CRAFTING_TABLE);
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
         // Allow walking on end portal
         mod.getBehaviour().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
@@ -155,8 +159,23 @@ public class BeatMinecraft2Task extends Task {
                 _endPortalCenterLocation = endPortal;
                 _endPortalOpened = true;
             } else {
+                // TODO: Test that this works, for some reason the bot gets stuck near the stronghold and it keeps "Searching" for the portal
                 _endPortalCenterLocation = doSimpleSearchForEndPortal(mod);
             }
+        }
+
+        // Collect beds
+        boolean placingOrPlacedSpawn = _shouldSetSpawnNearEndPortal &&
+                (
+                        spawnSetNearPortal(mod, _endPortalCenterLocation)
+                                || (_setBedSpawnTask.isActive() && !_setBedSpawnTask.isFinished(mod))
+                );
+        int targetBeds = _bedsToCollect + (placingOrPlacedSpawn? 1 : 0);
+        if (mod.getInventoryTracker().getItemCount(ItemHelper.BED) < targetBeds) {
+            if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
+                return TaskCatalogue.getItemTask(Items.SHEARS, 1);
+            }
+            return TaskCatalogue.getItemTask("bed", targetBeds);
         }
 
         // Do we need more eyes?
@@ -165,25 +184,11 @@ public class BeatMinecraft2Task extends Task {
         int eyesNeededMin = noEyesPlease ? 0 : _targetEyesMin - filledPortalFrames;
         int eyesNeeded    = noEyesPlease ? 0 : _targetEyes    - filledPortalFrames;
         int eyes = mod.getInventoryTracker().getItemCount(Items.ENDER_EYE);
-        if (eyes < eyesNeededMin || (_collectingEyes && eyes < eyesNeeded)) {
+        if (eyes < eyesNeededMin || (!_ranStrongholdLocator && _collectingEyes && eyes < eyesNeeded)) {
             _collectingEyes = true;
             return getEyesOfEnderTask(mod, eyesNeeded);
         } else {
             _collectingEyes = false;
-        }
-
-        // Collect beds
-        boolean placingOrPlacedSpawn = _shouldSetSpawnNearEndPortal &&
-            (
-                spawnSetNearPortal(mod, _endPortalCenterLocation)
-                || (_setBedSpawnTask.isActive() && !_setBedSpawnTask.isFinished(mod))
-            );
-        int targetBeds = _bedsToCollect + (placingOrPlacedSpawn? 1 : 0);
-        if (mod.getInventoryTracker().getItemCount(ItemHelper.BED) < targetBeds) {
-            if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
-                return TaskCatalogue.getItemTask(Items.SHEARS, 1);
-            }
-            return TaskCatalogue.getItemTask("bed", targetBeds);
         }
 
         // We have eyes. Locate our portal + enter.
@@ -210,11 +215,10 @@ public class BeatMinecraft2Task extends Task {
                         if (!hasItemOrDroppedInEnd(mod, Items.IRON_PICKAXE) && !hasItemOrDroppedInEnd(mod, Items.DIAMOND_PICKAXE)) {
                             return TaskCatalogue.getItemTask(Items.DIAMOND_PICKAXE, 1);
                         }
-                        // Building blocks
-                        if (mod.getInventoryTracker().getItemCount(mod.getModSettings().getThrowawayItems(mod)) < 40) {
-                            setDebugState("Getting Building Blocks");
-                            return new MineAndCollectTask(new ItemTarget[] {new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, 40)}, MiningRequirement.WOOD);
+                        if (needsBuildingMaterials(mod)) {
+                            return getBuildingMaterialsTask(mod);
                         }
+
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
                         return new DoToClosestBlockTask(
@@ -233,17 +237,29 @@ public class BeatMinecraft2Task extends Task {
                 } else {
                     // Portal Location
                     setDebugState("Locating End Portal...");
+                    _ranStrongholdLocator = true;
                     return _locateStrongholdTask;
                 }
             }
             case NETHER -> {
                 // Portal Location
                 setDebugState("Locating End Portal...");
+                if (needsBuildingMaterials(mod)) {
+                    return getBuildingMaterialsTask(mod);
+                }
                 return _locateStrongholdTask;
             }
         }
 
         return null;
+    }
+
+    private boolean needsBuildingMaterials(AltoClef mod) {
+        return mod.getInventoryTracker().getItemCount(mod.getModSettings().getThrowawayItems(mod)) < 5 || shouldForce(mod, _buildMaterialsTask);
+    }
+    private Task getBuildingMaterialsTask(AltoClef mod) {
+        _buildMaterialsTask = new MineAndCollectTask(new ItemTarget[] {new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, 40)}, MiningRequirement.WOOD);
+        return _buildMaterialsTask;
     }
 
     private void updateCachedEndItems(AltoClef mod) {
@@ -355,13 +371,17 @@ public class BeatMinecraft2Task extends Task {
         switch (mod.getCurrentDimension()) {
             case OVERWORLD -> {
                 // Make sure we have gear, then food.
-                if (shouldForce(_gearTask, mod)) {
+                for (Item diamond : ItemHelper.DIAMOND_ARMORS) {
+                    if (mod.getInventoryTracker().hasItem(diamond) && !mod.getInventoryTracker().isArmorEquipped(diamond)) {
+                        return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
+                    }
+                }
+                if (shouldForce(mod, _gearTask)) {
                     setDebugState("Getting gear for Ender Eye journey");
                     return _gearTask;
                 }
-                if (shouldForce(_foodTask, mod)) {
+                if (shouldForce(mod, _foodTask)) {
                     setDebugState("Getting Food for Ender Eye journey");
-                    _foodTask = new CollectFoodTask(FOOD_UNITS);
                     return _foodTask;
                 }
                 // Start with iron
@@ -371,6 +391,7 @@ public class BeatMinecraft2Task extends Task {
                 }
                 // Then get food
                 if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+                    _foodTask = new CollectFoodTask(FOOD_UNITS);
                     return _foodTask;
                 }
                 // Then get diamond
@@ -378,13 +399,13 @@ public class BeatMinecraft2Task extends Task {
                     _gearTask = TaskCatalogue.getSquashedItemTask(COLLECT_EYE_GEAR);
                     return _gearTask;
                 }
-                if (!mod.getInventoryTracker().isArmorEquipped(ItemHelper.DIAMOND_ARMORS)) {
-                    setDebugState("Equipping diamond armor...");
-                    return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
-                }
                 // Then go to the nether.
                 setDebugState("Going to Nether");
-                return new EnterNetherPortalTask(Dimension.NETHER);
+                if (!mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)) {
+                    setDebugState("Grab a crafting table first tho");
+                    return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
+                }
+                return new DefaultGoToDimensionTask(Dimension.NETHER);
             }
             case NETHER -> {
                 if (needsBlazeRods) {
@@ -404,7 +425,7 @@ public class BeatMinecraft2Task extends Task {
         if (_setBedSpawnTask.isSpawnSet()) {
             _bedSpawnLocation = _setBedSpawnTask.getBedSleptPos();
         }
-        if (shouldForce(_setBedSpawnTask, mod)) {
+        if (shouldForce(mod, _setBedSpawnTask)) {
             // Set spawnpoint and set our bed spawn when it happens.
             setDebugState("Setting spawnpoint now.");
             return _setBedSpawnTask;
@@ -425,6 +446,11 @@ public class BeatMinecraft2Task extends Task {
         // Equip golden boots before trading...
         if (!mod.getInventoryTracker().isArmorEquipped(Items.GOLDEN_BOOTS)) {
             return new EquipArmorTask(Items.GOLDEN_BOOTS);
+        }
+        int goldBuffer = 32;
+        if (mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) >= goldBuffer && mod.getBlockTracker().anyFound(Blocks.CRAFTING_TABLE)) {
+            setDebugState("Getting crafting table ");
+            return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
         }
         return new TradeWithPiglinsTask(32, Items.ENDER_PEARL, count);
     }
@@ -452,7 +478,7 @@ public class BeatMinecraft2Task extends Task {
     }
 
     // Just a helpful utility to reduce reuse recycle.
-    private static boolean shouldForce(Task task, AltoClef mod) {
+    private static boolean shouldForce(AltoClef mod, Task task) {
         return task != null && task.isActive() && !task.isFinished(mod);
     }
     private static ItemTarget[] toItemTargets(Item ...items) {
@@ -460,5 +486,12 @@ public class BeatMinecraft2Task extends Task {
     }
     private static ItemTarget[] toItemTargets(Item item, int count) {
         return new ItemTarget[] {new ItemTarget(item, count)};
+    }
+    private static ItemTarget[] combine(ItemTarget[] ...targets) {
+        List<ItemTarget> result = new ArrayList<>();
+        for (ItemTarget[] ts : targets) {
+            result.addAll(Arrays.asList(ts));
+        }
+        return result.toArray(ItemTarget[]::new);
     }
 }
