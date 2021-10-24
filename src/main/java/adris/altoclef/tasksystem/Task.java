@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 public abstract class Task {
 
+    private String _oldDebugState = "";
     private String _debugState = "";
 
     private Task _sub = null;
@@ -30,6 +31,11 @@ public abstract class Task {
         if (_stopped) return;
 
         Task newSub = onTick(mod);
+        // Debug state print
+        if (!_oldDebugState.equals(_debugState)) {
+            Debug.logInternal(toString());
+            _oldDebugState = _debugState;
+        }
         // We have a sub task
         if (newSub != null) {
             if (!newSub.isEqual(_sub)) {
@@ -91,12 +97,10 @@ public abstract class Task {
     }
 
     protected void setDebugState(String state) {
-        if (!_debugState.equals(state)) {
-            _debugState = state;
-            Debug.logInternal(toString());
-        } else {
-            _debugState = state;
+        if (state == null) {
+            state = "";
         }
+        _debugState = state;
     }
 
     // Virtual
