@@ -6,7 +6,7 @@ import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
-@Deprecated
+
 public class ClearRegionTask extends Task implements ITaskRequiresGrounded {
 
     private final BlockPos _from;
@@ -42,10 +42,13 @@ public class ClearRegionTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        for (int xx = _from.getX(); xx < _to.getX(); ++xx) {
-            for (int zz = _from.getZ(); zz < _to.getZ(); ++zz) {
-                for (int yy = _from.getY(); yy < _to.getY(); ++yy) {
-                    BlockPos toCheck = new BlockPos(xx, yy, zz);
+        int x = _from.getX() - _to.getX();
+        int y = _from.getY() - _to.getY();
+        int z = _from.getZ() - _to.getZ();
+        for (int xx = 0; xx < Math.abs(x); ++xx) {
+            for (int yy = 0; yy < Math.abs(y); ++yy) {
+                for (int zz = 0; zz < Math.abs(z); ++zz) {
+                    BlockPos toCheck = new BlockPos(_from).add(xx * -Integer.signum(x), yy * -Integer.signum(y), zz * -Integer.signum(z));
                     assert MinecraftClient.getInstance().world != null;
                     if (!MinecraftClient.getInstance().world.isAir(toCheck)) {
                         return false;
