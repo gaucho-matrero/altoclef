@@ -534,14 +534,11 @@ public class Settings {
         return entityReachRange;
     }
 
+    public Item[] getThrowawayItems(AltoClef mod, boolean includeProtected) {
+        return throwawayItems.stream().filter(item -> includeProtected || !mod.getBehaviour().isProtected(item)).toArray(Item[]::new);
+    }
     public Item[] getThrowawayItems(AltoClef mod) {
-        List<Item> result = new ArrayList<>();
-        for (Item throwawayItem : throwawayItems) {
-            if (!mod.getBehaviour().isProtected(throwawayItem)) {
-                result.add(throwawayItem);
-            }
-        }
-        return result.toArray(Item[]::new);
+        return getThrowawayItems(mod, false);
     }
 
     public String[] getWhisperFormats() {
