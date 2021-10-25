@@ -334,6 +334,10 @@ public class InventoryTracker extends Tracker {
         }
     }
 
+    public int getBuildingMaterialCount() {
+        return getItemCount(_mod.getModSettings().getThrowawayItems(_mod, true));
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasRecipeMaterialsOrTarget(RecipeTarget... targets) {
         ensureUpdated();
@@ -540,10 +544,12 @@ public class InventoryTracker extends Tracker {
             Slot slot = PlayerInventorySlot.getFromInventory(i);
             ItemStack stack = _mod.getInventoryTracker().getItemStackInSlot(slot);
             if (stack.getItem() instanceof ToolItem) {
-                double speed = ToolSet.calculateSpeedVsBlock(stack, state);
-                if (speed > highestSpeed) {
-                    highestSpeed = speed;
-                    bestToolSlot = slot;
+                if (stack.getItem().isSuitableFor(state)) {
+                    double speed = ToolSet.calculateSpeedVsBlock(stack, state);
+                    if (speed > highestSpeed) {
+                        highestSpeed = speed;
+                        bestToolSlot = slot;
+                    }
                 }
             }
             if (stack.getItem() == Items.SHEARS) {

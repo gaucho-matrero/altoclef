@@ -54,6 +54,26 @@ public interface WorldHelper {
         return false;
     }
 
+    static double distanceXZSquared(Vec3d from, Vec3d to) {
+        Vec3d delta = to.subtract(from);
+        return delta.x*delta.x + delta.z*delta.z;
+    }
+    static double distanceXZ(Vec3d from, Vec3d to) {
+        return Math.sqrt(distanceXZSquared(from, to));
+    }
+    static boolean inRangeXZ(Vec3d from, Vec3d to, double range) {
+        return distanceXZSquared(from, to) < range*range;
+    }
+    static boolean inRangeXZ(Entity entity, Vec3d to, double range) {
+        return inRangeXZ(entity.getPos(), to, range);
+    }
+    static boolean inRangeXZ(Entity entity, BlockPos to, double range) {
+        return inRangeXZ(entity, toVec3d(to), range);
+    }
+    static boolean inRangeXZ(Entity entity, Entity to, double range) {
+        return inRangeXZ(entity, to.getPos(), range);
+    }
+
     static boolean isSolid(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }

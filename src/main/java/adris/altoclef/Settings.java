@@ -288,7 +288,8 @@ public class Settings {
             Items.NETHER_BRICKS,
             Items.NETHER_BRICK,
             Items.BASALT,
-            Items.BLACKSTONE
+            Items.BLACKSTONE,
+            Items.END_STONE
     );
 
     /**

@@ -320,7 +320,10 @@ public class Playground {
                 mod.runUserTask(new PlaceBedAndSetSpawnTask());
                 break;
             case "dragon":
-                mod.runUserTask(new KillEnderDragonWithBedsTask());
+                mod.runUserTask(new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask()));
+                break;
+            case "dragon-pearl":
+                mod.runUserTask(new ThrowEnderPearlSimpleProjectileTask(new BlockPos(0, 60, 0)));
                 break;
             case "dragon-old":
                 mod.runUserTask(new KillEnderDragonTask());

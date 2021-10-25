@@ -1,14 +1,17 @@
 package adris.altoclef.util.helpers;
 
+import adris.altoclef.Debug;
 import adris.altoclef.util.baritone.CachedProjectile;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
 public class ProjectileHelper {
 
-    public static final double GRAVITY_ACCEL = 0.05000000074505806D;
+    public static final double ARROW_GRAVITY_ACCEL = 0.05000000074505806;
+    public static final double THROWN_ENTITY_GRAVITY_ACCEL = 0.03;
 
     public static boolean hasGravity(ProjectileEntity entity) {
         if (entity instanceof ExplosiveProjectileEntity) return false;
@@ -61,6 +64,35 @@ public class ProjectileHelper {
 
     public static Vec3d calculateArrowClosestApproach(CachedProjectile projectile, ClientPlayerEntity player) {
         return calculateArrowClosestApproach(projectile, player.getPos());
+    }
+
+    // Take the smaller angle
+    public static double calculateAngleForSimpleProjectileMotion(double launchHeight, double launchTargetDistance, double launchVelocity, double gravity) {
+        double[] angles = calculateAnglesForSimpleProjectileMotion(launchHeight, launchTargetDistance, launchVelocity, gravity);
+        return Math.min(angles[0], angles[1]);
+    }
+
+    public static double[] calculateAnglesForSimpleProjectileMotion(double launchHeight, double launchTargetDistance, double launchVelocity, double gravity) {
+        // TODO: There's a 0.99 "dampening" coefficient. Do some diff-eq math to solve that.
+        // Thanks wikipedia https://en.wikipedia.org/wiki/Projectile_motion#Angle_%CE%B8_required_to_hit_coordinate_(x,_y)
+        double v = launchVelocity,
+              g = gravity,
+              x = launchTargetDistance,
+              y = -1 * launchHeight;
+        double root = v*v*v*v - g * (g*x*x + 2*y*v*v);
+        if (root < 0) {
+            // Imaginary root means not enough power, return 45 as the best/furthest angle.
+            Debug.logMessage("Not enough velocity, returning 45 degrees.");
+            return new double[]{45, 45};
+        }
+        double tanTheta0 = (v*v + Math.sqrt(root)) / (g*x);
+        double tanTheta1 = (v*v - Math.sqrt(root)) / (g*x);
+        return new double[]{Math.toDegrees(Math.atan(tanTheta0)), Math.toDegrees(Math.atan(tanTheta1))};
+    }
+
+    public static Vec3d getThrowOrigin(Entity entity) {
+        // Minecraft Magic Number
+        return entity.getPos().subtract(0, 0.1, 0);
     }
 
     // Unable to figure out how to extract multiple roots, this is too complicated for engineering major like me.

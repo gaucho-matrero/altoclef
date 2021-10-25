@@ -21,8 +21,14 @@ public class KillEnderDragonWithBedsTask extends Task {
 
     private static final double DRAGON_HEAD_CLOSE_TO_BED_RANGE = 6.1;
 
+    private final Task _whenNotPerchingTask;
+
     private BlockPos _endPortalTop;
     private Task _positionTask;
+
+    public KillEnderDragonWithBedsTask(IDragonWaiter notPerchingOverride) {
+        _whenNotPerchingTask = (Task)notPerchingOverride;
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -46,7 +52,9 @@ public class KillEnderDragonWithBedsTask extends Task {
          */
         if (_endPortalTop == null) {
             _endPortalTop = locateExitPortalTop(mod);
+            ((IDragonWaiter)_whenNotPerchingTask).setExitPortalTop(_endPortalTop);
         }
+
 
         if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
@@ -60,6 +68,15 @@ public class KillEnderDragonWithBedsTask extends Task {
         if (dragon.getY() < _endPortalTop.getY() + 2) {
             // Dragon is already perched.
             perching = false;
+        }
+
+        ((IDragonWaiter)_whenNotPerchingTask).setPerchState(perching);
+
+        // When the dragon is not perching...
+        if (_whenNotPerchingTask.isActive() && !_whenNotPerchingTask.isFinished(mod)) {
+            setDebugState("Dragon not perching, performing special behavior...");
+
+            return _whenNotPerchingTask;
         }
 
         if (perching) {
@@ -126,10 +143,8 @@ public class KillEnderDragonWithBedsTask extends Task {
             return null;
         }
 
-        // We're not perching, so run around.
-        setDebugState("TODO: Run around or something idk.");
-
-        return null;
+        // Start our "Not perching task"
+        return _whenNotPerchingTask;
     }
 
     @Override

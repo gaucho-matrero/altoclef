@@ -19,7 +19,6 @@ import baritone.pathing.movement.CalculationContext;
 import baritone.process.MineProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -63,7 +62,10 @@ public class MineAndCollectTask extends ResourceTask {
         List<Block> result = new ArrayList<>(targets.length);
         for (ItemTarget target : targets) {
             for (Item item : target.getMatches()) {
-                result.add(Block.getBlockFromItem(item));
+                Block block = Block.getBlockFromItem(item);
+                if (block != null && !WorldHelper.isAir(block)) {
+                    result.add(block);
+                }
             }
         }
         return result.toArray(Block[]::new);
