@@ -554,25 +554,15 @@ public class BlockTracker extends Tracker {
 
                 // Clear blacklisted blocks
                 try {
+                    // Untrack the blocks further away
                     tracking = tracking.stream()
                             .filter(pos -> !_blacklist.unreachable(pos))
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
-                            // TODO: Use StlHelper
-
-                            .sorted((BlockPos left, BlockPos right) -> {
-                                double leftDist = left.getSquaredDistance(playerPos, false);
-                                double rightDist = right.getSquaredDistance(playerPos, false);
-                                // 1 if left is further
-                                // -1 if left is closer
-                                if (leftDist > rightDist) {
-                                    return 1;
-                                } else if (leftDist < rightDist) {
-                                    return -1;
-                                }
-                                return 0;
-                            })
+                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, false)))
+                            .collect(Collectors.toList());
+                    tracking = tracking.stream()
                             .limit(_cutoffSize)
                             .collect(Collectors.toList());
                     // This won't update otherwise.
