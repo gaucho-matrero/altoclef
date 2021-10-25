@@ -39,15 +39,20 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
         }
 
         if (_wander) {
-            if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-                setDebugState("Wandering...");
+            if (isFinished(mod)) {
+                // Don't wander if we've reached our goal.
                 _checker.reset();
-                return _wanderTask;
-            }
-            if (!_checker.check(mod)) {
-                Debug.logMessage("Failed to make progress on goal, wandering.");
-                onWander(mod);
-                return _wanderTask;
+            } else {
+                if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+                    setDebugState("Wandering...");
+                    _checker.reset();
+                    return _wanderTask;
+                }
+                if (!_checker.check(mod)) {
+                    Debug.logMessage("Failed to make progress on goal, wandering.");
+                    onWander(mod);
+                    return _wanderTask;
+                }
             }
         }
 

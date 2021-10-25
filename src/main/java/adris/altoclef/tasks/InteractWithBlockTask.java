@@ -120,7 +120,8 @@ public class InteractWithBlockTask extends Task {
                 return new GoalAnd(sideGoal, new GoalNear(target.add(interactOffset), reachDistance));
             } else {
                 // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
-                return new GoalNear(target.add(interactOffset), reachDistance);
+                return new GoalTwoBlocks(target.up());
+                //return new GoalNear(target.add(interactOffset), reachDistance);
             }
         }
     }

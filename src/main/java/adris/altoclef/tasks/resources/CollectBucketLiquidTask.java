@@ -168,8 +168,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     return new DestroyBlockTask(blockPos.up());
                 }
 
-                // We're close enough AND we see the block!
-                if (blockPos.isWithinDistance(mod.getPlayer().getPos(), 5) && LookHelper.cleanLineOfSight(mod.getPlayer(), blockPos, 5)) {
+                // We can reach the block.
+                if (LookHelper.getReach(blockPos).isPresent()) {
                     return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), blockPos, _toCollect != Blocks.LAVA, new Vec3i(0, 1, 0));
                 }
                 // Get close enough.

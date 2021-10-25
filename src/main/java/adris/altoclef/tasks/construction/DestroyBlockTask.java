@@ -60,27 +60,30 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             _tryToMineTimer.reset();
         }
         if (!_tryToMineTimer.elapsed()) {
-            setDebugState("Breaking block via baritone...");
             if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround())) {
+                setDebugState("Block in range, mining...");
                 // Break the block, force it.
                 mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
-                if (mod.getClientBaritone().getPlayerContext().isLookingAt(_pos)) {
+                LookHelper.lookAt(mod, reach.get());
+                if (LookHelper.isLookingAt(mod, _pos)) {
                     // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
                     mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
                 }
-            } else if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
-                // Try breaking normally.
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                Debug.logMessage("Break Block: Restarting builder process");
-                mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
+            } else {
+                setDebugState("Breaking the normal way.");
+                if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+                    // Try breaking normally.
+                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                    Debug.logMessage("Break Block: Restarting builder process");
+                    mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
+                }
             }
         } else {
             setDebugState("Getting to block...");
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalNear(_pos, 0));
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalNear(_pos, 1));
             }
         }
 
