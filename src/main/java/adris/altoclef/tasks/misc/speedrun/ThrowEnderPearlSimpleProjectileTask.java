@@ -8,7 +8,7 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;

@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 
 /**
  * Will move around randomly while holding shift
@@ -34,15 +34,15 @@ public class SafeRandomShimmyTask extends Task {
             LookHelper.randomOrientation(mod);
         }
 
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+        mod.getInputControls().hold(Input.SNEAK);
+        mod.getInputControls().hold(Input.MOVE_FORWARD);
         return null;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+        mod.getInputControls().release(Input.SNEAK);
+        mod.getInputControls().release(Input.MOVE_FORWARD);
     }
 
     @Override

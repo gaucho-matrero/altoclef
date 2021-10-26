@@ -5,7 +5,7 @@ import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.LookHelper;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.effect.StatusEffects;
@@ -203,12 +203,7 @@ public class FoodChain extends SingleTaskChain {
 
     @Override
     protected void onStop(AltoClef mod) {
-        if (_isTryingToEat) {
-            mod.getInputControls().release(Input.CLICK_RIGHT);
-            _isTryingToEat = false;
-            _requestFillup = false;
-            mod.getExtraBaritoneSettings().setInteractionPaused(false);
-        }
+        stopEat(mod);
         super.onStop(mod);
     }
 

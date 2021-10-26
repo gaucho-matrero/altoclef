@@ -5,7 +5,7 @@ import adris.altoclef.tasks.movement.EscapeFromLavaTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
@@ -93,7 +93,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
         // We're stuck if we're inside a portal, are breaking it and can ONLY look at the portal.
         boolean inPortal = mod.getBlockTracker().blockIsValid(mod.getPlayer().getBlockPos(), Blocks.NETHER_PORTAL);
         boolean breakingPortal = mod.getControllerExtras().isBreakingBlock() && mod.getBlockTracker().blockIsValid(mod.getControllerExtras().getBreakingBlockPos(), Blocks.NETHER_PORTAL);
-        if (MinecraftClient.getInstance().crosshairTarget.getType() == HitResult.Type.BLOCK) {
+        if (MinecraftClient.getInstance().crosshairTarget != null && MinecraftClient.getInstance().crosshairTarget.getType() == HitResult.Type.BLOCK) {
             BlockHitResult currentLook = (BlockHitResult) MinecraftClient.getInstance().crosshairTarget;
             boolean collidingWithportal = (currentLook != null && mod.getBlockTracker().blockIsValid(currentLook.getBlockPos(), Blocks.NETHER_PORTAL));
             return inPortal && collidingWithportal && (breakingPortal || _wasStuckInPortal);

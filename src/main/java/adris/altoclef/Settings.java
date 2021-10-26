@@ -176,6 +176,11 @@ public class Settings {
     private boolean dodgeProjectiles = true;
 
     /**
+     * It true, will blocks projectiles + creeper explosions with shield if shield is present in inventory.
+     */
+    private boolean defendWithShield = true;
+
+    /**
      * Skeletons and large groups of mobs are a huge pain.
      * <p>
      * With this set to true, the bot may either
@@ -465,6 +470,10 @@ public class Settings {
 
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
+    }
+
+    public boolean isDefendWithSheild() {
+        return defendWithShield;
     }
 
     public boolean isAutoEat() {

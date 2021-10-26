@@ -134,6 +134,10 @@ public class InventoryTracker extends Tracker {
                     count += 1;
                 }
             }
+            ItemStack offhand = getItemStackInSlot(PlayerInventorySlot.OFFHAND_SLOT);
+            if (offhand.getItem() == item) {
+                count += offhand.getCount();
+            }
             return count;
         }
     }
@@ -200,6 +204,14 @@ public class InventoryTracker extends Tracker {
     }
     public List<Slot> getInventorySlotsWithItem(ItemTarget target) {
         return getInventorySlotsWithItem(target.getMatches());
+    }
+
+    public Slot getInventorySlotWithItem(Item ...items) {
+        List<Slot> slots = getInventorySlotsWithItem(items);
+        if (slots.isEmpty()) {
+            return null;
+        }
+        return slots.get(0);
     }
 
     public List<Slot> getEmptyInventorySlots() {

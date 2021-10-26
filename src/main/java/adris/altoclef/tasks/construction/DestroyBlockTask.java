@@ -12,7 +12,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.utils.Rotation;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -68,7 +68,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                 LookHelper.lookAt(mod, reach.get());
                 if (LookHelper.isLookingAt(mod, _pos)) {
                     // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
-                    mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                    mod.getInputControls().hold(Input.CLICK_LEFT);
                 }
             } else {
                 setDebugState("Breaking the normal way.");
@@ -98,7 +98,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         // Do not keep breaking.
         // Can lead to trouble, for example, if lava is right above the NEXT block.
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+        mod.getInputControls().release(Input.CLICK_LEFT);
     }
 
     @Override

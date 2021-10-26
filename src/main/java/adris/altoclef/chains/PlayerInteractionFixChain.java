@@ -7,7 +7,7 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;

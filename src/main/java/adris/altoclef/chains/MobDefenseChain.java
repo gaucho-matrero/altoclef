@@ -15,11 +15,12 @@ import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
+import adris.altoclef.util.slots.PlayerInventorySlot;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -28,9 +29,12 @@ import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolItem;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -56,6 +60,8 @@ public class MobDefenseChain extends SingleTaskChain {
     private CustomBaritoneGoalTask _runAwayTask;
 
     private float _cachedLastPriority;
+    private Vec3d _shieldLookTarget;
+    private boolean _shielding;
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -72,9 +78,45 @@ public class MobDefenseChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+        boolean prevShield = _shielding;
+        _shielding = false;
+        // Run the chain
         _cachedLastPriority = getPriorityInner(mod);
+        _shielding = runPostShield(mod, prevShield, _shielding);
         return _cachedLastPriority;
     }
+
+    private boolean runPostShield(AltoClef mod, boolean prevShielding, boolean shielding) {
+        if (!mod.getModSettings().isDefendWithSheild() || !mod.getInventoryTracker().hasItem(Items.SHIELD)) {
+            shielding = false;
+        }
+        // Equip shield in offhand if not equipped...
+        ItemStack offhand = mod.getInventoryTracker().getItemStackInSlot(PlayerInventorySlot.OFFHAND_SLOT);
+        if (shielding && offhand.getItem() != Items.SHIELD) {
+            if (offhand.isEmpty()) {
+                mod.getSlotHandler().clickSlot(mod.getInventoryTracker().getInventorySlotWithItem(Items.SHIELD), 0, SlotActionType.QUICK_MOVE);
+                return shielding;
+            } else if (!mod.getInventoryTracker().isEquipped(Items.SHIELD)) {
+                mod.getSlotHandler().forceEquipItem(Items.SHIELD);
+                return shielding;
+            }
+        }
+        if (shielding && !prevShielding) {
+            // Raise shield
+            mod.getInputControls().hold(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(true);
+        } else if (!shielding && prevShielding) {
+            // Drop shield
+            mod.getInputControls().release(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+        }
+        // Face our target.
+        if (shielding && _shieldLookTarget != null) {
+            LookHelper.lookAt(mod, _shieldLookTarget);
+        }
+        return shielding;
+    }
+
     private float getPriorityInner(AltoClef mod) {
         if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
@@ -97,7 +139,7 @@ public class MobDefenseChain extends SingleTaskChain {
             putOutFire(mod, fireBlock);
         } else if (_wasPuttingOutFire) {
             // Stop putting stuff out if we no longer need to put out a fire.
-            mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+            mod.getInputControls().release(Input.CLICK_LEFT);
             _wasPuttingOutFire = false;
         }
 
@@ -126,17 +168,21 @@ public class MobDefenseChain extends SingleTaskChain {
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
             _doingFunkyStuff = true;
-            //Debug.logMessage("RUNNING AWAY!");
+            _shielding = true;
+            _shieldLookTarget = blowingUp.getPos();
             _runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
             setTask(_runAwayTask);
             return 50 + blowingUp.getClientFuseTime(1) * 50;
         }
 
         // Dodge projectiles
-        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+        CachedProjectile dangerProjectile = getClosestDangerProjectile(mod);
+        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && dangerProjectile != null) {
             _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             _runAwayTask = null;
+            _shieldLookTarget = dangerProjectile.position;
+            _shielding = true;
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
         }
@@ -291,7 +337,7 @@ public class MobDefenseChain extends SingleTaskChain {
             b.getLookBehavior().updateTarget(reachable.get(), true);
             if (ctx.isLookingAt(pos)) {
                 _wasPuttingOutFire = true;
-                b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                mod.getInputControls().tryPress(Input.CLICK_LEFT);
             }
         }
     }
@@ -368,38 +414,48 @@ public class MobDefenseChain extends SingleTaskChain {
         return target;
     }
 
-    private boolean isProjectileClose(AltoClef mod) {
+    private CachedProjectile getClosestDangerProjectile(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
 
         try {
+            CachedProjectile closest = null;
+            double closestDistSq = Double.POSITIVE_INFINITY;
             for (CachedProjectile projectile : projectiles) {
 
-                boolean isGhastBall = projectile.projectileType == FireballEntity.class;
-                if (isGhastBall) {
-                    // Ignore ghast balls
-                    continue;
-                }
-                if (projectile.projectileType == DragonFireballEntity.class) {
-                    // Ignore dragon fireballs
+                if (projectile.projectileType == FireballEntity.class ||
+                    projectile.projectileType == EnderPearlEntity.class ||
+                    projectile.projectileType == DragonFireballEntity.class
+                ) {
+                    // Ignore certain entities like ghast balls + ender pearls.
                     continue;
                 }
 
                 Vec3d expectedHit = ProjectileHelper.calculateArrowClosestApproach(projectile, mod.getPlayer());
 
-                Vec3d delta = mod.getPlayer().getPos().subtract(expectedHit);
+                Vec3d deltaHit = mod.getPlayer().getPos().subtract(expectedHit);
+                Vec3d deltaPlayer = mod.getPlayer().getPos().subtract(projectile.position);
+                Vec3d velocity = projectile.velocity;
 
-                //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
+                // Our projectile is very much pointing AWAY from us
+                if (deltaPlayer.normalize().dotProduct(velocity.normalize()) < Math.cos(Math.toRadians(120))) {
+                    continue;
+                }
 
-                double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-                double verticalDistance = delta.y;
+                double horizontalDistance = Math.sqrt(deltaHit.x * deltaHit.x + deltaHit.z * deltaHit.z);
+                double verticalDistance = deltaHit.y;
 
-                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
-                    return true;
+                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) {
+                    double dSqr = projectile.position.subtract(mod.getPlayer().getPos()).lengthSquared();
+                    if (dSqr < closestDistSq) {
+                        closest = projectile;
+                    }
+                }
             }
+            return closest;
         } catch (ConcurrentModificationException e) {
             Debug.logWarning("Weird exception caught and ignored while checking for nearby projectiles.");
         }
-        return false;
+        return null;
     }
 
     private Entity getUniversallyDangerousMob(AltoClef mod) {
@@ -476,6 +532,10 @@ public class MobDefenseChain extends SingleTaskChain {
         return _doingFunkyStuff;
     }
 
+    public boolean isShielding() {
+        return _shielding;
+    }
+
     @Override
     public boolean isActive() {
         // We're always checking for mobs
@@ -485,6 +545,16 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     protected void onTaskFinish(AltoClef mod) {
         // Task is done, so I guess we move on?
+    }
+
+    @Override
+    protected void onStop(AltoClef mod) {
+        // Disable shield
+        if (_shielding) {
+            runPostShield(mod, true, false);
+            _shielding = false;
+        }
+        super.onStop(mod);
     }
 
     @Override

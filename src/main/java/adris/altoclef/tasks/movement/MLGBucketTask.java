@@ -7,7 +7,7 @@ import adris.altoclef.util.Dimension;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -74,12 +74,12 @@ public class MLGBucketTask extends Task {
                 _placedPos = willLandIn;
                 // We good.
                 setDebugState("Waiting to fall into water");
-                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+                mod.getInputControls().release(Input.CLICK_RIGHT);
                 return null;
             }
 
             if (!mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET)) {
-                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+                mod.getInputControls().release(Input.CLICK_RIGHT);
             }
 
             IPlayerContext ctx = mod.getClientBaritone().getPlayerContext();
@@ -114,7 +114,7 @@ public class MLGBucketTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        mod.getInputControls().release(Input.CLICK_RIGHT);
     }
 
     @Override

@@ -21,7 +21,7 @@ import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -301,7 +301,7 @@ public class KillEnderDragonTask extends Task {
                         mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
                         // Also look towards da dragon
                         MinecraftClient.getInstance().options.autoJump = false;
-                        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                        mod.getInputControls().hold(Input.MOVE_FORWARD);
                         hit(mod);
                     } else {
                         stopHitting(mod);
@@ -369,7 +369,7 @@ public class KillEnderDragonTask extends Task {
         @Override
         protected void onStop(AltoClef mod, Task interruptTask) {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-            mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
+            mod.getInputControls().release(Input.MOVE_FORWARD);
             //mod.getControllerExtras().mouseClickOverride(0, false);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }

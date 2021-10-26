@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientPlayerInteractionAccessor;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.GameMenuScreen;

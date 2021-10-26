@@ -13,7 +13,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
-import baritone.api.utils.input.Input;
+import adris.altoclef.util.Input;
 import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -65,7 +65,7 @@ public class PlaceBlockNearbyTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _mod = mod;
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        mod.getInputControls().release(Input.CLICK_RIGHT);
         mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
     }
 

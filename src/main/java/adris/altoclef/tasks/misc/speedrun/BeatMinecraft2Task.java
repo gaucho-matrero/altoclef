@@ -154,6 +154,21 @@ public class BeatMinecraft2Task extends Task {
             @just hit the dragon normally
          */
 
+        /*
+        if (unexploredChestNearby()) {
+            exploreChest(needs -> {
+                Item item = needs.getItem();
+                if (item == Items.OBSIDIAN) {
+                    return true;
+                }
+                if (item != Items.ROTTEN_FLESH && item.isFood()) {
+                    return true;
+                }
+                if ()
+            })
+        }
+         */
+
         // End stuff.
         if (mod.getCurrentDimension() == Dimension.END) {
             // If we have bed, do bed strats, otherwise punk normally.
