@@ -16,6 +16,8 @@ import net.minecraft.util.math.BlockPos;
 public class DefaultGoToDimensionTask extends Task {
 
     private final Dimension _target;
+    // Cached to keep build properties alive if this task pauses/resumes.
+    private final Task _cachedNetherBucketConstructionTask = new ConstructNetherPortalBucketTask();
 
     public DefaultGoToDimensionTask(Dimension target) {
         _target = target;
@@ -113,7 +115,7 @@ public class DefaultGoToDimensionTask extends Task {
             return new EnterNetherPortalTask(Dimension.NETHER);
         }
         return switch (mod.getModSettings().getOverworldToNetherBehaviour()) {
-            case BUILD_PORTAL_VANILLA -> new ConstructNetherPortalBucketTask();
+            case BUILD_PORTAL_VANILLA -> _cachedNetherBucketConstructionTask;
             case GO_TO_HOME_BASE -> new GetToBlockTask(mod.getModSettings().getHomeBasePosition());
         };
     }

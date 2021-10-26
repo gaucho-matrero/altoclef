@@ -14,16 +14,19 @@ public class ThrowSlotTask extends Task {
     public ThrowSlotTask(Slot slot) {
         _slot = slot;
     }
+    public ThrowSlotTask() {
+        this(null);
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
         // Click if we're NOT throwing the cursor slot.
-        _clickFirstFlag = !Slot.isCursor(_slot);
+        _clickFirstFlag = _slot != null && !Slot.isCursor(_slot);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_clickFirstFlag || mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty()) {
+        if (_slot != null && (_clickFirstFlag || mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty())) {
             _clickFirstFlag = false;
             return new ClickSlotTask(_slot);
         }
@@ -38,6 +41,9 @@ public class ThrowSlotTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ThrowSlotTask task) {
+            if (task._slot == null) {
+                return _slot == null;
+            }
             return task._slot.equals(_slot);
         }
         return false;

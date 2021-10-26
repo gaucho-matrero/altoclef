@@ -7,6 +7,7 @@ import adris.altoclef.tasks.resources.CollectFuelTask;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotTask;
+import adris.altoclef.tasks.slot.ThrowSlotTask;
 import adris.altoclef.tasksystem.ITaskWithDowntime;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
@@ -17,6 +18,7 @@ import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -276,6 +278,16 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     return new EnsureFreeInventorySlotTask();
                 }
                 _smeltProgressChecker.reset();
+                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
+                    setDebugState("Moving cursor stack back so we can take from the output...");
+                    // Clear cursor slot first
+                    Slot freeSlot = mod.getInventoryTracker().getEmptyInventorySlot();
+                    if (freeSlot != null) {
+                        return new ClickSlotTask(freeSlot);
+                    } else {
+                        return new ThrowSlotTask();
+                    }
+                }
                 return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
                 //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
             }

@@ -130,7 +130,7 @@ public interface LookHelper {
     }
 
     static boolean tryAvoidingInteractable(AltoClef mod) {
-        if (isCollidingContainer(mod)) {
+        if (isCollidingInteractable(mod)) {
             randomOrientation(mod);
             return false;
         }
@@ -143,7 +143,7 @@ public interface LookHelper {
         return cleanLineOfSight(entity, start, end, maxRange);
     }
 
-    private static boolean isCollidingContainer(AltoClef mod) {
+    private static boolean isCollidingInteractable(AltoClef mod) {
 
         if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
             mod.getControllerExtras().closeScreen();
@@ -153,7 +153,7 @@ public interface LookHelper {
         HitResult result = MinecraftClient.getInstance().crosshairTarget;
         if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
-            return WorldHelper.isContainerBlock(mod, new BlockPos(result.getPos()));
+            return WorldHelper.isInteractableBlock(mod, new BlockPos(result.getPos()));
         } else if (result.getType() == HitResult.Type.ENTITY) {
             if (result instanceof EntityHitResult) {
                 Entity entity = ((EntityHitResult) result).getEntity();

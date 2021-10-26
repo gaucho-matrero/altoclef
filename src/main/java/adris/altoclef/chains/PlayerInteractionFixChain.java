@@ -115,13 +115,10 @@ public class PlayerInteractionFixChain extends TaskChain {
                 }
                 return Float.NEGATIVE_INFINITY;
             }
-            Slot slotToMoveTo;
-            List<Slot> slots = mod.getInventoryTracker().getEmptyInventorySlots();
-            if (slots.size() == 0) {
+            Slot slotToMoveTo = mod.getInventoryTracker().getEmptyInventorySlot();
+            if (slotToMoveTo == null) {
                 Debug.logWarning("No free slot found, moving item stack to last inventory slot.");
                 slotToMoveTo = Slot.getFromInventory(35);
-            } else {
-                slotToMoveTo = slots.get(0);
             }
             mod.getSlotHandler().clickSlot(slotToMoveTo, 0, SlotActionType.PICKUP);
         }

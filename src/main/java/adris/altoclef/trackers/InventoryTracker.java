@@ -206,6 +206,14 @@ public class InventoryTracker extends Tracker {
         return getInventorySlotsWithItem(Items.AIR);
     }
 
+    public Slot getEmptyInventorySlot() {
+        List<Slot> slots = getEmptyInventorySlots();
+        if (slots.isEmpty()) {
+            return null;
+        }
+        return slots.get(0);
+    }
+
     public boolean targetsMet(ItemTarget... targets) {
         ensureUpdated();
 

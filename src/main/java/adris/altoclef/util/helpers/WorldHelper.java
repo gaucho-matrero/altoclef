@@ -151,7 +151,7 @@ public interface WorldHelper {
         return block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR;
     }
 
-    static boolean isContainerBlock(AltoClef mod, BlockPos pos) {
+    static boolean isInteractableBlock(AltoClef mod, BlockPos pos) {
         Block block = mod.getWorld().getBlockState(pos).getBlock();
         return (block instanceof ChestBlock
                 || block instanceof EnderChestBlock
@@ -160,6 +160,7 @@ public interface WorldHelper {
                 || block instanceof LoomBlock
                 || block instanceof CartographyTableBlock
                 || block instanceof EnchantingTableBlock
+                || block instanceof RedstoneOreBlock
         );
     }
 

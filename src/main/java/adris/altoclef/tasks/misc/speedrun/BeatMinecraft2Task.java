@@ -27,6 +27,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,8 @@ public class BeatMinecraft2Task extends Task {
 
     private static final int FOOD_UNITS = 120;
     private static final int MIN_FOOD_UNITS = 10;
+    private static final int MIN_BUILD_MATERIALS = 5;
+    private static final int BUILD_MATERIALS = 40;
 
     private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(ItemHelper.DIAMOND_ARMORS),
@@ -66,10 +69,12 @@ public class BeatMinecraft2Task extends Task {
     );
 
     private static final int END_PORTAL_FRAME_COUNT = 12;
-
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
 
     private final boolean _shouldSetSpawnNearEndPortal;
+    private final int _targetEyesMin;
+    private final int _targetEyes;
+    private final int _bedsToCollect;
 
     private BlockPos _endPortalCenterLocation;
     private boolean _ranStrongholdLocator;
@@ -82,14 +87,11 @@ public class BeatMinecraft2Task extends Task {
 
     private Task _foodTask;
     private Task _gearTask;
-    private Task _buildMaterialsTask;
+    private final Task _buildMaterialsTask = new GetBuildingMaterialsTask(BUILD_MATERIALS);
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
     private final Task _locateStrongholdTask;
+    private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private boolean _collectingEyes;
-
-    private final int _targetEyesMin;
-    private final int _targetEyes;
-    private final int _bedsToCollect;
 
     public BeatMinecraft2Task(boolean setSpawnNearEndPortal, int targetEnderEyesMin, int targetEnderEyes, int bedsToCollect) {
         _shouldSetSpawnNearEndPortal = setSpawnNearEndPortal;
@@ -101,6 +103,16 @@ public class BeatMinecraft2Task extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+
+        // Add a warning to make sure the user at least knows to change the settings.
+        String settingsWarningTail = "in \".minecraft/altoclef_settings.json\". @gamer may break if you don't add this! (sorry!)";
+        if (!ArrayUtils.contains(mod.getModSettings().getThrowawayItems(mod), Items.END_STONE)) {
+            Debug.logWarning("\"end_stone\" is not part of your \"throwawayItems\" list " + settingsWarningTail);
+        }
+        if (!mod.getModSettings().shouldThrowawayUnusedItems()) {
+            Debug.logWarning("\"throwawayUnusedItems\" is not set to true " + settingsWarningTail);
+        }
+
         mod.getBlockTracker().trackBlock(TRACK_BLOCKS);
         mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
         mod.getBehaviour().push();
@@ -204,7 +216,7 @@ public class BeatMinecraft2Task extends Task {
                             return TaskCatalogue.getItemTask(Items.DIAMOND_PICKAXE, 1);
                         }
                         if (needsBuildingMaterials(mod)) {
-                            return new GetBuildingMaterialsTask(40);
+                            return _buildMaterialsTask;
                         }
 
                         // We're as ready as we'll ever be, hop into the portal!
@@ -238,7 +250,7 @@ public class BeatMinecraft2Task extends Task {
                 // Portal Location
                 setDebugState("Locating End Portal...");
                 if (needsBuildingMaterials(mod)) {
-                    return new GetBuildingMaterialsTask(40);
+                    return _buildMaterialsTask;
                 }
                 return _locateStrongholdTask;
             }
@@ -248,9 +260,8 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private boolean needsBuildingMaterials(AltoClef mod) {
-        return mod.getInventoryTracker().getBuildingMaterialCount() < 5 || shouldForce(mod, _buildMaterialsTask);
+        return mod.getInventoryTracker().getBuildingMaterialCount() < MIN_BUILD_MATERIALS || shouldForce(mod, _buildMaterialsTask);
     }
-
 
     private void updateCachedEndItems(AltoClef mod) {
         _cachedEndItemDrops.clear();
@@ -418,7 +429,7 @@ public class BeatMinecraft2Task extends Task {
                     setDebugState("Grab a crafting table first tho");
                     return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
                 }
-                return new DefaultGoToDimensionTask(Dimension.NETHER);
+                return _goToNetherTask;
             }
             case NETHER -> {
                 if (needsBlazeRods) {
