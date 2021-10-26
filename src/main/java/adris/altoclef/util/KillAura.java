@@ -38,38 +38,29 @@ public class KillAura {
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
-                // Just attack whenever you can
-                for (Entity entity : _targets) {
-                    attack(mod, entity);
-                }
+                performFastestAttack(mod);
                 break;
             case SMART:
-                // Attack force mobs ALWAYS.
-                if (_forceHit != null) {
-                    attack(mod, _forceHit);
-                    break;
-                }
-                if (_hitDelay.elapsed()) {
-                    _hitDelay.reset();
 
-                    Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+                if (_targets.size() < 2) {
+                    performDelayedAttack(mod);
+                } else {
+                    // Attack force mobs ALWAYS.
+                    if (_forceHit != null) {
+                        attack(mod, _forceHit);
+                        break;
+                    }
+                    if (_hitDelay.elapsed()) {
+                        _hitDelay.reset();
 
-                    toHit.ifPresent(entity -> attack(mod, entity));
+                        Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+
+                        toHit.ifPresent(entity -> attack(mod, entity));
+                    }
                 }
                 break;
             case DELAY:
-                // wait for the attack delay
-                if (_targets.isEmpty()) {
-                    return;
-                }
-
-                Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
-
-                if (mod.getPlayer() == null || mod.getPlayer().getAttackCooldownProgress(0) < 1) {
-                    return;
-                }
-
-                toHit.ifPresent(entity -> attack(mod, entity, true));
+                performDelayedAttack(mod);
                 break;
             case OFF:
                 break;
@@ -78,6 +69,28 @@ public class KillAura {
 
     public void setRange(double range) {
         _forceFieldRange = range;
+    }
+
+    private void performDelayedAttack(AltoClef mod) {
+        // wait for the attack delay
+        if (_targets.isEmpty()) {
+            return;
+        }
+
+        Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+
+        if (mod.getPlayer() == null || mod.getPlayer().getAttackCooldownProgress(0) < 1) {
+            return;
+        }
+
+        toHit.ifPresent(entity -> attack(mod, entity, true));
+    }
+
+    private void performFastestAttack(AltoClef mod) {
+        // Just attack whenever you can
+        for (Entity entity : _targets) {
+            attack(mod, entity);
+        }
     }
 
     private void attack(AltoClef mod, Entity entity) {
