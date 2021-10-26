@@ -24,7 +24,6 @@ import net.minecraft.util.math.BlockPos;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -174,6 +173,16 @@ public class Settings {
      * If enabled, will attempt to dodge all incoming projectiles
      */
     private boolean dodgeProjectiles = true;
+
+    /**
+     * If any hostile mob is "close" to our bot for this long,
+     * consider it a nuissance and defeat it if we have enough gear.
+     *
+     * Skeletons + Witches get a much larger range.
+     *
+     * Set to zero to make the bot always kill/run away from any nearby hostiles.
+     */
+    private double killAnnoyingHostileWhenCloseForSeconds = 12;
 
     /**
      * Skeletons and large groups of mobs are a huge pain.
@@ -465,6 +474,10 @@ public class Settings {
 
     public boolean isDodgeProjectiles() {
         return dodgeProjectiles;
+    }
+
+    public double getKillHostileWhenCloseForSeconds() {
+        return killAnnoyingHostileWhenCloseForSeconds;
     }
 
     public boolean isAutoEat() {

@@ -173,7 +173,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // TODO: I don't think this lock is necessary at all.
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity hostile : hostiles) {
-                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity) ? 18 : 2;
+                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity) ? 18 : 5;
                     boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
                     if (isClose) {
@@ -183,7 +183,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     // Give each hostile a timer, if they're close for too long deal with them.
                     if (isClose) {
                         if (!_closeAnnoyingEntities.containsKey(hostile)) {
-                            _closeAnnoyingEntities.put(hostile, new TimerGame(12));
+                            _closeAnnoyingEntities.put(hostile, new TimerGame(mod.getModSettings().getKillHostileWhenCloseForSeconds()));
                             _closeAnnoyingEntities.get(hostile).reset();
                         }
                         if (_closeAnnoyingEntities.get(hostile).elapsed()) {
