@@ -106,8 +106,14 @@ public class StaticMixinHookups {
 
     public static void onGameMessage(String message, boolean nonChat) {
         _mod.onGameMessage.invoke(message);
+        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
+        if (debug) {
+            Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+        }
         if (nonChat) {
             _mod.getButler().receiveMessage(message);
+        } else if (debug) {
+            Debug.logMessage("    Not Parsing: Not a chat message.");
         }
     }
 

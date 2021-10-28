@@ -55,17 +55,28 @@ public class Butler {
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
+        } else if (_mod.getModSettings().isWhisperFormatDebug()){
+            Debug.logMessage("    Not Parsing: MSG format not found.");
         }
     }
 
     public void receiveWhisper(String username, String message) {
 
+        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
         // Ignore messages from other bots.
-        if (message.startsWith(BUTLER_MESSAGE_START)) return;
+        if (message.startsWith(BUTLER_MESSAGE_START)) {
+            if (debug) {
+                Debug.logMessage("    Rejecting: MSG is detected to be sent from another bot.");
+            }
+            return;
+        }
 
         if (_userAuth.isUserAuthorized(username)) {
             executeWhisper(username, message);
         } else {
+            if (debug) {
+                Debug.logMessage("    Rejecting: User \"" + username + "\" is not authorized.");
+            }
             sendWhisper(username, "Sorry, you're not authorized!", MessagePriority.UNAUTHORIZED);
         }
     }
@@ -105,7 +116,7 @@ public class Butler {
             _commandFinished = false;
             _currentUser = username;
             sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-            _mod.getCommandExecutor().execute("@" + message, (nothing) -> {
+            AltoClef.getCommandExecutor().execute("@" + message, (nothing) -> {
                 // On finish
                 sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
                 if (!_commandInstantRan) {

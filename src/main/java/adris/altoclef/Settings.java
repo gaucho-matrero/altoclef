@@ -267,6 +267,14 @@ public class Settings {
     };
 
     /**
+     * If set to true, will print information about whispers that are parsed and those
+     * that have failed parsing.
+     *
+     * Enable this if you need help setting up the whisper format.
+     */
+    private boolean whisperFormatDebug = false;
+
+    /**
      * If true, the bot will perform basic survival tasks when no commands are in progress
      * (eat food, force field mobs, etc.)
      * It will only perform survival tasks allowed by other parameters in the settings file.
@@ -557,6 +565,10 @@ public class Settings {
 
     public String[] getWhisperFormats() {
         return whisperFormats;
+    }
+
+    public boolean isWhisperFormatDebug() {
+        return whisperFormatDebug;
     }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
