@@ -153,6 +153,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             if (!isContainerOpen(mod)) {
                 _smeltProgressChecker.reset();
+            } else {
+                ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
+                _currentFurnace = furnaceMap.getOpenFurnaceData();
             }
 
             boolean furnaceFound = _currentFurnace != null;
@@ -212,16 +215,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected Task containerSubTask(AltoClef mod) {
-            FurnaceScreenHandler handler = (FurnaceScreenHandler) mod.getPlayer().currentScreenHandler;
-
-            ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
-
-            _currentFurnace = furnaceMap.getFurnaceData(getTargetContainerPosition());
-            if (_currentFurnace == null) {
-                Debug.logWarning("(Weird behaviour) Tried grabbing furnace at pos " + getTargetContainerPosition() + " but it was untracked. Re-updating...");
-                furnaceMap.updateContainer(getTargetContainerPosition(), handler);
-                _currentFurnace = furnaceMap.getFurnaceData(getTargetContainerPosition());
-            }
 
             // Move materials
             boolean furnaceHasOurItem = _target.getMaterial().matches(_currentFurnace.materials.getItem());
@@ -291,11 +284,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
 
             // Re-update furnace tracking since we moved some things around.
-            mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
+            //mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
 
             setDebugState("Smelting...");
 
-            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent(handler));
+            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent());
 
             // If we made no progress
             if (_smeltProgressChecker.failed()) {

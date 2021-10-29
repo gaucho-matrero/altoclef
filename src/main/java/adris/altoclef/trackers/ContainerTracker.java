@@ -9,6 +9,7 @@ import adris.altoclef.util.slots.ChestSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
@@ -362,16 +363,8 @@ public class ContainerTracker extends Tracker {
             return Collections.emptyList();
         }
 
-        @Override
-        public void updateContainer(BlockPos pos, FurnaceScreenHandler screenHandler) {
-            // Keep track of the items at this block.
-
-
-            if (!_blockData.containsKey(pos)) {
-                _blockData.put(pos, new FurnaceData());
-            }
-            FurnaceData dat = _blockData.get(pos);
-
+        public FurnaceData getOpenFurnaceData(FurnaceScreenHandler screenHandler) {
+            FurnaceData dat = new FurnaceData();
             int materialSlot = 0,
                     fuelSlot = 1,
                     outputSlot = 2;
@@ -402,7 +395,19 @@ public class ContainerTracker extends Tracker {
             fuelNeededToBurnAll -= InventoryTracker.getFurnaceFuel(screenHandler) - InventoryTracker.getFurnaceCookPercent(screenHandler);
             dat._fuelNeededToBurnMaterials = fuelNeededToBurnAll;
 
-            //Debug.logMessage("Furnace updated. Has " + materials.getItem().getTranslationKey() + " as its materials.");
+            return dat;
+        }
+        public FurnaceData getOpenFurnaceData() {
+            if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof FurnaceScreenHandler furnaceScreenHandler) {
+                return getOpenFurnaceData(furnaceScreenHandler);
+            }
+            return null;
+        }
+
+            @Override
+        public void updateContainer(BlockPos pos, FurnaceScreenHandler screenHandler) {
+            // Keep track of the items at this block.
+            _blockData.put(pos, getOpenFurnaceData(screenHandler));
         }
 
         @Override
