@@ -258,6 +258,4 @@ public class InteractWithBlockTask extends Task {
         WAIT_FOR_CLICK,
         CLICK_ATTEMPTED
     }
-
-
 }
