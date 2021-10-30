@@ -23,10 +23,10 @@
 Alto Clef uses a custom fork of baritone that gives you more control over how baritone works.
 If you wish to make edits to that fork you can do so locally if you follow these steps:
 
-1) Clone [The baritone fork](https://github.com/gaucho-matrero/baritone) into the same directory as `altoclef`.
-    Your root `altoclef` folder (containing `build.gradle`) should now also contain a folder called `baritone`.
+1) Clone [The baritone fork](https://github.com/gaucho-matrero/baritone) into the same directory containing `altoclef`.
+    For example, if you cloned `altoclef` into your desktop, `baritone` should be in your desktop as well.
 2) Run `gradle build` within the fork you just cloned. You may open the folder in an IDE and run the `build` task.
-3) There should now be various `.jar` files starting with `baritone` in the following folder: `<your altoclef directory>/baritone/build/libs`
+3) There should now be various `.jar` files starting with `baritone` in the following folder: `baritone/build/libs`
 4) Now within `altoclef`, pass `-Paltoclef.development` as a parameter when running `gradle build`
    (In IntelliJ, go to the build dropdown -> `Edit Configurations`, then duplicate the `altoclef [build]` configuration.
    In this duplicate, paste `-Paltoclef.development` into the Arguments text field.)

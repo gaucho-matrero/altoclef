@@ -83,6 +83,12 @@ public class InventoryTracker extends Tracker {
     public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
         return (double) handler.getCookProgress() / 24.0;
     }
+    public static double getFurnaceCookPercent() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler furnace) {
+            return getFurnaceCookPercent(furnace);
+        }
+        return -1;
+    }
 
     public int getEmptyInventorySlotCount() {
         ensureUpdated();

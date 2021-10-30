@@ -472,7 +472,7 @@ public class BeatMinecraft2Task extends Task {
             return new EquipArmorTask(Items.GOLDEN_BOOTS);
         }
         int goldBuffer = 32;
-        if (mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) >= goldBuffer && mod.getBlockTracker().anyFound(Blocks.CRAFTING_TABLE)) {
+        if (!mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE) && mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) >= goldBuffer && mod.getBlockTracker().anyFound(Blocks.CRAFTING_TABLE)) {
             setDebugState("Getting crafting table ");
             return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
         }

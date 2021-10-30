@@ -153,15 +153,20 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             if (!isContainerOpen(mod)) {
                 _smeltProgressChecker.reset();
+            } else {
+                ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
+                _currentFurnace = furnaceMap.getOpenFurnaceData();
             }
 
+            boolean furnaceFound = _currentFurnace != null;
+            boolean furnaceHasOurItem = furnaceFound && _target.getMaterial().matches(_currentFurnace.materials.getItem());
             // Check for materials.
             // If materials are already in the furnace, we need less of them.
-            if (!_ignoreMaterials) {
+            if (!_ignoreMaterials && furnaceFound) {
                 int materialsNeeded = _target.getMaterial().getTargetCount();
                 materialsNeeded -= mod.getInventoryTracker().getItemCount(_target.getItem());
                 if (_currentFurnace != null) {
-                    if (_target.getMaterial().matches(_currentFurnace.materials.getItem())) {
+                    if (furnaceHasOurItem) {
                         materialsNeeded -= _currentFurnace.materials.getCount();
                     }// else {
                     //Debug.logMessage("Material does NOT match " + _currentFurnace.materials.getItem().getTranslationKey());
@@ -189,7 +194,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 // Start our fuel off at just one until we find our furnace.
                 fuelNeeded = 1;
             }
-            if (_currentFurnace != null) {
+            if (_currentFurnace != null && furnaceHasOurItem) {
                 fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
             }
 
@@ -210,27 +215,34 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected Task containerSubTask(AltoClef mod) {
-            FurnaceScreenHandler handler = (FurnaceScreenHandler) mod.getPlayer().currentScreenHandler;
 
-            ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
 
-            _currentFurnace = furnaceMap.getFurnaceData(getTargetContainerPosition());
-            if (_currentFurnace == null) {
-                Debug.logWarning("(Weird behaviour) Tried grabbing furnace at pos " + getTargetContainerPosition() + " but it was untracked. Re-updating...");
-                furnaceMap.updateContainer(getTargetContainerPosition(), handler);
-                _currentFurnace = furnaceMap.getFurnaceData(getTargetContainerPosition());
+            // Grab from the output slot
+            ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
+            if (!outputSlot.isEmpty()) {
+                if (mod.getInventoryTracker().isInventoryFull()) {
+                    return new EnsureFreeInventorySlotTask();
+                }
+                _smeltProgressChecker.reset();
+                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
+                    setDebugState("Moving cursor stack back so we can take from the output...");
+                    // Clear cursor slot first
+                    return new ThrowSlotTask();
+                }
+                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
             }
 
             // Move materials
+            boolean furnaceHasOurItem = _target.getMaterial().matches(_currentFurnace.materials.getItem());
 
             ItemStack output = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             int outputCount = _target.getItem().matches(output.getItem()) ? output.getCount() : 0;
-            int materialCount = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount();
+            int materialCount = furnaceHasOurItem? mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount() : 0;
 
-            int currentlyHeld = mod.getInventoryTracker().getItemCount(_target.getItem());
+            int currentInventory = mod.getInventoryTracker().getItemCount(_target.getItem());
             int targetCount = _target.getItem().getTargetCount();
             // How many MORE materials do we need in the slot to end up with the correct number of items?
-            int toMove = targetCount - (outputCount + materialCount + currentlyHeld);
+            int toMove = targetCount - (outputCount + materialCount + currentInventory);
             if (_ignoreMaterials) {
                 toMove = mod.getInventoryTracker().getItemCount(this._target.getMaterial());
 
@@ -271,33 +283,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 }
             }
 
-            // Grab from the output slot
-            ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            if (!outputSlot.isEmpty()) {
-                if (mod.getInventoryTracker().isInventoryFull()) {
-                    return new EnsureFreeInventorySlotTask();
-                }
-                _smeltProgressChecker.reset();
-                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
-                    setDebugState("Moving cursor stack back so we can take from the output...");
-                    // Clear cursor slot first
-                    Slot freeSlot = mod.getInventoryTracker().getEmptyInventorySlot();
-                    if (freeSlot != null) {
-                        return new ClickSlotTask(freeSlot);
-                    } else {
-                        return new ThrowSlotTask();
-                    }
-                }
-                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
-                //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
-            }
-
             // Re-update furnace tracking since we moved some things around.
-            mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
+            //mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
 
             setDebugState("Smelting...");
 
-            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent(handler));
+            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent());
 
             // If we made no progress
             if (_smeltProgressChecker.failed()) {

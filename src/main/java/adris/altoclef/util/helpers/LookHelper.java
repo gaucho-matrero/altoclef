@@ -81,6 +81,9 @@ public interface LookHelper {
         Vec3d start = getCameraPos(entity);
         return cleanLineOfSight(entity, start, end, maxRange);
     }
+    static boolean cleanLineOfSight(Vec3d end, double maxRange) {
+        return cleanLineOfSight(MinecraftClient.getInstance().player, end, maxRange);
+    }
 
     static boolean cleanLineOfSight(Entity entity, BlockPos block, double maxRange) {
         Vec3d center = WorldHelper.blockCenter(block);
@@ -91,6 +94,10 @@ public interface LookHelper {
             case BLOCK -> hit.getBlockPos().equals(block);
             case ENTITY -> false;
         };
+    }
+
+    static Vec3d toVec3d(Rotation rotation) {
+        return RotationUtils.calcVector3dFromRotation(rotation);
     }
 
     static BlockHitResult raycast(Entity entity, Vec3d start, Vec3d end, double maxRange) {
