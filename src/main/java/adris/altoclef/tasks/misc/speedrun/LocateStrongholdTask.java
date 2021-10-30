@@ -104,7 +104,7 @@ public class LocateStrongholdTask extends Task {
             if (_cachedEyeDirection2 != null) {
                 _cachedEyeDirection2.updateEyePos(_currentThrownEye.getPos());
             }
-            else {
+            else if (_cachedEyeDirection != null) {
                 _cachedEyeDirection.updateEyePos(_currentThrownEye.getPos());
             }
         
