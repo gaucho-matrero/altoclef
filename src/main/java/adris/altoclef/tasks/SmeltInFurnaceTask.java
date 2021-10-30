@@ -216,6 +216,22 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected Task containerSubTask(AltoClef mod) {
 
+
+            // Grab from the output slot
+            ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
+            if (!outputSlot.isEmpty()) {
+                if (mod.getInventoryTracker().isInventoryFull()) {
+                    return new EnsureFreeInventorySlotTask();
+                }
+                _smeltProgressChecker.reset();
+                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
+                    setDebugState("Moving cursor stack back so we can take from the output...");
+                    // Clear cursor slot first
+                    return new ThrowSlotTask();
+                }
+                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
+            }
+
             // Move materials
             boolean furnaceHasOurItem = _target.getMaterial().matches(_currentFurnace.materials.getItem());
 
@@ -265,22 +281,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 if (targetFuelItemCount > 0) {
                     return new MoveItemToSlotTask(new ItemTarget(fuelToUse, targetFuelItemCount), FurnaceSlot.INPUT_SLOT_FUEL);
                 }
-            }
-
-            // Grab from the output slot
-            ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            if (!outputSlot.isEmpty()) {
-                if (mod.getInventoryTracker().isInventoryFull()) {
-                    return new EnsureFreeInventorySlotTask();
-                }
-                _smeltProgressChecker.reset();
-                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
-                    setDebugState("Moving cursor stack back so we can take from the output...");
-                    // Clear cursor slot first
-                    return new ThrowSlotTask();
-                }
-                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
-                //Debug.logMessage("Should have grabbed from furnace output: " + outputSlot.getCount());
             }
 
             // Re-update furnace tracking since we moved some things around.
