@@ -58,45 +58,11 @@ public class FillTargetChestTask extends Task {
     protected void onStart(AltoClef mod) {
     }
 
-    private final boolean targetFullySourced(final AltoClef mod, final ItemTarget target) {
-        return (mod.getInventoryTracker().hasItem(target.getMatches()))
-                ? mod.getInventoryTracker().getItemCount(target.getMatches()) >= target.getTargetCount() : false;
-    }
-
-    private final boolean targetFullySourced(final AltoClef mod, final ItemTarget target, final int count) {
-        return (mod.getInventoryTracker().hasItem(target.getMatches()))
-                ? mod.getInventoryTracker().getItemCount(target.getMatches()) >= count : false;
-    }
-
     @Override
     protected Task onTick(AltoClef mod) {
         if (storeInChestTaskDataPackage.isFinished()) {
-            System.out.println("FFFFFFFFFFFFFF");
-            //final Map<ItemTarget, Integer> feedbackProgressData =
-            //        storeInChestTaskDataPackage.getExtra(TaskDataPackage.ExtraData.PROGRESS_DATA, HashMap.class);
             final Map<Item, Integer> complementaryMap =
                     storeInChestTaskDataPackage.getExtra(TaskDataPackage.ExtraData.PROGRESS_DATA, HashMap.class);
-
-            /*
-            int trashCounter = 0;
-
-            ItemTarget itemTarget = new ItemTarget(complementaryMap.keySet().toArray(new Item[complementaryMap.size()]));
-            for (final Item item : mod.getModSettings().getThrowawayItems(mod)) {
-
-                //System.out.println("EEEEEEEEEEEEEEEEEEEEEEEe");
-                //System.out.println(item.getName().asString());
-
-                if (!itemTarget.matches(item)) {
-                    continue;
-                }
-
-                trashCounter += mod.getInventoryTracker().getInventorySlotsWithItem(item).size();
-
-                if (trashCounter <= this.minChunkSlots) {
-                    storeInChestTaskDataPackage.setFinished(false);
-                    return storeInChestTask;
-                }
-            }*/
 
             Item[] items = complementaryMap.keySet().toArray(new Item[complementaryMap.size()]);
             List<ItemTarget> trashTargets = Arrays.stream(mod.getModSettings().getThrowawayItems(mod)).map(e -> new ItemTarget(e)).collect(Collectors.toList());
@@ -108,15 +74,13 @@ public class FillTargetChestTask extends Task {
 
                 trashCounter += mod.getInventoryTracker().getInventorySlotsWithItem(item).size();
 
+                //TODO: Meloweh: Softlock still possible if inventory full without target items -> Will think it has to move target items to chest
+                //In this case a StoreTemporaryTask would help
                 if (trashCounter <= this.minChunkSlots && mod.getInventoryTracker().getInventorySlotsWithItem(Items.AIR).size() < 2) {
                     storeInChestTaskDataPackage.setFinished(false);
                     return storeInTargetChestTask;
                 }
             }
-
-            //int throwarayCount = mod.getInventoryTracker().getItemCount(mod.getModSettings().getThrowawayItems(mod));
-            //final Stream s = Arrays.stream(mod.getModSettings().getThrowawayItems(mod)).filter(e -> new ItemTarget(items).matches(e));
-            //s.
 
             for (final Item item : complementaryMap.keySet()) {
                 final int hasCount = mod.getInventoryTracker().getItemCount(item);
@@ -125,27 +89,10 @@ public class FillTargetChestTask extends Task {
                     return TaskCatalogue.getItemTask(new ItemTarget(item, targetCount - hasCount));
                 }
             }
-
-            /*if (feedbackProgressData.isEmpty()) {
-                for (final ItemTarget goalTarget : itemTargets) {
-                    //check here all extradata map elements and only do task if present in there. remember to make it work in storeinchesttask
-                    if (!targetFullySourced(mod, goalTarget)) {
-                        return TaskCatalogue.getItemTask(goalTarget);
-                    }
-                }
-            } else {
-                for (final ItemTarget k : feedbackProgressData.keySet()) {
-                    if (!targetFullySourced(mod, k, feedbackProgressData.get(k))) {
-                        return TaskCatalogue.getItemTask(k, feedbackProgressData.get(k));
-                    }
-                }
-            }*/
         }
 
         storeInChestTaskDataPackage.setFinished(false);
         return storeInTargetChestTask;
-
-
     }
 
     //use static Store system to pass parameter and have multilevel finished tags.

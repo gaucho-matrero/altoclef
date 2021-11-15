@@ -87,10 +87,7 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
             int end = data.isBig() ? 53 : 26;
             for (int slot = 0; slot <= end; ++slot) {
                 net.minecraft.screen.slot.Slot cSlot = handler.getSlot(slot);
-                //System.out.println("AAAAAAAAAAAAAa" + cSlot.getStack().getItem().getMaxCount());
-                //System.out.println("ssssssssssssss" + cSlot.getStack().getCount());
 
-                //for (final ItemTarget goalTarget : _targets) {
                 for (final Item match : _targets.getMatches()) {
                     List<Slot> inventorySlotsWithItem = mod.getInventoryTracker().getInventorySlotsWithItem(match);
                     final int stillCanGet = cSlot.getStack().getMaxCount() - cSlot.getStack().getCount();
@@ -98,27 +95,15 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
                     if (stillCanGet > 0 && !inventorySlotsWithItem.isEmpty()) {
                         if (!cSlot.hasStack() || cSlot.getStack().isEmpty() || (_targets.matches(cSlot.getStack().getItem()))) {
                             Slot slotTo = new ChestSlot(slot, data.isBig());
-                            //System.out.println("getMaxCount: " + cSlot.getStack().getMaxCount());
-                            //System.out.println("getCount: " + cSlot.getStack().getCount());
-                            //int stillCanGet = cSlot.getStack().getMaxCount() - cSlot.getStack().getCount(); System.out.println("stillCanGet: " + stillCanGet);
-                            //System.out.println("NOOT: " + cSlot.getStack().getItem().asItem().getName().asString());
-                            int invCount = mod.getInventoryTracker().getItemCount(match); //System.out.println("invCount: " + invCount);
-                            int toMove = Math.min(stillCanGet, invCount); //System.out.println("toMove: " + cSlot.getStack().isEmpty());
-                            //System.out.println("INDEX: " + slot);
+                            int invCount = mod.getInventoryTracker().getItemCount(match);
+                            int toMove = Math.min(stillCanGet, invCount);
                             return new MoveItemToSlotTask(new ItemTarget(match, toMove), slotTo);
                         }
                     }
                 }
-                //}
 
                 final int additional = cSlot.getStack().getMaxCount() - cSlot.getStack().getCount();
-
-
                 Item item = cSlot.getStack().getItem();
-                /*
-                (cSlot.getStack().getItem() instanceof AirBlockItem) ?
-                        _targets.getMatches()[(int)(targetItemIndexCounter++ % (_targets.getMatches().length - 1))] :
-                        cSlot.getStack().getItem();*/
 
                 if (item instanceof AirBlockItem) {
                     if (_targets.getMatches().length < 1) {
@@ -131,12 +116,6 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
 
                     item = _targets.getMatches()[targetItemIndexCounter++];
                 }
-
-                /*
-                if (item == null) {
-                    System.out.println("YEEEEEEEEEEEEEee");
-                    item = _targets.getMatches()[(int)(targetItemIndexCounter++ % (_targets.getMatches().length - 1))];
-                }*/
 
                 if (complementaryMap.containsKey(item)) {
                     complementaryMap.put(item, complementaryMap.get(item) + additional);
