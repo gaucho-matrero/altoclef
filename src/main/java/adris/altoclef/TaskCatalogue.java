@@ -675,6 +675,16 @@ public class TaskCatalogue {
         }
     }
 
+    public static ResourceTask getItemTask(ItemTarget target, final int count) {
+        if (target.isCatalogueItem()) {
+            return getItemTask(target.getCatalogueName(), count);
+        } else if (target.getMatches().length == 1) {
+            return getItemTask(target.getMatches()[0], count);
+        } else {
+            return getSquashedItemTask(target);
+        }
+    }
+
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
     }

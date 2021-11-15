@@ -568,10 +568,10 @@ public class InventoryTracker extends Tracker {
             }
             if (stack.getItem() == Items.SHEARS) {
                 // Shears take priority over leaf blocks.
-                if (ToolSet.areShearsEffective(state.getBlock())) {
+                /*if (ToolSet.areShearsEffective(state.getBlock())) {
                     bestToolSlot = slot;
                     break;
-                }
+                }*/
             }
         }
         return bestToolSlot;

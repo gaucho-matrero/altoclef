@@ -182,6 +182,11 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                     }
                 }
                 Debug.logInternal("Failed to find throwaway block");
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 // No throwaways available!!
                 return new BlockOptionalMeta(Blocks.COBBLESTONE).getAnyBlockState();
             }

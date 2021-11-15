@@ -60,7 +60,6 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
     }
 
     @Override

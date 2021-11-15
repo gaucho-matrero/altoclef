@@ -2,6 +2,7 @@ package adris.altoclef.util.control;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.filestream.AvoidanceFile;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
@@ -80,6 +81,58 @@ public class BotBehaviour {
     public void avoidBlockBreaking(Predicate<BlockPos> pred) {
         current().toAvoidBreaking.add(pred);
         current().applyState();
+    }
+
+    /*
+    public boolean removeAvoidBlockBreaking(final Predicate<BlockPos> originalRef) {
+        if (current().toAvoidBreaking.contains(originalRef)) {
+            current().toAvoidBreaking.remove(originalRef);
+            current().applyState();
+            return true;
+        }
+
+        return false;
+    }*/
+
+    public boolean inAvoidBlockBreaking(final Predicate<BlockPos> originalRef) {
+        return current().toAvoidBreaking.contains(originalRef);
+    }
+
+    /**
+     * Call BEFORE clearing AvoidanceFile.
+     */
+    public boolean clearFileDataFromAvoidBLockBreaking() {
+        //AvoidanceFile.get().forEach(e -> current().toAvoidBreaking.remo(e));
+        final boolean result = current().toAvoidBreaking.removeAll(AvoidanceFile.get());
+        current().applyState();
+        return result;
+    }
+
+    /*
+    public void clearAvoidBlockBreaking() {
+        //AvoidanceFile.get().forEach(e -> current().toAvoidBreaking.remo(e));
+        current().toAvoidBreaking.clear();
+        current().applyState();
+    }*/
+
+    public int getAvoidanceCount() {
+        return current().toAvoidBreaking.size();
+    }
+
+    public long getAvoidanceCount2() {
+        return current().toAvoidBreaking.stream().count();
+    }
+
+    public void getAvoidanceCount3() {
+        System.out.println("START");
+        System.out.println(current().toAvoidBreaking == null);
+        System.out.println(current().toAvoidBreaking == null);
+    }
+
+    public boolean disableAvoidanceOf(final Predicate<BlockPos> originalRef) {
+        final boolean result = current().toAvoidBreaking.remove(originalRef);
+        current().applyState();
+        return result;
     }
 
     public void avoidBlockPlacing(Predicate<BlockPos> pred) {

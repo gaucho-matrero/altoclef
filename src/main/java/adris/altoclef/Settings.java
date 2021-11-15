@@ -282,6 +282,12 @@ public class Settings {
     private boolean idleWhenNotActive = false;
 
     /**
+     * true: ignores recorded constructions made by altoclefs schematic builder.
+     * false: no avoidance.
+     */
+    private boolean useAvoidanceList = true;
+
+    /**
      * If we need to throw away something, throw away these items first.
      */
     @JsonSerialize(using = ItemSerializer.class)
@@ -571,10 +577,13 @@ public class Settings {
         return whisperFormatDebug;
     }
 
+    public boolean isUseAvoidanceList() {return useAvoidanceList;}
+
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
         for (ProtectionRange protection : areasToProtect) {
             if (protection.includes(pos)) return true;
         }
+
         return false;
     }
 

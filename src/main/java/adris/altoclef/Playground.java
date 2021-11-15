@@ -2,8 +2,12 @@ package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
+import adris.altoclef.tasks.SchematicBuildTask;
 import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.MissingTask;
+import adris.altoclef.tasks.chest.FillTargetChestTask;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
+import adris.altoclef.tasks.chest.StoreInTargetChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
@@ -186,6 +190,16 @@ public class Playground {
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
                 break;
+            case "avoidremove":
+                //mod.getBehaviour().clearAvoidBlockBreaking();
+                break;
+            case "printit":
+                System.out.println("PRINTIT---------");
+                System.out.println(mod.getBehaviour().getAvoidanceCount());
+                System.out.println(mod.getBehaviour().getAvoidanceCount2());
+
+                System.out.println("PRINTIT---------");
+                break;
             case "avoid":
                 // Test block break predicate
                 mod.getBehaviour().avoidBlockBreaking((BlockPos b) -> (-1000 < b.getX() && b.getX() < 1000)
@@ -330,6 +344,23 @@ public class Playground {
                 break;
             case "chest":
                 mod.runUserTask(new StoreInAnyChestTask(new ItemTarget(Items.DIAMOND, 3)));
+                break;
+            case "missing":
+                mod.runUserTask(new MissingTask());
+                break;
+            case "chest2":
+                mod.runUserTask(new FillTargetChestTask(new ItemTarget("dirt")));
+                break;
+            case "chest3":
+                mod.runUserTask(new StoreInTargetChestTask(new BlockPos(0, 64, 0), new ItemTarget("dirt", 64)));
+            case "build":
+                mod.runUserTask(new SchematicBuildTask("test8.schem"));
+                break;
+            case "build2":
+                mod.runUserTask(new SchematicBuildTask("test9.schem"));
+                break;
+            case "house":
+                mod.runUserTask(new SchematicBuildTask("house.schem"));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());

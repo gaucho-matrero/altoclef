@@ -41,6 +41,8 @@ public class MoveItemToSlotTask extends Task {
             ItemStack currentHeld = mod.getInventoryTracker().getItemStackInCursorSlot();
             ItemStack atTarget = mod.getInventoryTracker().getItemStackInSlot(_destination);
 
+            //if (_destination.getInventorySlot())
+
             // Items that CAN be moved to that slot.
             Item[] validItems = Arrays.stream(_toMove.getMatches()).filter(item -> mod.getInventoryTracker().getItemCount(item) >= _toMove.getTargetCount()).collect(Collectors.toList()).toArray(Item[]::new);
 
@@ -48,18 +50,21 @@ public class MoveItemToSlotTask extends Task {
                 // Wrong item held, replace with best match.
                 Slot bestPickup = getBestSlotToPickUp(mod, validItems);
                 if (bestPickup == null) {
-                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    //Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
+                System.out.println("Meloweh A");
                 return new ClickSlotTask(bestPickup);
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
             if (currentHeld.getCount() + currentlyPlaced  < _toMove.getTargetCount()) {
                 // Just place all of 'em
+                System.out.println("Meloweh B");
                 return new ClickSlotTask(_destination);
             } else {
                 // Place one at a time.
+                System.out.println("Meloweh C");
                 return new ClickSlotTask(_destination, 1);
             }
         }
@@ -72,9 +77,9 @@ public class MoveItemToSlotTask extends Task {
     }
 
     @Override
-    public boolean isFinished(AltoClef mod) {
+    public boolean isFinished(AltoClef mod) {//Meloweh TODO: fix slot switch spamming
         ItemStack atDestination = mod.getInventoryTracker().getItemStackInSlot(_destination);
-        return (_toMove.matches(atDestination.getItem()) && atDestination.getCount() >= _toMove.getTargetCount());
+        return (_toMove.matches(atDestination.getItem()) && atDestination.getCount() >= _toMove.getTargetCount()) /*|| atDestination.getCount() >= atDestination.getMaxCount()*/;
     }
 
     @Override

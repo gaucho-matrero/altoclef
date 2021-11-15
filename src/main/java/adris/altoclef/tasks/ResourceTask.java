@@ -7,6 +7,7 @@ import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
+import adris.altoclef.util.Blacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -104,7 +105,7 @@ public abstract class ResourceTask extends Task {
             } else {
                 if (!data.hasItem(_itemTargets)) {
                     _currentChest = null;
-                } else {
+                } else if (!Blacklist.isBlacklisted(_currentChest)) {
                     // We have a current chest, grab from it.
                     return new PickupFromChestTask(_currentChest, _itemTargets);
                 }
@@ -114,8 +115,10 @@ public abstract class ResourceTask extends Task {
         if (!chestsWithItem.isEmpty()) {
             BlockPos closest = chestsWithItem.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(mod.getPlayer().getPos(), false))).get();
             if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentChest = closest;
-                return new PickupFromChestTask(_currentChest, _itemTargets);
+                if (!Blacklist.isBlacklisted(_currentChest)) {
+                    _currentChest = closest;
+                    return new PickupFromChestTask(_currentChest, _itemTargets);
+                }
             }
         }
 
@@ -129,7 +132,8 @@ public abstract class ResourceTask extends Task {
                     if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
                         _mineLastClosest = closest;
                     }
-                    if (_mineLastClosest != null) {
+                    if (_mineLastClosest != null && !Blacklist.isBlacklisted(_mineLastClosest)) {
+                        //System.out.println("NOOOOOOOOO :(");
                         if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
                             return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
                         }
