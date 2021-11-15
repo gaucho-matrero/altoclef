@@ -1,5 +1,6 @@
 package adris.altoclef.commands;
 
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.Playground;
