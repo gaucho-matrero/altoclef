@@ -76,4 +76,8 @@ public class Utils {
             throw new NullPointerException("object is null");
         }
     }
+
+    public static boolean isNull(final Object object) {
+        return object == null;
+    }
 }

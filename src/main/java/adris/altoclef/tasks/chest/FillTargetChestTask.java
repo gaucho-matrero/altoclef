@@ -5,9 +5,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.Blacklist;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.TaskDataPackage;
+import adris.altoclef.util.Utils;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
@@ -23,20 +25,32 @@ public class FillTargetChestTask extends Task {
     private final ItemTarget itemTargets;
     private final TaskDataPackage taskDataPackage;
     private final TaskDataPackage storeInChestTaskDataPackage;
-    private BlockPos chestPos;
+    private final BlockPos chestPos;
     private boolean sourced;
-    private final StoreInTargetChestTask storeInTargetChestTask;
+    //This should be final
+    private StoreInTargetChestTask storeInTargetChestTask;
     private final int minChunkSlots = 3;
+    private boolean paused;
 
     public FillTargetChestTask(ItemTarget targets) {
         itemTargets = targets;
         taskDataPackage = new TaskDataPackage();
         storeInChestTaskDataPackage = new TaskDataPackage();
         chestPos = getLookingBlock();
+
+        if (Utils.isNull(chestPos)) {
+            Debug.logMessage("No chest at target found!");
+            taskDataPackage.setFinished(true);
+            return;
+        }
+
+        Debug.logMessage("Target chest found!");
+
         Blacklist.blacklist(chestPos);
         sourced = false;
         this.storeInChestTaskDataPackage.setFinished(false);
         this.storeInTargetChestTask = new StoreInTargetChestTask(chestPos, storeInChestTaskDataPackage, itemTargets);
+        this.paused = false;
     }
 
     private BlockPos getLookingBlock() {
@@ -45,22 +59,23 @@ public class FillTargetChestTask extends Task {
             BlockHitResult blockHitResult = (BlockHitResult)r;
             final BlockPos blockPos = blockHitResult.getBlockPos();
             if (MinecraftClient.getInstance().world.getBlockState(blockPos).getBlock() instanceof ChestBlock) {
-                Debug.logMessage("Target chest found!");
                 return blockPos;
             }
         }
-
-        Debug.logError("No chest at target found!");
-        taskDataPackage.setFinished(true);
         return null;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        this.paused = false;
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (this.paused) {
+            return null;
+        }
+
         if (storeInChestTaskDataPackage.isFinished()) {
             final Map<Item, Integer> complementaryMap =
                     storeInChestTaskDataPackage.getExtra(TaskDataPackage.ExtraData.PROGRESS_DATA, HashMap.class);
@@ -69,14 +84,20 @@ public class FillTargetChestTask extends Task {
             List<ItemTarget> trashTargets = Arrays.stream(mod.getModSettings().getThrowawayItems(mod)).map(e -> new ItemTarget(e)).collect(Collectors.toList());
             Arrays.stream(items).forEach(e -> trashTargets.removeIf(a -> a.matches(e)));
             int trashCounter = 0;
+            final InventoryTracker inventory = mod.getInventoryTracker();
+
+            //TODO: {Meloweh} 1 slot has always be to be empty for some reason...
+            if (!inventory.hasItem(itemTargets) && inventory.isInventoryFull()) {
+                Debug.logMessage("Ducktape: This state is not supported yet. Terminating...");
+                taskDataPackage.setFinished(true);
+                return null;
+            }
 
             for (final ItemTarget target : trashTargets) {
                 final Item item = target.getMatches()[0];
 
                 trashCounter += mod.getInventoryTracker().getInventorySlotsWithItem(item).size();
 
-                //TODO: Meloweh: Softlock still possible if inventory full without target items -> Will think it has to move target items to chest
-                //In this case a StoreTemporaryTask would help
                 if (trashCounter <= this.minChunkSlots && mod.getInventoryTracker().getInventorySlotsWithItem(Items.AIR).size() < 2) {
                     storeInChestTaskDataPackage.setFinished(false);
                     return storeInTargetChestTask;
@@ -105,7 +126,8 @@ public class FillTargetChestTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        taskDataPackage.setFinished(true);
+        //taskDataPackage.setFinished(true);
+        this.paused = true;
     }
 
     @Override

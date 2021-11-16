@@ -14,6 +14,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+
+import java.io.File;
 import java.util.*;
 import java.util.List;
 
@@ -63,7 +65,14 @@ public class SchematicBuildTask extends Task {
             builder = mod.getClientBaritone().getBuilderProcess();
         }
 
-        System.out.println("New start: " + schematicFileName);
+        final File file = new File("schematics/" + schematicFileName);
+        if (!file.exists()) {
+            Debug.logMessage("Could not locate schematic file. Terminating...");
+            this.finished = true;
+            return;
+        }
+
+        //System.out.println("New start: " + schematicFileName);
         builder.clearState();
         builder.build(schematicFileName, startPos, true);
         if (isNull(schemSize)) {
@@ -128,8 +137,6 @@ public class SchematicBuildTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
-
         if (clearRunning && builder.isActive()) {
             return null;
         }
