@@ -213,8 +213,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected Task containerSubTask(AltoClef mod) {
-        //Debug.logMessage("GOT TO TABLE. Crafting...");
-
         _craftResetTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay() * 10 + CRAFT_RESET_TIMER_BONUS_SECONDS);
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");

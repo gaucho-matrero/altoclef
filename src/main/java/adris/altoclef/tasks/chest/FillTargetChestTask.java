@@ -115,12 +115,6 @@ public class FillTargetChestTask extends Task {
             }
         }
 
-        /*
-        if (storeInChestTaskDataPackage.getFeedback().equals(TaskDataPackage.Feedback.CHEST_LOST)
-                && !(MinecraftClient.getInstance().world.getBlockState(chestPos).getBlock() instanceof ChestBlock)) {
-            return new PlaceBlockTask(chestPos, Blocks.CHEST);
-        }*/
-
         storeInChestTaskDataPackage.setFinished(false);
         return storeInTargetChestTask;
     }

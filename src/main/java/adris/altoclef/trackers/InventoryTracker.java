@@ -8,12 +8,10 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
-import com.sun.jna.platform.win32.WinDef;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.recipe.Ingredient;
@@ -39,11 +37,8 @@ public class InventoryTracker extends Tracker {
     private int _emptySlots = 0;
     private int _foodPoints = 0;
 
-    private long depthCounter = 0;
-    private boolean firstInvTimeElapsed = false;
-
-    //private long craftingTicks = 0;
-    //private boolean lackingRecipyMaterials = false;
+    //private long depthCounter = 0;
+    //private boolean firstInvTimeElapsed = false;
 
     public final int getItemCountOfSlot(final Slot slot) {
         if (Utils.isNull(slot)) return -1;
@@ -54,7 +49,7 @@ public class InventoryTracker extends Tracker {
     }
 
     //TODO: Needs reset if generic crafting process stopped
-    private Map<Long, DepthAttributes> depthAttributesMap = new HashMap<>();
+    //private Map<Long, DepthAttributes> depthAttributesMap = new HashMap<>();
 
     public ItemTarget getMissingItemTarget(final AltoClef mod, final CraftingRecipe _recipe) {
         final InventoryTracker inventory = mod.getInventoryTracker();
@@ -98,8 +93,8 @@ public class InventoryTracker extends Tracker {
                         }
 
                         count = (int)Math.ceil(count / _recipe.getSlotCount());
-
                         //System.out.println(count + " --- " + mod.getInventoryTracker().getItemCount(toFill));
+
                         if (count > inventory.getItemCount(toFill) && inventory.getItemCount(toFill) > 0) {
                             return new ItemTarget(toFill, count);
                         }
@@ -114,11 +109,8 @@ public class InventoryTracker extends Tracker {
         for (final ItemStack itemStack : ingredient.getMatchingStacks()) {
             if (Utils.isNull(itemStack)) continue;
             if (Utils.isNull(itemStack.getItem())) continue;
-
-            //System.out.println(itemStack.getItem().getName().toString());
             if (isSlotInAnyDepthSatisfiable(new ItemTarget(itemStack.getItem()/*, itemStack.getCount()*/), mod, blacklist, previouslyBlacklisted)) return true;
         }
-        //System.out.println("is false");
         return false;
     }
 
@@ -133,11 +125,10 @@ public class InventoryTracker extends Tracker {
     //we can limit blacklisting to one stack = 64 since crafting slots are limited to it anyway.
     private final boolean blacklistSatisfyingSlots(final List<Slot> blacklist, final List<Slot> previouslyBlacklisted, final ItemTarget itemTarget, final AltoClef mod) {
         final List<Slot> slots = mod.getInventoryTracker().getInventorySlotsWithItem(itemTarget);
-        int size = 1; //itemTarget.getTargetCount();
+        int size = 1;
 
         for (final Slot slot : slots) {
             if (size > getItemCountOfSlotsInBlacklist(blacklist, mod)) {
-                //if (!blacklist.stream().anyMatch(e -> e.getInventorySlot() == slot.getInventorySlot())) {
                 if (!isSlotInList(slot, blacklist) && !isSlotInList(slot, previouslyBlacklisted)) {
                     blacklist.add(slot);
                 }
@@ -147,17 +138,12 @@ public class InventoryTracker extends Tracker {
         }
 
         return false;
-        //slots.removeIf(e -> mod.getInventoryTracker().getItemCount() >=)
     }
 
     private final boolean isSlotInAnyDepthSatisfiable(final ItemTarget itemTarget, final AltoClef mod, final List<Slot> blacklist, final List<Slot> previouslyBlacklisted) {
-        //System.out.println("tcount: " + itemTarget.getTargetCount());
-        //if (mod.getInventoryTracker().getItemCount(itemTarget) >= itemTarget.getTargetCount()) return true;
-
         //coding style with side effect returns "is it satisfied"?
         if (blacklistSatisfyingSlots(blacklist, previouslyBlacklisted, itemTarget, mod)) return true;
 
-        //Recursion may never terminates with false if "continue" when recipe equals null
         for (final Item item : itemTarget.getMatches()) {
             final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
 
@@ -191,6 +177,7 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
+    /*
     public boolean isFirstInvTimeElapsed() {
         return this.firstInvTimeElapsed;
     }
@@ -219,12 +206,13 @@ public class InventoryTracker extends Tracker {
         public long craftingTicks = 0;
         public boolean lackingRecipyMaterials = false;
         public boolean prevInvTimeElapsed = false;
-    }
+    }*/
 
     public InventoryTracker(TrackerManager manager) {
         super(manager);
     }
 
+    /*
     public boolean loggedDepth() {
         return depthAttributesMap.containsKey(depthCounter);
     }
@@ -289,7 +277,7 @@ public class InventoryTracker extends Tracker {
 
     public final boolean removeDepth() {
         return !Utils.isNull(depthAttributesMap.remove(depthCounter));
-    }
+    }*/
 
     private static Map<Item, Integer> getFuelTimeMap() {
         if (_fuelTimeMap == null) {

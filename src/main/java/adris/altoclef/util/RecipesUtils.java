@@ -1,6 +1,5 @@
 package adris.altoclef.util;
 
-import adris.altoclef.AltoClef;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.CraftingRecipe;
@@ -8,7 +7,6 @@ import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,7 +17,7 @@ import java.util.List;
  *
  * @author Draco18s
  *
- * Modified by Meloweh
+ * Updated and modified by Meloweh
  *
  */
 public class RecipesUtils {
