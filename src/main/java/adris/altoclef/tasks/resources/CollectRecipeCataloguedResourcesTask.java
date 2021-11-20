@@ -75,7 +75,6 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             }
         }
 
-
         // (Cache this with the above stuff!!)
         // Grab materials
         for (String catalogueMaterialName : catalogueCount.keySet()) {
@@ -101,7 +100,6 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
         return null;
     }
-
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {

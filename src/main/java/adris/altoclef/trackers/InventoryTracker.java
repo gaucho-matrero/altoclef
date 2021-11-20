@@ -8,6 +8,7 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
+import com.sun.jna.platform.win32.WinDef;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -15,6 +16,8 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.*;
 
 import java.util.*;
@@ -34,11 +37,258 @@ public class InventoryTracker extends Tracker {
     private final HashMap<Item, List<Integer>> _itemSlots = new HashMap<>();
     private final List<Integer> _foodSlots = new ArrayList<>();
     private int _emptySlots = 0;
-
     private int _foodPoints = 0;
+
+    private long depthCounter = 0;
+    private boolean firstInvTimeElapsed = false;
+
+    //private long craftingTicks = 0;
+    //private boolean lackingRecipyMaterials = false;
+
+    public final int getItemCountOfSlot(final Slot slot) {
+        if (Utils.isNull(slot)) return -1;
+        final ItemStack stack = getItemStackInSlot(slot);
+        if (Utils.isNull(stack)) return -1;
+        if (Utils.isNull(stack.getItem())) return 0;
+        return getItemCount(stack.getItem());
+    }
+
+    //TODO: Needs reset if generic crafting process stopped
+    private Map<Long, DepthAttributes> depthAttributesMap = new HashMap<>();
+
+    public ItemTarget getMissingItemTarget(final AltoClef mod, final CraftingRecipe _recipe) {
+        final InventoryTracker inventory = mod.getInventoryTracker();
+        boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+
+        // For each slot in table
+        for (int craftSlot = 0; craftSlot < _recipe.getSlotCount(); ++craftSlot) {
+            ItemTarget toFill = _recipe.getSlot(craftSlot);
+            Slot currentCraftSlot;
+            if (bigCrafting) {
+                // Craft in table
+                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, _recipe.isBig());
+            } else {
+                // Craft in window
+                currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
+            }
+            ItemStack present = inventory.getItemStackInSlot(currentCraftSlot);
+            if (toFill == null || toFill.isEmpty()) {
+                continue;
+            } else {
+                boolean isSatisfied = toFill.matches(present.getItem());
+
+                if (!isSatisfied) {
+                    int count = 0;
+                    for (int i = 0; i < _recipe.getSlotCount(); i++) {
+                        ItemTarget toFill2 = _recipe.getSlot(craftSlot);
+                        if (toFill == null || toFill.isEmpty()) {
+                            continue;
+                        }
+
+                        if (toFill2.getMatches() == null || toFill.getMatches() == null) continue;
+
+                        for (Item item : toFill2.getMatches()) {
+                            ItemTarget t1 = (new ItemTarget(item));
+
+                            for (Item item2 : toFill.getMatches()) {
+                                if (t1.matches(item2)) {
+                                    count++;
+                                }
+                            }
+                        }
+
+                        count = (int)Math.ceil(count / _recipe.getSlotCount());
+
+                        //System.out.println(count + " --- " + mod.getInventoryTracker().getItemCount(toFill));
+                        if (count > inventory.getItemCount(toFill) && inventory.getItemCount(toFill) > 0) {
+                            return new ItemTarget(toFill, count);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private final boolean hasIngredientInAnyDepth(final Ingredient ingredient, final AltoClef mod, final List<Slot> blacklist, final List<Slot> previouslyBlacklisted) {
+        for (final ItemStack itemStack : ingredient.getMatchingStacks()) {
+            if (Utils.isNull(itemStack)) continue;
+            if (Utils.isNull(itemStack.getItem())) continue;
+
+            //System.out.println(itemStack.getItem().getName().toString());
+            if (isSlotInAnyDepthSatisfiable(new ItemTarget(itemStack.getItem()/*, itemStack.getCount()*/), mod, blacklist, previouslyBlacklisted)) return true;
+        }
+        //System.out.println("is false");
+        return false;
+    }
+
+    private final int getItemCountOfSlotsInBlacklist(final List<Slot> blacklist, final AltoClef mod) {
+        return blacklist.stream().mapToInt(e -> mod.getInventoryTracker().getItemCountOfSlot(e)).sum();
+    }
+
+    private final boolean isSlotInList(final Slot slot, final List<Slot> list) {
+        return list.stream().anyMatch(e -> e.getInventorySlot() == slot.getInventorySlot());
+    }
+
+    //we can limit blacklisting to one stack = 64 since crafting slots are limited to it anyway.
+    private final boolean blacklistSatisfyingSlots(final List<Slot> blacklist, final List<Slot> previouslyBlacklisted, final ItemTarget itemTarget, final AltoClef mod) {
+        final List<Slot> slots = mod.getInventoryTracker().getInventorySlotsWithItem(itemTarget);
+        int size = 1; //itemTarget.getTargetCount();
+
+        for (final Slot slot : slots) {
+            if (size > getItemCountOfSlotsInBlacklist(blacklist, mod)) {
+                //if (!blacklist.stream().anyMatch(e -> e.getInventorySlot() == slot.getInventorySlot())) {
+                if (!isSlotInList(slot, blacklist) && !isSlotInList(slot, previouslyBlacklisted)) {
+                    blacklist.add(slot);
+                }
+            } else {
+                return true;
+            }
+        }
+
+        return false;
+        //slots.removeIf(e -> mod.getInventoryTracker().getItemCount() >=)
+    }
+
+    private final boolean isSlotInAnyDepthSatisfiable(final ItemTarget itemTarget, final AltoClef mod, final List<Slot> blacklist, final List<Slot> previouslyBlacklisted) {
+        //System.out.println("tcount: " + itemTarget.getTargetCount());
+        //if (mod.getInventoryTracker().getItemCount(itemTarget) >= itemTarget.getTargetCount()) return true;
+
+        //coding style with side effect returns "is it satisfied"?
+        if (blacklistSatisfyingSlots(blacklist, previouslyBlacklisted, itemTarget, mod)) return true;
+
+        //Recursion may never terminates with false if "continue" when recipe equals null
+        for (final Item item : itemTarget.getMatches()) {
+            final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
+
+            if (Utils.isNull(recipe)) return false;
+
+            for (int i = 0; i < recipe.getIngredients().size(); i++) {
+                if (!hasIngredientInAnyDepth((Ingredient) recipe.getIngredients().get(0), mod, blacklist, previouslyBlacklisted)) return false;
+            }
+        }
+
+        return true;
+    }
+
+    public final boolean isFullyCapableToCraft(final AltoClef mod, final CraftingRecipe recipe) {
+        if (Utils.isNull(recipe) || Utils.isNull(mod)) return false;
+
+        final List<Slot> blacklist = new ArrayList<>();
+
+        for (int i = 0; i < recipe.getSlotCount(); i++) {
+            final ItemTarget itemTarget = recipe.getSlot(i);
+
+            if (Utils.isNull(itemTarget)) continue;
+
+            if (Utils.isNull(itemTarget.getMatches())) continue;
+
+            final List<Slot> subBlacklist = new ArrayList<>();
+            if (!isSlotInAnyDepthSatisfiable(itemTarget, mod, subBlacklist, blacklist)) return false;
+            blacklist.addAll(subBlacklist);
+        }
+
+        return true;
+    }
+
+    public boolean isFirstInvTimeElapsed() {
+        return this.firstInvTimeElapsed;
+    }
+
+    public void setFirstInvTimeElapsed(final boolean firstInvTimeElapsed) {
+        this.firstInvTimeElapsed = firstInvTimeElapsed;
+    }
+
+    public boolean existDeeper() {
+        return depthAttributesMap.keySet().stream().filter(e -> e > depthCounter).count() > 0;
+    }
+
+    public long getDepthCounter() {
+        return this.depthCounter;
+    }
+
+    public void resetDepthCounter() {
+        this.depthCounter = 0;
+    }
+
+    public void incDepthCounter() {
+        this.depthCounter++;
+    }
+
+    private class DepthAttributes {
+        public long craftingTicks = 0;
+        public boolean lackingRecipyMaterials = false;
+        public boolean prevInvTimeElapsed = false;
+    }
 
     public InventoryTracker(TrackerManager manager) {
         super(manager);
+    }
+
+    public boolean loggedDepth() {
+        return depthAttributesMap.containsKey(depthCounter);
+    }
+
+    public final void ensureDepth() {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            depthAttributesMap.put(depthCounter, new DepthAttributes());
+        }
+    }
+
+    public final void newDepth() {
+        if (depthAttributesMap.containsKey(depthCounter)) {
+            throw new IllegalArgumentException("depth already mapped");
+        }
+
+        depthAttributesMap.put(depthCounter, new DepthAttributes());
+    }
+
+    public final long getCraftingTicks() {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            throw new IndexOutOfBoundsException("depth not mapped");
+        }
+
+        return depthAttributesMap.get(depthCounter).craftingTicks;
+        //this.craftingTicks;
+    }
+
+    public final void incCraftingTicks() {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            throw new IndexOutOfBoundsException("depth not mapped");
+        }
+
+        depthAttributesMap.get(depthCounter).craftingTicks++;
+        //this.craftingTicks++;
+    }
+
+    public final boolean isLackingRecipyMaterials() {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            throw new IndexOutOfBoundsException("depth not mapped");
+        }
+
+        return depthAttributesMap.get(depthCounter).lackingRecipyMaterials;
+        //return this.lackingRecipyMaterials;
+    }
+
+    public final void setLackingRecipyMaterials(final boolean lacking) {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            throw new IndexOutOfBoundsException("depth not mapped");
+        }
+
+        depthAttributesMap.get(depthCounter).lackingRecipyMaterials = lacking;
+        //this.lackingRecipyMaterials = lacking;
+    }
+
+    public final void resetCraftingTicks() {
+        if (!depthAttributesMap.containsKey(depthCounter)) {
+            throw new IndexOutOfBoundsException("depth not mapped");
+        }
+
+        depthAttributesMap.get(depthCounter).craftingTicks = 0;
+    }
+
+    public final boolean removeDepth() {
+        return !Utils.isNull(depthAttributesMap.remove(depthCounter));
     }
 
     private static Map<Item, Integer> getFuelTimeMap() {
@@ -365,6 +615,7 @@ public class InventoryTracker extends Tracker {
                     need -= getItemCount(target.getItem());
                 }
             }
+
             // need holds how many items we need to CRAFT
             // However, a crafting recipe can output more than 1 of an item.
             int materialsPerSlotNeeded = (int) Math.ceil((float) need / target.getRecipe().outputCount());
@@ -376,6 +627,24 @@ public class InventoryTracker extends Tracker {
                     if (needs == null || needs.isEmpty()) continue;
 
                     List<Slot> slotsWithItem = getInventorySlotsWithItem(needs.getMatches());
+
+                    /*
+                    System.out.println("^^^^^^^^^^^^^^^^^^");
+                    System.out.println(this.getItemCount(needs) + " --- " + needs.getTargetCount());
+                    System.out.println("vvvvvvvvvvvvvvvvvvvvvv");
+
+                    if (this.getItemCount(needs) < needs.getTargetCount()) {
+                        return false;
+                    }*/
+
+                    /*
+                    if (slotsWithItem.size() < needs.getMatches().length) { //duplicates in matches?
+                        System.out.println("true");
+                        return false;
+                    } else {
+                        System.out.println("false");
+
+                    }*/
 
                     // Other slots may have our crafting supplies.
                     ScreenHandler screen = _mod.getPlayer().currentScreenHandler;

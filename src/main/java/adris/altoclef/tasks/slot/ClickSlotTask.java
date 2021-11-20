@@ -35,7 +35,6 @@ public class ClickSlotTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        //System.out.append(Arrays.toString(Thread.currentThread().getStackTrace())); Meloweh
         if (mod.getSlotHandler().canDoSlotAction()) {
             mod.getSlotHandler().clickSlot(_slot, _mouseButton, _type);
             mod.getSlotHandler().registerSlotAction();

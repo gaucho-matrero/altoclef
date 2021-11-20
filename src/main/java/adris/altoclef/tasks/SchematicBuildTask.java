@@ -6,8 +6,10 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CubeBounds;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.schematic.ISchematic;
 import baritone.process.BuilderProcess;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -37,6 +39,8 @@ public class SchematicBuildTask extends Task {
     //private final MovementProgressChecker _progressChecker = new MovementProgressChecker(3);
     private BlockPos _currentTry = null;
     private boolean clearRunning = false;
+    private String name;
+    private ISchematic schematic;
 
     public SchematicBuildTask(final String schematicFileName) {
         this(schematicFileName, new BlockPos(MinecraftClient.getInstance().player.getPos()));
@@ -47,14 +51,25 @@ public class SchematicBuildTask extends Task {
     }
 
     public SchematicBuildTask(final String schematicFileName, final BlockPos startPos, final int allowedResourceStackCount) {
+        this();
         this.schematicFileName = schematicFileName;
         this.startPos = startPos;
         this.allowedResourceStackCount = allowedResourceStackCount;
+    }
+
+    public SchematicBuildTask() {
         this.needToSource = new HashMap<>();
         this.gotBackup = false;
         this.needBackup = false;
         this.sourced = false;
         this.addedAvoidance = false;
+    }
+
+    public SchematicBuildTask(String name, ISchematic schematic, final BlockPos startPos) {
+        this();
+        this.name = name;
+        this.schematic = schematic;
+        this.startPos = startPos;
     }
 
     @Override
@@ -74,12 +89,19 @@ public class SchematicBuildTask extends Task {
 
         //System.out.println("New start: " + schematicFileName);
         builder.clearState();
-        builder.build(schematicFileName, startPos, true);
+
+        if (Utils.isNull(this.schematic)) {
+            builder.build(schematicFileName, startPos, true); //TODO: I think there should be a state queue in baritone
+        } else {
+            builder.build(this.name, this.schematic, startPos);
+        }
+
         if (isNull(schemSize)) {
             this.schemSize = builder.getSchemSize();
         }
 
         if (!isNull(schemSize) && builder.isFromAltoclef() && !this.addedAvoidance) {
+            //mod.getPlayer().getPitch()
             this.bounds = new CubeBounds(mod.getPlayer().getBlockPos(), this.schemSize.getX(), this.schemSize.getY(), this.schemSize.getZ());
             mod.addToAvoidanceFile(this.bounds);
             this.addedAvoidance = true;

@@ -4,12 +4,14 @@ package adris.altoclef.tasks.chest;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.Blacklist;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.TaskDataPackage;
 import adris.altoclef.util.Utils;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
@@ -112,6 +114,12 @@ public class FillTargetChestTask extends Task {
                 }
             }
         }
+
+        /*
+        if (storeInChestTaskDataPackage.getFeedback().equals(TaskDataPackage.Feedback.CHEST_LOST)
+                && !(MinecraftClient.getInstance().world.getBlockState(chestPos).getBlock() instanceof ChestBlock)) {
+            return new PlaceBlockTask(chestPos, Blocks.CHEST);
+        }*/
 
         storeInChestTaskDataPackage.setFinished(false);
         return storeInTargetChestTask;

@@ -72,6 +72,8 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
         if (_actionTimer.elapsed()) {
             _actionTimer.reset();
 
+            //System.out.println("DDDDDDDDDDDDDDDD");
+
             final Map<Item, Integer> complementaryMap = new HashMap<>();
 
             if (taskDataPackage.isFinished()) {
@@ -136,9 +138,9 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
     /**
      * TODO: If inventory item count fits chest slots and the remaining space < default sourcing count, then sourcing count should equal space count, but its just getting it all right now.
      */
-    private int getChestItemCountModulo(final ContainerTracker.ChestData data, final Item item) {
+    /*private int getChestItemCountModulo(final ContainerTracker.ChestData data, final Item item) {
         return data.getItemCount(item) % item.getMaxCount();
-    }
+    }*/
 
     /**
      * TODO: Please undo loop dupes... I am sure this function can be calculated in the loops of doToOpenChestTask
@@ -172,7 +174,11 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return taskDataPackage.isFinished();
+        if (isChestLost()) {
+            taskDataPackage.setFeedback(TaskDataPackage.Feedback.CHEST_LOST);
+        }
+
+        return taskDataPackage.isFinished() || isChestLost();
     }
 
     @Override

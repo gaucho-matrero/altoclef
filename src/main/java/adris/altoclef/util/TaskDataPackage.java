@@ -13,7 +13,9 @@ public class TaskDataPackage {
         SUCCESS,
         CONTAINER_FULL,
         NOT_ENOUGH_ITEMS,
-        NONE
+        CHEST_LOST,
+        NONE,
+        SOFT_LOCK
     }
 
     private boolean finished;

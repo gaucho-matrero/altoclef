@@ -2,12 +2,14 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Blocks;
@@ -110,6 +112,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private final CollectRecipeCataloguedResourcesTask _collectTask;
     private final TimerGame _craftResetTimer = new TimerGame(CRAFT_RESET_TIMER_BONUS_SECONDS);
     private int _craftCount;
+    private long missingTicks;
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, new ItemTarget("crafting_table"));
@@ -157,6 +160,27 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         //      Only if we ASSUME that hasRecipeMaterials is TOO STRICT and the Collect Task is CORRECT.
         //
+        for (final RecipeTarget target : _targets) {
+            final CraftingRecipe _recipe = target.getRecipe();
+
+            if (!mod.getInventoryTracker().isFullyCapableToCraft(mod, _recipe) && mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target)) {
+                this.missingTicks++;
+            } else {
+                this.missingTicks = 0;
+            }
+
+            if (this.missingTicks > 150) {
+                if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe))) {
+                    this.missingTicks = 0;
+                    return null;
+                }
+
+                if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe).getMatches())) throw new IllegalStateException("why are missing matches null?");
+
+                return TaskCatalogue.getItemTask(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe));
+            }
+        }
+
         if (_collect) {
             if (!_collectTask.isFinished(mod)) {
 

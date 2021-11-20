@@ -80,4 +80,6 @@ public class Utils {
     public static boolean isNull(final Object object) {
         return object == null;
     }
+
+    public static boolean isset(final Object object) {return !isNull(object);}
 }
