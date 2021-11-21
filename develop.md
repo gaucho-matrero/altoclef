@@ -15,8 +15,10 @@
 4) `./gradlew build` or `./gradlew runClient`
 
 
-## Rough Video Guide/Overview
-[Watch a Rough AltoClef Tutorial Video Here](https://youtu.be/giBjHDZ7HvY)
+## Rough Video Guides/Overviews
+[Rough AltoClef Tutorial VOD](https://youtu.be/giBjHDZ7HvY)
+
+[More Recent AltoClef Task Programming VOD](https://youtu.be/uROEqwyzn3o)
 
 ## Modifying Baritone (dev mode)
 
