@@ -1,10 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
-import adris.altoclef.tasks.CraftGenericTask;
-import adris.altoclef.tasks.SchematicBuildTask;
-import adris.altoclef.tasks.SmeltInFurnaceTask;
-import adris.altoclef.tasks.MissingTask;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.chest.FillTargetChestTask;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
 import adris.altoclef.tasks.chest.StoreInTargetChestTask;
@@ -130,6 +127,9 @@ public class Playground {
                 break;
             case "sign":
                 mod.runUserTask(new PlaceSignTask("Hello there!"));
+                break;
+            case "randr":
+                mod.runUserTask(new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 6));
                 break;
             case "sign2":
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10), "Hello there!"));

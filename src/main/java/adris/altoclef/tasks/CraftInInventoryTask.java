@@ -43,7 +43,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         ItemTarget toGet = _itemTargets[0];
 
-        if (!mod.getInventoryTracker().isFullyCapableToCraft(mod, _recipe) && mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe))) {
+        if (mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe)) && !mod.getInventoryTracker().isFullyCapableToCraft(mod, new RecipeTarget(toGet, _recipe))) {
             this.missingTicks++;
         } else {
             this.missingTicks = 0;

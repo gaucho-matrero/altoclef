@@ -108,8 +108,6 @@ public class SchematicBuildTask extends Task {
             mod.reloadAvoidanceFile();
         }
 
-        //Debug.logMessage(mod.getBehaviour().getAvoidanceCount() + " <- this number shouldn't be big I think");
-
         this.pause = false;
     }
 
@@ -167,11 +165,11 @@ public class SchematicBuildTask extends Task {
 
         _currentTry = builder.getAboveBreak();
         if (!isNull(_currentTry)) {
-            System.out.println("above");
+            //System.out.println("above");
             if (WorldHelper.isSolid(mod, _currentTry)) {
                 if (mod.inAvoidance(this.bounds)) {
                     mod.unsetAvoidanceOf(this.bounds);
-                    System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
+                    //System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
                 }
 
                 BlockPos p = mod.getPlayer().getBlockPos();
@@ -211,11 +209,13 @@ public class SchematicBuildTask extends Task {
             overrideMissing();
         }
 
-        if (!isNull(getMissing()) && !getMissing().isEmpty()) {
+        if (/*builder.isPausedBecauseOfMissingMaterials() &&*/ !isNull(getMissing()) && !getMissing().isEmpty()) {
             if (!mod.inAvoidance(this.bounds)) {
                 mod.setAvoidanceOf(this.bounds);
                 //System.out.println("Enabled");
             }
+
+            //mod.getInventoryTracker().getInventorySlotsWithItem()
 
             for (final BlockState state : getTodoList(mod, missing)) {
                 return TaskCatalogue.getItemTask(state.getBlock().asItem(), missing.get(state));

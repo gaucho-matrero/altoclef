@@ -2,6 +2,7 @@ package adris.altoclef.tasks.chest;
 
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
@@ -110,6 +111,7 @@ public class StoreInTargetChestTask extends AbstractDoInChestTask {
 
                 if (item instanceof AirBlockItem) {
                     if (_targets.getMatches().length < 1) {
+                        Debug.logMessage("No target item has been specified. Terminating...");
                         throw new IllegalStateException("No target specified...");
                     }
 

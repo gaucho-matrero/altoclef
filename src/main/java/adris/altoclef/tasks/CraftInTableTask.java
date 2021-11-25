@@ -162,8 +162,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         for (final RecipeTarget target : _targets) {
             final CraftingRecipe _recipe = target.getRecipe();
-
-            if (!mod.getInventoryTracker().isFullyCapableToCraft(mod, _recipe) && mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target)) {
+            if (mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target) && !mod.getInventoryTracker().isFullyCapableToCraft(mod, target)) {
                 this.missingTicks++;
             } else {
                 this.missingTicks = 0;

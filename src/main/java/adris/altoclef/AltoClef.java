@@ -364,7 +364,6 @@ public class AltoClef implements ModInitializer {
     }
 
     public void setAvoidanceOf(final CubeBounds bounds) {
-        System.out.println("another one");
         getBehaviour().avoidBlockBreaking(bounds.getPredicate());
     }
 

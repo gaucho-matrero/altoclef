@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MoveItemToSlotTask extends Task {
@@ -33,7 +34,7 @@ public class MoveItemToSlotTask extends Task {
             // Rough plan
             // - If empty slot or wrong item
             //      Find best matching item (smallest count over target, or largest count if none over)
-            //      Click on it (one turn)
+            //      Click on it (one turn)t@st
             // - If held slot has < items than target count
             //      Left click on destination slot (one turn)
             // - If held slot has > items than target count
@@ -96,9 +97,11 @@ public class MoveItemToSlotTask extends Task {
         return "Moving " + _toMove + " to " + _destination;
     }
 
-    private Slot    getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
+    private Slot getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
-        for (Slot slot : mod.getInventoryTracker().getInventorySlotsWithItem(validItems)) {
+        final List<Slot> slots = mod.getInventoryTracker().getInventorySlotsWithItem(validItems);
+
+        for (Slot slot : slots) {
             if (Slot.isCursor(slot)) continue;
             if (bestMatch == null) {
                 bestMatch = slot;
@@ -113,6 +116,24 @@ public class MoveItemToSlotTask extends Task {
                 bestMatch = slot;
             }
         }
+
+                /*
+        for (final Slot slot : slots) {
+            if (mod.getInventoryTracker().getItemCountOfSlot(slot) < 1) {
+                return null;
+            }
+        }
+
+        for (final Slot e : slots) {
+            if (mod.getPlayer().currentScreenHandler.getSlot(e.getInventorySlot()).getStack().getCount() < 1) {
+                return null;
+            }
+        }*/
+
+        System.out.println("AAAAAAAAAAAAAAAAAAAAa");
+        //slots.forEach(e -> System.out.println("index: " + e.getInventorySlot() + " count: " + mod.getPlayer().currentScreenHandler.getSlot(e.getInventorySlot()).getStack().getCount()));
+        System.out.println("BBBBBBBBBBBBBBBBBBBBBB");
+
         return bestMatch;
     }
 }

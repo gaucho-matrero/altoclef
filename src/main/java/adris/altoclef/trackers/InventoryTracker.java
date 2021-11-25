@@ -8,6 +8,7 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -19,6 +20,7 @@ import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Keeps track of the player's inventory items
@@ -140,27 +142,90 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    int recDepth = 0;
+    final List<ItemTarget> crossed = new ArrayList<>();
+
     private final boolean isSlotInAnyDepthSatisfiable(final ItemTarget itemTarget, final AltoClef mod, final List<Slot> blacklist, final List<Slot> previouslyBlacklisted) {
         //coding style with side effect returns "is it satisfied"?
         if (blacklistSatisfyingSlots(blacklist, previouslyBlacklisted, itemTarget, mod)) return true;
 
-        for (final Item item : itemTarget.getMatches()) {
+        if (crossed.stream().anyMatch(e -> e.getMatches(itemTarget).length > 0)) {
+            return false;
+        }
+
+        crossed.add(itemTarget);
+
+        /*
+        if (recDepth >= 1000) {
+            return false;
+        } else {
+            recDepth++;
+        }*/
+
+        for (final Iterator<Item> iterator = Arrays.stream(itemTarget.getMatches()).iterator(); iterator.hasNext();) {
+            final Item item = iterator.next();
+
+
+
+            System.out.println(recDepth + " " + item.getName().toString());
             final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
 
             if (Utils.isNull(recipe)) return false;
 
+            /*
             for (int i = 0; i < recipe.getIngredients().size(); i++) {
                 if (!hasIngredientInAnyDepth((Ingredient) recipe.getIngredients().get(0), mod, blacklist, previouslyBlacklisted)) return false;
+            }*/
+
+            //boolean found = false;
+
+            for (final Iterator it = recipe.getIngredients().iterator(); it.hasNext(); ) {
+                Ingredient ingredient = (Ingredient) it.next();
+
+                if (hasIngredientInAnyDepth(ingredient, mod, blacklist, previouslyBlacklisted)) return true; //found = true;
             }
+
+            if (!iterator.hasNext()) {
+                crossed.add(itemTarget);
+            }
+        }
+
+        for (final Item item : itemTarget.getMatches()) {
+            if (crossed.stream().anyMatch(e -> e.matches(item))) {
+                return false;
+            }
+
+            System.out.println(recDepth + " " + item.getName().toString());
+            final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
+
+            if (Utils.isNull(recipe)) return false;
+
+            /*
+            for (int i = 0; i < recipe.getIngredients().size(); i++) {
+                if (!hasIngredientInAnyDepth((Ingredient) recipe.getIngredients().get(0), mod, blacklist, previouslyBlacklisted)) return false;
+            }*/
+
+            //boolean found = false;
+
+            for (Iterator it = recipe.getIngredients().iterator(); it.hasNext(); ) {
+                Ingredient ingredient = (Ingredient) it.next();
+
+                if (hasIngredientInAnyDepth(ingredient, mod, blacklist, previouslyBlacklisted)) return true; //found = true;
+            }
+
+            //if (!found) return false;
         }
 
         return true;
     }
 
-    public final boolean isFullyCapableToCraft(final AltoClef mod, final CraftingRecipe recipe) {
+    public final boolean isFullyCapableToCraft(final AltoClef mod, final RecipeTarget recipeTarget) {
+        final CraftingRecipe recipe = recipeTarget.getRecipe();
         if (Utils.isNull(recipe) || Utils.isNull(mod)) return false;
 
         final List<Slot> blacklist = new ArrayList<>();
+
+        recDepth = 0;
 
         for (int i = 0; i < recipe.getSlotCount(); i++) {
             final ItemTarget itemTarget = recipe.getSlot(i);
@@ -170,6 +235,8 @@ public class InventoryTracker extends Tracker {
             if (Utils.isNull(itemTarget.getMatches())) continue;
 
             final List<Slot> subBlacklist = new ArrayList<>();
+            crossed.clear();
+            System.out.println(Utils.isNull(recipeTarget) + " " + Utils.isNull(recipeTarget.getItem()) + " " + Utils.isNull(recipeTarget.getItem().getCatalogueName()) + " " + recipeTarget.getItem().toString());
             if (!isSlotInAnyDepthSatisfiable(itemTarget, mod, subBlacklist, blacklist)) return false;
             blacklist.addAll(subBlacklist);
         }
@@ -177,107 +244,9 @@ public class InventoryTracker extends Tracker {
         return true;
     }
 
-    /*
-    public boolean isFirstInvTimeElapsed() {
-        return this.firstInvTimeElapsed;
-    }
-
-    public void setFirstInvTimeElapsed(final boolean firstInvTimeElapsed) {
-        this.firstInvTimeElapsed = firstInvTimeElapsed;
-    }
-
-    public boolean existDeeper() {
-        return depthAttributesMap.keySet().stream().filter(e -> e > depthCounter).count() > 0;
-    }
-
-    public long getDepthCounter() {
-        return this.depthCounter;
-    }
-
-    public void resetDepthCounter() {
-        this.depthCounter = 0;
-    }
-
-    public void incDepthCounter() {
-        this.depthCounter++;
-    }
-
-    private class DepthAttributes {
-        public long craftingTicks = 0;
-        public boolean lackingRecipyMaterials = false;
-        public boolean prevInvTimeElapsed = false;
-    }*/
-
     public InventoryTracker(TrackerManager manager) {
         super(manager);
     }
-
-    /*
-    public boolean loggedDepth() {
-        return depthAttributesMap.containsKey(depthCounter);
-    }
-
-    public final void ensureDepth() {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            depthAttributesMap.put(depthCounter, new DepthAttributes());
-        }
-    }
-
-    public final void newDepth() {
-        if (depthAttributesMap.containsKey(depthCounter)) {
-            throw new IllegalArgumentException("depth already mapped");
-        }
-
-        depthAttributesMap.put(depthCounter, new DepthAttributes());
-    }
-
-    public final long getCraftingTicks() {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            throw new IndexOutOfBoundsException("depth not mapped");
-        }
-
-        return depthAttributesMap.get(depthCounter).craftingTicks;
-        //this.craftingTicks;
-    }
-
-    public final void incCraftingTicks() {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            throw new IndexOutOfBoundsException("depth not mapped");
-        }
-
-        depthAttributesMap.get(depthCounter).craftingTicks++;
-        //this.craftingTicks++;
-    }
-
-    public final boolean isLackingRecipyMaterials() {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            throw new IndexOutOfBoundsException("depth not mapped");
-        }
-
-        return depthAttributesMap.get(depthCounter).lackingRecipyMaterials;
-        //return this.lackingRecipyMaterials;
-    }
-
-    public final void setLackingRecipyMaterials(final boolean lacking) {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            throw new IndexOutOfBoundsException("depth not mapped");
-        }
-
-        depthAttributesMap.get(depthCounter).lackingRecipyMaterials = lacking;
-        //this.lackingRecipyMaterials = lacking;
-    }
-
-    public final void resetCraftingTicks() {
-        if (!depthAttributesMap.containsKey(depthCounter)) {
-            throw new IndexOutOfBoundsException("depth not mapped");
-        }
-
-        depthAttributesMap.get(depthCounter).craftingTicks = 0;
-    }
-
-    public final boolean removeDepth() {
-        return !Utils.isNull(depthAttributesMap.remove(depthCounter));
-    }*/
 
     private static Map<Item, Integer> getFuelTimeMap() {
         if (_fuelTimeMap == null) {
