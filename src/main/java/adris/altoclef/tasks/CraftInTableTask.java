@@ -114,6 +114,10 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     private int _craftCount;
     private long missingTicks;
 
+    private int prevTargetCountInInventory;
+    private int stuckCounter;
+    private RandomRadiusGoalTask radiusGoalTask;
+
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, new ItemTarget("crafting_table"));
         _collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
@@ -160,12 +164,66 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         //      Only if we ASSUME that hasRecipeMaterials is TOO STRICT and the Collect Task is CORRECT.
         //
+
+        //TODO: missing and stuck counter act dynamically. The more targets, the faster the timer elapses...
         for (final RecipeTarget target : _targets) {
             final CraftingRecipe _recipe = target.getRecipe();
             if (mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target) && !mod.getInventoryTracker().isFullyCapableToCraft(mod, target)) {
                 this.missingTicks++;
             } else {
                 this.missingTicks = 0;
+            }
+
+            if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                return this.radiusGoalTask;
+            }
+
+            final int currentTargetCountInInventory = mod.getInventoryTracker().getItemCount(target.getItem());
+            //System.out.println("lv 1");
+            if (this.prevTargetCountInInventory >= currentTargetCountInInventory && isContainerOpen(mod)) {
+                this.stuckCounter++;
+                System.out.println("stuck counter: " + this.stuckCounter);
+            } else {
+                //System.out.println("lv 2");
+                this.stuckCounter = 0;
+                this.prevTargetCountInInventory = currentTargetCountInInventory;
+
+                if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                    this.radiusGoalTask.stop(mod);
+                }
+            }
+            /*
+            System.out.println("inv tick");
+            if (mod.getInventoryTracker().hasRecipeMaterialsOrTarget(target) && mod.getInventoryTracker().isFullyCapableToCraft(mod, target)) {
+                final int currentTargetCountInInventory = mod.getInventoryTracker().getItemCount(target.getItem());
+                System.out.println("lv 1");
+                if (this.prevTargetCountInInventory >= currentTargetCountInInventory && isContainerOpen(mod)) {
+                    this.stuckCounter++;
+                    System.out.println("stuck counter: " + this.stuckCounter);
+                } else {
+                    System.out.println("lv 2");
+                    this.stuckCounter = 0;
+                    this.prevTargetCountInInventory = currentTargetCountInInventory;
+
+                    if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                        this.radiusGoalTask.stop(mod);
+                    }
+                }
+            } else {
+                this.stuckCounter = 0;
+
+                if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                    this.radiusGoalTask.stop(mod);
+                }
+            }*/
+
+            if (this.stuckCounter > 300) {
+                this.stuckCounter = 0;
+                if (Utils.isNull(this.radiusGoalTask)) {
+                    this.radiusGoalTask = new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 7);
+                } else if (this.radiusGoalTask.isFinished(mod)) {
+                    this.radiusGoalTask.next(mod.getPlayer().getBlockPos());
+                }
             }
 
             if (this.missingTicks > 150) {
@@ -213,11 +271,11 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected Task containerSubTask(AltoClef mod) {
         _craftResetTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay() * 10 + CRAFT_RESET_TIMER_BONUS_SECONDS);
-        if (_craftResetTimer.elapsed()) {
+        /*if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getControllerExtras().closeScreen();
             return null;
-        }
+        }*/
 
         for (RecipeTarget target : _targets) {
             if (mod.getInventoryTracker().targetsMet(target.getItem())) continue;

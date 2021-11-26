@@ -227,7 +227,7 @@ public class SchematicBuildTask extends Task {
         if (this.sourced == true && !builder.isActive()) {
             if (mod.inAvoidance(this.bounds)) {
                 mod.unsetAvoidanceOf(this.bounds);
-                System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
+                //System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
             }
 
             builder.resume();

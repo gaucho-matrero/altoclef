@@ -130,9 +130,9 @@ public class MoveItemToSlotTask extends Task {
             }
         }*/
 
-        System.out.println("AAAAAAAAAAAAAAAAAAAAa");
+        //System.out.println("AAAAAAAAAAAAAAAAAAAAa");
         //slots.forEach(e -> System.out.println("index: " + e.getInventorySlot() + " count: " + mod.getPlayer().currentScreenHandler.getSlot(e.getInventorySlot()).getStack().getCount()));
-        System.out.println("BBBBBBBBBBBBBBBBBBBBBB");
+        //System.out.println("BBBBBBBBBBBBBBBBBBBBBB");
 
         return bestMatch;
     }
