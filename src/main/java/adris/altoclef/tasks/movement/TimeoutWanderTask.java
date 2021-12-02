@@ -5,10 +5,14 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
+import baritone.api.pathing.movement.IMovement;
+import baritone.behavior.PathingBehavior;
+import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -100,6 +104,19 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        /*
+        final PathingBehavior p = mod.getClientBaritone().getPathingBehavior();
+        if (Utils.isset(p)) {
+            final PathExecutor c = p.getCurrent();
+            if (Utils.isset(c)) {
+                final BlockPos pos = c.getPath().positions().get(c.getPosition());
+
+                if (Utils.isset(pos)) {
+                    System.out.println("Pos" + ": " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+                }
+            }
+        }*/
 
         if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
             setDebugState("Getting unstuck from block.");

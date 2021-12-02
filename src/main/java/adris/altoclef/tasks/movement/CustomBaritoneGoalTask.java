@@ -4,8 +4,13 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.movement.IMovement;
+import baritone.behavior.PathingBehavior;
+import baritone.pathing.path.PathExecutor;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * Turns a baritone goal into a task.
@@ -33,7 +38,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         if (_cachedGoal == null) {
             _cachedGoal = newGoal(mod);
         }
