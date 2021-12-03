@@ -4,9 +4,12 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.Playground;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.*;
 import adris.altoclef.tasks.SchematicBuildTask;
 import adris.altoclef.tasks.chest.FillTargetChestTask;
+import adris.altoclef.tasksystem.Task;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -43,9 +46,23 @@ public class FillTargetChestCommand extends Command {
 
         final List<Item> itemList = new ArrayList<>();
 
+        if (parser.getArgUnits().length < 1) {
+            mod.log("You need to specify at least one resource.", MessagePriority.OPTIONAL);
+            mod.log("Use @list to get a list of available resources.", MessagePriority.OPTIONAL);
+            finish();
+            return;
+        }
+
         for (final String param : parser.getArgUnits()) {
             if (param == null) {
                 break;
+            }
+
+            if (!TaskCatalogue.taskExists(param)) {
+                mod.log("\"" + param + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);
+                mod.log("Use @list to get a list of available resources.", MessagePriority.OPTIONAL);
+                finish();
+                return;
             }
 
             itemList.add((new ItemTarget(param)).getMatches()[0]);

@@ -1,10 +1,12 @@
 package adris.altoclef.util;
 
 import adris.altoclef.Debug;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.io.IOException;
 import java.util.function.Predicate;
 
 public class CubeBounds {
