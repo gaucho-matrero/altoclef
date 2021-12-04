@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CubeBounds;
@@ -41,6 +42,8 @@ public class SchematicBuildTask extends Task {
     private boolean clearRunning = false;
     private String name;
     private ISchematic schematic;
+    private static final int FOOD_UNITS = 120;
+    private static final int MIN_FOOD_UNITS = 32;
 
     public SchematicBuildTask(final String schematicFileName) {
         this(schematicFileName, new BlockPos(MinecraftClient.getInstance().player.getPos()));
@@ -157,6 +160,10 @@ public class SchematicBuildTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+            return new CollectFoodTask(FOOD_UNITS);
+        }
+
         if (clearRunning && builder.isActive()) {
             return null;
         }

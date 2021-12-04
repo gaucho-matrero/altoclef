@@ -167,7 +167,7 @@ public class InventoryTracker extends Tracker {
 
 
 
-            System.out.println(recDepth + " " + item.getName().toString());
+            //System.out.println(recDepth + " " + item.getName().toString());
             final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
 
             if (Utils.isNull(recipe)) return false;
@@ -195,7 +195,7 @@ public class InventoryTracker extends Tracker {
                 return false;
             }
 
-            System.out.println(recDepth + " " + item.getName().toString());
+            //System.out.println(recDepth + " " + item.getName().toString());
             final Recipe recipe = RecipesUtils.getRecipeWithOutput(item.getDefaultStack());
 
             if (Utils.isNull(recipe)) return false;
@@ -236,7 +236,7 @@ public class InventoryTracker extends Tracker {
 
             final List<Slot> subBlacklist = new ArrayList<>();
             crossed.clear();
-            System.out.println(Utils.isNull(recipeTarget) + " " + Utils.isNull(recipeTarget.getItem()) + " " + Utils.isNull(recipeTarget.getItem().getCatalogueName()) + " " + recipeTarget.getItem().toString());
+            //System.out.println(Utils.isNull(recipeTarget) + " " + Utils.isNull(recipeTarget.getItem()) + " " + Utils.isNull(recipeTarget.getItem().getCatalogueName()) + " " + recipeTarget.getItem().toString());
             if (!isSlotInAnyDepthSatisfiable(itemTarget, mod, subBlacklist, blacklist)) return false;
             blacklist.addAll(subBlacklist);
         }

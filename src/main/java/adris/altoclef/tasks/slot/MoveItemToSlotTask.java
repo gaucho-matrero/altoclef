@@ -54,18 +54,18 @@ public class MoveItemToSlotTask extends Task {
                     //Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
-                System.out.println("Meloweh A");
+                //System.out.println("Meloweh A");
                 return new ClickSlotTask(bestPickup);
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
             if (currentHeld.getCount() + currentlyPlaced  < _toMove.getTargetCount()) {
                 // Just place all of 'em
-                System.out.println("Meloweh B");
+                //System.out.println("Meloweh B");
                 return new ClickSlotTask(_destination);
             } else {
                 // Place one at a time.
-                System.out.println("Meloweh C");
+                //System.out.println("Meloweh C");
                 return new ClickSlotTask(_destination, 1);
             }
         }

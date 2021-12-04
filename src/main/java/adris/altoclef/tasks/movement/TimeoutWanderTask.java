@@ -8,6 +8,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Utils;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.pathing.movement.IMovement;
@@ -125,9 +126,14 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         if (_executingPlanB) {
             setDebugState("Plan B: Random direction.");
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+
+            // I think you can take the second statement out
+            if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
             }
+            /*if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            }*/
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
@@ -196,7 +202,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
             double toWander = _distanceToWander + _wanderDistanceExtension;
-            return sqDist > toWander * toWander;
+            return sqDist > toWander * toWander; // ok, well, we could just let the custom goal process do the job (if the change i did has not been removed/reverted)
         } else {
             return false;
         }

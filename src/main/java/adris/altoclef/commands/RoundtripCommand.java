@@ -86,6 +86,19 @@ public class RoundtripCommand extends Command {
         return command;
     }
 
+    private void addTreeToQueue(final String subcommand) {
+        for (final String commandline : macros.get(subcommand)) {
+            final String[] keywords = commandline.split(" ");
+            if (keywords.length > 1 && macros.containsKey(keywords[1])) {
+                if (keywords.length > 2) Debug.logMessage("too many parameter found for macro " + keywords[1]);
+                addTreeToQueue(keywords[1]);
+            } else {
+                Debug.logMessage(commandline);
+                queue.add("@" + commandline);
+            }
+        }
+    }
+
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         final String message = parser.get(String.class);
@@ -109,11 +122,20 @@ public class RoundtripCommand extends Command {
         }
 
         if (macros.keySet().contains(subcommand)) {
+            addTreeToQueue(subcommand);
+            /*for (final String commandline : macros.get(subcommand)) {
+                //Debug.logMessage(commandline);
+                //queue.add("@" + commandline);
+                addTreeToQueue(commandline);
+            }*/
+
+            /*
             for (Iterator<String> it = macros.get(subcommand).listIterator(); it.hasNext();) {
                 String commandline = it.next();
+
                 Debug.logMessage(commandline);
                 queue.add("@" + commandline);
-            }
+            }*/
             start(mod);
         } else if (subcommand.equals("start")) {
             start(mod);
