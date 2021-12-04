@@ -4,7 +4,6 @@ import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.world.biome.source.BiomeArray;
 import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,8 +20,8 @@ public class LoadChunkMixin {
             method = "loadChunkFromPacket",
             at = @At("RETURN")
     )
-    private void onLoadChunk(int x, int z, BiomeArray biomes, PacketByteBuf buf, NbtCompound nbt, BitSet bitSet, CallbackInfoReturnable<WorldChunk> ci) {
-        StaticMixinHookups.onChunkLoad(ci.getReturnValue());
+    private void onLoadChunk(int x, int z, PacketByteBuf buf, NbtCompound nbt, Consumer<ChunkData.BlockEntityVisitor> consumer, CallbackInfoReturnable<@Nullable WorldChunk> cir) {
+        StaticMixinHookups.onChunkLoad(cir.getReturnValue());
     }
 
     @Inject(
