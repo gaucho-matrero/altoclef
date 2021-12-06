@@ -62,6 +62,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private Task _unstuckTask = null;
     private int _failCounter;
     private double _wanderDistanceExtension;
+    private boolean snakeFinished = false;
+    private boolean snakeWasActive = false;
 
     public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
         _distanceToWander = distanceToWander;
@@ -124,22 +126,49 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             return _unstuckTask;
         }
 
+        /*
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+            mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+        }*/
+        //plan b later if needed
+
         if (_executingPlanB) {
             setDebugState("Plan B: Random direction.");
 
             // I think you can take the second statement out
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
-            }
-            /*if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            if (!mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
                 mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
-            }*/
+                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+                snakeWasActive = true;
+            }
+            //if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            //    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            //}
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
             }
         }
+
+        if (snakeWasActive && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) snakeFinished = true;
+
+        /*if (_executingPlanB) {
+            setDebugState("Plan B: Random direction.");
+
+            // I think you can take the second statement out
+            if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+            }
+            //if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            //    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            //}
+        } else {
+            setDebugState("Exploring.");
+            if (!mod.getClientBaritone().getExploreProcess().isActive()) {
+                mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
+            }
+        }*/
 
         //_distanceProgressChecker.setProgress(mod.getPlayer().getPos());
         //if (_distanceProgressChecker.failed()) {
@@ -161,7 +190,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
                 Debug.logMessage("Failed exploring.");
                 if (_executingPlanB) {
                     // Cancel current plan B
-                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();//hmmm... (눈_눈) should we allow that?
                 }
                 _executingPlanB = true;
             }
@@ -192,10 +221,12 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         // Why the heck did I add this in?
         //if (_origin == null) return true;
 
-        if (Float.isInfinite(_distanceToWander)) return false;
+        //if (Float.isInfinite(_distanceToWander)) return false;
 
         // If we fail 10 times or more, we may as well try the previous task again.
-        if (_failCounter > 10) {
+        // Meloweh: It makes the system less predictable. Let's at least find
+        // a new starting position.
+        /*if (_failCounter > 10) {
             return true;
         }
 
@@ -205,7 +236,20 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             return sqDist > toWander * toWander; // ok, well, we could just let the custom goal process do the job (if the change i did has not been removed/reverted)
         } else {
             return false;
+        }*/
+        //return !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive();
+
+        if (snakeFinished) {
+            snakeFinished = false;
+            snakeWasActive = false;
+            return true;
         }
+        /*
+        if (!snakeWasActive && Float.isInfinite(_distanceToWander)) {
+            return true;
+        }*/
+
+        return false;
     }
 
     @Override

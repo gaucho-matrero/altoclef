@@ -42,8 +42,8 @@ public class SchematicBuildTask extends Task {
     private boolean clearRunning = false;
     private String name;
     private ISchematic schematic;
-    private static final int FOOD_UNITS = 120;
-    private static final int MIN_FOOD_UNITS = 32;
+    private static final int FOOD_UNITS = 1;
+    private static final int MIN_FOOD_UNITS = 1;
 
     public SchematicBuildTask(final String schematicFileName) {
         this(schematicFileName, new BlockPos(MinecraftClient.getInstance().player.getPos()));
@@ -160,13 +160,14 @@ public class SchematicBuildTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
-            return new CollectFoodTask(FOOD_UNITS);
-        }
-
         if (clearRunning && builder.isActive()) {
             return null;
         }
+
+        /*
+        if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+            return new CollectFoodTask(FOOD_UNITS);
+        }*/
 
         clearRunning = false;
 
