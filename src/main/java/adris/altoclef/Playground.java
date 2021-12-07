@@ -217,7 +217,7 @@ public class Playground {
                     Debug.logWarning("No zombs found.");
                 } else {
                     LivingEntity entity = zombs.get(0);
-                    mod.runUserTask(new KillEntityTask(entity));
+                    mod.runUserTask(new KillEntityTask(mod.getEntityTracker().getClosestEntity(ZombieEntity.class)));
                 }
                 break;
             case "craft":
