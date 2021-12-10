@@ -135,6 +135,11 @@ public class BotBehaviour {
         return result;
     }
 
+    public void clearAvoidances() {
+        current().toAvoidBreaking.clear();
+        current().applyState();
+    }
+
     public void avoidBlockPlacing(Predicate<BlockPos> pred) {
         current().toAvoidPlacing.add(pred);
         current().applyState();

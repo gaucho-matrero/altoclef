@@ -17,8 +17,11 @@ public class CubeBounds {
     public CubeBounds(final BlockPos startPos, final int sizeX, final int sizeY, final int sizeZ) {
         //Debug.logMessage(startPos.getX() + " " + startPos.getY() + " " + startPos.getZ());
         //Debug.logMessage((startPos.getX() + sizeX) + " " + (startPos.getY() + sizeY) + " " + (startPos.getZ() + sizeZ));
-        this.low = new BlockPos(startPos.getX() - 1, startPos.getY() - 1, startPos.getZ() - 1);
-        this.high = new BlockPos(low.getX() + sizeX + 1, low.getY() + sizeY + 1, low.getZ() + sizeZ + 1);
+
+        this.low = new BlockPos(startPos.getX(), startPos.getY(), startPos.getZ());
+        this.high = new BlockPos(low.getX() + sizeX, low.getY() + sizeY, low.getZ() + sizeZ);
+
+        //this.low = this.high = new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
         this.predicate = (BlockPos e) ->
             low.getX() <= e.getX() &&

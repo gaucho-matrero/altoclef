@@ -171,6 +171,7 @@ public class SchematicBuildTask extends Task {
 
         clearRunning = false;
 
+        /*
         _currentTry = builder.getAboveBreak();
         if (!isNull(_currentTry)) {
             //System.out.println("above");
@@ -196,22 +197,7 @@ public class SchematicBuildTask extends Task {
             builder.resume();
             this.sourced = false;
             Debug.logMessage("Resuming build process...");
-
-            /*return new DoToClosestBlockTask(
-                    (BlockPos blockPos) -> {
-                        if (_currentTry != blockPos) {
-                            _progressChecker.reset();
-                        }
-                        _currentTry = blockPos;
-                        // If block above is solid, break it.
-                        if (WorldHelper.isSolid(mod, blockPos)) {
-                            return new DestroyBlockTask(blockPos);
-                        }
-
-                    },
-                    validPred,
-                    Blocks.CHEST);*/
-        }
+        }*/
         if (builder.isFromAltoclef()) {
             //System.out.println("B: OVERRIDE");
             overrideMissing();
