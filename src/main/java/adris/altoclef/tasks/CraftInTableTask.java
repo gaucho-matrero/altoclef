@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
@@ -174,21 +173,27 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 this.missingTicks = 0;
             }
 
-            if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
-                return this.radiusGoalTask;
+            if (Utils.isSet(this.radiusGoalTask)) {
+                if (!this.radiusGoalTask.isFinished(mod)) {
+                    return this.radiusGoalTask;
+                }
+                this.stuckCounter = 0;
             }
+            /*if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                return this.radiusGoalTask;
+            }*/
 
             final int currentTargetCountInInventory = mod.getInventoryTracker().getItemCount(target.getItem());
             //System.out.println("lv 1");
             if (this.prevTargetCountInInventory >= currentTargetCountInInventory && isContainerOpen(mod)) {
                 this.stuckCounter++;
-                System.out.println("stuck counter: " + this.stuckCounter);
+                System.out.println("stuck counter 3x3: " + this.stuckCounter);
             } else {
                 //System.out.println("lv 2");
                 this.stuckCounter = 0;
                 this.prevTargetCountInInventory = currentTargetCountInInventory;
 
-                if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
                     this.radiusGoalTask.stop(mod);
                 }
             }
@@ -218,7 +223,6 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }*/
 
             if (this.stuckCounter > 300) {
-                this.stuckCounter = 0;
                 if (Utils.isNull(this.radiusGoalTask)) {
                     this.radiusGoalTask = new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 7);
                 } else if (this.radiusGoalTask.isFinished(mod)) {

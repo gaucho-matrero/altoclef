@@ -81,5 +81,5 @@ public class Utils {
         return object == null;
     }
 
-    public static boolean isset(final Object object) {return !isNull(object);}
+    public static boolean isSet(final Object object) {return !isNull(object);}
 }

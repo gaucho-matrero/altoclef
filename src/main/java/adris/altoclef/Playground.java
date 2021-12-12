@@ -31,6 +31,9 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalRandomSpotNearby;
+import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
@@ -130,6 +133,10 @@ public class Playground {
                 break;
             case "randr":
                 mod.runUserTask(new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 6));
+                break;
+            case "randr2":
+                final Goal goal = new GoalRandomSpotNearby();
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
                 break;
             case "sign2":
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10), "Hello there!"));

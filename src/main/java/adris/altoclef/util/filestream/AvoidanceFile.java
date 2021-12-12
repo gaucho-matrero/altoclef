@@ -150,6 +150,7 @@ public class AvoidanceFile {
 
     public static void append(final CubeBounds bounds) {
         //append(bounds.getLow(), bounds.getHigh());
+        remove(bounds);
         StringBuilder result = new StringBuilder();
         final BlockPos low = bounds.getLow();
         final BlockPos high = bounds.getHigh();

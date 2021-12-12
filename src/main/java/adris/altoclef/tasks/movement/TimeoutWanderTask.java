@@ -10,6 +10,7 @@ import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalRandomSpotNearby;
 import baritone.api.pathing.goals.GoalRunAway;
 import baritone.api.pathing.movement.IMovement;
 import baritone.behavior.PathingBehavior;
@@ -134,11 +135,11 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         if (_executingPlanB) {
             setDebugState("Plan B: Random direction.");
-
-            // I think you can take the second statement out
             if (!mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
-                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+                final Goal goal = new GoalRandomSpotNearby();
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
+                //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+                //mod.getClientBaritone().getCustomGoalProcess().reactivateRunAway();
                 snakeWasActive = true;
             }
             //if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
@@ -147,6 +148,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
+                // why always to origin? does it change?
                 mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
             }
         }
@@ -156,7 +158,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         /*if (_executingPlanB) {
             setDebugState("Plan B: Random direction.");
 
-            // I think you can take the second statement out
+            // I think you can take out the second statement
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
                 mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
             }

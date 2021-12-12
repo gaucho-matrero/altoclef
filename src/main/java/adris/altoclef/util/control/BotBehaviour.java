@@ -17,6 +17,7 @@ import net.minecraft.world.RaycastContext;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Represents the current behaviour of the bot. It can be copied and reset
@@ -130,9 +131,13 @@ public class BotBehaviour {
     }
 
     public boolean disableAvoidanceOf(final Predicate<BlockPos> originalRef) {
-        final boolean result = current().toAvoidBreaking.remove(originalRef);
+        //current().toAvoidBreaking.clear();
+        current().toAvoidBreaking = current().toAvoidBreaking.stream().filter(e -> originalRef.negate() == e).collect(Collectors.toList());
+        //current().toAvoidBreaking.removeIf(e -> e.and(originalRef) == originalRef);
+        //final boolean result = current().toAvoidBreaking.remove(originalRef);
         current().applyState();
-        return result;
+        //return result;
+        return false;
     }
 
     public void clearAvoidances() {

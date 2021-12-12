@@ -19,7 +19,6 @@ import adris.altoclef.util.Utils;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
-import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -162,7 +161,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 _currentFurnace = furnaceMap.getOpenFurnaceData();
             }
 
-            if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+            if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
                 return this.radiusGoalTask;
             }
 
@@ -247,7 +246,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             } else {
                 this.stuckCounter = 0;
                 this.collectedOutput = false;
-                if (Utils.isset(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
                     this.radiusGoalTask.stop(mod);
                 }
             }

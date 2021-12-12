@@ -8,8 +8,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CubeBounds;
 import adris.altoclef.util.Utils;
-import adris.altoclef.util.helpers.WorldHelper;
-import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.BaritoneAPI;
 import baritone.api.schematic.ISchematic;
 import baritone.process.BuilderProcess;
 import net.minecraft.block.BlockState;
@@ -42,8 +41,8 @@ public class SchematicBuildTask extends Task {
     private boolean clearRunning = false;
     private String name;
     private ISchematic schematic;
-    private static final int FOOD_UNITS = 1;
-    private static final int MIN_FOOD_UNITS = 1;
+    private static final int FOOD_UNITS = 80;
+    private static final int MIN_FOOD_UNITS = 10;
 
     public SchematicBuildTask(final String schematicFileName) {
         this(schematicFileName, new BlockPos(MinecraftClient.getInstance().player.getPos()));
@@ -90,7 +89,6 @@ public class SchematicBuildTask extends Task {
             return;
         }
 
-        //System.out.println("New start: " + schematicFileName);
         builder.clearState();
 
         if (Utils.isNull(this.schematic)) {
@@ -104,13 +102,13 @@ public class SchematicBuildTask extends Task {
         }
 
         if (!isNull(schemSize) && builder.isFromAltoclef() && !this.addedAvoidance) {
-            //mod.getPlayer().getPitch()
             this.bounds = new CubeBounds(mod.getPlayer().getBlockPos(), this.schemSize.getX(), this.schemSize.getY(), this.schemSize.getZ());
-            mod.addToAvoidanceFile(this.bounds);
+            //this.bounds = new CubeBounds(new BlockPos(0,0,0), 0, 0, 0);
             this.addedAvoidance = true;
+            mod.addToAvoidanceFile(this.bounds);
             mod.reloadAvoidanceFile();
+            mod.unsetAvoidanceOf(this.bounds);
         }
-
         this.pause = false;
     }
 
@@ -154,7 +152,6 @@ public class SchematicBuildTask extends Task {
         if (isNull(this.missing)) {
             overrideMissing();
         }
-
         return this.missing;
     }
 
@@ -164,69 +161,46 @@ public class SchematicBuildTask extends Task {
             return null;
         }
 
-        /*
-        if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
-            return new CollectFoodTask(FOOD_UNITS);
-        }*/
-
         clearRunning = false;
 
         /*
-        _currentTry = builder.getAboveBreak();
-        if (!isNull(_currentTry)) {
-            //System.out.println("above");
-            if (WorldHelper.isSolid(mod, _currentTry)) {
-                if (mod.inAvoidance(this.bounds)) {
-                    mod.unsetAvoidanceOf(this.bounds);
-                    //System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
-                }
-
-                BlockPos p = mod.getPlayer().getBlockPos();
-                builder.clearArea(p, new BlockPos(p.getX(), p.getY() + 5, p.getZ()));
-                clearRunning = true;
-                return null;
-                //return new DestroyBlockTask(_currentTry);
-            }
-
-            if (!mod.inAvoidance(this.bounds)) {
-                mod.setAvoidanceOf(this.bounds);
-                //System.out.println("Enabled");
-            }
-
-            builder.setAboveBreak(null);
-            builder.resume();
-            this.sourced = false;
-            Debug.logMessage("Resuming build process...");
+        if (!builder.isFromAltoclef() && builder.isPaused()) {
+            builder.popStack();
         }*/
-        if (builder.isFromAltoclef()) {
-            //System.out.println("B: OVERRIDE");
-            overrideMissing();
-        }
 
-        if (/*builder.isPausedBecauseOfMissingMaterials() &&*/ !isNull(getMissing()) && !getMissing().isEmpty()) {
+        /*if (builder.isFromAltoclef()) {
+            overrideMissing();
+        }*/
+
+        overrideMissing();
+
+        this.sourced = false;
+
+        if (!isNull(getMissing()) && !getMissing().isEmpty() && (builder.isPaused() || !builder.isFromAltoclef()) || !builder.isActive()) {
             if (!mod.inAvoidance(this.bounds)) {
                 mod.setAvoidanceOf(this.bounds);
-                //System.out.println("Enabled");
             }
-
-            //mod.getInventoryTracker().getInventorySlotsWithItem()
-
+            if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+                return new CollectFoodTask(FOOD_UNITS);
+            }
             for (final BlockState state : getTodoList(mod, missing)) {
                 return TaskCatalogue.getItemTask(state.getBlock().asItem(), missing.get(state));
             }
-
+            if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+                return new CollectFoodTask(FOOD_UNITS);
+            }
             this.sourced = true;
         }
 
         if (this.sourced == true && !builder.isActive()) {
             if (mod.inAvoidance(this.bounds)) {
                 mod.unsetAvoidanceOf(this.bounds);
-                //System.out.println("Disabled: " + mod.unsetAvoidanceOf(this.bounds));
             }
 
             builder.resume();
-            this.sourced = false;
+            //this.sourced = false;
             Debug.logMessage("Resuming build process...");
+            System.out.println("Resuming builder...");
         }
 
         return null;
@@ -254,7 +228,6 @@ public class SchematicBuildTask extends Task {
             mod.loadAvoidanceFile();
             return true;
         }
-
         return false;
     }
 }
