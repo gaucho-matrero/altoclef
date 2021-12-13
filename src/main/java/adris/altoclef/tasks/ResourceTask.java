@@ -137,21 +137,23 @@ public abstract class ResourceTask extends Task {
                 if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
                     BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
                     //TODO: could this make the bot get stuck between two resources?
-                    if (Utils.isSet(closest) && _mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
+                    if (Utils.isSet(closest)) {
                         _mineLastClosest = closest;
                     }
 
-                    final boolean isInChunk = mod.getChunkTracker().isChunkLoaded(_mineLastClosest);
-                    final boolean isMined = !mod.getBlockTracker().blockIsValid(_mineLastClosest, _mineIfPresent);
-
-                    if (isInChunk && isMined || !Blacklist.isBlacklisted(_mineLastClosest)) {
-                        //TODO so if we set it null here, shouldn't we ensure the next mining target to stick with executing MineAndCollectTask?
-                        //Answer no because if that would be the case then this would count for isBlacklisted too
-                        _mineLastClosest = null;
-                    }
-
                     if (Utils.isSet(_mineLastClosest)) {
-                        return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                        final boolean isInChunk = mod.getChunkTracker().isChunkLoaded(_mineLastClosest);
+                        final boolean isMined = !mod.getBlockTracker().blockIsValid(_mineLastClosest, _mineIfPresent);
+
+                        if (isInChunk && isMined || !Blacklist.isBlacklisted(_mineLastClosest)) {
+                            //TODO so if we set it null here, shouldn't we ensure the next mining target to stick with executing MineAndCollectTask?
+                            //Answer no because if that would be the case then this would count for isBlacklisted too
+                            _mineLastClosest = null;
+                        }
+
+                        if (Utils.isSet(_mineLastClosest)) {
+                            return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                        }
                     }
                 }
             }

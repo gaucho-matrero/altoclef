@@ -3,11 +3,14 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.CubeBounds;
 import adris.altoclef.util.Utils;
+import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.BaritoneAPI;
 import baritone.api.schematic.ISchematic;
 import baritone.process.BuilderProcess;
@@ -43,6 +46,9 @@ public class SchematicBuildTask extends Task {
     private ISchematic schematic;
     private static final int FOOD_UNITS = 80;
     private static final int MIN_FOOD_UNITS = 10;
+    private final TimerGame _clickTimer = new TimerGame(180);
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
+    private Task walkAroundTask;
 
     public SchematicBuildTask(final String schematicFileName) {
         this(schematicFileName, new BlockPos(MinecraftClient.getInstance().player.getPos()));
@@ -110,6 +116,9 @@ public class SchematicBuildTask extends Task {
             mod.unsetAvoidanceOf(this.bounds);
         }
         this.pause = false;
+
+        _moveChecker.reset();
+        _clickTimer.reset();
     }
 
     private List<BlockState> getTodoList(final AltoClef mod, final Map<BlockState, Integer> missing) {
@@ -172,6 +181,7 @@ public class SchematicBuildTask extends Task {
             overrideMissing();
         }*/
 
+
         overrideMissing();
 
         this.sourced = false;
@@ -186,11 +196,13 @@ public class SchematicBuildTask extends Task {
             for (final BlockState state : getTodoList(mod, missing)) {
                 return TaskCatalogue.getItemTask(state.getBlock().asItem(), missing.get(state));
             }
-            if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
+            /*if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
                 return new CollectFoodTask(FOOD_UNITS);
-            }
+            }*/
             this.sourced = true;
         }
+
+        mod.unsetAvoidanceOf(this.bounds);
 
         if (this.sourced == true && !builder.isActive()) {
             if (mod.inAvoidance(this.bounds)) {
@@ -202,6 +214,33 @@ public class SchematicBuildTask extends Task {
             Debug.logMessage("Resuming build process...");
             System.out.println("Resuming builder...");
         }
+
+        if (_moveChecker.check(mod)) {
+            System.out.println("move checker reset.");
+            _clickTimer.reset();
+        }
+        if (_clickTimer.elapsed()) {
+            if (isNull(walkAroundTask)) {
+                walkAroundTask = new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 5d).next(mod.getPlayer().getBlockPos());
+            }
+            Debug.logMessage("Timer elapsed.");
+        }
+        if (!isNull(walkAroundTask)) {
+            if (!walkAroundTask.isFinished(mod)) {
+                return walkAroundTask;
+            } else {
+                walkAroundTask = null;
+                builder.popStack();
+                _clickTimer.reset();
+                _moveChecker.reset();
+            }
+        }
+
+        missing.forEach((k,e) -> {
+            if (Utils.isSet(k)) {
+                System.out.println(k);
+            }
+        });
 
         return null;
     }

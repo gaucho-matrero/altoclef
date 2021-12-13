@@ -150,6 +150,9 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 // why always to origin? does it change?
                 mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
+                //final Goal goal = new GoalRandomSpotNearby();
+                //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
+                //snakeWasActive = true;
             }
         }
 
