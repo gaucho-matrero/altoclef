@@ -17,6 +17,7 @@ import baritone.process.BuilderProcess;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
@@ -216,7 +217,7 @@ public class SchematicBuildTask extends Task {
         }
 
         if (_moveChecker.check(mod)) {
-            System.out.println("move checker reset.");
+            //System.out.println("move checker reset.");
             _clickTimer.reset();
         }
         if (_clickTimer.elapsed()) {
@@ -236,11 +237,27 @@ public class SchematicBuildTask extends Task {
             }
         }
 
+        /*
+        if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable() != null)
+        BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().forEach(e -> {
+            if (Utils.isSet(e) && e.getBlock().asItem().toString() != "air") {
+                System.out.println(e.getBlock().getName());
+                System.out.println(e.getBlock().asItem().getName());
+                System.out.println(e.getBlock().asItem().toString());
+                System.out.println(e.getBlock().toString());
+                System.out.println("(((((((((");
+                System.out.println(e.getBlock().getDefaultState());
+                System.out.println(")))))))))");
+                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            }
+        });*/
+        //mod.getInventoryTracker().getItemStackInSlot(mod.getInventoryTracker().getInventorySlotsWithItem(Items.OAK_DOOR).get(0)).getItem().
+        /*
         missing.forEach((k,e) -> {
             if (Utils.isSet(k)) {
                 System.out.println(k);
             }
-        });
+        });*/
 
         return null;
     }

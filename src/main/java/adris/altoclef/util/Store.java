@@ -69,6 +69,15 @@ public class Store {
         return storage.containsKey(name);
     }
 
+    public final boolean removeAttribute(final String name) {
+        return Utils.isSet(storage.remove(name));
+    }
+
+    public final boolean clearStore() {
+        storage.clear();
+        return storage.size() < 1;
+    }
+
     /**
      * Returns a casted object from the store.
      *
