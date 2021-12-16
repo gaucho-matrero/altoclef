@@ -14,6 +14,7 @@ import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.BaritoneAPI;
 import baritone.api.schematic.ISchematic;
 import baritone.process.BuilderProcess;
+import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
@@ -47,7 +48,7 @@ public class SchematicBuildTask extends Task {
     private ISchematic schematic;
     private static final int FOOD_UNITS = 80;
     private static final int MIN_FOOD_UNITS = 10;
-    private final TimerGame _clickTimer = new TimerGame(180);
+    private final TimerGame _clickTimer = new TimerGame(120);
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
     private Task walkAroundTask;
 
@@ -110,7 +111,6 @@ public class SchematicBuildTask extends Task {
 
         if (!isNull(schemSize) && builder.isFromAltoclef() && !this.addedAvoidance) {
             this.bounds = new CubeBounds(mod.getPlayer().getBlockPos(), this.schemSize.getX(), this.schemSize.getY(), this.schemSize.getZ());
-            //this.bounds = new CubeBounds(new BlockPos(0,0,0), 0, 0, 0);
             this.addedAvoidance = true;
             mod.addToAvoidanceFile(this.bounds);
             mod.reloadAvoidanceFile();
@@ -172,19 +172,7 @@ public class SchematicBuildTask extends Task {
         }
 
         clearRunning = false;
-
-        /*
-        if (!builder.isFromAltoclef() && builder.isPaused()) {
-            builder.popStack();
-        }*/
-
-        /*if (builder.isFromAltoclef()) {
-            overrideMissing();
-        }*/
-
-
         overrideMissing();
-
         this.sourced = false;
 
         if (!isNull(getMissing()) && !getMissing().isEmpty() && (builder.isPaused() || !builder.isFromAltoclef()) || !builder.isActive()) {
@@ -197,9 +185,6 @@ public class SchematicBuildTask extends Task {
             for (final BlockState state : getTodoList(mod, missing)) {
                 return TaskCatalogue.getItemTask(state.getBlock().asItem(), missing.get(state));
             }
-            /*if (mod.getInventoryTracker().totalFoodScore() < MIN_FOOD_UNITS) {
-                return new CollectFoodTask(FOOD_UNITS);
-            }*/
             this.sourced = true;
         }
 
@@ -211,13 +196,11 @@ public class SchematicBuildTask extends Task {
             }
 
             builder.resume();
-            //this.sourced = false;
             Debug.logMessage("Resuming build process...");
             System.out.println("Resuming builder...");
         }
 
         if (_moveChecker.check(mod)) {
-            //System.out.println("move checker reset.");
             _clickTimer.reset();
         }
         if (_clickTimer.elapsed()) {
@@ -238,19 +221,23 @@ public class SchematicBuildTask extends Task {
         }
 
         /*
-        if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable() != null)
-        BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().forEach(e -> {
-            if (Utils.isSet(e) && e.getBlock().asItem().toString() != "air") {
-                System.out.println(e.getBlock().getName());
-                System.out.println(e.getBlock().asItem().getName());
-                System.out.println(e.getBlock().asItem().toString());
-                System.out.println(e.getBlock().toString());
-                System.out.println("(((((((((");
-                System.out.println(e.getBlock().getDefaultState());
-                System.out.println(")))))))))");
-                System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable() != null) {
+            if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().stream().anyMatch(e ->  e != null && e.getBlock() instanceof BedBlock)) {
+                System.out.println("ALT: true");
             }
-        });*/
+            BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().forEach(e -> {
+                if (Utils.isSet(e) && e.getBlock().asItem().toString() != "air") {
+                    System.out.println(e.getBlock().getName());
+                    System.out.println(e.getBlock().asItem().getName());
+                    System.out.println(e.getBlock().asItem().toString());
+                    System.out.println(e.getBlock().toString());
+                    System.out.println("(((((((((");
+                    System.out.println(e.getBlock().getDefaultState());
+                    System.out.println(")))))))))");
+                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                }
+            });
+        }*/
         //mod.getInventoryTracker().getItemStackInSlot(mod.getInventoryTracker().getInventorySlotsWithItem(Items.OAK_DOOR).get(0)).getItem().
         /*
         missing.forEach((k,e) -> {
