@@ -9,7 +9,9 @@ import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.slots.CursorInventorySlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 
@@ -58,9 +60,15 @@ public class GiveItemToPlayerTask extends Task {
                         // Update target
                         target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
                         _throwTarget.set(i, target);
-                        return new ThrowSlotTask(has.get());
+                            mod.runUserTask(new ThrowSlotTask(has.get()));
+                            // For some reason, the bot needs to do this ^
+                            //twice. Once to grab the slot and once to throw.
+                            //I cannot get it to avoid this behavior with
+                            // the current paradigm. This is def a hotfix, but its a fix.
+                            return new ThrowSlotTask(has.get());
                     }
                 }
+
             }
             mod.log("Finished giving items.");
             stop(mod);
