@@ -65,7 +65,13 @@ public class GiveItemToPlayerTask extends Task {
                             //twice. Once to grab the slot and once to throw.
                             //I cannot get it to avoid this behavior with
                             // the current paradigm. This is def a hotfix, but its a fix.
-                            return new ThrowSlotTask(has.get());
+//                            if (target.matches(mod.getInventoryTracker().getItemStackInCursorSlot().getItem())){
+//                                Debug.logMessage("THORWING FROM CURSOR SLOT");
+//                                return new ThrowSlotTask(new CursorInventorySlot());
+//                          } // UNEEDED BECAUSE THE ITEM ISN'T IN THE CURSOR
+//                          SLOT
+                            Debug.logMessage("THORWING FROM INVENTORY SLOT");
+                            return (new ThrowSlotTask(has.get()));
                     }
                 }
 
