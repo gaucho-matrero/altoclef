@@ -36,7 +36,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
         handleDrowning(mod);
 
         // Lava Escape
-        if (isInLavaOhShit(mod)) {
+        if (isInLavaOhShit(mod) && mod.getBehaviour().shouldEscapeLava()) {
             setTask(new EscapeFromLavaTask());
             return 100;
         }
