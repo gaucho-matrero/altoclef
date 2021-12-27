@@ -445,6 +445,8 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+
+
     public boolean isEquipped(Item ...matches) {
         return Arrays.asList(matches).contains(getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem());
     }
