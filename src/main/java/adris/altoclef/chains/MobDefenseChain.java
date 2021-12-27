@@ -90,6 +90,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Pause if we're not loaded into a world.
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
+        // TODO: Isn't this redundant? -- James
 
         // Put out fire if we're standing on one like an idiot
         BlockPos fireBlock = isInsideFireAndOnFire(mod);
@@ -463,7 +464,6 @@ public class MobDefenseChain extends SingleTaskChain {
     public void setTargetEntity(Entity entity) {
         _targetEntity = entity;
     }
-
     public void setForceFieldRange(double range) {
         _killAura.setRange(range);
     }

@@ -176,11 +176,7 @@ public class Playground {
                         new ItemTarget("crafting_table", 1)
                 ));
                  */
-                //I would like stacked to be moved to a main command, but I am too lazy to do it.
-                ItemTarget[] items ={new ItemTarget(Items.DIAMOND_PICKAXE), new ItemTarget(Items.DIAMOND_SWORD)}; //Should get tools first
-                mod.runUserTask(TaskCatalogue.getSquashedItemTask(items));
                 mod.runUserTask(new EquipArmorTask(Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_HELMET, Items.DIAMOND_BOOTS));
-                mod.runUserTask(TaskCatalogue.getItemTask(new ItemTarget(Items.DIAMOND_SHOVEL))); //gotta have a shovel eh?
                 break;
             case "stacked2":
                 mod.runUserTask(new EquipArmorTask(Items.DIAMOND_CHESTPLATE));

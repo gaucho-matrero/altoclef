@@ -4,6 +4,7 @@ import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.chains.FoodChain;
 import adris.altoclef.chains.MobDefenseChain;
+import adris.altoclef.chains.HuntMobChain;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.tasks.movement.IdleTask;
@@ -60,6 +61,7 @@ public class AltoClef implements ModInitializer {
     private UserTaskChain _userTaskChain;
     private FoodChain _foodChain;
     private MobDefenseChain _mobDefenseChain;
+    private HuntMobChain _huntMobChain;
     private MLGBucketFallChain _mlgBucketChain;
     // Trackers
     private InventoryTracker _inventoryTracker;
@@ -118,6 +120,7 @@ public class AltoClef implements ModInitializer {
         // Task chains
         _userTaskChain = new UserTaskChain(_taskRunner);
         _mobDefenseChain = new MobDefenseChain(_taskRunner);
+        _huntMobChain = new HuntMobChain(_taskRunner);
         new DeathMenuChain(_taskRunner);
         new PlayerInteractionFixChain(_taskRunner);
         _mlgBucketChain = new MLGBucketFallChain(_taskRunner);
@@ -364,6 +367,8 @@ public class AltoClef implements ModInitializer {
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
+
+    public HuntMobChain getHuntMobChain(){ return  _huntMobChain;}
 
     public MLGBucketFallChain getMLGBucketChain() {
         return _mlgBucketChain;

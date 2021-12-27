@@ -165,7 +165,7 @@ public class Settings {
      * SMART: Closest hostile is attacked at max every 0.2 seconds.
      * OFF: Off
      */
-    private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
+    private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.DELAY;
 
     /**
      * Only applies if mobDefense is on.
@@ -191,6 +191,14 @@ public class Settings {
      * kill or run away from mobs that stay too close for too long.
      */
     private boolean killOrAvoidAnnoyingHostiles = true;
+
+    /**
+     * Finding ender pearls is a PITA.
+     * <p>
+     *     With this set to true, the bot will kill enderman that are within
+     *     range.
+     */
+    private boolean huntEndermanForPearls = true;
 
     /**
      * If enabled, the bot will avoid going underwater if baritone
@@ -315,7 +323,8 @@ public class Settings {
      * <p>
      * Careful with this! If true, any item not in "importantItems" is liable to be thrown away.
      */
-    private boolean throwAwayUnusedItems = false;
+    private boolean throwAwayUnusedItems = true; // changed from default
+    // value of false
 
     /**
      * We will NEVER throw away these items.
@@ -514,6 +523,10 @@ public class Settings {
 
     public boolean shouldDealWithAnnoyingHostiles() {
         return killOrAvoidAnnoyingHostiles;
+    }
+
+    public boolean shouldHuntEnderman(){
+        return huntEndermanForPearls;
     }
 
     public KillAura.Strategy getForceFieldStrategy() {

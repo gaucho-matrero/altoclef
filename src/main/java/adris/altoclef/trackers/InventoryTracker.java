@@ -116,6 +116,17 @@ public class InventoryTracker extends Tracker {
         return false;
     }
 
+    public boolean hasAllItems(Item...items){
+        ensureUpdated();
+        boolean possessAllItems  = true;
+        for (Item item : items){
+            if (!hasItem(item)){
+                possessAllItems = false;
+            }
+        }
+        return possessAllItems;
+    }
+
     public boolean hasItem(String ...catalogueNames) {
         for (String catalogueName : catalogueNames) {
             Item[] items = TaskCatalogue.getItemMatches(catalogueName);

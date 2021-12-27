@@ -160,8 +160,9 @@ public class BeatMinecraft2Task extends Task {
             updateCachedEndItems(mod);
             if (mod.getInventoryTracker().hasItem(ItemHelper.BED)) {
                 setDebugState("Bed strats");
-                return new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
-            }
+                return new KillEnderDragonWithBedsTask(new
+                WaitForDragonAndPearlTask()); // I hate beds
+           }
             setDebugState("No beds, regular strats.");
             return new KillEnderDragonTask();
         }
@@ -235,7 +236,7 @@ public class BeatMinecraft2Task extends Task {
                         );
                     }
                 } else {
-                    // Get beds before starting our portal location.
+                    //et beds before starting our portal location.
                     if (mod.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
                         setDebugState("Getting beds before stronghold search.");
                         return getBedTask(mod);
@@ -488,7 +489,8 @@ public class BeatMinecraft2Task extends Task {
         return _bedsToCollect + (needsToSetSpawn ? 1 : 0);
     }
     private boolean needsBeds(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(ItemHelper.BED) < getTargetBeds(mod);
+        return mod.getInventoryTracker().getItemCount(ItemHelper.BED) <
+            getTargetBeds(mod);
     }
     private Task getBedTask(AltoClef mod) {
         int targetBeds = getTargetBeds(mod);

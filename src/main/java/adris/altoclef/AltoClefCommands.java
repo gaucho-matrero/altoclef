@@ -13,6 +13,7 @@ public class AltoClefCommands {
         AltoClef.getCommandExecutor().registerNewCommand(
                 new HelpCommand(),
                 new GetCommand(),
+                new GearUpCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
                 new GotoCommand(),
