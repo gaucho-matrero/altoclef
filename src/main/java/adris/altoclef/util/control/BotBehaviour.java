@@ -34,12 +34,20 @@ public class BotBehaviour {
     }
 
     // Getter(s)
+    /**
+     * Returns the current state of Behaviour for escapeLava
+     * @return The current state of Behaviour for escapeLava
+     */
     public boolean shouldEscapeLava() {
         return current().escapeLava;
     }
 
     /// Parameters
 
+    /**
+     * If the bot should escape lava or not, part of WorldSurvivalChain
+     * @param allow True if the bot should escape lava
+     */
     public void setEscapeLava(boolean allow) {
         current().escapeLava = allow;
         current().applyState();
