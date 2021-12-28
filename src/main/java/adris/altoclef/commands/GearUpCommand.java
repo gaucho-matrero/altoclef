@@ -29,3 +29,4 @@ public class GearUpCommand extends Command {
         mod.runUserTask(new GatherStrongGearTask(mod),this::finish);
     }
     }
+//
