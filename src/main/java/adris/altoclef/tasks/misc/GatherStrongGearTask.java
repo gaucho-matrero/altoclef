@@ -2,6 +2,7 @@ package adris.altoclef.tasks.misc;
 
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
@@ -9,6 +10,8 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ArmorRequirement;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.CraftingTableBlock;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Items;
@@ -40,6 +43,25 @@ public class GatherStrongGearTask extends Task {
         //Get all three
 
 
+    private Task nextLogicalStep(AltoClef mod, Task task){
+        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), Items.CRAFTING_TABLE);
+        Debug.logMessage(closest+" is closest");
+        if(closest != null){
+            if(!mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)){
+                Debug.logMessage("I haven't a table in sight");
+                return TaskCatalogue.getItemTask(new ItemTarget(Items.CRAFTING_TABLE));
+            }else if(mod.getPlayer().distanceTo(closest) > 5){
+                Debug.logMessage("Walk? Naah");
+                return new PlaceBlockNearbyTask(Blocks.CRAFTING_TABLE);
+            }else{
+                Debug.logMessage("All good in flavortown");
+                return task;
+            }
+        }else{
+            Debug.logMessage("closest is null...do I have a table?");
+            return task;
+        }
+    }
 
     @Override
     protected Task onTick(AltoClef mod) {
@@ -50,40 +72,23 @@ public class GatherStrongGearTask extends Task {
                 +(mod.getInventoryTracker().hasAllItems(Items.DIAMOND_HOE,
                 Items.DIAMOND_SWORD,Items.DIAMOND_SHOVEL,Items.DIAMOND_AXE)?7
                 :0); // Clever boolean check
-        ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), Items.CRAFTING_TABLE);
 
         switch(TaskOrderVariable){
 
             case 0, 5, 7, 12 -> { // We have nothing...fuck
                 setDebugState("Getting better pickaxe");
-                if(mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)) {
-                    return _getPickTask;
-                }else{
-                    return TaskCatalogue.getSquashedItemTask(new ItemTarget(Items.CRAFTING_TABLE));
-                }
-
+               return nextLogicalStep(mod,_getPickTask);
             }
             case 3, 10 -> { // We have only the pick or we have everything
                 // but armor
                 setDebugState("Getting better armor");
 
-
-                if (mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE) && !closest.isInRange(mod.getPlayer(), 10)){
-                    // TODO Place crafting table instead of going after it.
-                    return _equipArmorTask;
-                }else{
-                    return TaskCatalogue.getSquashedItemTask(new ItemTarget(Items.CRAFTING_TABLE));
-                }
-
+                return nextLogicalStep(mod,_equipArmorTask);
             }
 
             case 8 -> { //We have the pick and the armor but still need tools
                 setDebugState("Getting better tools");
-                if(mod.getInventoryTracker().hasItem(Items.CRAFTING_TABLE)) {
-                    return _getToolsTask;
-                }else{
-                    return TaskCatalogue.getSquashedItemTask(new ItemTarget(Items.CRAFTING_TABLE));
-                }
+                return nextLogicalStep(mod,_getToolsTask);
             }
             default -> {
                 stop(mod);
