@@ -12,6 +12,7 @@ import adris.altoclef.tasks.movement.FollowPlayerTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Items;
 import org.lwjgl.system.CallbackI;
 

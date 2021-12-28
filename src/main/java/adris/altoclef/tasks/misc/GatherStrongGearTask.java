@@ -6,7 +6,10 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ArmorRequirement;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Items;
+
+import java.util.Arrays;
 
 public class GatherStrongGearTask extends Task {
 
@@ -36,9 +39,7 @@ public class GatherStrongGearTask extends Task {
     protected Task onTick(AltoClef mod) {
         int TaskOrderVariable =  (mod.getInventoryTracker().hasItem(new ItemTarget(Items.DIAMOND_PICKAXE))
                 ?3:0)
-                +(mod.getInventoryTracker().isArmorEquipped(Items.DIAMOND_HELMET
-                ,Items.DIAMOND_CHESTPLATE,Items.DIAMOND_LEGGINGS,
-                Items.DIAMOND_BOOTS)?5:0)
+                +(Arrays.stream(ItemHelper.DIAMOND_ARMORS).allMatch(armor -> mod.getInventoryTracker().isArmorEquipped(armor))?5:0)
                 +(mod.getInventoryTracker().hasAllItems(Items.DIAMOND_HOE,
                 Items.DIAMOND_SWORD,Items.DIAMOND_SHOVEL,Items.DIAMOND_AXE)?7
                 :0); // Clever boolean check
