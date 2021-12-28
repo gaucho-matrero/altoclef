@@ -87,6 +87,7 @@ public class GetCommand extends Command {
             finish();
         }
     }
+    //Test
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
