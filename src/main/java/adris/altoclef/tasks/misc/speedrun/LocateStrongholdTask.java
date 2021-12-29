@@ -223,6 +223,9 @@ public class LocateStrongholdTask extends Task {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }
+                    if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) < 128){
+                        return TaskCatalogue.getItemTask(Items.COBBLESTONE,160); // ensure we have enouhg cobble to get out of the hole we dig -- just in case
+                    }
                     if (mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL) != null) {
                         _cachedEducatedPortal = mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL);
                     }
