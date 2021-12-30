@@ -33,7 +33,25 @@ public class BotBehaviour {
         push();
     }
 
+    // Getter(s)
+    /**
+     * Returns the current state of Behaviour for escapeLava
+     * @return The current state of Behaviour for escapeLava
+     */
+    public boolean shouldEscapeLava() {
+        return current().escapeLava;
+    }
+
     /// Parameters
+
+    /**
+     * If the bot should escape lava or not, part of WorldSurvivalChain
+     * @param allow True if the bot should escape lava
+     */
+    public void setEscapeLava(boolean allow) {
+        current().escapeLava = allow;
+        current().applyState();
+    }
 
     public void setFollowDistance(double distance) {
         current().followOffsetDistance = distance;
@@ -233,6 +251,9 @@ public class BotBehaviour {
         // Hard coded stuff
         public RaycastContext.FluidHandling rayFluidHandling;
 
+        // Other necessary stuff
+        public boolean escapeLava = true;
+
         public State() {
             this(null);
         }
@@ -251,6 +272,7 @@ public class BotBehaviour {
                 avoidDodgingProjectile.addAll(toCopy.avoidDodgingProjectile);
                 excludeFromForceField.addAll(toCopy.excludeFromForceField);
                 forceFieldPlayers = toCopy.forceFieldPlayers;
+                escapeLava = toCopy.escapeLava;
             }
         }
 
