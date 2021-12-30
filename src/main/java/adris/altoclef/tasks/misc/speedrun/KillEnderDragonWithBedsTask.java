@@ -51,10 +51,11 @@ public class KillEnderDragonWithBedsTask extends Task {
                 // Perform "Default Wander" mode and avoid dragon breath.
          */
         if (_endPortalTop == null) {
-            _endPortalTop = locateExitPortalTop(mod);
-            ((IDragonWaiter)_whenNotPerchingTask).setExitPortalTop(_endPortalTop);
+            _endPortalTop = locateExitPortalTop(mod); // Don't try to execute the set Exit Portal Top task until this is loaded.
+            return onTick(mod);
+        }else {
+            ((IDragonWaiter) _whenNotPerchingTask).setExitPortalTop(_endPortalTop);
         }
-
 
         if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
