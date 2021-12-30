@@ -207,6 +207,9 @@ public class LocateStrongholdTask extends Task {
             }
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
                 mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) >= 10) {
+                if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) < 128){
+                    return TaskCatalogue.getItemTask(Items.COBBLESTONE,160); // ensure we have enouhg cobble to get out of the hole we dig -- just in case
+                }
                 if (mod.getCurrentDimension() != Dimension.NETHER) {
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
@@ -219,10 +222,15 @@ public class LocateStrongholdTask extends Task {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
                 }
+                if(mod.getPlayer().getPos().getX() - _netherGoalPos.getX() < Math.abs(15) && mod.getPlayer().getZ() - _netherGoalPos.getZ() < Math.abs(15) && mod.getPlayer().getPos().getY() > _netherGoalPos.getY()){
+                    _netherGoalPos = new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 1, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
+                    // Also ensures that we don't have to break blocks we are standing on to place the portal. Gets within 120 blocks of the stronghold.
+                }
                 if (_netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }
+
                     if (mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL) != null) {
                         _cachedEducatedPortal = mod.getBlockTracker().getNearestWithinRange(mod.getPlayer().getPos(), _portalBuildRange, Blocks.NETHER_PORTAL);
                     }
