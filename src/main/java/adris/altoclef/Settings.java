@@ -81,7 +81,7 @@ public class Settings {
 
     /**
      * amount of food to collect when the food in inventory
-     * is lower than the value of foodUnitsThreshold
+     * is lower than the value of minimumFoodAllowed
      */
     private int foodUnitsToCollect = 0;
 
