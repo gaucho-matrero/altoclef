@@ -64,7 +64,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         // Oof
         if (entity == null) {
             mod.getMobDefenseChain().resetForceField();
-            return null;
+            return _wanderTask;
         }
 
         double playerReach = mod.getModSettings().getEntityReachRange();
@@ -109,7 +109,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return new GetToEntityTask(entity, maintainDistance);
         }
 
-        return null;
+        return _wanderTask;
     }
 
     @Override
