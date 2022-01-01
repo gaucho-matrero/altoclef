@@ -85,7 +85,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             }
         } else {
             setDebugState("Getting to block...");
-            boolean isClose = _pos.isWithinDistance(mod.getPlayer().getPos(), 2);
+            boolean isClose = _pos.isWithinDistance(mod.getPlayer().getPos(), 1);
             if (isClose != _wasClose) {
                 mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 _wasClose = isClose;
