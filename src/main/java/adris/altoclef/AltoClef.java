@@ -20,6 +20,7 @@ import adris.altoclef.util.control.PlayerExtraController;
 import adris.altoclef.util.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
+import adris.altoclef.util.helpers.InputHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
@@ -35,6 +36,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
@@ -158,6 +160,11 @@ public class AltoClef implements ModInitializer {
         runEnqueuedPostInits();
 
         _inputControls.onTickPre();
+
+        // Cancel shortcut
+        if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
+            _userTaskChain.cancel(this);
+        }
 
         // TODO: should this go here?
         _storageTracker.setDirty();
@@ -294,7 +301,6 @@ public class AltoClef implements ModInitializer {
 
     public adris.altoclef.Settings reloadModSettings() {
         adris.altoclef.Settings result = adris.altoclef.Settings.load();
-        //noinspection ConstantConditions
         if (result != null) {
             _settings = result;
         }
