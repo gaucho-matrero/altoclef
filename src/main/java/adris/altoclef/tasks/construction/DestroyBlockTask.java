@@ -10,6 +10,7 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
@@ -28,6 +29,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
 
     private final TimerGame _tryToMineTimer = new TimerGame(5);
+
+    // For vines and stuff
+    private boolean _wasClose = false;
 
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
@@ -81,9 +85,15 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             }
         } else {
             setDebugState("Getting to block...");
+            boolean isClose = _pos.isWithinDistance(mod.getPlayer().getPos(), 2);
+            if (isClose != _wasClose) {
+                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                _wasClose = isClose;
+            }
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalNear(_pos, 1));
+                // If we're close, go TO the block (potentially disrupts vines and stuff)
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(isClose? new GoalBlock(_pos) : new GoalNear(_pos, 1));
             }
         }
 
