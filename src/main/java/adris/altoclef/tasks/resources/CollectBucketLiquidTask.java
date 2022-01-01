@@ -7,9 +7,7 @@ import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.movement.GetCloseToBlockTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -156,7 +154,11 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
             return new DoToClosestBlockTask(blockPos -> {
                 // Clear above if lava because we can't enter.
+                // but NOT if we're standing right above.
                 if (WorldHelper.isSolid(mod, blockPos.up())) {
+                    if (mod.getPlayer().getPos().y > blockPos.up().getY() && blockPos.up().isWithinDistance(mod.getPlayer().getPos(), 1.5)) {
+                        return new RunAwayFromPositionTask(2, blockPos.getY() + 2, blockPos.up().up());
+                    }
                     if (!_progressChecker.check(mod)) {
                         Debug.logMessage("Failed to break, blacklisting & wandering");
                         mod.getBlockTracker().requestBlockUnreachable(blockPos);
