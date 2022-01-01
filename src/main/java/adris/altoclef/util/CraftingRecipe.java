@@ -78,8 +78,8 @@ public class CraftingRecipe {
     }
 
     public ItemTarget getSlot(int index) {
-
-        return _slots[index];
+        ItemTarget result = _slots[index];
+        return result != null? result : ItemTarget.EMPTY;
     }
 
     public int getSlotCount() {

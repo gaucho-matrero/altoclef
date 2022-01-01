@@ -7,6 +7,7 @@ import adris.altoclef.tasks.movement.GetToYTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.resources.GetBuildingMaterialsTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -52,12 +53,12 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
             return _throwPearlTask;
         }
 
-        if (!mod.getInventoryTracker().hasItem(Items.ENDER_PEARL)) {
+        if (!mod.getItemStorage().hasItem(Items.ENDER_PEARL)) {
             setDebugState("First get ender pearls.");
             return TaskCatalogue.getItemTask(Items.ENDER_PEARL, 1);
         }
 
-        if (mod.getInventoryTracker().getBuildingMaterialCount() < 5 || (_buildingMaterialsTask != null && _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod))) {
+        if (StorageHelper.getBuildingMaterialCount(mod) < 5 || (_buildingMaterialsTask != null && _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod))) {
             setDebugState("Collecting building materials...");
             return _buildingMaterialsTask;
         }

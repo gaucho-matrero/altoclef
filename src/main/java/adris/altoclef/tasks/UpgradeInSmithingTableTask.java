@@ -4,11 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.slots.SmithingTableSlot;
@@ -46,7 +47,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
     }
 
     private int getItemsInSlot(AltoClef mod, Slot slot, ItemTarget match) {
-        ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(slot);
+        ItemStack stack = StorageHelper.getItemStackInSlot(slot);
         if (!stack.isEmpty() && match.matches(stack.getItem())) {
             return stack.getCount();
         }
@@ -65,14 +66,14 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
         int desiredOutput = _output.getTargetCount() - ouputInSlot;
 
-        if (mod.getInventoryTracker().getItemCount(_tool) + toolsInSlot < desiredOutput ||
-                mod.getInventoryTracker().getItemCount(_material) + materialsInSlot < desiredOutput) {
+        if (mod.getItemStorage().getItemCount(_tool) + toolsInSlot < desiredOutput ||
+                mod.getItemStorage().getItemCount(_material) + materialsInSlot < desiredOutput) {
             setDebugState("Getting materials + tools");
             return TaskCatalogue.getSquashedItemTask(_tool, _material);
         }
 
         // Edge case: We are wearing the armor we want to upgrade. If so, remove it.
-        if (mod.getInventoryTracker().isArmorEquipped(_tool.getMatches())) {
+        if (StorageHelper.isArmorEquipped(mod, _tool.getMatches())) {
             // Exit out of any screen so we can move our armor
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
                 mod.getControllerExtras().closeScreen();
@@ -80,11 +81,11 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
                 return null;
             }
             // Take off our armor
-            if (mod.getInventoryTracker().isInventoryFull()) {
+            if (!mod.getItemStorage().hasEmptyInventorySlot()) {
                 return new EnsureFreeInventorySlotTask();
             }
             for (Slot armorSlot : PlayerSlot.ARMOR_SLOTS) {
-                if (_tool.matches(mod.getInventoryTracker().getItemStackInSlot(armorSlot).getItem())) {
+                if (_tool.matches(StorageHelper.getItemStackInSlot(armorSlot).getItem())) {
                     setDebugState("Quickly removing equipped armor");
                     return new ClickSlotTask(armorSlot, 0, SlotActionType.QUICK_MOVE);
                 }
@@ -149,20 +150,20 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             Slot toolSlot = SmithingTableSlot.INPUT_SLOT_TOOL;
             Slot outputSlot = SmithingTableSlot.OUTPUT_SLOT;
 
-            ItemStack currentMaterials = mod.getInventoryTracker().getItemStackInSlot(materialSlot);
-            ItemStack currentTools = mod.getInventoryTracker().getItemStackInSlot(toolSlot);
-            ItemStack currentOutput = mod.getInventoryTracker().getItemStackInSlot(outputSlot);
+            ItemStack currentMaterials = StorageHelper.getItemStackInSlot(materialSlot);
+            ItemStack currentTools = StorageHelper.getItemStackInSlot(toolSlot);
+            ItemStack currentOutput = StorageHelper.getItemStackInSlot(outputSlot);
             // Grab from output
             if (!currentOutput.isEmpty()) {
                 return new ClickSlotTask(outputSlot, SlotActionType.QUICK_MOVE);
             }
             // Put materials in slot
             if (currentMaterials.isEmpty() || !_material.matches(currentMaterials.getItem())) {
-                return new MoveItemToSlotTask(new ItemTarget(_material, 1), materialSlot);
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(_material, 1), materialSlot);
             }
             // Put tool in slot
             if (currentTools.isEmpty() || !_tool.matches(currentTools.getItem())) {
-                return new MoveItemToSlotTask(new ItemTarget(_tool, 1), toolSlot);
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(_tool, 1), toolSlot);
             }
 
             setDebugState("PROBLEM: Nothing to do!");
@@ -172,10 +173,10 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         @Override
         protected double getCostToMakeNew(AltoClef mod) {
             int price = 400;
-            if (mod.getInventoryTracker().hasItem(ItemHelper.LOG) || mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS) >= 4) {
+            if (mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 4) {
                 price -= 125;
             }
-            if (mod.getInventoryTracker().getItemCount(Items.FLINT) >= 2) {
+            if (mod.getItemStorage().getItemCount(Items.FLINT) >= 2) {
                 price -= 125;
             }
             return price;

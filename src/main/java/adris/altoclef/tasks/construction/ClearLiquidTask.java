@@ -26,7 +26,7 @@ public class ClearLiquidTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (mod.getInventoryTracker().hasItem(Items.BUCKET)) {
+        if (mod.getItemStorage().hasItem(Items.BUCKET)) {
             mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
             return new InteractWithBlockTask(new ItemTarget(Items.BUCKET, 1), _liquidPos, false);
         }

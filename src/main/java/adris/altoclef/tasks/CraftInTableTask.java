@@ -4,12 +4,14 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
@@ -160,7 +162,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         if (_collect) {
             if (!_collectTask.isFinished(mod)) {
 
-                if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(_targets)) {
+                if (!StorageHelper.hasRecipeMaterialsOrTarget(mod, _targets)) {
                     setDebugState("craft does NOT have RECIPE MATERIALS: " + Arrays.toString(_targets));
                     return _collectTask;
                 }
@@ -169,6 +171,16 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
         if (!isContainerOpen(mod)) {
             _craftResetTimer.reset();
+        }
+
+        // Make sure our recipe items are accessible in our inventory
+        for (RecipeTarget target : _targets) {
+            for (int slot = 0; slot < target.getRecipe().getSlotCount(); ++slot) {
+                ItemTarget toCheck = target.getRecipe().getSlot(slot);
+                if (StorageHelper.isItemInaccessibleToContainer(mod, toCheck)) {
+                    return new MoveInaccessibleItemToInventoryTask(toCheck);
+                }
+            }
         }
 
         return super.onTick(mod);
@@ -199,9 +211,11 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
 
         for (RecipeTarget target : _targets) {
-            if (mod.getInventoryTracker().targetsMet(target.getItem())) continue;
-            if (mod.getInventoryTracker().isInventoryFull()) {
-                setDebugState("Freeing inventory before crafting...");
+            if (StorageHelper.itemTargetsMet(mod, target.getItem()))
+                continue;
+            // Before crafting, make sure we have an empty slot.
+            if (!mod.getItemStorage().hasEmptyInventorySlot()) {
+                setDebugState("Clearing one inventory slot before crafting...");
                 return new EnsureFreeInventorySlotTask();
             }
             setDebugState("Crafting");
@@ -219,12 +233,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // TODO: If we have an axe, lower the cost.
-        if (mod.getInventoryTracker().hasItem(ItemHelper.LOG) || mod.getInventoryTracker().getItemCount(ItemHelper.PLANKS) >= 4) {
+        if (mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
-            return 15;
+            return 15*5;
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
-        return 300;
+        return 300*2;
     }
 
     private Item[] getMaterialsArray() {

@@ -39,6 +39,9 @@ public interface WorldHelper {
     static Vec3i toVec3i(Vec3d pos) {
         return new Vec3i(pos.getX(), pos.getY(), pos.getZ());
     }
+    static BlockPos toBlockPos(Vec3d pos) {
+        return new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+    }
 
     static boolean isSourceBlock(AltoClef mod, BlockPos pos, boolean onlyAcceptStill) {
         BlockState s = mod.getWorld().getBlockState(pos);
@@ -161,6 +164,7 @@ public interface WorldHelper {
                 || block instanceof CartographyTableBlock
                 || block instanceof EnchantingTableBlock
                 || block instanceof RedstoneOreBlock
+                || block instanceof BarrelBlock
         );
     }
 
@@ -238,5 +242,13 @@ public interface WorldHelper {
             pos = new BlockPos(pos.getX()*8, pos.getY(), pos.getZ()*8);
         }
         return pos;
+    }
+
+    static boolean isChest(AltoClef mod, BlockPos block) {
+        Block b = mod.getWorld().getBlockState(block).getBlock();
+        return isChest(b);
+    }
+    static boolean isChest(Block b) {
+        return b instanceof ChestBlock || b instanceof EnderChestBlock;
     }
 }

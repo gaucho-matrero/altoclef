@@ -64,7 +64,7 @@ public class PlaceObsidianBucketTask extends Task {
             return new ClearLiquidTask(_pos.up());
         }
 
-        if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+        if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
             // The only excuse is that we have lava at our position.
             if (!mod.getBlockTracker().blockIsValid(_pos, Blocks.LAVA)) {
                 return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
@@ -121,14 +121,14 @@ public class PlaceObsidianBucketTask extends Task {
             }
 
             // Make sure we have water, juuust in case we have another creeper appear run end here
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
             // Don't place lava at our position!
             // Would lead to an embarrassing death.
             BlockPos targetPos = _pos.add(-1, 1, 0);
-            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
                 setDebugState("Positioning player before lava");
                 return new GetToBlockTask(targetPos, false);
             }
@@ -156,7 +156,7 @@ public class PlaceObsidianBucketTask extends Task {
 
             // Get to position to avoid weird stuck scenario
             BlockPos targetPos = _pos.add(-1, 1, 0);
-            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Positioning player before water");
                 return new GetToBlockTask(targetPos, false);
             }

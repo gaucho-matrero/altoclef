@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -42,7 +43,7 @@ public class KillAura {
                 break;
             case SMART:
 
-                if (_targets.size() < 2) {
+                if (_targets.size() <= 2 || _targets.stream().allMatch(entity -> entity instanceof SkeletonEntity) ) {
                     performDelayedAttack(mod);
                 } else {
                     // Attack force mobs ALWAYS.
@@ -103,7 +104,7 @@ public class KillAura {
             if (equipSword) {
                 // Equip sword, or if we don't have one just use our fists.
                 Item[] swordsTopPriorityFirst = new Item[] {Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
-                if (mod.getInventoryTracker().hasItem(swordsTopPriorityFirst)) {
+                if (mod.getItemStorage().hasItem(swordsTopPriorityFirst)) {
                     canAttack = mod.getSlotHandler().forceEquipItem(swordsTopPriorityFirst);
                 } else {
                     canAttack = mod.getSlotHandler().forceDeequipHitTool();

@@ -14,6 +14,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.FurnaceSlot;
 import net.minecraft.block.*;
@@ -94,16 +95,16 @@ public class CollectFoodTask extends Task {
     @SuppressWarnings("RedundantCast")
     private static double calculateFoodPotential(AltoClef mod) {
         double potentialFood = 0;
-        for (ItemStack food : mod.getInventoryTracker().getAvailableFoods()) {
+        for (ItemStack food : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
             potentialFood += getFoodPotential(food);
         }
-        int potentialBread = (int) (mod.getInventoryTracker().getItemCount(Items.WHEAT) / 3) + mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) * 3;
+        int potentialBread = (int) (mod.getItemStorage().getItemCount(Items.WHEAT) / 3) + mod.getItemStorage().getItemCount(Items.HAY_BLOCK) * 3;
         potentialFood += Objects.requireNonNull(Items.BREAD.getFoodComponent()).getHunger() * potentialBread;
         // Check smelting
         ScreenHandler screen = mod.getPlayer().currentScreenHandler;
         if (screen instanceof FurnaceScreenHandler) {
-            potentialFood += getFoodPotential(mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS));
-            potentialFood += getFoodPotential(mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT));
+            potentialFood += getFoodPotential(StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS));
+            potentialFood += getFoodPotential(StorageHelper.getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT));
         }
         return potentialFood;
     }
@@ -154,14 +155,14 @@ public class CollectFoodTask extends Task {
             // - If we have raw foods, smelt all of them
 
             // Convert Hay+Wheat -> Bread
-            if (mod.getInventoryTracker().getItemCount(Items.WHEAT) >= 3) {
+            if (mod.getItemStorage().getItemCount(Items.WHEAT) >= 3) {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
                 _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD).infinite(), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
                 return _currentResourceTask;
             }
-            if (mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK) >= 1) {
+            if (mod.getItemStorage().getItemCount(Items.HAY_BLOCK) >= 1) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
                 _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT).infinite(), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
@@ -170,10 +171,10 @@ public class CollectFoodTask extends Task {
             // Convert raw foods -> cooked foods
 
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                int rawCount = mod.getInventoryTracker().getItemCount(cookable.getRaw());
+                int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
-                    int toSmelt = rawCount + mod.getInventoryTracker().getItemCount(cookable.getCooked());
+                    int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
                     _smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
                     _smeltTask.ignoreMaterials();
                     return _smeltTask;
@@ -290,7 +291,7 @@ public class CollectFoodTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().totalFoodScore() >= _unitsNeeded;
+        return StorageHelper.calculateInventoryFoodScore(mod) >= _unitsNeeded;
     }
 
     @Override

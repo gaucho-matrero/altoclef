@@ -40,7 +40,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
          * If in end:
          *      Go to overworld lol
          */
-        int currentCream = mod.getInventoryTracker().getItemCount(Items.MAGMA_CREAM);
+        int currentCream = mod.getItemStorage().getItemCount(Items.MAGMA_CREAM);
         int neededCream = _count - currentCream;
         switch (mod.getCurrentDimension()) {
             case NETHER:
@@ -48,7 +48,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
                     setDebugState("Killing Magma cube");
                     return new KillAndLootTask(MagmaCubeEntity.class, new ItemTarget(Items.MAGMA_CREAM));
                 }
-                int currentBlazePowderPotential = mod.getInventoryTracker().getItemCount(Items.BLAZE_POWDER) + mod.getInventoryTracker().getItemCount(Items.BLAZE_ROD);
+                int currentBlazePowderPotential = mod.getItemStorage().getItemCount(Items.BLAZE_POWDER) + mod.getItemStorage().getItemCount(Items.BLAZE_ROD);
                 if (neededCream > currentBlazePowderPotential) {
                     // Kill blazes as no magma cube was found.
                     setDebugState("Getting blaze powder");
@@ -57,7 +57,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 setDebugState("Going back to overworld to kill slimes, we have enough blaze powder and no nearby magma cubes.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             case OVERWORLD:
-                int currentSlime = mod.getInventoryTracker().getItemCount(Items.SLIME_BALL);
+                int currentSlime = mod.getItemStorage().getItemCount(Items.SLIME_BALL);
                 if (neededCream > currentSlime) {
                     setDebugState("Getting slime balls");
                     return TaskCatalogue.getItemTask(Items.SLIME_BALL, neededCream - currentCream);

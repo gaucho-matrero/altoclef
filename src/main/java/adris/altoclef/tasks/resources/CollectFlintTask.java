@@ -42,7 +42,7 @@ public class CollectFlintTask extends ResourceTask {
         }
 
         // If we have gravel, place it.
-        if (mod.getInventoryTracker().hasItem(Items.GRAVEL)) {
+        if (mod.getItemStorage().hasItem(Items.GRAVEL)) {
             // Place it
             return new PlaceBlockNearbyTask(Blocks.GRAVEL);
         }

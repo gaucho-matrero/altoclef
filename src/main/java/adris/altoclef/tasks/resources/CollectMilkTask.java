@@ -32,7 +32,7 @@ public class CollectMilkTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Make sure we have a bucket.
-        if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
+        if (!mod.getItemStorage().hasItem(Items.BUCKET)) {
             return TaskCatalogue.getItemTask(Items.BUCKET, 1);
         }
         // Dimension
@@ -70,7 +70,7 @@ public class CollectMilkTask extends ResourceTask {
 
         @Override
         protected Task onEntityInteract(AltoClef mod, Entity entity) {
-            if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.BUCKET)) {
                 Debug.logWarning("Failed to milk cow because you have no bucket.");
                 return null;
             }

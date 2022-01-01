@@ -4,23 +4,16 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectFuelTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotTask;
-import adris.altoclef.tasks.slot.ThrowSlotTask;
-import adris.altoclef.tasksystem.ITaskWithDowntime;
+import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.ContainerTracker;
-import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.progresscheck.IProgressChecker;
-import adris.altoclef.util.progresscheck.LinearProgressChecker;
+import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.FurnaceScreenHandler;
@@ -29,6 +22,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -108,19 +102,35 @@ public class SmeltInFurnaceTask extends ResourceTask {
         return _doTask.toDebugString();
     }
 
-    static class DoSmeltInFurnaceTask extends DoStuffInContainerTask implements ITaskWithDowntime {
+    public SmeltTarget[] getTargets() {
+        return _targets;
+    }
+
+    static class DoSmeltInFurnaceTask extends DoStuffInContainerTask {
+
+        /**
+         * TODO:
+         *
+         * - Settings `supportedFuels` and `limitFuelsToSupportedFuels` boolean (default is true)
+         *
+         * - Keep track of last "container"
+         * - Keep track of last "burn percentage"
+         * - Consider total fuel, total materials, total output and how much we need in our INVENTORY specifically
+         *      - Fuel selection depends on `limitFuelsToSupportedFuels` / `supportedFuels`
+         *      - How much fuel we NEED depends on `_ignoreMaterials`. If that's set to true, assume 0 until we have
+         *      a cached furnace (in which case use the cached furnace. I guess you can probably just set the "required left" buffer to zero)
+         * - If not enough fuel, get it I suppose.
+         * - If not enough materials, get them.
+         * - For now just smelt one at a time.
+         */
 
         private final SmeltTarget _target;
-        private final IProgressChecker<Double> _smeltProgressChecker = new LinearProgressChecker(5, 0.1);
-        private ContainerTracker.FurnaceData _currentFurnace;
-        // When we're expected to run out of fuel.
-        private int _runOutOfFuelExpectedTick;
-        private boolean _ignoreMaterials = false;
+        private boolean _ignoreMaterials;
 
-        private boolean _ranOutOfMaterials = false;
+        private FurnaceCache _furnaceCache = new FurnaceCache();
 
         public DoSmeltInFurnaceTask(SmeltTarget target) {
-            super(Blocks.FURNACE, new ItemTarget("furnace"));
+            super(Blocks.FURNACE, new ItemTarget(Items.FURNACE));
             _target = target;
         }
 
@@ -138,69 +148,46 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected boolean isContainerOpen(AltoClef mod) {
-            //Debug.logMessage("FURNACE OPEN? " + open);
             return (mod.getPlayer().currentScreenHandler instanceof FurnaceScreenHandler);
         }
 
         @Override
-        protected void onStart(AltoClef mod) {
-            super.onStart(mod);
-            _ranOutOfMaterials = false;
-        }
-
-        @Override
         protected Task onTick(AltoClef mod) {
+            tryUpdateOpenFurnace(mod);
+            ItemTarget materialTarget = _target.getMaterial();
+            ItemTarget outputTarget = _target.getItem();
+            // Materials needed = (mat_target (- 0*mat_in_inventory) - out_in_inventory - mat_in_furnace - out_in_furnace)
+            // ^ 0 * mat_in_inventory because we always care aobut the TARGET materials, not how many LEFT there are.
+            int materialsNeeded = materialTarget.getTargetCount()
+                    /*- mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches())*/ // See comment above
+                    - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
+                    - (materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0)
+                    - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0);
+            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot.getItem()) * _furnaceCache.fuelSlot.getCount() + _furnaceCache.burningFuelCount;
+            // Fuel needed = (mat_target - mat_in_inventory - out_in_inventory - out_in_furnace - totalFuelInFurnace)
+            double fuelNeeded = _ignoreMaterials
+                        ? Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
+                        : materialTarget.getTargetCount()
+                    - mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches())
+                    - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
+                    - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0)
+                    - totalFuelInFurnace;
 
-            if (!isContainerOpen(mod)) {
-                _smeltProgressChecker.reset();
-            } else {
-                ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
-                _currentFurnace = furnaceMap.getOpenFurnaceData();
+            // We don't have enough materials...
+            if (mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) < materialsNeeded) {
+                setDebugState("Getting Materials");
+                return getMaterialTask(materialTarget);
             }
 
-            boolean furnaceFound = _currentFurnace != null;
-            boolean furnaceHasOurItem = furnaceFound && _target.getMaterial().matches(_currentFurnace.materials.getItem());
-            // Check for materials.
-            // If materials are already in the furnace, we need less of them.
-            if (!_ignoreMaterials && furnaceFound) {
-                int materialsNeeded = _target.getMaterial().getTargetCount();
-                materialsNeeded -= mod.getInventoryTracker().getItemCount(_target.getItem());
-                if (_currentFurnace != null) {
-                    if (furnaceHasOurItem) {
-                        materialsNeeded -= _currentFurnace.materials.getCount();
-                    }// else {
-                    //Debug.logMessage("Material does NOT match " + _currentFurnace.materials.getItem().getTranslationKey());
-                    //}
-                    //Debug.logMessage("Material Matches: %d - (%d + %d + %d)", neededMaterials.targetCount, _currentFurnace.materials.getCount(), _currentFurnace.output.getCount(), mod.getInventoryTracker().getItemCount(_target.getItem()));
-                    materialsNeeded -= _currentFurnace.output.getCount();
-                }
-                ItemTarget neededMaterials = new ItemTarget(_target.getMaterial(), materialsNeeded);
-                if (!mod.getInventoryTracker().targetsMet(neededMaterials)) {
-                    setDebugState("Collecting materials: " + neededMaterials);
-                    return getMaterialTask(neededMaterials);
-                }
-            }
-            // Check for fuel.
-            // If fuel is already in the furnace, we need less of it.
-
-            // SPECIAL CASE: If we are OR WERE searching for a crafting table, we need to hide planks as a source of fuel!
-            // Otherwise, planks will be protected/unprotected and fuel will be needed/not needed in an infinite back+forth.
-
-            double fuelNeeded = _target.getMaterial().getTargetCount() - mod.getInventoryTracker().getItemCount(_target.getItem());
-
-            double hasFuel = mod.getInventoryTracker().getTotalFuelNormal();
-
-            if (_ignoreMaterials) {
-                // Start our fuel off at just one until we find our furnace.
-                fuelNeeded = 1;
-            }
-            if (_currentFurnace != null && furnaceHasOurItem) {
-                fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
-            }
-
-            if (fuelNeeded > hasFuel) {
-                setDebugState("Collecting fuel. Needs " + fuelNeeded + ", has " + hasFuel);
+            // We don't have enough fuel...
+            if (StorageHelper.calculateInventoryFuelCount(mod) < fuelNeeded) {
+                setDebugState("Getting Fuel");
                 return new CollectFuelTask(fuelNeeded);
+            }
+
+            // Make sure our materials are accessible in our inventory
+            if (StorageHelper.isItemInaccessibleToContainer(mod, _target.getMaterial())) {
+                return new MoveInaccessibleItemToInventoryTask(_target.getMaterial());
             }
 
             // We have fuel and materials. Get to our container and smelt!
@@ -215,104 +202,116 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected Task containerSubTask(AltoClef mod) {
+            // We have appropriate materials/fuel.
+            /**
+             * - If output slot has something, receive it.
+             * - Calculate needed material input. If we don't have, put it in.
+             * - Calculate needed fuel input. If we don't have, put it in.
+             * - Wait lol
+             */
+            ItemStack output   = StorageHelper.getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
+            ItemStack material = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS);
+            ItemStack fuel     = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_FUEL);
 
-
-            // Grab from the output slot
-            ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            if (!outputSlot.isEmpty()) {
-                if (mod.getInventoryTracker().isInventoryFull()) {
+            // Receive from output if present
+            if (!output.isEmpty()) {
+                setDebugState("Receiving Output");
+                Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(output, false);
+                if (toMoveTo.isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
-                _smeltProgressChecker.reset();
-                if (!mod.getInventoryTracker().getItemStackInCursorSlot().isEmpty() && mod.getInventoryTracker().getItemStackInCursorSlot().getItem() != outputSlot.getItem()) {
-                    setDebugState("Moving cursor stack back so we can take from the output...");
-                    // Clear cursor slot first
-                    return new ThrowSlotTask();
+                // Ensure our cursor is empty/can receive our item
+                ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
+                if (!cursor.isEmpty() && !ItemHelper.canStackTogether(output, cursor)) {
+                    Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
+                    if (toFit.isPresent()) {
+                        return new ClickSlotTask(toFit.get());
+                    } else {
+                        // Eh screw it
+                        return new ThrowCursorTask();
+                    }
                 }
+                // Pick up
                 return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
+                // return new MoveItemToSlotTask(new ItemTarget(output.getItem(), output.getCount()), toMoveTo.get(), mod -> FurnaceSlot.OUTPUT_SLOT);
             }
 
-            // Move materials
-            boolean furnaceHasOurItem = _target.getMaterial().matches(_currentFurnace.materials.getItem());
+            /*
+            // Empty material slot if filled with non-expected materials
+            if (!material.isEmpty() && !_target.getMaterial().matches(material.getItem())) {
+                Debug.logMessage("Invalid material in furnace detected, will pick up and let altoclef handle getting rid of it.");
+                return new ClickSlotTask(FurnaceSlot.INPUT_SLOT_MATERIALS);
+            }
+             */
 
-            ItemStack output = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
-            int outputCount = _target.getItem().matches(output.getItem()) ? output.getCount() : 0;
-            int materialCount = furnaceHasOurItem? mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS).getCount() : 0;
+            // Fill in input if needed
+            // Materials needed in slot = (mat_target - out_in_inventory - out_in_furnace)
+            int neededMaterialsInSlot = _target.getMaterial().getTargetCount()
+                    - mod.getItemStorage().getItemCountInventoryOnly(_target.getItem().getMatches())
+                    - (_target.getItem().matches(output.getItem()) ? output.getCount() : 0);
+            if (neededMaterialsInSlot > material.getCount()) {
+                int materialsAlreadyIn = (_target.getMaterial().matches(material.getItem()) ? material.getCount() : 0);
+                setDebugState("Moving Materials");
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(_target.getMaterial(), neededMaterialsInSlot - materialsAlreadyIn), FurnaceSlot.INPUT_SLOT_MATERIALS);
+            }
 
-            int currentInventory = mod.getInventoryTracker().getItemCount(_target.getItem());
-            int targetCount = _target.getItem().getTargetCount();
-            // How many MORE materials do we need in the slot to end up with the correct number of items?
-            int toMove = targetCount - (outputCount + materialCount + currentInventory);
-            if (_ignoreMaterials) {
-                toMove = mod.getInventoryTracker().getItemCount(this._target.getMaterial());
-
-                if (toMove == 0 && materialCount == 0 && outputCount == 0) {
-                    Debug.logMessage("We ran out of materials.");
-                    _ranOutOfMaterials = true;
-                    return null;
+            /*
+            double currentFuel = _ignoreMaterials
+                    ? (Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
+                    : materialTarget.getTargetCount()
+                    - mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches())
+                    - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
+                    - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0)
+                    - totalFuelInFurnace;
+             */
+            // Fill in fuel if needed
+            if (fuel.isEmpty() || !ItemHelper.isFuel(fuel.getItem())) {
+                double currentlyCached = StorageHelper.getFurnaceFuel() + StorageHelper.getFurnaceCookPercent();
+                double needs = material.getCount() - currentlyCached;
+                if (needs > 0) {
+                    // Get best fuel to fill
+                    double closestDelta = Double.NEGATIVE_INFINITY;
+                    ItemStack bestStack = null;
+                    for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
+                        if (mod.getModSettings().isSupportedFuel(stack.getItem())) {
+                            double fuelAmount = ItemHelper.getFuelAmount(stack.getItem()) * stack.getCount();
+                            double delta = needs - fuelAmount;
+                            if (
+                                    (bestStack == null) ||
+                                    // If our best is above, prioritize lower values
+                                    (closestDelta > 0 && delta < closestDelta) ||
+                                    // If our best is below, prioritize higher below values
+                                    (closestDelta < 0 && delta < 0 && delta > closestDelta)
+                            ) {
+                                bestStack = stack;
+                                closestDelta = delta;
+                            }
+                        }
+                    }
+                    if (bestStack != null) {
+                        setDebugState("Filling fuel");
+                        return new MoveItemToSlotFromInventoryTask(new ItemTarget(bestStack.getItem(), bestStack.getCount()), FurnaceSlot.INPUT_SLOT_FUEL);
+                    }
                 }
-
-                //Debug.logInternal("OOF: " + toMove + " : " + this._target.getMaterial().getMatches()[0].getTranslationKey());
-            }
-            if (toMove > 0) {
-                ItemTarget toMoveTarget = new ItemTarget(_target.getMaterial(), toMove);
-                return new MoveItemToSlotTask(toMoveTarget, FurnaceSlot.INPUT_SLOT_MATERIALS);
             }
 
-            // Move fuel
-            ItemStack fuelStack = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.INPUT_SLOT_FUEL);
-
-            Item fuelToUse = getBestFuelSource(mod, fuelStack, _currentFurnace.getRemainingFuelNeededToBurnMaterials());
-
-            // Debug.logInternal(((fuelToUse != null) ? fuelToUse.getTranslationKey() : "(null)") + " : " + _currentFurnace.getRemainingFuelNeededToBurnMaterials());
-            if (fuelToUse != null) {
-                double fuelPowerPerItem = InventoryTracker.getFuelAmount(fuelToUse);
-                double fuelNeeded = _currentFurnace.getRemainingFuelNeededToBurnMaterials();
-                int targetFuelItemCount = (int) Math.ceil(fuelNeeded / fuelPowerPerItem);
-                //Debug.logInternal("( " + fuelNeeded + " / " + fuelPowerPerItem + " = " + targetFuelItemCount + ", fuelstack: " + fuelStack.getCount() + ")");
-
-                // If we already have fuel in the slot, add to it.
-                if (fuelStack.getItem().equals(fuelToUse)) {
-                    targetFuelItemCount -= fuelStack.getCount();
-                }
-
-                // Don't grab more than we can
-                targetFuelItemCount = Math.min(targetFuelItemCount, mod.getInventoryTracker().getItemCount(fuelToUse));
-                if (targetFuelItemCount > 0) {
-                    return new MoveItemToSlotTask(new ItemTarget(fuelToUse, targetFuelItemCount), FurnaceSlot.INPUT_SLOT_FUEL);
-                }
-            }
-
-            // Re-update furnace tracking since we moved some things around.
-            //mod.getContainerTracker().getFurnaceMap().updateContainer(getTargetContainerPosition(), handler);
-
-            setDebugState("Smelting...");
-
-            _smeltProgressChecker.setProgress(InventoryTracker.getFurnaceCookPercent());
-
-            // If we made no progress
-            if (_smeltProgressChecker.failed()) {
-                Debug.logMessage("Smelting failed, hopefully re-opening the container will fix this.");
-                mod.getControllerExtras().closeScreen();
-                _smeltProgressChecker.reset();
-            }
-
+            setDebugState("Waiting...");
             return null;
         }
 
         @Override
         protected double getCostToMakeNew(AltoClef mod) {
-            if (_currentFurnace != null) {
+            if (_furnaceCache != null) {
                 // TODO: If we're already smelting, get cost for materials (for now just set to really high number or something)
                 return 9999999;
             }
             // We got stone
-            if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) > 8) {
-                double cost = 300 - (50 * (double) mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) / 8);
+            if (mod.getItemStorage().getItemCount(Items.COBBLESTONE) > 8) {
+                double cost = 300 - (50 * (double) mod.getItemStorage().getItemCount(Items.COBBLESTONE) / 8);
                 return Math.max(cost, 60);
             }
             // We got pick
-            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
+            if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                 return 200;
             }
             // We gotta make pick and mine stone
@@ -322,60 +321,26 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected BlockPos overrideContainerPosition(AltoClef mod) {
             // If we have a valid container position, KEEP it.
-            // TODO: Maybe use containertracker to check for places that have our materials?
             return getTargetContainerPosition();
         }
 
-        @Override
-        public boolean isFinished(AltoClef mod) {
-            return _ranOutOfMaterials;
-        }
-
-        @Override
-        public boolean isInDowntime(AltoClef mod) {
-
-            // TODO:!! only if we're smelting and have all of our materials & fuel met!!
-            Debug.logError("TODO: Implement this! I was too lazy to do it last time. Check above TODO.");
-            // We're down while our furnace is expected to be burning.
-            int currentTicks = AltoClef.getTicks();
-            if (_currentFurnace != null) {
-                if (_currentFurnace.getRemainingFuelNeededToBurnMaterials() <= 0) {
-                    // Our furnace is ready to go
-                    return (_currentFurnace.getExpectedTicksRemaining(currentTicks) <= 1);
-                } else {
-                    // We will need to go back to refuel
-                    return currentTicks >= _runOutOfFuelExpectedTick - 1;
-                }
+        private void tryUpdateOpenFurnace(AltoClef mod) {
+            if (isContainerOpen(mod)) {
+                // Update current furnace cache
+                _furnaceCache.burnPercentage = StorageHelper.getFurnaceCookPercent();
+                _furnaceCache.burningFuelCount = StorageHelper.getFurnaceFuel();
+                _furnaceCache.fuelSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_FUEL);
+                _furnaceCache.materialSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS);
+                _furnaceCache.outputSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             }
-            return false;
         }
+    }
 
-        private Item getBestFuelSource(AltoClef mod, ItemStack currentFuel, double fuelStillNeeded) {
-            List<Item> candidates = mod.getInventoryTracker().getFuelItems();
-            // This is basically 0-1 knapsack right
-            // no actually it isn't, this can be done via linear search HUZZAH
-            // Pick the candidate that fits within our required "fuel still needed" values.
-
-            double fuelNeededWithoutCurrentFuel = fuelStillNeeded + InventoryTracker.getFuelAmount(currentFuel);
-
-            Item bestFit = null;
-            double minError = Double.POSITIVE_INFINITY;
-
-            for (Item item : candidates) {
-                double errorFuel;
-                double itemCanProvide = mod.getInventoryTracker().getItemCount(item) * InventoryTracker.getFuelAmount(item);
-                if (item.equals(currentFuel.getItem()) || currentFuel.isEmpty()) {
-                    errorFuel = fuelStillNeeded - itemCanProvide;
-                } else {
-                    errorFuel = fuelNeededWithoutCurrentFuel - itemCanProvide;
-                }
-
-                if (Math.abs(errorFuel) < minError) {
-                    bestFit = item;
-                    minError = Math.abs(errorFuel);
-                }
-            }
-            return bestFit;
-        }
+    static class FurnaceCache {
+        public ItemStack materialSlot = ItemStack.EMPTY;
+        public ItemStack fuelSlot = ItemStack.EMPTY;
+        public ItemStack outputSlot = ItemStack.EMPTY;
+        public double burningFuelCount;
+        public double burnPercentage;
     }
 }

@@ -39,8 +39,8 @@ public class CollectGoldNuggetsTask extends ResourceTask {
         switch (mod.getCurrentDimension()) {
             case OVERWORLD:
                 setDebugState("Getting gold ingots to convert to nuggets");
-                int potentialNuggies = mod.getInventoryTracker().getItemCount(Items.GOLD_NUGGET) + mod.getInventoryTracker().getItemCount(Items.GOLD_INGOT) * 9;
-                if (potentialNuggies >= _count && mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
+                int potentialNuggies = mod.getItemStorage().getItemCount(Items.GOLD_NUGGET) + mod.getItemStorage().getItemCount(Items.GOLD_INGOT) * 9;
+                if (potentialNuggies >= _count && mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
                     // Craft gold ingots to nuggets
                     return new CraftInInventoryTask(new ItemTarget(Items.GOLD_NUGGET, _count), CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9));
                 }

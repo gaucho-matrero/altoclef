@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.input.Input;
@@ -12,7 +13,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 
-import java.util.List;
+import java.util.Optional;
 
 public class PlayerInteractionFixChain extends TaskChain {
 
@@ -50,16 +51,16 @@ public class PlayerInteractionFixChain extends TaskChain {
             _betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
-                Slot bestToolSlot = mod.getInventoryTracker().getBestToolSlot(state);
+                Optional<Slot> bestToolSlot = StorageHelper.getBestToolSlot(mod, state);
                 Slot currentEquipped = PlayerInventorySlot.getEquipSlot();
 
                 // if baritone is running, only accept tools OUTSIDE OF HOTBAR!
                 // Baritone will take care of tools inside the hotbar.
-                if (bestToolSlot != null && !bestToolSlot.equals(currentEquipped)) {
-                    boolean isAllowedToManage = !mod.getClientBaritone().getPathingBehavior().isPathing() || bestToolSlot.getInventorySlot() >= 9;
+                if (bestToolSlot.isPresent() && !bestToolSlot.get().equals(currentEquipped)) {
+                    boolean isAllowedToManage = !mod.getClientBaritone().getPathingBehavior().isPathing() || bestToolSlot.get().getInventorySlot() >= 9;
                     if (isAllowedToManage) {
                         Debug.logMessage("Found better tool in inventory, equipping.");
-                        mod.getSlotHandler().forceEquipSlot(bestToolSlot);
+                        mod.getSlotHandler().forceEquipSlot(bestToolSlot.get());
                     }
                 }
             }
@@ -85,7 +86,7 @@ public class PlayerInteractionFixChain extends TaskChain {
             }
         }
 
-        ItemStack currentStack = mod.getPlayer().currentScreenHandler.getCursorStack();
+        ItemStack currentStack = StorageHelper.getItemStackInCursorSlot();
 
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck
@@ -102,25 +103,22 @@ public class PlayerInteractionFixChain extends TaskChain {
         // If we have something in our hand for a period of time...
         if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
             Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
-            if (mod.getInventoryTracker().isInventoryFull()) {
-                Slot garbage = mod.getInventoryTracker().getGarbageSlot();
-                if (garbage != null) {
-                    if (!Slot.isCursor(garbage)) {
-                        mod.getSlotHandler().clickSlot(garbage, 0, SlotActionType.PICKUP);
+            Optional<Slot> emptySlot = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false);
+            if (emptySlot.isEmpty()) {
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                if (garbage.isPresent()) {
+                    if (!Slot.isCursor(garbage.get())) {
+                        mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
                     }
-                    mod.getSlotHandler().clickSlot(Slot.getFromInventory(-9999), 0, SlotActionType.PICKUP);
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
                     Debug.logMessage("Cursor stack edge case: Full inventory. Attempted to drop.");
                 } else {
                     Debug.logMessage("Cursor stack edge case: Full inventory AND NO GARBAGE! We're stuck.");
                 }
                 return Float.NEGATIVE_INFINITY;
+            } else {
+                mod.getSlotHandler().clickSlot(emptySlot.get(), 0, SlotActionType.PICKUP);
             }
-            Slot slotToMoveTo = mod.getInventoryTracker().getEmptyInventorySlot();
-            if (slotToMoveTo == null) {
-                Debug.logWarning("No free slot found, moving item stack to last inventory slot.");
-                slotToMoveTo = Slot.getFromInventory(35);
-            }
-            mod.getSlotHandler().clickSlot(slotToMoveTo, 0, SlotActionType.PICKUP);
         }
 
         return Float.NEGATIVE_INFINITY;

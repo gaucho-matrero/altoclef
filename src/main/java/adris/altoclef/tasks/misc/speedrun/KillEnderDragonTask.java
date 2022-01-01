@@ -2,7 +2,6 @@ package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.entity.AbstractKillEntityTask;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
@@ -16,6 +15,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
@@ -35,11 +35,13 @@ import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Here we go
@@ -69,7 +71,6 @@ public class KillEnderDragonTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBehaviour().addThrowawayItems(Items.END_STONE);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Don't forcefield endermen.
         mod.getBehaviour().addForceFieldExclusion(entity -> entity instanceof EndermanEntity || entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart);
@@ -88,7 +89,7 @@ public class KillEnderDragonTask extends Task {
         // - Food (List)
 
         List<Item> toPickUp = new ArrayList<>(Arrays.asList(Items.DIAMOND_SWORD, Items.DIAMOND_BOOTS, Items.DIAMOND_LEGGINGS, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_HELMET));
-        if (mod.getInventoryTracker().totalFoodScore() < 10) {
+        if (StorageHelper.calculateInventoryFoodScore(mod) < 10) {
             toPickUp.addAll(Arrays.asList(
                     Items.BREAD, Items.COOKED_BEEF, Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_RABBIT, Items.COOKED_PORKCHOP
             ));
@@ -103,7 +104,7 @@ public class KillEnderDragonTask extends Task {
         // If not equipped diamond armor and we have any, equip it.
         for (Item armor : ItemHelper.DIAMOND_ARMORS) {
             try {
-                if (mod.getInventoryTracker().hasItem(armor) && !mod.getInventoryTracker().isArmorEquipped(armor)) {
+                if (mod.getItemStorage().hasItem(armor) && !StorageHelper.isArmorEquipped(mod, armor)) {
                     setDebugState("Equipping " + armor);
                     return new EquipArmorTask(armor);
                 }
@@ -134,8 +135,8 @@ public class KillEnderDragonTask extends Task {
         // If there are crystals, suicide blow em up.
         // If there are no crystals, punk the dragon if it's close.
         int MINIMUM_BUILDING_BLOCKS = 1;
-        if (mod.getEntityTracker().entityFound(EndCrystalEntity.class) && mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK, Items.END_STONE) < MINIMUM_BUILDING_BLOCKS || (_collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod))) {
-            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.WOOD)) {
+        if (mod.getEntityTracker().entityFound(EndCrystalEntity.class) && mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK, Items.END_STONE) < MINIMUM_BUILDING_BLOCKS || (_collectBuildMaterialsTask.isActive() && !_collectBuildMaterialsTask.isFinished(mod))) {
+            if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                 mod.getBehaviour().addProtectedItems(Items.END_STONE);
                 setDebugState("Collecting building blocks to pillar to crystals");
                 return _collectBuildMaterialsTask;

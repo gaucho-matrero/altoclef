@@ -63,7 +63,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
             setDebugState("Collecting gold");
             return _goldTask;
         }
-        if (!mod.getInventoryTracker().hasItem(Items.GOLD_INGOT)) {
+        if (!mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
             if (_goldTask == null) _goldTask = TaskCatalogue.getItemTask(Items.GOLD_INGOT, _goldBuffer);
             return _goldTask;
         }

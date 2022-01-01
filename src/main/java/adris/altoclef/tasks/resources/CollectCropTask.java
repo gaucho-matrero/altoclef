@@ -83,7 +83,7 @@ public class CollectCropTask extends ResourceTask {
          */
 
         // Collect seeds if we need to.
-        if (hasEmptyCrops(mod) && mod.getModSettings().shouldReplantCrops() && !mod.getInventoryTracker().hasItem(_cropSeed)) {
+        if (hasEmptyCrops(mod) && mod.getModSettings().shouldReplantCrops() && !mod.getItemStorage().hasItem(_cropSeed)) {
             if (_collectSeedTask.isActive() && !_collectSeedTask.isFinished(mod)) {
                 setDebugState("Picking up dropped seeds");
                 return _collectSeedTask;
@@ -152,7 +152,7 @@ public class CollectCropTask extends ResourceTask {
     }
 
     private boolean shouldReplantNow(AltoClef mod) {
-        return mod.getModSettings().shouldReplantCrops() && hasEmptyCrops(mod) && mod.getInventoryTracker().hasItem(_cropSeed);
+        return mod.getModSettings().shouldReplantCrops() && hasEmptyCrops(mod) && mod.getItemStorage().hasItem(_cropSeed);
     }
 
     private boolean hasEmptyCrops(AltoClef mod) {

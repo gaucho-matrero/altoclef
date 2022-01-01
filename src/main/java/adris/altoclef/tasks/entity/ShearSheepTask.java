@@ -21,7 +21,7 @@ public class ShearSheepTask extends AbstractDoToEntityTask {
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
-        if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
+        if (!mod.getItemStorage().hasItem(Items.SHEARS)) {
             Debug.logWarning("Failed to shear sheep because you have no shears.");
             return null;
         }

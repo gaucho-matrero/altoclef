@@ -8,17 +8,17 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.KillPlayerTask;
-import adris.altoclef.tasks.misc.speedrun.BeatMinecraftTask;
 import adris.altoclef.tasks.movement.RunAwayFromEntitiesTask;
 import adris.altoclef.tasks.movement.SearchChunksExploreTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -153,11 +153,12 @@ public class TerminatorTask extends Task {
             }
 
             // Get water to MLG if we are pushed off
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
+
             // Get some food so we can last a little longer.
-            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) && mod.getInventoryTracker().totalFoodScore() <= 0) {
+            if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) && StorageHelper.calculateInventoryFoodScore(mod) <= 0) {
                 return _foodTask;
             }
 
@@ -181,12 +182,13 @@ public class TerminatorTask extends Task {
 
         // Get stacked first
         // Equip diamond armor asap
-        if (BeatMinecraftTask.hasDiamondArmor(mod) && !BeatMinecraftTask.diamondArmorEquipped(mod)) {
+        boolean hasDiamondArmor = mod.getItemStorage().hasItemAll(ItemHelper.DIAMOND_ARMORS);
+        if (hasDiamondArmor && !StorageHelper.isArmorEquippedAll(mod, ItemHelper.DIAMOND_ARMORS)) {
             return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
         }
         // Get diamond armor + gear first
-        if (!BeatMinecraftTask.hasDiamondArmor(mod) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD)) {
-            if (mod.getInventoryTracker().getItemCount(Items.IRON_PICKAXE) <= 1 || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
+        if (!hasDiamondArmor || !mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE) || !mod.getItemStorage().hasItem(Items.DIAMOND_SWORD)) {
+            if (mod.getItemStorage().getItemCount(Items.IRON_PICKAXE) <= 1 || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
                 setDebugState("Getting iron pickaxes to mine diamonds");
                 return _prepareDiamondMiningEquipmentTask;
             }
@@ -201,7 +203,7 @@ public class TerminatorTask extends Task {
         }
 
         // Collect food
-        if (mod.getInventoryTracker().totalFoodScore() <= 0) {
+        if (StorageHelper.calculateInventoryFoodScore(mod) <= 0) {
             return _foodTask;
         }
 
@@ -232,7 +234,7 @@ public class TerminatorTask extends Task {
 
     private boolean isReadyToPunk(AltoClef mod) {
         if (mod.getPlayer().getHealth() <= 5) return false; // We need to heal.
-        return BeatMinecraftTask.diamondArmorEquipped(mod) && mod.getInventoryTracker().hasItem(Items.DIAMOND_SWORD);
+        return StorageHelper.isArmorEquippedAll(mod, ItemHelper.DIAMOND_ARMORS) && mod.getItemStorage().hasItem(Items.DIAMOND_SWORD);
     }
 
     private boolean shouldPunk(AltoClef mod, PlayerEntity player) {

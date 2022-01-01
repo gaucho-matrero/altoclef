@@ -3,17 +3,22 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.baritone.BaritoneHelper;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 
 @SuppressWarnings("ConstantConditions")
@@ -61,7 +66,7 @@ public abstract class DoStuffInContainerTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         // If we're placing, keep on placing.
-        if (mod.getInventoryTracker().hasItem(ItemHelper.blocksToItems(_containerBlocks)) && _placeTask.isActive() && !_placeTask.isFinished(mod)) {
+        if (mod.getItemStorage().hasItem(ItemHelper.blocksToItems(_containerBlocks)) && _placeTask.isActive() && !_placeTask.isFinished(mod)) {
             setDebugState("Placing container");
             return _placeTask;
         }
@@ -108,7 +113,7 @@ public abstract class DoStuffInContainerTask extends Task {
             _cachedContainerPosition = null;
 
             // Get if we don't have...
-            if (!mod.getInventoryTracker().hasItem(_containerTarget)) {
+            if (!mod.getItemStorage().hasItem(_containerTarget)) {
                 setDebugState("Getting container item");
                 return TaskCatalogue.getItemTask(_containerTarget);
             }
@@ -131,6 +136,15 @@ public abstract class DoStuffInContainerTask extends Task {
         }
 
         if (nearest != null) {
+            if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
+                setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
+                Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
+                if (toMoveTo.isEmpty()) {
+                    return new EnsureFreeInventorySlotTask();
+                } else {
+                    return new ClickSlotTask(toMoveTo.get());
+                }
+            }
             return _openTableTask;
         }
         return null;

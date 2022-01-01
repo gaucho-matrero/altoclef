@@ -92,7 +92,7 @@ public class PlayerExtraController {
                 single ? PlayerActionC2SPacket.Action.DROP_ITEM : PlayerActionC2SPacket.Action.DROP_ALL_ITEMS,
                 new BlockPos(0, 0, 0), Direction.fromRotation(0)
         );
-        _mod.getInventoryTracker().setDirty();
+        _mod.getItemStorage().registerSlotAction();
     }
 
     public boolean place() {

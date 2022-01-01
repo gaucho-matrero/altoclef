@@ -5,7 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import net.minecraft.client.MinecraftClient;
@@ -347,10 +347,13 @@ public class EntityTracker extends Tracker {
                 if (entity instanceof ItemEntity ientity) {
                     Item droppedItem = ientity.getStack().getItem();
 
-                    if (!_itemDropLocations.containsKey(droppedItem)) {
-                        _itemDropLocations.put(droppedItem, new ArrayList<>());
+                    // Only cared about GROUNDED item entities
+                    if (ientity.isOnGround() || ientity.isTouchingWater()) {
+                        if (!_itemDropLocations.containsKey(droppedItem)) {
+                            _itemDropLocations.put(droppedItem, new ArrayList<>());
+                        }
+                        _itemDropLocations.get(droppedItem).add(ientity);
                     }
-                    _itemDropLocations.get(droppedItem).add(ientity);
                 } else if (entity instanceof MobEntity) {
 
                     //noinspection ConstantConditions

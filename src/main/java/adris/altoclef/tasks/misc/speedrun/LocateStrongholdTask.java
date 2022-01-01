@@ -81,7 +81,7 @@ public class LocateStrongholdTask extends Task {
         }
 
         // Pick up eye if we need to/want to.
-        if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE) && 
+        if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE) && 
         !mod.getEntityTracker().entityFound(EyeOfEnderEntity.class)) {
             setDebugState("Picking up dropped ender eye.");
             return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
@@ -158,7 +158,7 @@ public class LocateStrongholdTask extends Task {
                 setDebugState("Going to overworld.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             }
-            if (!mod.getInventoryTracker().hasItem(Items.ENDER_EYE)) {
+            if (!mod.getItemStorage().hasItem(Items.ENDER_EYE)) {
                 setDebugState("Collecting eye of ender.");
                 return TaskCatalogue.getItemTask(Items.ENDER_EYE, 1);
             }
@@ -206,12 +206,12 @@ public class LocateStrongholdTask extends Task {
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
-                mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) >= 10) {
+                mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
                 if (mod.getCurrentDimension() != Dimension.NETHER) {
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
                 }
-                if (mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) < 10 && !_netherGoalReached) {
+                if (mod.getItemStorage().getItemCount(Items.OBSIDIAN) < 10 && !_netherGoalReached) {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }

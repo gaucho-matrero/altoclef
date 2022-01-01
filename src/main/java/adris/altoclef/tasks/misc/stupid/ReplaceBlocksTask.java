@@ -93,7 +93,7 @@ public class ReplaceBlocksTask extends Task {
         }
 
         // Get to replace item
-        if (!mod.getInventoryTracker().hasItem(_toReplace.getMatches())) {
+        if (!mod.getItemStorage().hasItem(_toReplace.getMatches())) {
             List<BlockPos> locations = mod.getBlockTracker().getKnownLocations(_toFind);
             int need = 0;
             for (BlockPos loc : locations) if (isWithinRange(loc) && need < MAX_MATERIALS_NEEDED_AT_A_TIME) need++;

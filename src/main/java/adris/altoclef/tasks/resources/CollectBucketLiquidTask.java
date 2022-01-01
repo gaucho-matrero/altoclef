@@ -130,7 +130,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         // Get buckets if we need em
-        int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
+        int bucketsNeeded = _count - mod.getItemStorage().getItemCount(Items.BUCKET) - mod.getItemStorage().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
             return TaskCatalogue.getItemTask(Items.BUCKET, bucketsNeeded);

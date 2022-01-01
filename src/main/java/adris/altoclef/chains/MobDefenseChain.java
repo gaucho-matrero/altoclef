@@ -10,7 +10,7 @@ import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.KillAura;
-import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
@@ -162,7 +162,7 @@ public class MobDefenseChain extends SingleTaskChain {
             ToolItem bestSword = null;
             Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
             for (Item item : SWORDS) {
-                if (mod.getInventoryTracker().hasItem(item)) {
+                if (mod.getItemStorage().hasItem(item)) {
                     bestSword = (ToolItem) item;
                     break;
                 }

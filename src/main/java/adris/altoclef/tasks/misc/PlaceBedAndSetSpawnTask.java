@@ -200,7 +200,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
 
         // Get a bed if we don't have one.
-        if (!mod.getInventoryTracker().hasItem(ItemHelper.BED)) {
+        if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
             setDebugState("Getting a bed first");
             return TaskCatalogue.getItemTask("bed", 1);
         }

@@ -2,7 +2,6 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -48,7 +47,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             return 100;
         } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
-            if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (mod.getItemStorage().hasItem(Items.BUCKET) && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
 
                 if (_lastMLG != null) {
                     BlockPos placed = _lastMLG.getWaterPlacedPos();
@@ -106,7 +105,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
         }
-        if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+        if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
             // No bucket, no point.
             return false;
         }

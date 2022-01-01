@@ -137,7 +137,7 @@ public class ConstructNetherPortalBucketTask extends Task {
 
 
         // Get bucket if we don't have one.
-        int bucketCount = mod.getInventoryTracker().getItemCount(Items.BUCKET, Items.LAVA_BUCKET, Items.WATER_BUCKET);
+        int bucketCount = mod.getItemStorage().getItemCount(Items.BUCKET, Items.LAVA_BUCKET, Items.WATER_BUCKET);
         if (bucketCount < 2) {
             setDebugState("Getting buckets");
             _progressChecker.reset();
@@ -145,7 +145,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         }
 
         // Get flint & steel if we don't have one
-        if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
+        if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
             setDebugState("Getting flint & steel");
             _progressChecker.reset();
             return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
@@ -155,7 +155,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         if (needsToLookForPortal) {
             _progressChecker.reset();
             // Get water before searching, just for convenience.
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Getting water");
                 _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
@@ -203,7 +203,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             }
 
             // Get lava early so placing it is faster
-            if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET) && frameBlock != Blocks.LAVA) {
+            if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET) && frameBlock != Blocks.LAVA) {
                 setDebugState("Collecting lava");
                 _progressChecker.reset();
                 return _collectLavaTask;

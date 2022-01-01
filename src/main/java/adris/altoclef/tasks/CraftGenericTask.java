@@ -1,13 +1,16 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotTask;
-import adris.altoclef.tasks.slot.ThrowSlotTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
+import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
@@ -16,6 +19,8 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.Optional;
 
 /**
  * Assuming a crafting screen is open, crafts a recipe.
@@ -76,21 +81,34 @@ public class CraftGenericTask extends Task {
                 // Craft in window
                 currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
             }
-            ItemStack present = mod.getInventoryTracker().getItemStackInSlot(currentCraftSlot);
+            ItemStack present = StorageHelper.getItemStackInSlot(currentCraftSlot);
             if (toFill == null || toFill.isEmpty()) {
                 if (present.getItem() != Items.AIR) {
                     // Move this item OUT if it should be empty
-                    return new ThrowSlotTask(currentCraftSlot);
+                    Debug.logMessage("Found invalid slot in our crafting table. Clicking it and letting alto clef take care of the rest.");
+                    return new ClickSlotTask(currentCraftSlot);
                 }
             } else {
                 boolean isSatisfied = toFill.matches(present.getItem());
                 if (!isSatisfied) {
-                    return new MoveItemToSlotTask(new ItemTarget(toFill, 1), currentCraftSlot);
+                    return new MoveItemToSlotFromInventoryTask(new ItemTarget(toFill, 1), currentCraftSlot);
                 }
             }
         }
 
         Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+
+        // Ensure our cursor is empty/can receive our item
+        ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
+        if (!cursor.isEmpty() && !ItemHelper.canStackTogether(StorageHelper.getItemStackInSlot(outputSlot), cursor)) {
+            Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
+            if (toFit.isPresent()) {
+                return new ClickSlotTask(toFit.get());
+            } else {
+                // Eh screw it
+                return new ThrowCursorTask();
+            }
+        }
 
         return new ClickSlotTask(outputSlot, 0, SlotActionType.QUICK_MOVE);
     }

@@ -2,19 +2,21 @@ package adris.altoclef.util.control;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.CursorSlot;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 
@@ -23,21 +25,26 @@ public class SlotHandler {
     private final AltoClef _mod;
 
     private final TimerGame _slotActionTimer = new TimerGame(0);
+    private boolean _overrideTimerOnce = false;
 
     public SlotHandler(AltoClef mod) {
         _mod = mod;
     }
 
-    private InventoryTracker inv() {
-        return _mod.getInventoryTracker();
+    private void forceAllowNextSlotAction() {
+        _overrideTimerOnce = true;
     }
 
     public boolean canDoSlotAction() {
+        if (_overrideTimerOnce) {
+            _overrideTimerOnce = false;
+            return true;
+        }
         _slotActionTimer.setInterval(_mod.getModSettings().getContainerItemMoveDelay());
         return _slotActionTimer.elapsed();
     }
     public void registerSlotAction() {
-        _mod.getInventoryTracker().setDirty();
+        _mod.getItemStorage().registerSlotAction();
         _slotActionTimer.reset();
     }
 
@@ -55,13 +62,17 @@ public class SlotHandler {
 
         clickWindowSlot(slot.getWindowSlot(), mouseButton, type);
     }
+    private void clickSlotForce(Slot slot, int mouseButton, SlotActionType type) {
+        forceAllowNextSlotAction();
+        clickSlot(slot, mouseButton, type);
+    }
 
     private void clickWindowSlot(int windowSlot, int mouseButton, SlotActionType type) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) {
             return;
         }
-        inv().setDirty();
+        registerSlotAction();
         int syncId = player.currentScreenHandler.syncId;
 
         _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
@@ -69,67 +80,56 @@ public class SlotHandler {
 
     public boolean forceEquipItem(Item toEquip) {
 
-        if (canDoSlotAction()) {
+        // Already equipped
+        if (StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem() == toEquip) return true;
 
-            // Always equip to the second slot. First + last is occupied by baritone.
-            _mod.getPlayer().getInventory().selectedSlot = 1;
+        // Always equip to the second slot. First + last is occupied by baritone.
+        _mod.getPlayer().getInventory().selectedSlot = 1;
 
-            Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
+        // If our item is in our cursor, simply move it to the hotbar.
+        boolean inCursor = StorageHelper.getItemStackInSlot(new CursorSlot()).getItem() == toEquip;
 
-            // Already equipped
-            if (inv().getItemStackInSlot(target).getItem() == toEquip) return true;
-
-            // If our item is in our cursor, simply move it to the hotbar.
-            boolean inCursor = _mod.getInventoryTracker().getItemStackInCursorSlot().getItem() == toEquip;
-
-            List<Slot> itemSlots = inv().getInventorySlotsWithItem(toEquip);
-            if (itemSlots.size() != 0) {
-                Slot slot = itemSlots.get(0);
-                assert target != null;
-                int hotbar = target.getInventorySlot();
-                if (0 <= hotbar && hotbar < 9) {
-                    clickSlot(Objects.requireNonNull(slot), hotbar, inCursor? SlotActionType.PICKUP : SlotActionType.SWAP);
-                    registerSlotAction();
-                    return true;
-                } else {
-                    Debug.logWarning("Tried to swap to hotbar that's not a hotbar position! " + hotbar + " (target=" + target + ")");
-                    return false;
-                }
-            }
-
-            Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
-            return false;
+        List<Slot> itemSlots = _mod.getItemStorage().getSlotsWithItemScreen(toEquip);
+        if (itemSlots.size() != 0) {
+            Slot slot = itemSlots.get(0);
+            int hotbar = 1;
+            //_mod.getPlayer().getInventory().swapSlotWithHotbar();
+            clickSlotForce(Objects.requireNonNull(slot), inCursor? 0 : hotbar, inCursor? SlotActionType.PICKUP : SlotActionType.SWAP);
+            //registerSlotAction();
+            return true;
         }
-        return true;
+
+        Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
+        return false;
     }
     public boolean forceDeequipHitTool() {
-        return forceDeequip(item -> item instanceof ToolItem, true);
+        return forceDeequip(stack -> stack.getItem() instanceof ToolItem);
     }
     public void forceDeequipRightClickableItem() {
-        forceDeequip(item ->
-                        item instanceof BucketItem // water,lava,milk,fishes
-                                || item instanceof EnderEyeItem
-                                || item == Items.BOW
-                                || item == Items.CROSSBOW
-                                || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
-                                || item == Items.ENDER_PEARL
-                                || item instanceof FireworkRocketItem
-                                || item instanceof SpawnEggItem
-                                || item == Items.END_CRYSTAL
-                                || item == Items.EXPERIENCE_BOTTLE
-                                || item instanceof PotionItem // also includes splash/lingering
-                                || item == Items.TRIDENT
-                                || item == Items.WRITABLE_BOOK
-                                || item == Items.WRITTEN_BOOK
-                                || item instanceof FishingRodItem
-                                || item instanceof OnAStickItem
-                                || item == Items.COMPASS
-                                || item instanceof EmptyMapItem
-                                || item instanceof Wearable
-                                || item == Items.SHIELD
-                                || item == Items.LEAD
-                ,
-                true
+        forceDeequip(stack -> {
+            Item item = stack.getItem();
+                    return item instanceof BucketItem // water,lava,milk,fishes
+                            || item instanceof EnderEyeItem
+                            || item == Items.BOW
+                            || item == Items.CROSSBOW
+                            || item == Items.FLINT_AND_STEEL || item == Items.FIRE_CHARGE
+                            || item == Items.ENDER_PEARL
+                            || item instanceof FireworkRocketItem
+                            || item instanceof SpawnEggItem
+                            || item == Items.END_CRYSTAL
+                            || item == Items.EXPERIENCE_BOTTLE
+                            || item instanceof PotionItem // also includes splash/lingering
+                            || item == Items.TRIDENT
+                            || item == Items.WRITABLE_BOOK
+                            || item == Items.WRITTEN_BOOK
+                            || item instanceof FishingRodItem
+                            || item instanceof OnAStickItem
+                            || item == Items.COMPASS
+                            || item instanceof EmptyMapItem
+                            || item instanceof Wearable
+                            || item == Items.SHIELD
+                            || item == Items.LEAD;
+                }
         );
     }
 
@@ -139,23 +139,41 @@ public class SlotHandler {
      * @param isBad: Whether an item is bad/shouldn't be equipped
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
-    public boolean forceDeequip(Predicate<Item> isBad, boolean preferEmpty) {
-        Item equip = inv().getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem();
-        if (isBad.test(equip)) {
-            // Pick non tool item or air
-            if (!preferEmpty || inv().getEmptyInventorySlotCount() == 0) {
-                for (int i = 0; i < 35; ++i) {
-                    Slot s = Slot.getFromInventory(i);
-                    if (!isBad.test(inv().getItemStackInSlot(s).getItem())) {
-                        forceEquipSlot(s);
-                        return true;
+    public boolean forceDeequip(Predicate<ItemStack> isBad) {
+        ItemStack equip = StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot());
+        ItemStack cursor = StorageHelper.getItemStackInSlot(new CursorSlot());
+        if (isBad.test(cursor)) {
+            // Throw away cursor slot OR move
+            Optional<Slot> fittableSlots = _mod.getItemStorage().getSlotThatCanFitInPlayerInventory(equip, false);
+            if (fittableSlots.isEmpty()) {
+                // Try to swap items with the first non-bad slot.
+                for (Slot slot : Slot.getCurrentScreenSlots()) {
+                    if (!isBad.test(StorageHelper.getItemStackInSlot(slot))) {
+                        clickSlotForce(slot, 0, SlotActionType.PICKUP);
+                        return false;
                     }
                 }
+                if (ItemHelper.canThrowAwayStack(_mod, cursor)) {
+                    clickSlotForce(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    return true;
+                }
+                // Can't throw :(
                 return false;
             } else {
-                forceEquipItem(Items.AIR);
+                // Put in the empty/available slot.
+                clickSlotForce(fittableSlots.get(), 0, SlotActionType.PICKUP);
+                return true;
             }
+        } else if (isBad.test(equip)) {
+            // Pick up the item
+            clickSlotForce(PlayerInventorySlot.getEquipSlot(), 0, SlotActionType.PICKUP);
+            return false;
+        } else if (equip.isEmpty() && !cursor.isEmpty()) {
+            // cursor is good and equip is empty, so finish filling it in.
+            clickSlotForce(PlayerInventorySlot.getEquipSlot(), 0, SlotActionType.PICKUP);
+            return true;
         }
+        // We're already de-equipped
         return true;
     }
     public void forceEquipSlot(Slot slot) {
@@ -171,10 +189,10 @@ public class SlotHandler {
 
         Slot target = PlayerInventorySlot.getEquipSlot();
         // Already equipped
-        if (toEquip.matches(inv().getItemStackInSlot(target).getItem())) return true;
+        if (toEquip.matches(StorageHelper.getItemStackInSlot(target).getItem())) return true;
 
         for (Item item : toEquip.getMatches()) {
-            if (inv().hasItem(item)) {
+            if (_mod.getItemStorage().hasItem(item)) {
                 if (forceEquipItem(item)) return true;
             }
         }
@@ -182,8 +200,10 @@ public class SlotHandler {
     }
 
     public void refreshInventory() {
-        for (int i = 0; i < InventoryTracker.INVENTORY_SIZE; ++i) {
-            Slot slot = Slot.getFromInventory(i);
+        if (MinecraftClient.getInstance().player == null)
+            return;
+        for (int i = 0; i < MinecraftClient.getInstance().player.getInventory().main.size(); ++i) {
+            Slot slot = Slot.getFromCurrentScreenInventory(i);
             clickSlot(slot, 0, SlotActionType.PICKUP);
             clickSlot(slot, 0, SlotActionType.PICKUP);
         }
@@ -207,7 +227,6 @@ public class SlotHandler {
             if (Slot.isCursor(slot1)) {
                 clickSlot(slot1, 0, SlotActionType.PICKUP);
             }
-            inv().setDirty();
             registerSlotAction();
         }
     }

@@ -8,9 +8,8 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class EnterNetherPortalTask extends Task {
@@ -106,7 +105,7 @@ public class EnterNetherPortalTask extends Task {
     protected boolean isEqual(Task other) {
         if (other instanceof EnterNetherPortalTask task) {
             //noinspection ConstantConditions
-            return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
+            return (Objects.equals(task._getPortalTask, _getPortalTask) && task._targetDimension.equals(_targetDimension));
         }
         return false;
     }

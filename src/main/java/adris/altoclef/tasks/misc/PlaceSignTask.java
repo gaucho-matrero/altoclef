@@ -9,6 +9,7 @@ import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -53,7 +54,7 @@ public class PlaceSignTask extends Task {
         }
 
         // Make sure we have a sign to place
-        if (!mod.getInventoryTracker().hasItem("sign")) {
+        if (!StorageHelper.hasCataloguedItem(mod, "sign")) {
             return TaskCatalogue.getItemTask("sign", 1);
         }
 

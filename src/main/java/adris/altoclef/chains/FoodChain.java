@@ -13,12 +13,21 @@ import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.util.Pair;
+
+import java.util.Optional;
 
 public class FoodChain extends SingleTaskChain {
+
+    // TODO: Static 'onConfigReload' and load from a file.
+    private FoodChainConfig _config = new FoodChainConfig();
 
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
+
+    private int _cachedFoodScore;
+    private Optional<Item> _cachedPerfectFood = Optional.empty();
 
     public FoodChain(TaskRunner runner) {
         super(runner);
@@ -50,7 +59,11 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
-        boolean hasFood = mod.getInventoryTracker().totalFoodScore() != 0;
+        Pair<Integer, Optional<Item>> calculation = calculateFood(mod);
+        _cachedFoodScore = calculation.getLeft();
+        _cachedPerfectFood = calculation.getRight();
+
+        boolean hasFood = _cachedFoodScore > 0;
 
         // If we requested a fillup but we're full, stop.
         if (_requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() == 20) {
@@ -61,8 +74,8 @@ public class FoodChain extends SingleTaskChain {
             _requestFillup = false;
         }
 
-        if (hasFood && (needsToEat(mod) || _requestFillup)) {
-            Item toUse = getBestItemToEat(mod);
+        if (hasFood && (needsToEat(mod) || _requestFillup) && _cachedPerfectFood.isPresent()) {
+            Item toUse = _cachedPerfectFood.get();
             if (toUse != null) {
 
                 // Make sure we're not facing a container
@@ -80,14 +93,12 @@ public class FoodChain extends SingleTaskChain {
 
         Settings settings = mod.getModSettings();
 
-        int foodScore = mod.getInventoryTracker().totalFoodScore();
-
-        if (_needsFood || foodScore < settings.getMinimumFoodAllowed()) {
-            _needsFood = foodScore < settings.getFoodUnitsToCollect();
+        if (_needsFood || _cachedFoodScore < settings.getMinimumFoodAllowed()) {
+            _needsFood = _cachedFoodScore < settings.getFoodUnitsToCollect();
 
             // Only collect if we don't have enough food.
             // If the user inputs invalid settings, the bot would get stuck here.
-            if (foodScore < settings.getFoodUnitsToCollect()) {
+            if (_cachedFoodScore < settings.getFoodUnitsToCollect()) {
                 setTask(new CollectFoodTask(settings.getFoodUnitsToCollect()));
                 return 55f;
             }
@@ -128,17 +139,15 @@ public class FoodChain extends SingleTaskChain {
         float health = player.getHealth();
 
         //Debug.logMessage("FOOD: " + foodLevel + " -- HEALTH: " + health);
-
-        // TODO: Threshold behaviour preferences
         if (foodLevel >= 20) {
             // We can't eat.
             return false;
         } else {
             // Eat if we're desparate/need to heal ASAP
-            if (player.isOnFire() || player.hasStatusEffect(StatusEffects.WITHER) || health < 6) {
+            if (player.isOnFire() || player.hasStatusEffect(StatusEffects.WITHER) || health < _config.alwaysEatWhenWitherOrFireAndHealthBelow) {
                 return true;
-            } else if (foodLevel > 10) {
-                if (health < 14) {
+            } else if (foodLevel > _config.alwaysEatWhenBelowHunger) {
+                if (health < _config.alwaysEatWhenBelowHealth) {
                     return true;
                 }
             } else {
@@ -147,43 +156,15 @@ public class FoodChain extends SingleTaskChain {
             }
         }
 
-        // Eat if we're more than 2.5 units hungry and we have a perfect fit.
-        if (foodLevel < 20 - 5) {
+        // Eat if we're  units hungry and we have a perfect fit.
+        if (foodLevel < _config.alwaysEatWhenBelowHungerAndPerfectFit && _cachedPerfectFood.isPresent()) {
             int need = 20 - foodLevel;
-            Item best = getBestItemToEat(mod);
-            int fills = (best != null && best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : 0;
+            Item best = _cachedPerfectFood.get();
+            int fills = (best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : -1;
             return fills == need;
         }
 
         return false;
-    }
-
-    private Item getBestItemToEat(AltoClef mod) {
-        int foodToFill = 20 - mod.getPlayer().getHungerManager().getFoodLevel();
-        Item bestItem = null;
-        int bestDifference = Integer.MAX_VALUE;
-        for (ItemStack stack : mod.getInventoryTracker().getAvailableFoods()) {
-            FoodComponent f = stack.getItem().getFoodComponent();
-            if (f != null) {
-                // do NOT eat protected items
-                if (mod.getBehaviour().isProtected(stack.getItem())) continue;
-                // Ignore spider eyes
-                if (stack.getItem() == Items.SPIDER_EYE) {
-                    continue;
-                }
-                int fill = f.getHunger();
-                int diff = Math.abs(fill - foodToFill);
-                if (stack.getItem() == Items.ROTTEN_FLESH) {
-                    // Eat rotten flesh only if it's the only thing we have.
-                    diff = 99999; // hmm feels kinda bad but it should work
-                }
-                if (diff < bestDifference) {
-                    bestDifference = diff;
-                    bestItem = stack.getItem();
-                }
-            }
-        }
-        return bestItem;
     }
 
     public boolean isTryingToEat() {
@@ -212,15 +193,83 @@ public class FoodChain extends SingleTaskChain {
         super.onStop(mod);
     }
 
-
     // If we need to eat like, NOW.
     public boolean needsToEatCritical(AltoClef mod) {
-        // Don't do this if we have no food
-        if (mod.getInventoryTracker().totalFoodScore() <= 0) return false;
         int foodLevel = mod.getPlayer().getHungerManager().getFoodLevel();
         float health = mod.getPlayer().getHealth();
         int armor = mod.getPlayer().getArmor();
-        if (health < 3 && foodLevel < 3) return false; // RUN NOT EAT
-        return armor >= 15 && foodLevel < 3; // EAT WE CAN TAKE A FEW HITS
+        if (health < _config.runDontEatMaxHealth && foodLevel < _config.runDontEatMaxHunger) return false; // RUN NOT EAT
+        return armor >= _config.canTankHitsAndEatArmor && foodLevel < _config.canTankHitsAndEatMaxHunger; // EAT WE CAN TAKE A FEW HITS
+    }
+
+    private Pair<Integer, Optional<Item>> calculateFood(AltoClef mod) {
+        Item bestFood = null;
+        double bestFoodScore = Double.NEGATIVE_INFINITY;
+        int foodTotal = 0;
+        ClientPlayerEntity player = mod.getPlayer();
+        float health = player != null? player.getHealth() : 20;
+        //float toHeal = player != null? 20 - player.getHealth() : 0;
+        float hunger = player != null? player.getHungerManager().getFoodLevel() : 20;
+        float saturation = player != null? player.getHungerManager().getSaturationLevel() : 20;
+        // Get best food item + calculate food total
+        for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
+            if (stack.isFood()) {
+                // Ignore protected items
+                if (mod.getBehaviour().isProtected(stack.getItem())) continue;
+
+                // Ignore spider eyes
+                if (stack.getItem() == Items.SPIDER_EYE) {
+                    continue;
+                }
+
+                FoodComponent food = stack.getItem().getFoodComponent();
+
+                float hungerIfEaten = Math.min(hunger + food.getHunger(), 20);
+                float saturationIfEaten = Math.min(hungerIfEaten, saturation + food.getSaturationModifier());
+                float gainedSaturation = (saturationIfEaten - saturation);
+                float gainedHunger = (hungerIfEaten - hunger);
+                float hungerNotFilled = 20 - hungerIfEaten;
+
+                float saturationWasted = food.getSaturationModifier() - gainedSaturation;
+                float hungerWasted = food.getHunger() - gainedHunger;
+
+                boolean prioritizeSaturation = health < _config.prioritizeSaturationWhenBelowHealth;
+                float saturationGoodScore = prioritizeSaturation ? gainedSaturation * _config.foodPickPrioritizeSaturationSaturationMultiplier : gainedSaturation;
+                float saturationLossPenalty = prioritizeSaturation ? 0 : saturationWasted * _config.foodPickSaturationWastePenaltyMultiplier;
+                float hungerLossPenalty = hungerWasted * _config.foodPickHungerWastePenaltyMultiplier;
+                float hungerNotFilledPenalty = hungerNotFilled * _config.foodPickHungerNotFilledPenaltyMultiplier;
+
+                float score = saturationGoodScore - saturationLossPenalty - hungerLossPenalty - hungerNotFilledPenalty;
+
+                if (stack.getItem() == Items.ROTTEN_FLESH) {
+                    score -= _config.foodPickRottenFleshPenalty;
+                }
+                if (score > bestFoodScore) {
+                    bestFoodScore = score;
+                    bestFood = stack.getItem();
+                }
+
+                foodTotal += stack.getItem().getFoodComponent().getHunger() * stack.getCount();
+            }
+        }
+
+        return new Pair<>(foodTotal, Optional.ofNullable(bestFood));
+    }
+
+    static class FoodChainConfig {
+        public int alwaysEatWhenWitherOrFireAndHealthBelow = 6;
+        public int alwaysEatWhenBelowHunger = 10;
+        public int alwaysEatWhenBelowHealth = 14;
+        public int alwaysEatWhenBelowHungerAndPerfectFit = 20 - 5;
+        public int prioritizeSaturationWhenBelowHealth = 8;
+        public float foodPickPrioritizeSaturationSaturationMultiplier = 8;
+        public float foodPickSaturationWastePenaltyMultiplier = 1;
+        public float foodPickHungerWastePenaltyMultiplier = 2;
+        public float foodPickHungerNotFilledPenaltyMultiplier = 1;
+        public float foodPickRottenFleshPenalty = 100;
+        public float runDontEatMaxHealth = 3;
+        public int runDontEatMaxHunger = 3;
+        public int canTankHitsAndEatArmor = 15;
+        public int canTankHitsAndEatMaxHunger = 3;
     }
 }

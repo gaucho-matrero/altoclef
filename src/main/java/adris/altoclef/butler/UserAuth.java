@@ -1,6 +1,7 @@
 package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.util.helpers.ConfigHelper;
 
 public class UserAuth {
     private static final String BLACKLIST_PATH = "altoclef_butler_blacklist.txt";
@@ -12,10 +13,10 @@ public class UserAuth {
     public UserAuth(AltoClef mod) {
         _mod = mod;
 
-        UserListFile.ensureExists(BLACKLIST_PATH, "Add butler blacklisted players here.\n"
+        ConfigHelper.ensureCommentedListFileExists(BLACKLIST_PATH, "Add butler blacklisted players here.\n"
                 + "Make sure useButlerBlacklist is set to true in the settings file.\n"
                 + "Anything after a pound sign (#) will be ignored.");
-        UserListFile.ensureExists(WHITELIST_PATH, "Add butler whitelisted players here.\n"
+        ConfigHelper.ensureCommentedListFileExists(WHITELIST_PATH, "Add butler whitelisted players here.\n"
                 + "Make sure useButlerWhitelist is set to true in the settings file.\n"
                 + "Anything after a pound sign (#) will be ignored.");
 

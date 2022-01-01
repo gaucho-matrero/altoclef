@@ -2,7 +2,7 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.Entity;

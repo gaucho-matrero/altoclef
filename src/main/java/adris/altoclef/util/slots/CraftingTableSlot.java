@@ -1,7 +1,11 @@
 package adris.altoclef.util.slots;
 
+import java.util.stream.IntStream;
+
 public class CraftingTableSlot extends Slot {
     public static final CraftingTableSlot OUTPUT_SLOT = new CraftingTableSlot(0);
+
+    public static final CraftingTableSlot[] INPUT_SLOTS = IntStream.range(0, 9).mapToObj(ind -> getInputSlot(ind, true)).toArray(CraftingTableSlot[]::new);
 
     public CraftingTableSlot(int windowSlot) {
         this(windowSlot, false);

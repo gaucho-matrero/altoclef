@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.helpers.StorageHelper;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -42,14 +43,14 @@ public class CraftInInventoryTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         ItemTarget toGet = _itemTargets[0];
-        if (_collect && !mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe))) {
+        if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, new RecipeTarget(toGet, _recipe))) {
             // Collect recipe materials
             setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
         }
 
         // Free up inventory
-        if (mod.getInventoryTracker().isInventoryFull()) {
+        if (!mod.getItemStorage().hasEmptyInventorySlot()) {
             return new EnsureFreeInventorySlotTask();
         }
 

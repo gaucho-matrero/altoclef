@@ -33,7 +33,7 @@ public class CollectWheatTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // We may have enough hay blocks to meet our needs.
-        int potentialCount = mod.getInventoryTracker().getItemCount(Items.WHEAT) + 9 * mod.getInventoryTracker().getItemCount(Items.HAY_BLOCK);
+        int potentialCount = mod.getItemStorage().getItemCount(Items.WHEAT) + 9 * mod.getItemStorage().getItemCount(Items.HAY_BLOCK);
         if (potentialCount >= _count) {
             setDebugState("Crafting wheat");
             return new CraftInInventoryTask(new ItemTarget(Items.WHEAT, _count), CraftingRecipe.newShapedRecipe("wheat", new ItemTarget[]{new ItemTarget(Items.HAY_BLOCK, 1), null, null, null}, 9));

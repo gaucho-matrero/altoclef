@@ -52,7 +52,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     public static int getMaterialCount(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
+        return mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
     }
 
     public static Task getMaterialTask(int count) {

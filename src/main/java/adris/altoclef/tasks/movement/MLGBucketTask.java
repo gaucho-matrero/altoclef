@@ -120,7 +120,7 @@ public class MLGBucketTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         if (mod.getCurrentDimension() == Dimension.NETHER) return true;
-        return !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
+        return !mod.getItemStorage().hasItem(Items.WATER_BUCKET) || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
     }
 
     @Override

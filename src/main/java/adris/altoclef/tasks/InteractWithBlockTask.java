@@ -11,8 +11,8 @@ import adris.altoclef.util.baritone.GoalBlockSide;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalTwoBlocks;
@@ -136,7 +136,7 @@ public class InteractWithBlockTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         // Get our use item first
-        if (!ItemTarget.nullOrEmpty(_toUse) && !mod.getInventoryTracker().targetsMet(_toUse)) {
+        if (!ItemTarget.nullOrEmpty(_toUse) && !StorageHelper.itemTargetsMet(mod, _toUse)) {
             _moveChecker.reset();
             _clickTimer.reset();
             return TaskCatalogue.getItemTask(_toUse);
@@ -223,7 +223,7 @@ public class InteractWithBlockTask extends Task {
     private ClickResponse rightClick(AltoClef mod) {
 
         // Don't interact if baritone can't interact.
-        if (Baritone.getAltoClefSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
+        if (mod.getExtraBaritoneSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
 
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
