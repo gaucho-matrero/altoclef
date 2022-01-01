@@ -19,6 +19,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -148,6 +149,14 @@ public interface WorldHelper {
     }
 
     static boolean canReach(AltoClef mod, BlockPos pos) {
+        if (mod.getModSettings().shouldAvoidOcean()) {
+            if (mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
+                // Block is in an ocean biome. If it's below sea level...
+                if (pos.getY() < 64 && getGroundHeight(mod, pos.getX(), pos.getZ(), Blocks.WATER) > pos.getY()) {
+                    return false;
+                }
+            }
+        }
         return !mod.getBlockTracker().unreachable(pos);
     }
 

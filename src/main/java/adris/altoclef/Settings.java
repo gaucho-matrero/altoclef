@@ -115,6 +115,13 @@ public class Settings implements IFailableConfigFile {
     private boolean avoidSearchingDungeonChests = true;
 
     /**
+     * Will ignore mining/interacting with blocks that are BELOW an ocean (in an ocean biome and below y = 64)
+     *
+     * This is mainly here because alto-clef does NOT know how to deal with oceans
+     */
+    private boolean avoidOceanBlocks = true;
+
+    /**
      * How close we must be to attack/interact with an entity.
      * 6 works well for singleplayer
      * 4 works better on more restrictive multiplayer servers
@@ -486,6 +493,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldAvoidSearchingForDungeonChests() {
         return avoidSearchingDungeonChests;
+    }
+
+    public boolean shouldAvoidOcean() {
+        return avoidOceanBlocks;
     }
 
     public boolean isThrowaway(Item item) {
