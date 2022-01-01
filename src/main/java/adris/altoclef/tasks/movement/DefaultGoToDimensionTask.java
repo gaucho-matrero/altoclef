@@ -7,6 +7,8 @@ import adris.altoclef.util.Dimension;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Optional;
+
 /**
  * Some generic tasks require us to go to the nether/overworld/end.
  * <p>
@@ -128,8 +130,8 @@ public class DefaultGoToDimensionTask extends Task {
 
     private boolean netherPortalIsClose(AltoClef mod) {
         if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
-            BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
-            return closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), 2000);
+            Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+            return closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), 2000);
         }
         return false;
     }

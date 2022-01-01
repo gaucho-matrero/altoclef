@@ -322,7 +322,7 @@ public class ItemHelper {
     }
 
     public static boolean canStackTogether(ItemStack from, ItemStack to) {
-        return to.getItem() == from.getItem() && (from.getCount() + to.getCount() < to.getMaxCount());
+        return to.getItem().equals(from.getItem()) && (from.getCount() + to.getCount() < to.getMaxCount());
     }
 
     private static Map<Item, Integer> _fuelTimeMap = null;

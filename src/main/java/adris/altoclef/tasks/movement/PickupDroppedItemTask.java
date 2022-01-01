@@ -18,6 +18,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
@@ -144,8 +145,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     }
 
     @Override
-    protected ItemEntity getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return null;
+    protected Optional<ItemEntity> getClosestTo(AltoClef mod, Vec3d pos) {
+        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return Optional.empty();
         return mod.getEntityTracker().getClosestItemDrop(
                 pos,
                 // Don't go for falling item drops, they slow down baritone.

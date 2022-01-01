@@ -18,6 +18,8 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.Optional;
+
 public class FillStrongholdPortalTask extends Task {
 
     private final boolean _destroySilverfishSpawner;
@@ -51,10 +53,10 @@ public class FillStrongholdPortalTask extends Task {
         }
 
         if (_destroySilverfishSpawner) {
-            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> (WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
-            if (silverfishSpawner != null) {
+            Optional<BlockPos> silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> (WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
+            if (silverfishSpawner.isPresent()) {
                 setDebugState("Destroy silverfish spawner");
-                return new DestroyBlockTask(silverfishSpawner);
+                return new DestroyBlockTask(silverfishSpawner.get());
             }
         }
 
@@ -81,8 +83,8 @@ public class FillStrongholdPortalTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
-        return closest != null && mod.getChunkTracker().isChunkLoaded(closest);
+        Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
+        return closest.isPresent() && mod.getChunkTracker().isChunkLoaded(closest.get());
     }
 
     @Override

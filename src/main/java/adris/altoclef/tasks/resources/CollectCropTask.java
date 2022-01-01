@@ -14,13 +14,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropBlock;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -89,8 +90,8 @@ public class CollectCropTask extends ResourceTask {
                 return _collectSeedTask;
             }
             if (mod.getEntityTracker().itemDropped(_cropSeed)) {
-                Entity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _cropSeed);
-                if (closest != null && closest.isInRange(mod.getPlayer(), 7)) {
+                Optional<ItemEntity> closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _cropSeed);
+                if (closest.isPresent() && closest.get().isInRange(mod.getPlayer(), 7)) {
                     // Trigger the collection of seeds.
                     return _collectSeedTask;
                 }
@@ -105,7 +106,7 @@ public class CollectCropTask extends ResourceTask {
             assert !_emptyCropland.isEmpty();
             return new DoToClosestBlockTask(
                     blockPos -> new InteractWithBlockTask(new ItemTarget(_cropSeed, 1), Direction.UP, blockPos.down(), true),
-                    pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))).orElse(null),
+                    pos -> _emptyCropland.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(pos, false))),
                     _emptyCropland::contains,
                     Blocks.FARMLAND); // Blocks.FARMLAND is useless to be put here
         }

@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -50,7 +51,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     }
 
     @Override
-    protected Entity getClosestTo(AltoClef mod, Vec3d pos) {
+    protected Optional<Entity> getClosestTo(AltoClef mod, Vec3d pos) {
         if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
         return mod.getEntityTracker().getClosestEntity(pos, _shouldInteractWith, _targetEntities);
     }

@@ -169,9 +169,9 @@ public class BeatMinecraft2Task extends Task {
 
         // Check for end portals. Always.
         if (!endPortalOpened(mod, _endPortalCenterLocation) && mod.getCurrentDimension() == Dimension.OVERWORLD) {
-            BlockPos endPortal = mod.getBlockTracker().getNearestTracking(Blocks.END_PORTAL);
-            if (endPortal != null) {
-                _endPortalCenterLocation = endPortal;
+            Optional<BlockPos> endPortal = mod.getBlockTracker().getNearestTracking(Blocks.END_PORTAL);
+            if (endPortal.isPresent()) {
+                _endPortalCenterLocation = endPortal.get();
                 _endPortalOpened = true;
             } else {
                 // TODO: Test that this works, for some reason the bot gets stuck near the stronghold and it keeps "Searching" for the portal

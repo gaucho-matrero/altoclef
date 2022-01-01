@@ -11,6 +11,8 @@ import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 
+import java.util.Optional;
+
 public class CollectMilkTask extends ResourceTask {
 
     private final int _count;
@@ -83,7 +85,7 @@ public class CollectMilkTask extends ResourceTask {
         }
 
         @Override
-        protected Entity getEntityTarget(AltoClef mod) {
+        protected Optional<Entity> getEntityTarget(AltoClef mod) {
             return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), CowEntity.class);
         }
 

@@ -181,31 +181,31 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         @Override
-        protected Object getClosestTo(AltoClef mod, Vec3d pos) {
-            BlockPos closestBlock = null;
+        protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
+            Optional<BlockPos> closestBlock = Optional.empty();
             if (mod.getBlockTracker().anyFound(_blocks)) {
                 closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
                     if (_blacklist.contains(check)) return false;
                     return WorldHelper.canBreak(mod, check);
                 }, _blocks);
             }
-            ItemEntity closestDrop = null;
+            Optional<ItemEntity> closestDrop = Optional.empty();
             if (mod.getEntityTracker().itemDropped(_targets)) {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock == null ? Double.POSITIVE_INFINITY : closestBlock.getSquaredDistance(pos, false);
-            double dropSq = closestDrop == null ? Double.POSITIVE_INFINITY : closestDrop.squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
+            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, false);
+            double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
-                return closestDrop;
+                return closestDrop.map(Object.class::cast);
             }
 
             if (dropSq <= blockSq) {
-                return closestDrop;
+                return closestDrop.map(Object.class::cast);
             } else {
-                return closestBlock;
+                return closestBlock.map(Object.class::cast);
             }
         }
 

@@ -9,6 +9,8 @@ import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.progresscheck.ProgressCheckerRetry;
 import net.minecraft.entity.Entity;
 
+import java.util.Optional;
+
 public class KillPlayerTask extends AbstractKillEntityTask {
 
     private final String _playerName;
@@ -23,11 +25,11 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     @Override
     protected Task onTick(AltoClef mod) {
         // If we're closer to the player, our task isn't bad.
-        Entity player = getEntityTarget(mod);
-        if (player == null) {
+        Optional<Entity> player = getEntityTarget(mod);
+        if (player.isEmpty()) {
             _distancePlayerCheck.reset();
         } else {
-            double distSq = player.squaredDistanceTo(mod.getPlayer());
+            double distSq = player.get().squaredDistanceTo(mod.getPlayer());
             if (distSq < 10 * 10) {
                 _distancePlayerCheck.reset();
             }
@@ -48,11 +50,11 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     }
 
     @Override
-    protected Entity getEntityTarget(AltoClef mod) {
+    protected Optional<Entity> getEntityTarget(AltoClef mod) {
         if (mod.getEntityTracker().isPlayerLoaded(_playerName)) {
-            return mod.getEntityTracker().getPlayerEntity(_playerName);
+            return mod.getEntityTracker().getPlayerEntity(_playerName).map(Entity.class::cast);
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

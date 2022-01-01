@@ -22,7 +22,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
 
-    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
+    protected abstract Optional<T> getClosestTo(AltoClef mod, Vec3d pos);
 
     protected abstract Vec3d getOriginPos(AltoClef mod);
 
@@ -67,10 +67,11 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         }
 
         // Get closest object
-        T newClosest = getClosestTo(mod, getOriginPos(mod));
+        Optional<T> checkNewClosest = getClosestTo(mod, getOriginPos(mod));
 
         // Receive closest object and position
-        if (newClosest != null && !newClosest.equals(_currentlyPursuing)) {
+        if (checkNewClosest.isPresent() && !checkNewClosest.get().equals(_currentlyPursuing)) {
+            T newClosest = checkNewClosest.get();
             // Different closest object
             if (_currentlyPursuing == null) {
                 // We don't have a closest object
@@ -122,7 +123,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         }
 
         //noinspection ConstantConditions
-        if (newClosest == null && _currentlyPursuing == null) {
+        if (checkNewClosest.isEmpty() && _currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
             _wasWandering = true;
             return getWanderTask(mod);

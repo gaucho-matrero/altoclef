@@ -29,6 +29,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -86,10 +87,10 @@ public class TerminatorTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        PlayerEntity closest = (PlayerEntity) mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class);
+        Optional<Entity> closest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class);
 
-        if (closest != null) {
-            _closestPlayerLastPos = closest.getPos();
+        if (closest.isPresent()) {
+            _closestPlayerLastPos = closest.get().getPos();
             _closestPlayerLastObservePos = mod.getPlayer().getPos();
         }
 
@@ -97,7 +98,7 @@ public class TerminatorTask extends Task {
 
             if (_runAwayTask != null && _runAwayTask.isActive() && !_runAwayTask.isFinished(mod)) {
                 // If our last "scare" was too long ago or there are no more nearby players...
-                boolean noneRemote = (closest == null || !closest.isInRange(mod.getPlayer(), FEAR_DISTANCE));
+                boolean noneRemote = (closest.isEmpty() || !closest.get().isInRange(mod.getPlayer(), FEAR_DISTANCE));
                 if (_runAwayExtraTime.elapsed() && noneRemote) {
                     Debug.logMessage("Stop running away, we're good.");
                     // Stop running away.
@@ -121,7 +122,7 @@ public class TerminatorTask extends Task {
                     // We may be far and obstructed, check.
                     return LookHelper.seesPlayer(entityAccept, mod.getPlayer(), FEAR_SEE_DISTANCE);
                 }
-            }, PlayerEntity.class) != null) {
+            }, PlayerEntity.class).isPresent()) {
                 // RUN!
 
                 _runAwayExtraTime.reset();
@@ -162,7 +163,7 @@ public class TerminatorTask extends Task {
                 return _foodTask;
             }
 
-            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class) != null) {
+            if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class).isPresent()) {
                 setDebugState("Punking.");
                 return new DoToClosestEntityTask(
                     entity -> {

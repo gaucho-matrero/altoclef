@@ -20,6 +20,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
+import java.util.Optional;
+
 public class CollectBlazeRodsTask extends ResourceTask {
 
     private static final double SPAWNER_BLAZE_RADIUS = 32;
@@ -61,7 +63,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             return new DefaultGoToDimensionTask(Dimension.NETHER);
         }
 
-        Entity toKill = null;
+        Optional<Entity> toKill = Optional.empty();
         // If there is a blaze, kill it.
         if (mod.getEntityTracker().entityFound(BlazeEntity.class)) {
 
@@ -72,22 +74,24 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
 
             toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
-            if (_foundBlazeSpawner != null && toKill != null) {
-                Vec3d nearest = toKill.getPos();
+
+            if (_foundBlazeSpawner != null && toKill.isPresent()) {
+                Entity kill = toKill.get();
+                Vec3d nearest = kill.getPos();
 
                 double sqDistanceToPlayer = nearest.squaredDistanceTo(mod.getPlayer().getPos());//_foundBlazeSpawner.getX(), _foundBlazeSpawner.getY(), _foundBlazeSpawner.getZ());
                 // Ignore if the blaze is too far away.
                 if (sqDistanceToPlayer > SPAWNER_BLAZE_RADIUS * SPAWNER_BLAZE_RADIUS) {
                     // If the blaze can see us it needs to go lol
-                    BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), toKill.getCameraPosVec(1.0F), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mod.getPlayer()));
+                    BlockHitResult hit = mod.getWorld().raycast(new RaycastContext(mod.getPlayer().getCameraPosVec(1.0F), kill.getCameraPosVec(1.0F), RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mod.getPlayer()));
                     if (hit != null && hit.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), false) < sqDistanceToPlayer) {
-                        toKill = null;
+                        toKill = Optional.empty();
                     }
                 }
             }
         }
 
-        if (toKill != null && toKill.isAlive()) {
+        if (toKill.isPresent() && toKill.get().isAlive()) {
             setDebugState("Killing blaze");
             return new KillEntitiesTask(entity -> !isHoveringAboveLavaOrTooHigh(mod, entity), BlazeEntity.class);
         }

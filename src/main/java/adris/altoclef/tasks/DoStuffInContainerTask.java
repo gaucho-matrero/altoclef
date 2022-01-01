@@ -78,27 +78,27 @@ public abstract class DoStuffInContainerTask extends Task {
         // infinity if such a container does not exist.
         double costToWalk = Double.POSITIVE_INFINITY;
 
-        BlockPos nearest;
+        Optional<BlockPos> nearest;
 
         Vec3d currentPos = mod.getPlayer().getPos();
         BlockPos override = overrideContainerPosition(mod);
 
         if (override != null && mod.getBlockTracker().blockIsValid(override, _containerBlocks)) {
             // We have an override so go there instead.
-            nearest = override;
+            nearest = Optional.of(override);
         } else {
             // Track nearest container
-            nearest = mod.getBlockTracker().getNearestTracking(currentPos, _containerBlocks);
+            nearest = mod.getBlockTracker().getNearestTracking(currentPos, blockPos -> WorldHelper.canReach(mod, blockPos), _containerBlocks);
         }
-        if (nearest == null) {
+        if (nearest.isEmpty()) {
             // If all else fails, try using our placed task
-            nearest = _placeTask.getPlaced();
-            if (nearest != null && !mod.getBlockTracker().blockIsValid(nearest, _containerBlocks)) {
-                nearest = null;
+            nearest = Optional.ofNullable(_placeTask.getPlaced());
+            if (nearest.isPresent() && !mod.getBlockTracker().blockIsValid(nearest.get(), _containerBlocks)) {
+                nearest = Optional.empty();
             }
         }
-        if (nearest != null) {
-            costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, WorldHelper.toVec3d(nearest));
+        if (nearest.isPresent()) {
+            costToWalk = BaritoneHelper.calculateGenericHeuristic(currentPos, WorldHelper.toVec3d(nearest.get()));
         }
 
         // Make a new container if going to the container is a pretty bad cost.
@@ -106,7 +106,7 @@ public abstract class DoStuffInContainerTask extends Task {
         if (costToWalk > getCostToMakeNew(mod)) {
             _placeForceTimer.reset();
         }
-        if (nearest == null || (!_placeForceTimer.elapsed() && _justPlacedTimer.elapsed())) {
+        if (nearest.isEmpty() || (!_placeForceTimer.elapsed() && _justPlacedTimer.elapsed())) {
             // It's cheaper to make a new one, or our only option.
 
             // We're no longer going to our previous container.
@@ -125,7 +125,9 @@ public abstract class DoStuffInContainerTask extends Task {
             return _placeTask;
         }
 
-        _cachedContainerPosition = nearest;
+        // This is insanely cursed.
+        // TODO: Finish committing to optionals, this is ugly.
+        _cachedContainerPosition = nearest.orElse(null);
 
         // Walk to it and open it
         setDebugState("Walking to container... " + nearest);
@@ -135,7 +137,7 @@ public abstract class DoStuffInContainerTask extends Task {
             return null;
         }
 
-        if (nearest != null) {
+        if (nearest.isPresent()) {
             if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
                 setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
                 Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);

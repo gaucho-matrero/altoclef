@@ -30,6 +30,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CollectFoodTask extends Task {
@@ -65,7 +66,7 @@ public class CollectFoodTask extends Task {
     };
 
     private final double _unitsNeeded;
-    private final TimerGame _checkNewOptionsTimer = new TimerGame(3);
+    private final TimerGame _checkNewOptionsTimer = new TimerGame(10);
     private SmeltInFurnaceTask _smeltTask = null;
     private Task _currentResourceTask = null;
 
@@ -241,21 +242,21 @@ public class CollectFoodTask extends Task {
             Item bestRawFood = null;
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
-                Entity nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
-                if (nearest == null) continue; // ?? This crashed once?
-                if (nearest instanceof LivingEntity) {
+                Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
+                if (nearest.isEmpty()) continue; // ?? This crashed once?
+                if (nearest.get() instanceof LivingEntity livingEntity) {
                     // Peta
-                    if (((LivingEntity) nearest).isBaby()) continue;
+                    if (livingEntity.isBaby()) continue;
                 }
                 int hungerPerformance = cookable.getCookedUnits();
-                double sqDistance = nearest.squaredDistanceTo(mod.getPlayer());
+                double sqDistance = nearest.get().squaredDistanceTo(mod.getPlayer());
                 double score = (double) 100 * hungerPerformance / (sqDistance);
                 if (cookable.isFish()) {
                     score *= FISH_PENALTY;
                 }
                 if (score > bestScore) {
                     bestScore = score;
-                    bestEntity = nearest;
+                    bestEntity = nearest.get();
                     bestRawFood = cookable.getRaw();
                 }
             }
@@ -316,20 +317,20 @@ public class CollectFoodTask extends Task {
             if (!WorldHelper.canBreak(mod, blockPos)) return false;
             return accept.test(blockPos);
         };
-        BlockPos nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
+        Optional<BlockPos> nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
 
-        if (nearestBlock != null && !nearestBlock.isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
-            nearestBlock = null;
+        if (nearestBlock.isPresent() && !nearestBlock.get().isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
+            nearestBlock = Optional.empty();
         }
 
-        ItemEntity nearestDrop = null;
+        Optional<ItemEntity> nearestDrop = Optional.empty();
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
-        boolean spotted = nearestBlock != null || nearestDrop != null;
+        boolean spotted = nearestBlock.isPresent() || nearestDrop.isPresent();
         // Collect hay until we have enough.
         if (spotted) {
-            if (nearestDrop != null) {
+            if (nearestDrop.isPresent()) {
                 return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE);
             } else {
                 return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
@@ -351,12 +352,12 @@ public class CollectFoodTask extends Task {
      * Returns null if task cannot reasonably run.
      */
     private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {
-        ItemEntity nearestDrop = null;
+        Optional<ItemEntity> nearestDrop = Optional.empty();
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
-        if (nearestDrop != null) {
-            if (nearestDrop.isInRange(mod.getPlayer(), maxRange)) {
+        if (nearestDrop.isPresent()) {
+            if (nearestDrop.get().isInRange(mod.getPlayer(), maxRange)) {
                 return new PickupDroppedItemTask(new ItemTarget(itemToGrab), true);
             }
             //return new GetToBlockTask(nearestDrop.getBlockPos(), false);

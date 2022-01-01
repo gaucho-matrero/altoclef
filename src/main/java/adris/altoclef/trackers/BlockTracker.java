@@ -55,6 +55,9 @@ public class BlockTracker extends Tracker {
     public BlockTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
         _mod = mod;
+        // First time, track immediately
+        _timer.forceElapse();
+        _forceElapseTimer.forceElapse();
     }
 
     @Override
@@ -140,22 +143,22 @@ public class BlockTracker extends Tracker {
         }
     }
 
-    public BlockPos getNearestTracking(Block... blocks) {
+    public Optional<BlockPos> getNearestTracking(Block... blocks) {
         // Add juuust a little, to prevent digging down all the time/bias towards blocks BELOW the player
         return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), blocks);
     }
-    public BlockPos getNearestTracking(Vec3d pos, Block... blocks) {
+    public Optional<BlockPos> getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, p -> true, blocks);
     }
-    public BlockPos getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
+    public Optional<BlockPos> getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
         return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
     }
-    public BlockPos getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
+    public Optional<BlockPos> getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
         synchronized (_trackingBlocks) {
             for (Block block : blocks) {
                 if (!_trackingBlocks.containsKey(block)) {
                     Debug.logWarning("BlockTracker: Not tracking block " + block + " right now.");
-                    return null;
+                    return Optional.empty();
                 }
             }
         }
@@ -449,10 +452,10 @@ public class BlockTracker extends Tracker {
         }
 
         // Gets nearest block. For now does linear search. In the future might optimize this a bit
-        public BlockPos getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isValid, Block... blocks) {
+        public Optional<BlockPos> getNearest(AltoClef mod, Vec3d position, Predicate<BlockPos> isValid, Block... blocks) {
             if (!anyFound(blocks)) {
                 //Debug.logInternal("(failed cataloguecheck for " + block.getTranslationKey() + ")");
-                return null;
+                return Optional.empty();
             }
 
             BlockPos closest = null;
@@ -518,7 +521,7 @@ public class BlockTracker extends Tracker {
                 blockList.add(closest);
             }
 
-            return closest;
+            return Optional.ofNullable(closest);
         }
 
         /**

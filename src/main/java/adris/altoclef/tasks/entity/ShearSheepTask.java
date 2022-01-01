@@ -8,6 +8,8 @@ import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 
+import java.util.Optional;
+
 public class ShearSheepTask extends AbstractDoToEntityTask {
 
     public ShearSheepTask() {
@@ -34,7 +36,7 @@ public class ShearSheepTask extends AbstractDoToEntityTask {
     }
 
     @Override
-    protected Entity getEntityTarget(AltoClef mod) {
+    protected Optional<Entity> getEntityTarget(AltoClef mod) {
         return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
                 entity -> {
                     if (entity instanceof SheepEntity sheep) {
