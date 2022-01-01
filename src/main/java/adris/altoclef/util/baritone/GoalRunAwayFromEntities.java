@@ -67,10 +67,11 @@ public abstract class GoalRunAwayFromEntities implements Goal {
                 }
                 if (counter >= max) break;
             }
-            costSum /= counter;
+            if (counter > 0) {
+                costSum /= counter;
+            }
             return costSum * _penaltyFactor;
         }
-        //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
 
     protected abstract List<Entity> getEntities(AltoClef mod);
