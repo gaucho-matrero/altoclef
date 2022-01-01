@@ -16,8 +16,6 @@ import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorSlot;
 import adris.altoclef.util.slots.PlayerInventorySlot;
-import baritone.pathing.movement.CalculationContext;
-import baritone.process.MineProcess;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.ItemEntity;
@@ -188,8 +186,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (mod.getBlockTracker().anyFound(_blocks)) {
                 closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
                     if (_blacklist.contains(check)) return false;
-                    // Filter out blocks that will get us into trouble. TODO: Blacklist
-                    return MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), check);
+                    return WorldHelper.canBreak(mod, check);
                 }, _blocks);
             }
             ItemEntity closestDrop = null;
