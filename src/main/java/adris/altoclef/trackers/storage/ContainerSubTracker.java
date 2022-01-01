@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.*;
 import net.minecraft.item.Item;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -97,8 +98,22 @@ public class ContainerSubTracker extends Tracker {
         }
     }
 
+    private boolean isContainerCacheValid(Dimension dimension, ContainerCache cache) {
+        BlockPos pos = cache.getBlockPos();
+        if (_mod.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
+            ContainerType actualType = ContainerType.getFromBlock(_mod.getWorld().getBlockState(pos).getBlock());
+            return actualType == cache.getContainerType();
+        }
+        return true;
+    }
+
     public Optional<ContainerCache> getContainerAtPosition(Dimension dimension, BlockPos pos) {
-        return Optional.ofNullable(_containerCaches.get(dimension).getOrDefault(pos, null));
+        Optional<ContainerCache> cache = Optional.ofNullable(_containerCaches.get(dimension).getOrDefault(pos, null));
+        if (cache.isPresent() && !isContainerCacheValid(dimension, cache.get())) {
+            _containerCaches.get(dimension).remove(pos);
+            return Optional.empty();
+        }
+        return cache;
     }
     public Optional<ContainerCache> getContainerAtPosition(BlockPos pos) {
         return getContainerAtPosition(_mod.getCurrentDimension(), pos);
@@ -109,16 +124,25 @@ public class ContainerSubTracker extends Tracker {
 
     public List<ContainerCache> getCachedContainers(Predicate<ContainerCache> accept) {
         List<ContainerCache> result = new ArrayList<>();
-        for (HashMap<BlockPos, ContainerCache> map : _containerCaches.values()) {
+        List<Pair<Dimension, BlockPos>> toRemove = new ArrayList<>();
+        for (Dimension dim : _containerCaches.keySet()) {
+            HashMap<BlockPos, ContainerCache> map = _containerCaches.get(dim);
             for (ContainerCache cache : map.values()) {
+                if (!isContainerCacheValid(dim, cache)) {
+                    toRemove.add(new Pair<>(dim, cache.getBlockPos()));
+                    continue;
+                }
                 if (accept.test(cache))
                     result.add(cache);
             }
         }
+        for (Pair<Dimension, BlockPos> remove : toRemove) {
+            _containerCaches.get(remove.getLeft()).remove(remove.getRight());
+        }
         return result;
     }
     public List<ContainerCache> getCachedContainers(ContainerType ...types) {
-        Set<ContainerType> typeSet = new HashSet<ContainerType>(Arrays.asList(types));
+        Set<ContainerType> typeSet = new HashSet<>(Arrays.asList(types));
         return getCachedContainers(cache -> typeSet.contains(cache.getContainerType()));
     }
 
@@ -137,7 +161,7 @@ public class ContainerSubTracker extends Tracker {
         return Optional.ofNullable(bestCache);
     }
     public Optional<ContainerCache> getClosestTo(Vec3d pos, ContainerType ...types) {
-        Set<ContainerType> typeSet = new HashSet<ContainerType>(Arrays.asList(types));
+        Set<ContainerType> typeSet = new HashSet<>(Arrays.asList(types));
         return getClosestTo(pos, cache -> typeSet.contains(cache.getContainerType()));
     }
 
