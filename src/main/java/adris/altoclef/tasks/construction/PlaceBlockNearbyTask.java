@@ -110,7 +110,7 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         // Try to place at a particular spot.
-        if (_tryPlace == null || mod.getBlockTracker().unreachable(_tryPlace)) {
+        if (_tryPlace == null || !WorldHelper.canReach(mod, _tryPlace)) {
             _tryPlace = locateClosePlacePos(mod);
         }
         if (_tryPlace != null) {
@@ -236,7 +236,7 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             // We can't place here.
-            if (mod.getBlockTracker().unreachable(blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
+            if (!WorldHelper.canReach(mod, blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
                 continue;
             }
             boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());

@@ -138,11 +138,17 @@ public interface WorldHelper {
     static boolean canBreak(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
                 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos)
-                && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos);
+                && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos)
+                && canReach(mod, pos);
     }
 
     static boolean canPlace(AltoClef mod, BlockPos pos) {
-        return !mod.getExtraBaritoneSettings().shouldAvoidPlacingAt(pos);
+        return !mod.getExtraBaritoneSettings().shouldAvoidPlacingAt(pos)
+                && canReach(mod, pos);
+    }
+
+    static boolean canReach(AltoClef mod, BlockPos pos) {
+        return !mod.getBlockTracker().unreachable(pos);
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {

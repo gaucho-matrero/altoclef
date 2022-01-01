@@ -182,7 +182,7 @@ public class CollectCropTask extends ResourceTask {
 
     private boolean isMature(AltoClef mod, BlockPos blockPos) {
         // Chunk needs to be loaded for wheat maturity to be checked.
-        if (!mod.getChunkTracker().isChunkLoaded(blockPos) || mod.getBlockTracker().unreachable(blockPos)) {
+        if (!mod.getChunkTracker().isChunkLoaded(blockPos) || !WorldHelper.canReach(mod, blockPos)) {
             return _wasFullyGrown.contains(blockPos);
         }
         // Prune if we're not mature/fully grown wheat.

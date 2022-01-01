@@ -82,7 +82,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     protected void onWander(AltoClef mod) {
-        mod.getBlockTracker().unreachable(_position);
+        mod.getBlockTracker().requestBlockUnreachable(_position);
         super.onWander(mod);
     }
 }

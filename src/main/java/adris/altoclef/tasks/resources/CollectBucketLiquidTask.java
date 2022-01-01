@@ -24,12 +24,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class CollectBucketLiquidTask extends ResourceTask {
@@ -138,8 +136,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         Predicate<BlockPos> isSourceLiquid = blockPos -> {
             if (_blacklist.contains(blockPos)) return false;
-            if (mod.getBlockTracker().unreachable(blockPos)) return false;
-            if (mod.getBlockTracker().unreachable(blockPos.up())) return false; // We may try reaching the block above.
+            if (!WorldHelper.canReach(mod, blockPos)) return false;
+            if (!WorldHelper.canReach(mod, blockPos.up())) return false; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
