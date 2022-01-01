@@ -43,7 +43,7 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         return new GoalRunAwayFromCreepers(mod, _distanceToRun);
     }
 
-    private class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
+    private static class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromCreepers(AltoClef mod, double distance) {
             super(mod, distance, false, 10);

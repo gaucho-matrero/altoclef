@@ -65,9 +65,9 @@ public class MobDefenseChain extends SingleTaskChain {
         double distance = creeper.squaredDistanceTo(pos);
         float fuse = creeper.getClientFuseTime(1);
 
-        // Not fusing. We only get fusing crepers.
-        if (fuse <= 0.001f) return 0;
-        return distance * (1 - fuse * fuse);
+        // Not fusing.
+        if (fuse <= 0.001f) return distance;
+        return distance * 0.2; // less is WORSE
     }
 
     @Override
