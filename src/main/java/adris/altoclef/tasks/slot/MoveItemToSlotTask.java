@@ -46,7 +46,7 @@ public class MoveItemToSlotTask extends Task {
             ItemStack atTarget = StorageHelper.getItemStackInSlot(_destination);
 
             // Items that CAN be moved to that slot.
-            Item[] validItems = Arrays.stream(_toMove.getMatches()).filter(item -> mod.getItemStorage().getItemCount(item) >= _toMove.getTargetCount()).toArray(Item[]::new);
+            Item[] validItems = _toMove.getMatches();//Arrays.stream(_toMove.getMatches()).filter(item -> mod.getItemStorage().getItemCount(item) >= _toMove.getTargetCount()).toArray(Item[]::new);
 
             if (currentHeld.isEmpty() || !Arrays.asList(validItems).contains(currentHeld.getItem())) {
                 // Wrong item held, replace with best match.

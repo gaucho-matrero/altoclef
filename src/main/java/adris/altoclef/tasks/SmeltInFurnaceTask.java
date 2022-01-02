@@ -14,6 +14,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.FurnaceScreenHandler;
@@ -21,8 +22,10 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 /**
@@ -129,9 +132,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         private FurnaceCache _furnaceCache = new FurnaceCache();
 
+        private final ItemTarget _allMaterials;
+
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, new ItemTarget(Items.FURNACE));
             _target = target;
+            _allMaterials = new ItemTarget(Stream.concat(Arrays.stream(_target.getMaterial().getMatches()), Arrays.stream(_target.getOptionalMaterials())).toArray(Item[]::new), _target.getMaterial().getTargetCount());
         }
 
         public void ignoreMaterials() {
@@ -154,7 +160,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected Task onTick(AltoClef mod) {
             tryUpdateOpenFurnace(mod);
-            ItemTarget materialTarget = _target.getMaterial();
+            // Include both regular + optional items
+            ItemTarget materialTarget = _allMaterials;
             ItemTarget outputTarget = _target.getItem();
             // Materials needed = (mat_target (- 0*mat_in_inventory) - out_in_inventory - mat_in_furnace - out_in_furnace)
             // ^ 0 * mat_in_inventory because we always care aobut the TARGET materials, not how many LEFT there are.
@@ -176,7 +183,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // We don't have enough materials...
             if (mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) < materialsNeeded) {
                 setDebugState("Getting Materials");
-                return getMaterialTask(materialTarget);
+                return getMaterialTask(_target.getMaterial());
             }
 
             // We don't have enough fuel...
@@ -186,8 +193,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
 
             // Make sure our materials are accessible in our inventory
-            if (StorageHelper.isItemInaccessibleToContainer(mod, _target.getMaterial())) {
-                return new MoveInaccessibleItemToInventoryTask(_target.getMaterial());
+            if (StorageHelper.isItemInaccessibleToContainer(mod, _allMaterials)) {
+                return new MoveInaccessibleItemToInventoryTask(_allMaterials);
             }
 
             // We have fuel and materials. Get to our container and smelt!
@@ -203,7 +210,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         @Override
         protected Task containerSubTask(AltoClef mod) {
             // We have appropriate materials/fuel.
-            /**
+            /*
              * - If output slot has something, receive it.
              * - Calculate needed material input. If we don't have, put it in.
              * - Calculate needed fuel input. If we don't have, put it in.
@@ -238,7 +245,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             /*
             // Empty material slot if filled with non-expected materials
-            if (!material.isEmpty() && !_target.getMaterial().matches(material.getItem())) {
+            if (!material.isEmpty() && !materialTarget.matches(material.getItem())) {
                 Debug.logMessage("Invalid material in furnace detected, will pick up and let altoclef handle getting rid of it.");
                 return new ClickSlotTask(FurnaceSlot.INPUT_SLOT_MATERIALS);
             }
@@ -246,13 +253,15 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             // Fill in input if needed
             // Materials needed in slot = (mat_target - out_in_inventory - out_in_furnace)
-            int neededMaterialsInSlot = _target.getMaterial().getTargetCount()
+            ItemTarget materialTarget = _allMaterials;
+
+            int neededMaterialsInSlot = materialTarget.getTargetCount()
                     - mod.getItemStorage().getItemCountInventoryOnly(_target.getItem().getMatches())
                     - (_target.getItem().matches(output.getItem()) ? output.getCount() : 0);
             if (neededMaterialsInSlot > material.getCount()) {
-                int materialsAlreadyIn = (_target.getMaterial().matches(material.getItem()) ? material.getCount() : 0);
+                int materialsAlreadyIn = (materialTarget.matches(material.getItem()) ? material.getCount() : 0);
                 setDebugState("Moving Materials");
-                return new MoveItemToSlotFromInventoryTask(new ItemTarget(_target.getMaterial(), neededMaterialsInSlot - materialsAlreadyIn), FurnaceSlot.INPUT_SLOT_MATERIALS);
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(materialTarget, neededMaterialsInSlot - materialsAlreadyIn), FurnaceSlot.INPUT_SLOT_MATERIALS);
             }
 
             /*

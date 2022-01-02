@@ -15,7 +15,6 @@ import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.DyeColor;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -199,8 +198,8 @@ public class TaskCatalogue {
             smelt("smooth_quartz", Items.SMOOTH_QUARTZ, "quartz_block");
             smelt("smooth_basalt", Items.SMOOTH_BASALT, "basalt");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron");
-            smelt("copper_ingot", Items.COPPER_INGOT, "raw_copper");
+            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron", Items.IRON_ORE);
+            smelt("copper_ingot", Items.COPPER_INGOT, "raw_copper", Items.COPPER_ORE);
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
             smelt("nether_brick", Items.NETHER_BRICK, "netherrack");
@@ -766,12 +765,12 @@ public class TaskCatalogue {
         return shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
 
-    private static CataloguedResource smelt(String name, Item[] matches, String materials) {
-        return put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
+    private static CataloguedResource smelt(String name, Item[] matches, String materials, Item ...optionalMaterials) {
+        return put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count), optionalMaterials)));
     }
 
-    private static CataloguedResource smelt(String name, Item match, String materials) {
-        return smelt(name, new Item[]{match}, materials);
+    private static CataloguedResource smelt(String name, Item match, String materials, Item ...optionalMaterials) {
+        return smelt(name, new Item[]{match}, materials, optionalMaterials);
     }
 
     private static CataloguedResource smith(String name, Item[] matches, String materials, String tool) {
