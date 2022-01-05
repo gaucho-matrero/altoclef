@@ -218,7 +218,9 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
             shapedRecipe3x3Block("lapis_block", Items.LAPIS_BLOCK, "lapis_lazuli");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
+            shapedRecipe3x3Block("melon", Items.MELON, "melon_slice").dontMineIfPresent();
             shapedRecipe2x2Block("glowstone", Items.GLOWSTONE, "glowstone_dust").dontMineIfPresent();
+            shapedRecipe2x2Block("clay", Items.CLAY, "clay_ball").dontMineIfPresent();
             smelt("netherite_scrap", Items.NETHERITE_SCRAP, "ancient_debris");
             shapedRecipe3x3("netherite_ingot", Items.NETHERITE_INGOT, 1, "netherite_scrap", "netherite_scrap", "netherite_scrap", "netherite_scrap", "gold_ingot", "gold_ingot", "gold_ingot", "gold_ingot", o);
             simple("gold_nugget", Items.GOLD_NUGGET, CollectGoldNuggetsTask::new);
