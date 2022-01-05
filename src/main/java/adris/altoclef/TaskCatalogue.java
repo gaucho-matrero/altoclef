@@ -218,6 +218,7 @@ public class TaskCatalogue {
             shapedRecipe3x3Block("emerald_block", Items.EMERALD_BLOCK, "emerald");
             shapedRecipe3x3Block("lapis_block", Items.LAPIS_BLOCK, "lapis_lazuli");
             shapedRecipe3x3Block("slime_block", Items.SLIME_BLOCK, "slime_ball");
+            shapedRecipe3x3Block("bone_block", Items.BONE_BLOCK, "bone_meal");
             shapedRecipe3x3Block("melon", Items.MELON, "melon_slice").dontMineIfPresent();
             shapedRecipe2x2Block("glowstone", Items.GLOWSTONE, "glowstone_dust").dontMineIfPresent();
             shapedRecipe2x2Block("clay", Items.CLAY, "clay_ball").dontMineIfPresent();
