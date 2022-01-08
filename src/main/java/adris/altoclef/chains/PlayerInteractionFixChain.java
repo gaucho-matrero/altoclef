@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.slots.PlayerSlot;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
@@ -108,7 +109,7 @@ public class PlayerInteractionFixChain extends TaskChain {
                     if (!Slot.isCursor(garbage)) {
                         mod.getSlotHandler().clickSlot(garbage, 0, SlotActionType.PICKUP);
                     }
-                    mod.getSlotHandler().clickSlot(Slot.getFromInventory(-9999), 0, SlotActionType.PICKUP);
+                    mod.getSlotHandler().clickSlot(new PlayerSlot(-999), 0, SlotActionType.PICKUP); // Slot.getFromInventory(-9999) was not working
                     Debug.logMessage("Cursor stack edge case: Full inventory. Attempted to drop.");
                 } else {
                     Debug.logMessage("Cursor stack edge case: Full inventory AND NO GARBAGE! We're stuck.");
