@@ -68,10 +68,10 @@ public class SlotHandler {
         _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
     }
 	
-    public boolean forceEquipItem(Item toEquip, boolean IsFood) {
+    public boolean forceEquipItem(Item toEquip, boolean UnInterruptable) {
         if (canDoSlotAction()) {
             //If the bot try to eat
-            if (_mod.getFoodChain().isTryingToEat() && !IsFood) {
+            if (_mod.getFoodChain().isTryingToEat() && !UnInterruptable) { //unless we really need to force equip the item
                 return false; //don't equip the item for now
             }
             // Always equip to the second slot. First + last is occupied by baritone.
