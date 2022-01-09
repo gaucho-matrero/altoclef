@@ -1,12 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.*;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -17,6 +16,11 @@ public class CraftInInventoryTask extends ResourceTask {
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
     private boolean _fullCheckFailed = false;
+    private long missingTicks = 0;
+
+    private int prevTargetCountInInventory;
+    private int stuckCounter;
+    private RandomRadiusGoalTask radiusGoalTask;
 
     public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
         super(target);
@@ -42,10 +46,55 @@ public class CraftInInventoryTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         ItemTarget toGet = _itemTargets[0];
-        if (_collect && !mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe))) {
-            // Collect recipe materials
+        final RecipeTarget recipeTarget = new RecipeTarget(toGet, _recipe);
+        if (mod.getInventoryTracker().hasRecipeMaterialsOrTarget(recipeTarget) && !mod.getInventoryTracker().isFullyCapableToCraft(mod, recipeTarget)) {
+            this.missingTicks++;
+        } else {
+            this.missingTicks = 0;
+        }
+
+        final int currentTargetCountInInventory = mod.getInventoryTracker().getItemCount(recipeTarget.getItem());
+        if (this.prevTargetCountInInventory >= currentTargetCountInInventory) {
+            this.stuckCounter++;
+            //System.out.println("inv stuck counter: " + this.stuckCounter);
+        } else {
+            this.stuckCounter = 0;
+            this.prevTargetCountInInventory = currentTargetCountInInventory;
+
+            if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                //this.radiusGoalTask.stop(mod);
+            }
+        }
+
+        /*
+        if (this.stuckCounter > 300 && !craftingSlotsEmpty()) {
+            return clearCraftingSlotTask();
+        }*/
+
+        //this.stuckCounter = 0;
+
+        if (_collect && !mod.getInventoryTracker().hasRecipeMaterialsOrTarget(new RecipeTarget(toGet, _recipe)) /*|| this.missingTicks > 250*//*!isFullyCapableToCraft(mod, _recipe)*/) {
             setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
+        }
+
+        if (this.missingTicks > 150) {
+            /*
+            if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe))) {
+                this.missingTicks = 0;
+                return null;
+            }
+            if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe).getMatches()))
+                throw new IllegalStateException("why are missing matches null?");
+            return TaskCatalogue.getItemTask(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe));
+            * */
+            if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe))) {
+                this.missingTicks = 0;
+            } else {
+                if (Utils.isNull(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe).getMatches()))
+                    throw new IllegalStateException("why are missing matches null?");
+                return TaskCatalogue.getItemTask(mod.getInventoryTracker().getMissingItemTarget(mod, _recipe));
+            }
         }
 
         // Free up inventory
@@ -54,13 +103,12 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         setDebugState("Crafting in inventory... for " + toGet);
+
         return new CraftGenericTask(_recipe);
-        //craftInstant(mod, _recipe);
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
     }
 
     @Override

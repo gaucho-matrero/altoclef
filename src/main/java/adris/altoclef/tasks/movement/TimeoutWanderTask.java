@@ -5,10 +5,16 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalRandomSpotNearby;
 import baritone.api.pathing.goals.GoalRunAway;
+import baritone.api.pathing.movement.IMovement;
+import baritone.behavior.PathingBehavior;
+import baritone.pathing.path.PathExecutor;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -57,6 +63,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private Task _unstuckTask = null;
     private int _failCounter;
     private double _wanderDistanceExtension;
+    private boolean snakeFinished = false;
+    private boolean snakeWasActive = false;
 
     public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
         _distanceToWander = distanceToWander;
@@ -101,22 +109,71 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        /*
+        final PathingBehavior p = mod.getClientBaritone().getPathingBehavior();
+        if (Utils.isset(p)) {
+            final PathExecutor c = p.getCurrent();
+            if (Utils.isset(c)) {
+                final BlockPos pos = c.getPath().positions().get(c.getPosition());
+
+                if (Utils.isset(pos)) {
+                    System.out.println("Pos" + ": " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
+                }
+            }
+        }*/
+
         if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
             setDebugState("Getting unstuck from block.");
             return _unstuckTask;
         }
 
+        /*
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+            mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+        }*/
+        //plan b later if needed
+
         if (_executingPlanB) {
             setDebugState("Plan B: Random direction.");
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            if (!mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+                final Goal goal = new GoalRandomSpotNearby();
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
+                //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+                //mod.getClientBaritone().getCustomGoalProcess().reactivateRunAway();
+                snakeWasActive = true;
             }
+            //if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            //    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            //}
+        } else {
+            setDebugState("Exploring.");
+            if (!mod.getClientBaritone().getExploreProcess().isActive()) {
+                // why always to origin? does it change?
+                mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
+                //final Goal goal = new GoalRandomSpotNearby();
+                //mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
+                //snakeWasActive = true;
+            }
+        }
+
+        if (snakeWasActive && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) snakeFinished = true;
+
+        /*if (_executingPlanB) {
+            setDebugState("Plan B: Random direction.");
+
+            // I think you can take out the second statement
+            if (!mod.getClientBaritone().getCustomGoalProcess().isActive() && !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive()) {
+                mod.getClientBaritone().getCustomGoalProcess().activateRunAway();
+            }
+            //if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            //    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(getRandomDirectionGoal(mod));
+            //}
         } else {
             setDebugState("Exploring.");
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 mod.getClientBaritone().getExploreProcess().explore((int) _origin.getX(), (int) _origin.getZ());
             }
-        }
+        }*/
 
         //_distanceProgressChecker.setProgress(mod.getPlayer().getPos());
         //if (_distanceProgressChecker.failed()) {
@@ -138,7 +195,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
                 Debug.logMessage("Failed exploring.");
                 if (_executingPlanB) {
                     // Cancel current plan B
-                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();//hmmm... (눈_눈) should we allow that?
                 }
                 _executingPlanB = true;
             }
@@ -169,20 +226,35 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         // Why the heck did I add this in?
         //if (_origin == null) return true;
 
-        if (Float.isInfinite(_distanceToWander)) return false;
+        //if (Float.isInfinite(_distanceToWander)) return false;
 
         // If we fail 10 times or more, we may as well try the previous task again.
-        if (_failCounter > 10) {
+        // Meloweh: It makes the system less predictable. Let's at least find
+        // a new starting position.
+        /*if (_failCounter > 10) {
             return true;
         }
 
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
             double toWander = _distanceToWander + _wanderDistanceExtension;
-            return sqDist > toWander * toWander;
+            return sqDist > toWander * toWander; // ok, well, we could just let the custom goal process do the job (if the change i did has not been removed/reverted)
         } else {
             return false;
+        }*/
+        //return !mod.getClientBaritone().getCustomGoalProcess().isRunAwayActive();
+
+        if (snakeFinished) {
+            snakeFinished = false;
+            snakeWasActive = false;
+            return true;
         }
+        /*
+        if (!snakeWasActive && Float.isInfinite(_distanceToWander)) {
+            return true;
+        }*/
+
+        return false;
     }
 
     @Override

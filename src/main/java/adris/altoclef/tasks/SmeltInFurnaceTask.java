@@ -15,10 +15,10 @@ import adris.altoclef.trackers.InventoryTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.Utils;
 import adris.altoclef.util.progresscheck.IProgressChecker;
 import adris.altoclef.util.progresscheck.LinearProgressChecker;
 import adris.altoclef.util.slots.FurnaceSlot;
-import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -116,8 +116,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
         // When we're expected to run out of fuel.
         private int _runOutOfFuelExpectedTick;
         private boolean _ignoreMaterials = false;
-
         private boolean _ranOutOfMaterials = false;
+
+        private int prevTargetCountInInventory;
+        private int stuckCounter;
+        private RandomRadiusGoalTask radiusGoalTask;
+
 
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, new ItemTarget("furnace"));
@@ -150,12 +154,15 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected Task onTick(AltoClef mod) {
-
             if (!isContainerOpen(mod)) {
                 _smeltProgressChecker.reset();
             } else {
                 ContainerTracker.FurnaceMap furnaceMap = mod.getContainerTracker().getFurnaceMap();
                 _currentFurnace = furnaceMap.getOpenFurnaceData();
+            }
+
+            if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                return this.radiusGoalTask;
             }
 
             boolean furnaceFound = _currentFurnace != null;
@@ -213,10 +220,10 @@ public class SmeltInFurnaceTask extends ResourceTask {
             return TaskCatalogue.getItemTask(target);
         }
 
+        private boolean collectedOutput = false;
+
         @Override
         protected Task containerSubTask(AltoClef mod) {
-
-
             // Grab from the output slot
             ItemStack outputSlot = mod.getInventoryTracker().getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             if (!outputSlot.isEmpty()) {
@@ -229,7 +236,28 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     // Clear cursor slot first
                     return new ThrowSlotTask();
                 }
+                this.collectedOutput = true;
                 return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
+            }
+            //_currentFurnace.wasBurningLastChecked()
+            if (!this.collectedOutput && !_currentFurnace.wasBurningLastChecked()) {
+                this.stuckCounter++;
+                System.out.println("stuck counter: " + this.stuckCounter);
+            } else {
+                this.stuckCounter = 0;
+                this.collectedOutput = false;
+                if (Utils.isSet(this.radiusGoalTask) && !this.radiusGoalTask.isFinished(mod)) {
+                    this.radiusGoalTask.stop(mod);
+                }
+            }
+
+            if (this.stuckCounter > 300) {
+                this.stuckCounter = 0;
+                if (Utils.isNull(this.radiusGoalTask)) {
+                    this.radiusGoalTask = new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 7);
+                } else if (this.radiusGoalTask.isFinished(mod)) {
+                    this.radiusGoalTask.next(mod.getPlayer().getBlockPos());
+                }
             }
 
             // Move materials

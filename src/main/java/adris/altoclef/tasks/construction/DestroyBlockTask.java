@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Blacklist;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
@@ -41,7 +42,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         // Wander and check
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             _moveChecker.reset();

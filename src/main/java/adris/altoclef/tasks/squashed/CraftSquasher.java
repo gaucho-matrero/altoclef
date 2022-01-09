@@ -19,8 +19,6 @@ public class CraftSquasher extends TypeSquasher<CraftInTableTask> {
             targetRecipies.addAll(Arrays.asList(task.getRecipeTargets()));
         }
 
-        //Debug.logMessage("Squashed " + targetRecipies.size());
-
         return Collections.singletonList(new CraftInTableTask(targetRecipies.toArray(RecipeTarget[]::new)));
     }
 }

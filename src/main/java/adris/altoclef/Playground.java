@@ -1,9 +1,10 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
-import adris.altoclef.tasks.CraftGenericTask;
-import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.chest.FillTargetChestTask;
 import adris.altoclef.tasks.chest.StoreInAnyChestTask;
+import adris.altoclef.tasks.chest.StoreInTargetChestTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
@@ -30,6 +31,9 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
+import baritone.api.pathing.goals.Goal;
+import baritone.api.pathing.goals.GoalRandomSpotNearby;
+import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
@@ -127,6 +131,13 @@ public class Playground {
             case "sign":
                 mod.runUserTask(new PlaceSignTask("Hello there!"));
                 break;
+            case "randr":
+                mod.runUserTask(new RandomRadiusGoalTask(mod.getPlayer().getBlockPos(), 6));
+                break;
+            case "randr2":
+                final Goal goal = new GoalRandomSpotNearby();
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(goal);
+                break;
             case "sign2":
                 mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10), "Hello there!"));
                 break;
@@ -186,6 +197,16 @@ public class Playground {
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
                 break;
+            case "avoidremove":
+                //mod.getBehaviour().clearAvoidBlockBreaking();
+                break;
+            case "printit":
+                System.out.println("PRINTIT---------");
+                System.out.println(mod.getBehaviour().getAvoidanceCount());
+                System.out.println(mod.getBehaviour().getAvoidanceCount2());
+
+                System.out.println("PRINTIT---------");
+                break;
             case "avoid":
                 // Test block break predicate
                 mod.getBehaviour().avoidBlockBreaking((BlockPos b) -> (-1000 < b.getX() && b.getX() < 1000)
@@ -203,7 +224,7 @@ public class Playground {
                     Debug.logWarning("No zombs found.");
                 } else {
                     LivingEntity entity = zombs.get(0);
-                    mod.runUserTask(new KillEntityTask(entity));
+                    mod.runUserTask(new KillEntityTask(mod.getEntityTracker().getClosestEntity(ZombieEntity.class)));
                 }
                 break;
             case "craft":
@@ -330,6 +351,23 @@ public class Playground {
                 break;
             case "chest":
                 mod.runUserTask(new StoreInAnyChestTask(new ItemTarget(Items.DIAMOND, 3)));
+                break;
+            case "missing":
+                mod.runUserTask(new MissingTask());
+                break;
+            case "chest2":
+                mod.runUserTask(new FillTargetChestTask(new ItemTarget("dirt")));
+                break;
+            case "chest3":
+                mod.runUserTask(new StoreInTargetChestTask(new BlockPos(0, 64, 0), new ItemTarget("dirt", 64)));
+            case "build":
+                mod.runUserTask(new SchematicBuildTask("test8.schem"));
+                break;
+            case "build2":
+                mod.runUserTask(new SchematicBuildTask("test9.schem"));
+                break;
+            case "house":
+                mod.runUserTask(new SchematicBuildTask("house.schem"));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());

@@ -5,6 +5,8 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 
+import java.util.Arrays;
+
 public class ClickSlotTask extends Task {
 
     private final Slot _slot;

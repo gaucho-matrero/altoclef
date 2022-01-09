@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MoveItemToSlotTask extends Task {
@@ -33,13 +34,15 @@ public class MoveItemToSlotTask extends Task {
             // Rough plan
             // - If empty slot or wrong item
             //      Find best matching item (smallest count over target, or largest count if none over)
-            //      Click on it (one turn)
+            //      Click on it (one turn)t@st
             // - If held slot has < items than target count
             //      Left click on destination slot (one turn)
             // - If held slot has > items than target count
             //      Right click on destination slot (one turn)
             ItemStack currentHeld = mod.getInventoryTracker().getItemStackInCursorSlot();
             ItemStack atTarget = mod.getInventoryTracker().getItemStackInSlot(_destination);
+
+            //if (_destination.getInventorySlot())
 
             // Items that CAN be moved to that slot.
             Item[] validItems = Arrays.stream(_toMove.getMatches()).filter(item -> mod.getInventoryTracker().getItemCount(item) >= _toMove.getTargetCount()).collect(Collectors.toList()).toArray(Item[]::new);
@@ -48,18 +51,21 @@ public class MoveItemToSlotTask extends Task {
                 // Wrong item held, replace with best match.
                 Slot bestPickup = getBestSlotToPickUp(mod, validItems);
                 if (bestPickup == null) {
-                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    //Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
+                //System.out.println("Meloweh A");
                 return new ClickSlotTask(bestPickup);
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
             if (currentHeld.getCount() + currentlyPlaced  < _toMove.getTargetCount()) {
                 // Just place all of 'em
+                //System.out.println("Meloweh B");
                 return new ClickSlotTask(_destination);
             } else {
                 // Place one at a time.
+                //System.out.println("Meloweh C");
                 return new ClickSlotTask(_destination, 1);
             }
         }
@@ -72,9 +78,9 @@ public class MoveItemToSlotTask extends Task {
     }
 
     @Override
-    public boolean isFinished(AltoClef mod) {
+    public boolean isFinished(AltoClef mod) {//Meloweh TODO: fix slot switch spamming
         ItemStack atDestination = mod.getInventoryTracker().getItemStackInSlot(_destination);
-        return (_toMove.matches(atDestination.getItem()) && atDestination.getCount() >= _toMove.getTargetCount());
+        return (_toMove.matches(atDestination.getItem()) && atDestination.getCount() >= _toMove.getTargetCount()) /*|| atDestination.getCount() >= atDestination.getMaxCount()*/;
     }
 
     @Override
@@ -91,9 +97,11 @@ public class MoveItemToSlotTask extends Task {
         return "Moving " + _toMove + " to " + _destination;
     }
 
-    private Slot    getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
+    private Slot getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
-        for (Slot slot : mod.getInventoryTracker().getInventorySlotsWithItem(validItems)) {
+        final List<Slot> slots = mod.getInventoryTracker().getInventorySlotsWithItem(validItems);
+
+        for (Slot slot : slots) {
             if (Slot.isCursor(slot)) continue;
             if (bestMatch == null) {
                 bestMatch = slot;
@@ -108,6 +116,24 @@ public class MoveItemToSlotTask extends Task {
                 bestMatch = slot;
             }
         }
+
+                /*
+        for (final Slot slot : slots) {
+            if (mod.getInventoryTracker().getItemCountOfSlot(slot) < 1) {
+                return null;
+            }
+        }
+
+        for (final Slot e : slots) {
+            if (mod.getPlayer().currentScreenHandler.getSlot(e.getInventorySlot()).getStack().getCount() < 1) {
+                return null;
+            }
+        }*/
+
+        //System.out.println("AAAAAAAAAAAAAAAAAAAAa");
+        //slots.forEach(e -> System.out.println("index: " + e.getInventorySlot() + " count: " + mod.getPlayer().currentScreenHandler.getSlot(e.getInventorySlot()).getStack().getCount()));
+        //System.out.println("BBBBBBBBBBBBBBBBBBBBBB");
+
         return bestMatch;
     }
 }

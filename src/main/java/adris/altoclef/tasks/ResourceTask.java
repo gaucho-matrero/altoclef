@@ -1,15 +1,14 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.chest.PickupFromChestTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
@@ -37,7 +36,9 @@ public abstract class ResourceTask extends Task {
     private boolean _forceDimension = false;
     private Dimension _targetDimension;
 
-    private BlockPos _mineLastClosest = null;
+    //private BlockPos _mineLastClosest = null;
+    private final Store store = new Store();
+    public static final String ATTRIBUTE_LAST_CLOSEST = "last_closest";
 
     public ResourceTask(ItemTarget[] itemTargets) {
         _itemTargets = itemTargets;
@@ -104,7 +105,7 @@ public abstract class ResourceTask extends Task {
             } else {
                 if (!data.hasItem(_itemTargets)) {
                     _currentChest = null;
-                } else {
+                } else if (!Blacklist.isBlacklisted(_currentChest)) {
                     // We have a current chest, grab from it.
                     return new PickupFromChestTask(_currentChest, _itemTargets);
                 }
@@ -114,11 +115,97 @@ public abstract class ResourceTask extends Task {
         if (!chestsWithItem.isEmpty()) {
             BlockPos closest = chestsWithItem.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(mod.getPlayer().getPos(), false))).get();
             if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentChest = closest;
-                return new PickupFromChestTask(_currentChest, _itemTargets);
+                if (!Blacklist.isBlacklisted(_currentChest)) {
+                    _currentChest = closest;
+                    return new PickupFromChestTask(_currentChest, _itemTargets);
+                }
             }
         }
 
+        if (Utils.isSet(_mineIfPresent)) {
+            ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
+            satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
+            if (!satisfiedReqs.isEmpty()) {
+                if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
+                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+
+                    //TODO: could this make the bot get stuck between two resources?
+                    if (Utils.isSet(closest)) {
+                        store.setAttribute(ATTRIBUTE_LAST_CLOSEST, closest);
+                        //_mineLastClosest = closest;
+                    }
+
+                    if (store.hasAttribute(ATTRIBUTE_LAST_CLOSEST)) {
+                        final BlockPos _mineLastClosest = store.fromStorage(ATTRIBUTE_LAST_CLOSEST, BlockPos.class);
+                        final boolean isInChunk = mod.getChunkTracker().isChunkLoaded(_mineLastClosest);
+                        final boolean isMined = !mod.getBlockTracker().blockIsValid(_mineLastClosest, _mineIfPresent);
+
+                        if (isInChunk && isMined || !Blacklist.isBlacklisted(_mineLastClosest)) {
+                            //TODO so if we set it null here, shouldn't we ensure the next mining target to stick with executing MineAndCollectTask?
+                            //Answer no because if that would be the case then this would count for isBlacklisted too
+                            //_mineLastClosest = null;
+                            if (!store.removeAttribute(ATTRIBUTE_LAST_CLOSEST)) {
+                                Debug.logError(ATTRIBUTE_LAST_CLOSEST + " not present in store");
+                                System.out.println(ATTRIBUTE_LAST_CLOSEST + " not present in store");
+                                store.clearStore();
+                            }
+                        }
+
+                        if (store.hasAttribute(ATTRIBUTE_LAST_CLOSEST)) {
+                            return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND, store);
+                        }
+                    }
+                }
+            }
+        }
+
+        /* TODO
+        Is it considered in the ResourceTask that the bot could walk away and therefore unload a
+        tracked mining candidate while going for a side task like getting the right mining tool?
+        Because if not, it would stop doing both and starts exploration instead.
+        This could be a cause for a potential soft lock since it would be possible to switch between
+        those two states by retracking the same target block when the exploration task goes for the
+        same direction the mining candidate was already found earlier.
+
+        Taco: It should have some kind of force condition and mine that block as long as it's valid
+        (which will only return false if the block is in the chunk and is not the same block as it was before)
+        */
+        /*if (Utils.isSet(_mineIfPresent)) {
+            ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
+            satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
+            if (!satisfiedReqs.isEmpty()) {
+                if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
+                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+                    //TODO: could this make the bot get stuck between two resources?
+                    if (Utils.isSet(closest)) {
+                        _mineLastClosest = closest;
+                    }
+
+                    if (Utils.isSet(_mineLastClosest)) {
+                        final boolean isInChunk = mod.getChunkTracker().isChunkLoaded(_mineLastClosest);
+                        final boolean isMined = !mod.getBlockTracker().blockIsValid(_mineLastClosest, _mineIfPresent);
+
+                        if (isInChunk && isMined || !Blacklist.isBlacklisted(_mineLastClosest)) {
+                            //TODO so if we set it null here, shouldn't we ensure the next mining target to stick with executing MineAndCollectTask?
+                            //Answer no because if that would be the case then this would count for isBlacklisted too
+                            _mineLastClosest = null;
+                        }
+
+                        // TODO
+                        // I think in ResourceTask it is not ensured that _mineLastClosest will be a target
+                        // for the returned MineAndCollectTask since ResourceTask and MineAndCollectTask call
+                        // getBlockTracker().getNearestTracking seperately, giving it a chance to pick different
+                        // blocks or for closestBlock to be null.
+                        // Consequentially in getClosestTo in MineAndCollectTask the mining goal may be set to infinity
+
+                        if (Utils.isSet(_mineLastClosest)) {
+                            return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
+                        }
+                    }
+                }
+            }
+        }*/
+        /*
         // We may just mine if a block is found.
         if (_mineIfPresent != null) {
             ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
@@ -129,14 +216,14 @@ public abstract class ResourceTask extends Task {
                     if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
                         _mineLastClosest = closest;
                     }
-                    if (_mineLastClosest != null) {
+                    if (_mineLastClosest != null && !Blacklist.isBlacklisted(_mineLastClosest)) {
                         if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
                             return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
                         }
                     }
                 }
             }
-        }
+        }*/
 
         return onResourceTick(mod);
     }

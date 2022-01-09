@@ -5,6 +5,7 @@ import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
@@ -675,6 +676,20 @@ public class TaskCatalogue {
         }
     }
 
+    public static ResourceTask getItemTask(ItemTarget target, final int count) {
+        if (target.isCatalogueItem()) {
+            return getItemTask(target.getCatalogueName(), count);
+        } else if (target.getMatches().length == 1) {
+            return getItemTask(target.getMatches()[0], count);
+        } else {
+            return getSquashedItemTask(target);
+        }
+    }
+
+    private static ItemTarget t(String cataloguedName) {
+        return new ItemTarget(cataloguedName);
+    }
+
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
     }
@@ -868,10 +883,6 @@ public class TaskCatalogue {
             _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
             _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
         }
-    }
-
-    private static ItemTarget t(String cataloguedName) {
-        return new ItemTarget(cataloguedName);
     }
 
     private static class CataloguedResource {

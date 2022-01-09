@@ -9,6 +9,7 @@ import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.ContainerTracker;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.TaskDataPackage;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Blocks;
@@ -28,9 +29,12 @@ public class StoreInAnyChestTask extends Task {
 
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
     private BlockPos _currentChestTry = null;
+    private StoreInTargetChestTask storeInTargetChestTask;
+    private final TaskDataPackage taskDataPackage;
 
     public StoreInAnyChestTask(ItemTarget... targets) {
         _targets = targets;
+        taskDataPackage = new TaskDataPackage();
     }
 
     @Override
@@ -92,7 +96,9 @@ public class StoreInAnyChestTask extends Task {
                         if (WorldHelper.isSolid(mod, blockPos.up())) {
                             return new DestroyBlockTask(blockPos.up());
                         }
-                        return new StoreInChestTask(blockPos, _targets);
+
+                        storeInTargetChestTask = new StoreInTargetChestTask(blockPos, taskDataPackage, _targets[0]); //TODO: <-- fix by bring back the okd StoreInChestTask
+                        return storeInTargetChestTask;
                     },
                     validChest,
                     Blocks.CHEST);
@@ -108,6 +114,11 @@ public class StoreInAnyChestTask extends Task {
             }, Blocks.CHEST);
         }
         return TaskCatalogue.getItemTask(Items.CHEST, 1);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return taskDataPackage.isFinished();
     }
 
     @Override
