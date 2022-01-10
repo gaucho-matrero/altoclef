@@ -52,6 +52,12 @@ public class Settings {
     private boolean showTaskChains = true;
 
     /**
+     * If true, it will show a timer displaying how long the task was running.
+     * if false, it display the showTaskChains (if enabled) without the timer
+     */
+    private boolean showTimer = true;
+
+    /**
      * Whenever we're moving, speed up our client by a multiple of this number.
      * Useful when traveling long distances, and only is enabled when we're moving and not mining.
      * <p>
@@ -446,6 +452,9 @@ public class Settings {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+    public boolean shouldShowTimer() {
+        return showTimer;
     }
 
     public float getSpeedHack() {

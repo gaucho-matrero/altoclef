@@ -3,6 +3,7 @@ package adris.altoclef.util.control;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.trackers.InventoryTracker;
+import adris.altoclef.chains.FoodChain;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.slots.PlayerInventorySlot;
@@ -66,11 +67,13 @@ public class SlotHandler {
 
         _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
     }
-
-    public boolean forceEquipItem(Item toEquip) {
-
+	
+    public boolean forceEquipItem(Item toEquip, boolean UnInterruptable) {
         if (canDoSlotAction()) {
-
+            //If the bot try to eat
+            if (_mod.getFoodChain().isTryingToEat() && !UnInterruptable) { //unless we really need to force equip the item
+                return false; //don't equip the item for now
+            }
             // Always equip to the second slot. First + last is occupied by baritone.
             _mod.getPlayer().getInventory().selectedSlot = 1;
 
@@ -101,6 +104,10 @@ public class SlotHandler {
             return false;
         }
         return true;
+    }
+    //Default forceEquipItem, will not force to equip item if the bot eat
+    public boolean forceEquipItem(Item toEquip) {
+            return forceEquipItem(toEquip, false);
     }
     public boolean forceDeequipHitTool() {
         return forceDeequip(item -> item instanceof ToolItem, true);
