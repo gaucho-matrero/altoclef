@@ -158,7 +158,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             return null;
         }
 
-        if (_sleepAttemptMade) {
+        if (_sleepAttemptMade && _stayInBed) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
