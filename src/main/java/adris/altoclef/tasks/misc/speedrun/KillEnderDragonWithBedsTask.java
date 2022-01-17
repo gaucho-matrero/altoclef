@@ -88,11 +88,11 @@ public class KillEnderDragonWithBedsTask extends Task {
                 setDebugState("Going to position for bed cycle...");
                 return _positionTask;
             }
-            if (playerPosition.getX() != targetStandPosition.getX()
-                    || playerPosition.getZ() != targetStandPosition.getZ()
+            if (!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 1)
                     || playerPosition.getY() < targetStandPosition.getY()
             ) {
                 _positionTask = new GetToBlockTask(targetStandPosition);
+                setDebugState("Moving to target stand position");
                 return _positionTask;
             }
 
