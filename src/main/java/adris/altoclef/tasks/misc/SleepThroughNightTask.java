@@ -12,7 +12,7 @@ public class SleepThroughNightTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        return new PlaceBedAndSetSpawnTask();
+        return new PlaceBedAndSetSpawnTask().stayInBed();
     }
 
     @Override

@@ -35,6 +35,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
+    private boolean _stayInBed;
+
     private static final Block[] BEDS = CollectBedTask.BEDS;
 
     private final TimerGame _regionScanTimer = new TimerGame(9);
@@ -76,6 +78,11 @@ public class PlaceBedAndSetSpawnTask extends Task {
     });
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
+
+    public PlaceBedAndSetSpawnTask stayInBed() {
+        _stayInBed = true;
+        return this;
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -142,7 +149,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             // Click "leave bed" immediately.
 
             Screen screen = MinecraftClient.getInstance().currentScreen;
-            if (_inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
+            if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
                 _wasSleeping = true;
                 //Debug.logMessage("Closing sleeping thing");
                 _spawnSet = true;
