@@ -40,13 +40,13 @@ public class StorageHelper {
             if (slot.equals(PlayerInventorySlot.OFFHAND_SLOT))
                 return inv.offHand.stream().findFirst().orElse(ItemStack.EMPTY).copy();
             if (slot.equals(PlayerInventorySlot.ARMOR_HELMET_SLOT))
-                return inv.getArmorStack(0).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT))
-                return inv.getArmorStack(1).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_LEGGINGS_SLOT))
-                return inv.getArmorStack(2).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_BOOTS_SLOT))
                 return inv.getArmorStack(3).copy();
+            if (slot.equals(PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT))
+                return inv.getArmorStack(2).copy();
+            if (slot.equals(PlayerInventorySlot.ARMOR_LEGGINGS_SLOT))
+                return inv.getArmorStack(1).copy();
+            if (slot.equals(PlayerInventorySlot.ARMOR_BOOTS_SLOT))
+                return inv.getArmorStack(0).copy();
         }
         net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
         return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
@@ -194,7 +194,7 @@ public class StorageHelper {
                     possibleSlots.add(slot);
                 }
                 if (stack.getItem().isFood()) {
-                    calcTotalFoodScore += stack.getItem().getFoodComponent().getHunger();
+                    calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
                 }
             }
 

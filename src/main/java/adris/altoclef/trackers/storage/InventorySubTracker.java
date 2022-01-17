@@ -188,10 +188,10 @@ public class InventorySubTracker extends Tracker {
                 for (ItemStack stack : inv.offHand) {
                     registerItem(stack, PlayerInventorySlot.OFFHAND_SLOT, true);
                 }
-                registerItem(inv.getArmorStack(0), PlayerInventorySlot.ARMOR_HELMET_SLOT, true);
-                registerItem(inv.getArmorStack(1), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT, true);
-                registerItem(inv.getArmorStack(2), PlayerInventorySlot.ARMOR_LEGGINGS_SLOT, true);
-                registerItem(inv.getArmorStack(3), PlayerInventorySlot.ARMOR_BOOTS_SLOT, true);
+                registerItem(inv.getArmorStack(3), PlayerInventorySlot.ARMOR_HELMET_SLOT, true);
+                registerItem(inv.getArmorStack(2), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT, true);
+                registerItem(inv.getArmorStack(1), PlayerInventorySlot.ARMOR_LEGGINGS_SLOT, true);
+                registerItem(inv.getArmorStack(0), PlayerInventorySlot.ARMOR_BOOTS_SLOT, true);
             }
         }
          */
