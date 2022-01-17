@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.*;
 import net.minecraft.block.Block;
@@ -46,8 +47,9 @@ public class CollectGoldIngotTask extends ResourceTask {
             }
             // Mine nuggets
             return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count * 9), new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);
+        } else {
+            return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-        return null;
     }
 
     @Override
