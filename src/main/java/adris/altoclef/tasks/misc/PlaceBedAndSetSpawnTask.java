@@ -143,22 +143,18 @@ public class PlaceBedAndSetSpawnTask extends Task {
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
-        if (mod.getPlayer().isSleeping()) {
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
             _progressChecker.reset();
             setDebugState("Sleeping...");
-            // Click "leave bed" immediately.
-
-            Screen screen = MinecraftClient.getInstance().currentScreen;
-            if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
-                _wasSleeping = true;
-                //Debug.logMessage("Closing sleeping thing");
-                _spawnSet = true;
-                screen.onClose();
-            }
+            _wasSleeping = true;
+            //Debug.logMessage("Closing sleeping thing");
+            _spawnSet = true;
+            screen.onClose();
             return null;
         }
 
-        if (_sleepAttemptMade && _stayInBed) {
+        if (_sleepAttemptMade && !_stayInBed) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
@@ -186,23 +182,25 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         }
                     }
                 }
-                BlockPos targetMove = toSleepIn;
                 if (!closeEnough) {
                     try {
                         Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
                         Direction side = face.rotateYClockwise();
-                        targetMove = toSleepIn.offset(side);
+                        BlockPos targetMove = toSleepIn.offset(side);
+                        return new GetToBlockTask(targetMove);
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
                     }
                 } else {
                     _inBedTimer.reset();
                 }
+                if (closeEnough) {
+                    _inBedTimer.reset();
+                }
                 // Keep track of where our spawn point is
                 _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
-                //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
                 _progressChecker.reset();
-                return new InteractWithBlockTask(targetMove);
+                return new InteractWithBlockTask(_bedForSpawnPoint);
             }, BEDS);
         }
 
