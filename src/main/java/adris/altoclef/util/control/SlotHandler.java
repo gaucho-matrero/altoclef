@@ -178,7 +178,7 @@ public class SlotHandler {
     }
     public void forceEquipSlot(Slot slot) {
         Slot target = PlayerInventorySlot.getEquipSlot();
-        forceSwapItems(slot, target);
+        clickSlotForce(slot, target.getInventorySlot(), SlotActionType.SWAP);
     }
 
     public boolean forceEquipItem(Item ...matches) {
@@ -206,28 +206,6 @@ public class SlotHandler {
             Slot slot = Slot.getFromCurrentScreenInventory(i);
             clickSlot(slot, 0, SlotActionType.PICKUP);
             clickSlot(slot, 0, SlotActionType.PICKUP);
-        }
-    }
-
-    private void forceSwapItems(Slot slot1, Slot slot2) {
-
-        if (canDoSlotAction()) {
-            // Pick up slot1
-            if (!Slot.isCursor(slot1)) {
-                clickSlot(slot1, 0, SlotActionType.PICKUP);
-            }
-            // Pick up slot2
-            clickSlot(slot2, 0, SlotActionType.PICKUP);
-
-            // slot 1 is now in slot 2
-            // slot 2 is now in cursor
-
-            // If slot 2 is not empty, move it back to slot 1
-            //if (second != null && !second.isEmpty()) {
-            if (Slot.isCursor(slot1)) {
-                clickSlot(slot1, 0, SlotActionType.PICKUP);
-            }
-            registerSlotAction();
         }
     }
 }
