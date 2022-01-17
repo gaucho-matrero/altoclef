@@ -332,12 +332,22 @@ public class Settings implements IFailableConfigFile {
     @JsonSerialize(using = ItemSerializer.class)
     @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> importantItems = Streams.concat(
-        Stream.of(
-            Items.ENCHANTED_GOLDEN_APPLE,
-            Items.ENDER_EYE
-        ),
-        // Don't throw away shulker boxes that would be pretty bad lol
-        Stream.of(ItemHelper.SHULKER_BOXES)
+            Stream.of(
+                    Items.ENCHANTED_GOLDEN_APPLE,
+                    Items.ENDER_EYE,
+                    Items.TRIDENT,
+                    Items.DIAMOND,
+                    Items.DIAMOND_BLOCK,
+                    Items.NETHERITE_SCRAP,
+                    Items.NETHERITE_INGOT,
+                    Items.NETHERITE_BLOCK
+            ),
+            Stream.of(ItemHelper.DIAMOND_ARMORS),
+            Stream.of(ItemHelper.NETHERITE_ARMORS),
+            Stream.of(ItemHelper.DIAMOND_TOOLS),
+            Stream.of(ItemHelper.NETHERITE_TOOLS),
+            // Don't throw away shulker boxes that would be pretty bad lol
+            Stream.of(ItemHelper.SHULKER_BOXES)
     ).toList();
 
     /**
