@@ -11,6 +11,9 @@ import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
@@ -202,13 +205,20 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected Task containerSubTask(AltoClef mod) {
-        //Debug.logMessage("GOT TO TABLE. Crafting...");
 
+        // Refresh crafting table Juuust in case
         _craftResetTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay() * 10 + CRAFT_RESET_TIMER_BONUS_SECONDS);
         if (_craftResetTimer.elapsed()) {
             Debug.logMessage("Refreshing crafting table.");
             mod.getControllerExtras().closeScreen();
             return null;
+        }
+
+        // Reset refresh timer if we have an item in the output slot
+        boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+        Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+        if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
+            _craftResetTimer.reset();
         }
 
         for (RecipeTarget target : _targets) {
