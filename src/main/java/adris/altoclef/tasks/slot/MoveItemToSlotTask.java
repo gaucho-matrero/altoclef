@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class MoveItemToSlotTask extends Task {
@@ -48,14 +49,26 @@ public class MoveItemToSlotTask extends Task {
             // Items that CAN be moved to that slot.
             Item[] validItems = _toMove.getMatches();//Arrays.stream(_toMove.getMatches()).filter(item -> mod.getItemStorage().getItemCount(item) >= _toMove.getTargetCount()).toArray(Item[]::new);
 
-            if (currentHeld.isEmpty() || !Arrays.asList(validItems).contains(currentHeld.getItem())) {
-                // Wrong item held, replace with best match.
-                Slot bestPickup = getBestSlotToPickUp(mod, validItems);
-                if (bestPickup == null) {
+            // We need to deal with our cursor stack OR put an item there (to move).
+            boolean wrongItemHeld = !Arrays.asList(validItems).contains(currentHeld.getItem());
+            if (currentHeld.isEmpty() || wrongItemHeld) {
+                Optional<Slot> toPlace = Optional.empty();
+                if (currentHeld.isEmpty()) {
+                    // Just pick up
+                    toPlace = getBestSlotToPickUp(mod, validItems);
+                } else {
+                    // Try to fit the currently held item first.
+                    toPlace = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(currentHeld, true);
+                    if (toPlace.isEmpty()) {
+                        // If all else fails, just swap it.
+                        toPlace = getBestSlotToPickUp(mod, validItems);
+                    }
+                }
+                if (toPlace.isEmpty()) {
                     Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
-                return new ClickSlotTask(bestPickup);
+                return new ClickSlotTask(toPlace.get());
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
@@ -94,7 +107,7 @@ public class MoveItemToSlotTask extends Task {
         return "Moving " + _toMove + " to " + _destination;
     }
 
-    private Slot getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
+    private Optional<Slot> getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
         for (Slot slot : _getMovableSlots.apply(mod)) {
             if (Slot.isCursor(slot))
@@ -114,6 +127,6 @@ public class MoveItemToSlotTask extends Task {
                 bestMatch = slot;
             }
         }
-        return bestMatch;
+        return Optional.ofNullable(bestMatch);
     }
 }
