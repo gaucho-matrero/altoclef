@@ -53,7 +53,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
-    private float containerItemMoveDelay = 0.25f;
+    private float containerItemMoveDelay = 0.2f;
 
     /**
      * If a dropped resource item is further than this from the player, don't pick it up.
