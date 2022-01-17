@@ -52,7 +52,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected Optional<Entity> getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
+        if (!mod.getEntityTracker().entityFound(_targetEntities)) return Optional.empty();
         return mod.getEntityTracker().getClosestEntity(pos, _shouldInteractWith, _targetEntities);
     }
 
