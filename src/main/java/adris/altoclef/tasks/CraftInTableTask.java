@@ -174,11 +174,13 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
 
         // Make sure our recipe items are accessible in our inventory
-        for (RecipeTarget target : _targets) {
-            for (int slot = 0; slot < target.getRecipe().getSlotCount(); ++slot) {
-                ItemTarget toCheck = target.getRecipe().getSlot(slot);
-                if (StorageHelper.isItemInaccessibleToContainer(mod, toCheck)) {
-                    return new MoveInaccessibleItemToInventoryTask(toCheck);
+        if (!thisOrChildSatisfies(task -> task instanceof CraftInInventoryTask)) {
+            for (RecipeTarget target : _targets) {
+                for (int slot = 0; slot < target.getRecipe().getSlotCount(); ++slot) {
+                    ItemTarget toCheck = target.getRecipe().getSlot(slot);
+                    if (StorageHelper.isItemInaccessibleToContainer(mod, toCheck)) {
+                        return new MoveInaccessibleItemToInventoryTask(toCheck);
+                    }
                 }
             }
         }
