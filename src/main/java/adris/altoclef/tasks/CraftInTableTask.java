@@ -3,7 +3,6 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
@@ -215,11 +214,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         for (RecipeTarget target : _targets) {
             if (StorageHelper.itemTargetsMet(mod, target.getItem()))
                 continue;
-            // Before crafting, make sure we have an empty slot.
-            if (!mod.getItemStorage().hasEmptyInventorySlot()) {
-                setDebugState("Clearing one inventory slot before crafting...");
-                return new EnsureFreeInventorySlotTask();
-            }
+            // No need to free, handled automatically I believe.
             setDebugState("Crafting");
             return new CraftGenericTask(target.getRecipe());
         }

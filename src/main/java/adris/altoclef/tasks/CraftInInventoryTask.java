@@ -2,7 +2,6 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -49,10 +48,7 @@ public class CraftInInventoryTask extends ResourceTask {
             return collectRecipeSubTask(mod);
         }
 
-        // Free up inventory
-        if (!mod.getItemStorage().hasEmptyInventorySlot()) {
-            return new EnsureFreeInventorySlotTask();
-        }
+        // No need to free inventory, output gets picked up.
 
         setDebugState("Crafting in inventory... for " + toGet);
         return new CraftGenericTask(_recipe);

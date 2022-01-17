@@ -111,7 +111,7 @@ public class CraftGenericTask extends Task {
         }
 
         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
-            return new ClickSlotTask(outputSlot, 0, SlotActionType.QUICK_MOVE);
+            return new ClickSlotTask(outputSlot, 0, SlotActionType.PICKUP);
         } else {
             // Wait
             return null;
