@@ -183,6 +183,13 @@ public class StorageHelper {
             final List<Slot> possibleSlots = new ArrayList<>();
             for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
                 ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                // If we're an armor slot, don't count us.
+                if (slot instanceof PlayerSlot playerSlot) {
+                    if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot)) {
+                        continue;
+                    }
+                }
+                // Throw away-able slots are good!
                 if (ItemHelper.canThrowAwayStack(mod, stack)) {
                     possibleSlots.add(slot);
                 }
