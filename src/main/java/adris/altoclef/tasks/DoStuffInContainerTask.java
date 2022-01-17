@@ -153,6 +153,10 @@ public abstract class DoStuffInContainerTask extends Task {
         //return new GetToBlockTask(nearest, true);
     }
 
+    public ItemTarget getContainerTarget() {
+        return _containerTarget;
+    }
+
     // Virtual
     protected BlockPos overrideContainerPosition(AltoClef mod) {
         return null;
