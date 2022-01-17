@@ -38,6 +38,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.function.Consumer;
@@ -104,10 +105,15 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        // Load settings
-        adris.altoclef.Settings.load(newSettings -> _settings = newSettings);
-
         initializeBaritoneSettings();
+
+        // Load settings
+        adris.altoclef.Settings.load(newSettings -> {
+            _settings = newSettings;
+            // Baritone's `acceptableThrowawayItems` should match our own.
+            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(Arrays.asList(_settings.getThrowawayItems(this, true)));
+        });
+
 
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
