@@ -44,10 +44,6 @@ public class Butler {
         );
     }
 
-    public void reloadLists() {
-        _userAuth.reloadLists();
-    }
-
     public void receiveMessage(String msg) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
@@ -81,6 +77,7 @@ public class Butler {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isUserAuthorized(String username) {
         return _userAuth.isUserAuthorized(username);
     }

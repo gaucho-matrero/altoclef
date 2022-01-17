@@ -4,6 +4,7 @@ import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.serialization.IListConfigFile;
 
 import java.util.HashSet;
+import java.util.function.Consumer;
 
 public class UserListFile implements IListConfigFile {
 
@@ -23,7 +24,7 @@ public class UserListFile implements IListConfigFile {
         _users.add(line);
     }
 
-    public static UserListFile load(String path) {
-        return ConfigHelper.loadListConfig(path, UserListFile::new);
+    public static void load(String path, Consumer<UserListFile> onLoad) {
+        ConfigHelper.loadListConfig(path, UserListFile::new, onLoad);
     }
 }

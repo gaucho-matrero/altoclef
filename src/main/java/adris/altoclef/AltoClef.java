@@ -4,7 +4,6 @@ import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
-import adris.altoclef.tasks.movement.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -106,7 +105,7 @@ public class AltoClef implements ModInitializer {
         // This is the actual start point, controlled by a mixin.
 
         // Load settings
-        _settings = adris.altoclef.Settings.load();
+        adris.altoclef.Settings.load(newSettings -> _settings = newSettings);
 
         initializeBaritoneSettings();
 
@@ -299,18 +298,6 @@ public class AltoClef implements ModInitializer {
         return _settings;
     }
 
-    public adris.altoclef.Settings reloadModSettings() {
-        adris.altoclef.Settings result = adris.altoclef.Settings.load();
-        if (result != null) {
-            _settings = result;
-        }
-        // If we weren't running anything and are now "idling", idle.
-        if (getModSettings().shouldIdleWhenNotActive()) {
-            runUserTask(new IdleTask());
-        }
-
-        return result;
-    }
 
     public Butler getButler() {
         return _butler;

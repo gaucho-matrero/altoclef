@@ -13,19 +13,17 @@ public class UserAuth {
     public UserAuth(AltoClef mod) {
         _mod = mod;
 
-        ConfigHelper.ensureCommentedListFileExists(BLACKLIST_PATH, "Add butler blacklisted players here.\n"
-                + "Make sure useButlerBlacklist is set to true in the settings file.\n"
-                + "Anything after a pound sign (#) will be ignored.");
-        ConfigHelper.ensureCommentedListFileExists(WHITELIST_PATH, "Add butler whitelisted players here.\n"
-                + "Make sure useButlerWhitelist is set to true in the settings file.\n"
-                + "Anything after a pound sign (#) will be ignored.");
+        ConfigHelper.ensureCommentedListFileExists(BLACKLIST_PATH, """
+                Add butler blacklisted players here.
+                Make sure useButlerBlacklist is set to true in the settings file.
+                Anything after a pound sign (#) will be ignored.""");
+        ConfigHelper.ensureCommentedListFileExists(WHITELIST_PATH, """
+                Add butler whitelisted players here.
+                Make sure useButlerWhitelist is set to true in the settings file.
+                Anything after a pound sign (#) will be ignored.""");
 
-        reloadLists();
-    }
-
-    public void reloadLists() {
-        _blacklist = UserListFile.load(BLACKLIST_PATH);
-        _whitelist = UserListFile.load(WHITELIST_PATH);
+        UserListFile.load(BLACKLIST_PATH, newList -> _blacklist = newList);
+        UserListFile.load(WHITELIST_PATH, newList -> _whitelist = newList);
     }
 
     public boolean isUserAuthorized(String username) {

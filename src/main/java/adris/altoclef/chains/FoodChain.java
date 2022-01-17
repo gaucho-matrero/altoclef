@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
@@ -15,12 +16,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Pair;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class FoodChain extends SingleTaskChain {
 
-    // TODO: Static 'onConfigReload' and load from a file.
-    private FoodChainConfig _config = new FoodChainConfig();
+    private static FoodChainConfig _config;
+    static {
+        ConfigHelper.loadConfig("configs/food_chain_settings.json", FoodChainConfig::new, FoodChainConfig.class, newConfig -> _config = newConfig);
+    }
 
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
@@ -224,6 +228,7 @@ public class FoodChain extends SingleTaskChain {
 
                 FoodComponent food = stack.getItem().getFoodComponent();
 
+                assert food != null;
                 float hungerIfEaten = Math.min(hunger + food.getHunger(), 20);
                 float saturationIfEaten = Math.min(hungerIfEaten, saturation + food.getSaturationModifier());
                 float gainedSaturation = (saturationIfEaten - saturation);
@@ -249,7 +254,7 @@ public class FoodChain extends SingleTaskChain {
                     bestFood = stack.getItem();
                 }
 
-                foodTotal += stack.getItem().getFoodComponent().getHunger() * stack.getCount();
+                foodTotal += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
             }
         }
 

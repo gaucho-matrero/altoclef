@@ -17,7 +17,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Scanner;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -31,7 +33,16 @@ public class ConfigHelper {
         return Paths.get(ALTO_FOLDER, path).toFile();
     }
 
-    public static <T> T loadConfig(String path, Supplier<T> getDefault, Class<T> classToLoad) {
+    // For reloading
+    private static final HashMap<String, Runnable> _loadedConfigs = new HashMap<>();
+
+    public static void reloadAllConfigs() {
+        for (Runnable reload : _loadedConfigs.values()) {
+            reload.run();
+        }
+    }
+
+    private static <T> T getConfig(String path, Supplier<T> getDefault, Class<T> classToLoad) {
         T result = getDefault.get();
         File loadFrom = getConfigFile(path);
         if (!loadFrom.exists()) {
@@ -72,6 +83,11 @@ public class ConfigHelper {
         return result;
     }
 
+    public static <T> void loadConfig(String path, Supplier<T> getDefault, Class<T> classToLoad, Consumer<T> onReload) {
+        T result = getConfig(path, getDefault, classToLoad);
+        _loadedConfigs.put(path, () -> onReload.accept(getConfig(path, getDefault, classToLoad)));
+        onReload.accept(result);
+    }
 
     public static <T> void saveConfig(String path, T config) {
         ObjectMapper mapper = new ObjectMapper();
@@ -100,7 +116,7 @@ public class ConfigHelper {
         }
     }
 
-    public static <T extends IListConfigFile> T loadListConfig(String path, Supplier<T> getDefault) {
+    private static <T extends IListConfigFile> T getListConfig(String path, Supplier<T> getDefault) {
         T result = getDefault.get();
 
         result.onLoadStart();
@@ -127,6 +143,12 @@ public class ConfigHelper {
             return null;
         }
         return result;
+    }
+
+    public static <T extends IListConfigFile> void loadListConfig(String path, Supplier<T> getDefault, Consumer<T> onReload) {
+        T result = getListConfig(path, getDefault);
+        _loadedConfigs.put(path, () -> onReload.accept(getListConfig(path, getDefault)));
+        onReload.accept(result);
     }
 
     private static String trimComment(String line) {

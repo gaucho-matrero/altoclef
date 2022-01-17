@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @SuppressWarnings("ALL")
@@ -547,7 +548,7 @@ public class Settings implements IFailableConfigFile {
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
     }
-    public Item[] getSupportedFuels() {
+    public Item[] getSupportedFuelItems() {
         return supportedFuels.toArray(Item[]::new);
     }
 
@@ -584,8 +585,8 @@ public class Settings implements IFailableConfigFile {
         return _failedToLoad;
     }
 
-    public static Settings load() {
-        return ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class);
+    public static void load(Consumer<Settings> onReload) {
+        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
     }
 
     private static class ProtectionRange {
