@@ -3,6 +3,7 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
@@ -17,6 +18,7 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,6 +163,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
         //      Only if we ASSUME that hasRecipeMaterials is TOO STRICT and the Collect Task is CORRECT.
         //
+
+        // Grab from output FIRST
+        if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_targets).anyMatch(target -> target.getItem().matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
+            return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+        }
+
         if (_collect) {
             if (!_collectTask.isFinished(mod)) {
 

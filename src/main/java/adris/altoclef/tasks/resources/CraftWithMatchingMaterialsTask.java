@@ -120,7 +120,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
-            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
+            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe) : new CraftInInventoryTask(_target, samedRecipe);
         }
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);

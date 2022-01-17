@@ -2,11 +2,16 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.PlayerSlot;
+import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.Arrays;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -41,6 +46,11 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
+        // Grab from output FIRST
+        if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
+            return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+        }
+
         ItemTarget toGet = _itemTargets[0];
         if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, new RecipeTarget(toGet, _recipe))) {
             // Collect recipe materials
