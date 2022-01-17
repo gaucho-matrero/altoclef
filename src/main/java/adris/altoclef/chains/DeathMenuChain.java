@@ -22,6 +22,8 @@ public class DeathMenuChain extends TaskChain {
     private int _deathCount = 0;
     private Class _prevScreen = null;
 
+    private final TimerGame _waitOnDeathScreenBeforeRespawnTimer = new TimerGame(2);
+
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
     }
@@ -74,36 +76,41 @@ public class DeathMenuChain extends TaskChain {
             }
 
             if (screen instanceof DeathScreen) {
-                if (shouldAutoRespawn(mod)) {
-                    _deathCount++;
-                    Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
-                    assert MinecraftClient.getInstance().player != null;
-                    MinecraftClient.getInstance().player.requestRespawn();
-                    MinecraftClient.getInstance().setScreen(null);
-                } else {
-                    // Cancel if we die and are not auto-respawning.
-                    mod.cancelUserTask();
+                if (_waitOnDeathScreenBeforeRespawnTimer.elapsed()) {
+                    if (shouldAutoRespawn(mod)) {
+                        _deathCount++;
+                        Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
+                        assert MinecraftClient.getInstance().player != null;
+                        MinecraftClient.getInstance().player.requestRespawn();
+                        MinecraftClient.getInstance().setScreen(null);
+                    } else {
+                        // Cancel if we die and are not auto-respawning.
+                        mod.cancelUserTask();
+                    }
                 }
-            } else if (screen instanceof DisconnectedScreen) {
-                if (shouldAutoReconnect(mod)) {
-                    Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
-                    _reconnecting = true;
-                    MinecraftClient.getInstance().setScreen(new MultiplayerScreen(new TitleScreen()));
-                } else {
-                    // Cancel if we disconnect and are not auto-reconnecting.
-                    mod.cancelUserTask();
-                }
-            } else if (screen instanceof MultiplayerScreen && _reconnecting && _reconnectTimer.elapsed()) {
-                _reconnectTimer.reset();
-                Debug.logMessage("RECONNECTING: Going ");
-                _reconnecting = false;
+            } else {
+                _waitOnDeathScreenBeforeRespawnTimer.reset();
+                if (screen instanceof DisconnectedScreen) {
+                    if (shouldAutoReconnect(mod)) {
+                        Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
+                        _reconnecting = true;
+                        MinecraftClient.getInstance().setScreen(new MultiplayerScreen(new TitleScreen()));
+                    } else {
+                        // Cancel if we disconnect and are not auto-reconnecting.
+                        mod.cancelUserTask();
+                    }
+                } else if (screen instanceof MultiplayerScreen && _reconnecting && _reconnectTimer.elapsed()) {
+                    _reconnectTimer.reset();
+                    Debug.logMessage("RECONNECTING: Going ");
+                    _reconnecting = false;
 
-                if (_prevServerEntry == null) {
-                    Debug.logWarning("Failed to re-connect to server, no server entry cached.");
-                } else {
-                    MinecraftClient client = MinecraftClient.getInstance();
-                    ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
-                    //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
+                    if (_prevServerEntry == null) {
+                        Debug.logWarning("Failed to re-connect to server, no server entry cached.");
+                    } else {
+                        MinecraftClient client = MinecraftClient.getInstance();
+                        ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
+                        //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
+                    }
                 }
             }
             _prevScreen = screen.getClass();
