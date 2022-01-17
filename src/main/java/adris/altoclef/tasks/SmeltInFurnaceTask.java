@@ -171,11 +171,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     - (materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0)
                     - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0);
             double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot.getItem()) * _furnaceCache.fuelSlot.getCount() + _furnaceCache.burningFuelCount;
-            // Fuel needed = (mat_target - mat_in_inventory - out_in_inventory - out_in_furnace - totalFuelInFurnace)
+            // Fuel needed = (mat_target - out_in_inventory - out_in_furnace - totalFuelInFurnace)
             double fuelNeeded = _ignoreMaterials
                         ? Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
                         : materialTarget.getTargetCount()
-                    - mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches())
+                    /* - mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) */
                     - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
                     - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0)
                     - totalFuelInFurnace;
@@ -223,10 +223,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
             // Receive from output if present
             if (!output.isEmpty()) {
                 setDebugState("Receiving Output");
-                Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(output, false);
-                if (toMoveTo.isEmpty()) {
-                    return new EnsureFreeInventorySlotTask();
-                }
                 // Ensure our cursor is empty/can receive our item
                 ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
                 if (!cursor.isEmpty() && !ItemHelper.canStackTogether(output, cursor)) {
@@ -239,17 +235,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     }
                 }
                 // Pick up
-                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.QUICK_MOVE);
+                return new ClickSlotTask(FurnaceSlot.OUTPUT_SLOT, SlotActionType.PICKUP);
                 // return new MoveItemToSlotTask(new ItemTarget(output.getItem(), output.getCount()), toMoveTo.get(), mod -> FurnaceSlot.OUTPUT_SLOT);
             }
-
-            /*
-            // Empty material slot if filled with non-expected materials
-            if (!material.isEmpty() && !materialTarget.matches(material.getItem())) {
-                Debug.logMessage("Invalid material in furnace detected, will pick up and let altoclef handle getting rid of it.");
-                return new ClickSlotTask(FurnaceSlot.INPUT_SLOT_MATERIALS);
-            }
-             */
 
             // Fill in input if needed
             // Materials needed in slot = (mat_target - out_in_inventory - out_in_furnace)
