@@ -66,7 +66,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         if (checkEntity.isEmpty()) {
             mod.getMobDefenseChain().resetTargetEntity();
             mod.getMobDefenseChain().resetForceField();
-            return null;
+            return _wanderTask;
         } else {
             mod.getMobDefenseChain().setTargetEntity(checkEntity.get());
         }
@@ -114,7 +114,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return new GetToEntityTask(entity, maintainDistance);
         }
 
-        return null;
+        return _wanderTask;
     }
 
     @Override
@@ -128,6 +128,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         return false;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean doubleCheck(double a, double b) {
         if (Double.isInfinite(a) == Double.isInfinite(b)) return true;
         return Math.abs(a - b) < 0.1;
