@@ -8,7 +8,6 @@ import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
@@ -30,7 +29,6 @@ import java.util.Optional;
 public class CraftGenericTask extends Task {
 
     private final CraftingRecipe _recipe;
-    private TimerGame _invTimer;
 
     public CraftGenericTask(CraftingRecipe recipe) {
         _recipe = recipe;
@@ -43,20 +41,6 @@ public class CraftGenericTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_invTimer == null) {
-            _invTimer = new TimerGame(mod.getModSettings().getContainerItemMoveDelay());
-        } else {
-            _invTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
-        }
-        boolean delayedCraft = (_invTimer.getDuration() > 0);
-
-        if (!_invTimer.elapsed()) {
-            // Each "tick" past here is one operation.
-            // Wait until timer comes back.
-            return null;
-        } else {
-            _invTimer.reset();
-        }
 
         boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
 
@@ -66,7 +50,6 @@ public class CraftGenericTask extends Task {
                 // otherwise crafting will be むだな、ぞ
                 mod.getControllerExtras().closeScreen();
                 // Just to be safe
-                if (delayedCraft) return null;
             }
         }
 
