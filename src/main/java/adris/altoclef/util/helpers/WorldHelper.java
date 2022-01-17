@@ -13,6 +13,7 @@ import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.block.enums.BedPart;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -265,5 +266,18 @@ public interface WorldHelper {
     }
     static boolean isChest(Block b) {
         return b instanceof ChestBlock || b instanceof EnderChestBlock;
+    }
+
+    static boolean canSleep() {
+        int time = 0;
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world != null) {
+            // You can sleep during thunderstorms
+            if (world.isThundering() && world.isRaining())
+                return true;
+            time = (int)(world.getTimeOfDay() % 24000);
+        }
+        // https://minecraft.fandom.com/wiki/Daylight_cycle
+        return 12542 <= time && time <= 23992;
     }
 }
