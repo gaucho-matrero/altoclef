@@ -332,7 +332,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             }
         } catch (Exception e) {
-            Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
+            Debug.logWarning("Weird exception caught and ignored while doing force field.");
+            e.printStackTrace();
         }
 
         _killAura.tickEnd(mod);
