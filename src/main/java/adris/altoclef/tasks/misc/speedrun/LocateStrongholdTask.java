@@ -4,19 +4,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
-import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.movement.EnterNetherPortalTask;
-import adris.altoclef.tasks.movement.GetToBlockTask;
-import adris.altoclef.tasks.movement.GetToXZTask;
-import adris.altoclef.tasks.movement.GetToYTask;
-import adris.altoclef.tasks.movement.GoInDirectionXZTask;
-import adris.altoclef.tasks.movement.PickupDroppedItemTask;
-import adris.altoclef.tasks.movement.SearchChunksExploreTask;
+import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -56,12 +48,16 @@ public class LocateStrongholdTask extends Task {
 
     private SearchStrongholdTask _searchTask;
 
+    private final ConstructNetherPortalObsidianTask _constructTask = new ConstructNetherPortalObsidianTask();
+
     public LocateStrongholdTask(int targetEyes) {
         _targetEyes = targetEyes;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(Items.FLINT_AND_STEEL);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
     }
 
@@ -208,6 +204,10 @@ public class LocateStrongholdTask extends Task {
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
                 mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
                 if (mod.getCurrentDimension() != Dimension.NETHER) {
+                    if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                        setDebugState("Getting flint and steel before going into nether");
+                        return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+                    }
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
                 }
@@ -219,7 +219,7 @@ public class LocateStrongholdTask extends Task {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
                 }
-                if (_netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
+                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }
@@ -235,7 +235,7 @@ public class LocateStrongholdTask extends Task {
                         _netherGoalPos = _educatedPortalStart;
                     }
                     setDebugState("Building portal");
-                    return new ConstructNetherPortalObsidianTask();
+                    return _constructTask;
                 } else {
                     if (_portalBuildRange > 2) {
                     _portalBuildRange = 2;
@@ -260,6 +260,7 @@ public class LocateStrongholdTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL_FRAME);
+        mod.getBehaviour().pop();
     }
 
     @Override
