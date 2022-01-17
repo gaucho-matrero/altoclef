@@ -339,6 +339,9 @@ public class ItemHelper {
     }
 
     public static boolean canThrowAwayStack(AltoClef mod, ItemStack stack) {
+        // Can't throw away empty stacks!
+        if (stack.isEmpty())
+            return false;
         if (isStackProtected(mod, stack))
             return false;
         return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems();

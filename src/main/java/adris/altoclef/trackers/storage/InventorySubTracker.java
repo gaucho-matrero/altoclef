@@ -2,6 +2,7 @@ package adris.altoclef.trackers.storage;
 
 import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.CursorSlot;
@@ -100,8 +101,8 @@ public class InventorySubTracker extends Tracker {
         for (Slot toCheckStackable : list.getOrDefault(item.getItem(), Collections.emptyList())) {
             ItemStack stackToAddTo = StorageHelper.getItemStackInSlot(toCheckStackable);
             // We must have SOME room left, then we decide whether we care about having ENOUGH
-            int roomLeft = stackToAddTo.getMaxCount() - stackToAddTo.getCount();
-            if (roomLeft > 0) {
+            if (ItemHelper.canStackTogether(item, stackToAddTo)) {
+                int roomLeft = stackToAddTo.getMaxCount() - stackToAddTo.getCount();
                 if (acceptPartial || roomLeft > item.getCount()) {
                     result.add(toCheckStackable);
                 }
