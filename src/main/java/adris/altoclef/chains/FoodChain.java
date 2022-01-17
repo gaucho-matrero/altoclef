@@ -5,6 +5,7 @@ import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.ConfigHelper;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.MinecraftClient;
@@ -19,6 +20,7 @@ import net.minecraft.util.Pair;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class FoodChain extends SingleTaskChain {
 
     private static FoodChainConfig _config;
@@ -80,17 +82,12 @@ public class FoodChain extends SingleTaskChain {
 
         if (hasFood && (needsToEat(mod) || _requestFillup) && _cachedPerfectFood.isPresent()) {
             Item toUse = _cachedPerfectFood.get();
-            if (toUse != null) {
-
-                // Make sure we're not facing a container
-                if (!LookHelper.tryAvoidingInteractable(mod)) {
-                    return Float.NEGATIVE_INFINITY;
-                }
-
-                startEat(mod, toUse);
-            } else {
-                stopEat(mod);
+            // Make sure we're not facing a container
+            if (!LookHelper.tryAvoidingInteractable(mod)) {
+                return Float.NEGATIVE_INFINITY;
             }
+
+            startEat(mod, toUse);
         } else if (_isTryingToEat) {
             stopEat(mod);
         }
@@ -219,7 +216,7 @@ public class FoodChain extends SingleTaskChain {
         for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
             if (stack.isFood()) {
                 // Ignore protected items
-                if (mod.getBehaviour().isProtected(stack.getItem())) continue;
+                if (!ItemHelper.canThrowAwayStack(mod, stack)) continue;
 
                 // Ignore spider eyes
                 if (stack.getItem() == Items.SPIDER_EYE) {
