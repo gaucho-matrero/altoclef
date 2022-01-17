@@ -37,6 +37,6 @@ public class KillEntityTask extends AbstractKillEntityTask {
 
     @Override
     protected String toDebugString() {
-        return "Killing " + _target.getEntityName();
+        return "Killing " + _target.getType().getTranslationKey();
     }
 }

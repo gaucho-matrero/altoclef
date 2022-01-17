@@ -261,7 +261,7 @@ public class CollectFoodTask extends Task {
                 }
             }
             if (bestEntity != null) {
-                setDebugState("Killing " + bestEntity.getEntityName());
+                setDebugState("Killing " + bestEntity.getType().getTranslationKey());
                 _currentResourceTask = killTaskOrNull(mod, bestEntity, bestRawFood);
                 return _currentResourceTask;
             }
