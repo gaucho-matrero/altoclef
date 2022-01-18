@@ -17,7 +17,7 @@ jobs:
           java-version: 16
           distribution: 'adopt'
       - name: Generate Javadoc
-        run: ./gradle javadoc
+        run: ./gradlew javadoc
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.8
         with:
