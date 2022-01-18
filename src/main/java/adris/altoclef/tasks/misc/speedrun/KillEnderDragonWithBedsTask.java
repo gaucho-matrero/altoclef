@@ -58,6 +58,11 @@ public class KillEnderDragonWithBedsTask extends Task {
             }
         }
 
+        if (_endPortalTop == null) {
+            setDebugState("Searching for end portal top.");
+            return new GetToXZTask(0, 0);
+        }
+
         if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
             return new GetToXZTask(0, 0);
