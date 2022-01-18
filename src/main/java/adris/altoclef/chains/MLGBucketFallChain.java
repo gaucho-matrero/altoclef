@@ -6,7 +6,6 @@ import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -62,7 +61,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
-                                if (mod.getSlotHandler().forceEquipItem(new ItemTarget(Items.BUCKET, 1))) {
+                                if (mod.getSlotHandler().forceEquipItem(Items.BUCKET)) {
                                     if (_pickupRepeatTimer.elapsed()) {
                                         // Pick up
                                         _pickupRepeatTimer.reset();

@@ -75,7 +75,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(targetWaterPos.down())) {
-                                if (mod.getSlotHandler().forceEquipItem(new ItemTarget(Items.WATER_BUCKET, 1))) {
+                                if (mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET)) {
                                     _extinguishWaterPosition = targetWaterPos;
                                     mod.getInputControls().tryPress(Input.CLICK_RIGHT);
                                     setTask(null);

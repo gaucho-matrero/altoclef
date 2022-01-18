@@ -102,10 +102,7 @@ public class SlotHandler {
         Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
         return false;
     }
-    //Default forceEquipItem, will not force to equip item if the bot eat
-    public boolean forceEquipItem(Item toEquip) {
-            return forceEquipItem(toEquip, false);
-    }
+
     public boolean forceDeequipHitTool() {
         return forceDeequip(stack -> stack.getItem() instanceof ToolItem);
     }
@@ -185,11 +182,16 @@ public class SlotHandler {
         clickSlotForce(slot, target.getInventorySlot(), SlotActionType.SWAP);
     }
 
-    public boolean forceEquipItem(Item ...matches) {
-        return forceEquipItem(new ItemTarget(matches, 1));
+    public boolean forceEquipItem(Item[] matches, boolean unInterruptable) {
+        return forceEquipItem(new ItemTarget(matches, 1), unInterruptable);
     }
-    public boolean forceEquipItem(ItemTarget toEquip) {
+    public boolean forceEquipItem(ItemTarget toEquip, boolean unInterruptable) {
         if (toEquip == null) return false;
+
+        //If the bot try to eat
+        if (_mod.getFoodChain().isTryingToEat() && !unInterruptable) { //unless we really need to force equip the item
+            return false; //don't equip the item for now
+        }
 
         Slot target = PlayerInventorySlot.getEquipSlot();
         // Already equipped
@@ -201,6 +203,11 @@ public class SlotHandler {
             }
         }
         return false;
+    }
+
+    // By default, don't force equip if the bot is eating.
+    public boolean forceEquipItem(Item... toEquip) {
+        return forceEquipItem(toEquip, false);
     }
 
     public void refreshInventory() {

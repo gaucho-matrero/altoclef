@@ -231,7 +231,7 @@ public class InteractWithBlockTask extends Task {
             mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
             if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
                 if (_toUse != null) {
-                    mod.getSlotHandler().forceEquipItem(_toUse);
+                    mod.getSlotHandler().forceEquipItem(_toUse, false);
                 } else {
                     mod.getSlotHandler().forceDeequipRightClickableItem();
                 }

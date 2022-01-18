@@ -51,6 +51,11 @@ public class Settings implements IFailableConfigFile {
     private boolean showTaskChains = true;
 
     /**
+     * If true, will show a timer.
+     */
+    private boolean showTimer = false;
+
+    /**
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
     private float containerItemMoveDelay = 0.2f;
@@ -421,6 +426,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+
+    public boolean shouldShowTimer() {
+        return showTimer;
     }
 
     public float getResourcePickupRange() {
