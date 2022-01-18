@@ -58,7 +58,6 @@ public class KillEnderDragonWithBedsTask extends Task {
             }
         }
 
-
         if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
             return new GetToXZTask(0, 0);
