@@ -17,12 +17,12 @@ jobs:
           java-version: 16
           distribution: 'adopt'
       - name: Generate Javadoc
-        run: mvn org.apache.maven.plugins:maven-javadoc-plugin:3.3.1:aggregate
+        run: ./gradle javadoc
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.8
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: javadoc
           CLEAN: true
-          FOLDER: target/site/apidocs
+          FOLDER: build/docs/javadoc
           TARGET_FOLDER: javadoc
