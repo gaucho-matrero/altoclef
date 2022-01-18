@@ -186,7 +186,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                     try {
                         Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
                         Direction side = face.rotateYClockwise();
-                        BlockPos targetMove = toSleepIn.offset(side);
+                        BlockPos targetMove = toSleepIn.offset(side).offset(side); // Twice, juust to make sure...
                         return new GetToBlockTask(targetMove);
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
