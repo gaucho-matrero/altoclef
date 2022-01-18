@@ -200,6 +200,11 @@ public class Settings implements IFailableConfigFile {
     private boolean avoidDrowning = true;
 
     /**
+     * If enabled, will attempt to extinguish ourselves when on fire (and not immune to fire)
+     */
+    private boolean extinguishSelfWithWater = true;
+
+    /**
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
@@ -500,6 +505,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldAvoidDrowning() {
         return avoidDrowning;
+    }
+
+    public boolean shouldExtinguishSelfWithWater() {
+        return extinguishSelfWithWater;
     }
 
     public boolean shouldAvoidSearchingForDungeonChests() {
