@@ -47,7 +47,7 @@ public class CraftGenericTask extends Task {
         if (!bigCrafting) {
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
                 // Make sure we're not in another screen before we craft,
-                // otherwise crafting will be むだな、ぞ
+                // otherwise crafting won't work
                 mod.getControllerExtras().closeScreen();
                 // Just to be safe
             }

@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 
 /**
- * Smelt in a furnace, placing a furnace & collecting fuel as needed.
+ * Smelt in a furnace, placing a furnace and collecting fuel as needed.
  */
 // Ref
 // https://minecraft.gamepedia.com/Smelting
