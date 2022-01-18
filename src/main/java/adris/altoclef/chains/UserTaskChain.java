@@ -39,7 +39,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (!result.equals("")) {
             result += "and ";
         }
-        result += String.format("%.2f", (seconds % 60));
+        result += String.format("%.3f", (seconds % 60));
         return result;
     }
 
