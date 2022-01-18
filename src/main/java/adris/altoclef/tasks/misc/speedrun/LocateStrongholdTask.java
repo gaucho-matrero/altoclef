@@ -16,7 +16,6 @@ import net.minecraft.entity.EyeOfEnderEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -328,29 +327,19 @@ public class LocateStrongholdTask extends Task {
         return start2.add(direction2.multiply(t2));
     }
 
-    private static class SearchStrongholdTask extends SearchChunksExploreTask {
+    private static class SearchStrongholdTask extends SearchChunkForBlockTask {
 
-        private GetToBlockTask _goTask;
+        private final GetToBlockTask _goTask;
 
         public SearchStrongholdTask(Vec3d travelGoal) {
+            super(Blocks.STONE_BRICKS);
             _goTask = new GetToBlockTask(new BlockPos(travelGoal));
-        }
-
-        @Override
-        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
-            boolean found = mod.getChunkTracker().scanChunk(pos, (block) ->
-                    mod.getWorld().getBlockState(block).getBlock() == Blocks.STONE_BRICKS
-            );
-            if (found) {
-                Debug.logMessage("Scanned chunk FOUND!");
-            }
-            return found;
         }
 
         @Override
         protected boolean isEqual(Task other) {
             if (other instanceof SearchStrongholdTask task) {
-                return task._goTask.equals(_goTask);
+                return task._goTask.equals(_goTask) && super.isEqual(other);
             }
             return false;
         }

@@ -7,6 +7,7 @@ import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.misc.PutOutFireTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.SearchChunkForBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
@@ -29,7 +30,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
     private static final int TOO_MANY_BLAZES = 5;
     private static final double TOO_LITTLE_HEALTH_BLAZE = 5;
     private final int _count;
-    private final SearchNetherFortressTask _searcher = new SearchNetherFortressTask();
+    private final Task _searcher = new SearchChunkForBlockTask(Blocks.NETHER_BRICKS);
 
     // Why was this here???
     //private Entity _toKill;
