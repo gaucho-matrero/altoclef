@@ -115,14 +115,15 @@ public class CollectFoodTask extends Task {
         mod.getBehaviour().push();
         // Protect ALL food
         mod.getBehaviour().addProtectedItems(ITEMS_TO_PICK_UP);
+        for (CropTarget crop : CROPS) {
+            mod.getBlockTracker().trackBlock(crop.cropBlock);
+        }
 
         // Allow us to consume food.
         /*
         for (CookableFoodTarget food : COOKABLE_FOODS)
             mod.getBehaviour().addProtectedItems(food.getRaw(), food.getCooked());
-        for (CropTarget crop : CROPS) {
             mod.getBehaviour().addProtectedItems(crop.cropItem);
-            mod.getBlockTracker().trackBlock(crop.cropBlock);
         }
          */
         mod.getBehaviour().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
