@@ -102,6 +102,10 @@ public class SlotHandler {
         Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
         return false;
     }
+    //Default forceEquipItem, will not force to equip item if the bot eat
+    public boolean forceEquipItem(Item toEquip) {
+            return forceEquipItem(toEquip, false);
+    }
     public boolean forceDeequipHitTool() {
         return forceDeequip(stack -> stack.getItem() instanceof ToolItem);
     }

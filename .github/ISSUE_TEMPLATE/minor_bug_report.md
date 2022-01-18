@@ -1,13 +1,11 @@
 ---
-name: Bug report
-about: Create a report to help squash bugs
+name: Minor Bug report
+about: Report a bug that TEMPORARILY interrupts the bot and/or wastes time, but does NOT permanently stop the bot/require human input to proceed.
 title: ''
-labels: ''
+labels: 'minor bug'
 assignees: ''
 
 ---
-
-## Bug Description
 
 ## Steps to Reproduce (as best as you can)
 

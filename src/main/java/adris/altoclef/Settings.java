@@ -51,6 +51,11 @@ public class Settings implements IFailableConfigFile {
     private boolean showTaskChains = true;
 
     /**
+     * If true, it will show a timer displaying how long the task was running.
+     * if false, it display the showTaskChains (if enabled) without the timer
+     */
+    private boolean showTimer = true;
+
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
     private float containerItemMoveDelay = 0.2f;
@@ -72,7 +77,7 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * amount of food to collect when the food in inventory
-     * is lower than the value of foodUnitsThreshold
+     * is lower than the value of minimumFoodAllowed
      */
     private int foodUnitsToCollect = 0;
 
@@ -421,6 +426,9 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+    public boolean shouldShowTimer() {
+        return showTimer;
     }
 
     public float getResourcePickupRange() {
