@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
@@ -52,7 +53,9 @@ public class KillEnderDragonWithBedsTask extends Task {
          */
         if (_endPortalTop == null) {
             _endPortalTop = locateExitPortalTop(mod);
-            ((IDragonWaiter)_whenNotPerchingTask).setExitPortalTop(_endPortalTop);
+            if (_endPortalTop != null) {
+                ((IDragonWaiter) _whenNotPerchingTask).setExitPortalTop(_endPortalTop);
+            }
         }
 
 
