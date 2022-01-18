@@ -557,6 +557,7 @@ public class Settings implements IFailableConfigFile {
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
     }
+    @JsonIgnore
     public Item[] getSupportedFuelItems() {
         return supportedFuels.toArray(Item[]::new);
     }
