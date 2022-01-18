@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotFromContainerTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.ItemTarget;
@@ -113,13 +113,8 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
                 Optional<Slot> bestPotential = getBestSlotToTransfer(mod, target, count, potentials, stack -> mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false).isPresent());
 
                 if (bestPotential.isPresent()) {
-                    ItemStack stackIn = StorageHelper.getItemStackInSlot(bestPotential.get());
-                    Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stackIn, false);
-                    if (toMoveTo.isEmpty()) {
-                        return _freeInventoryTask;
-                    }
-                    setDebugState("Moving to slot...");
-                    return new MoveItemToSlotFromContainerTask(target, toMoveTo.get());
+                    // Just pick it up, it's now ours.
+                    return new ClickSlotTask(bestPotential.get());
                 }
                 setDebugState("SHOULD NOT HAPPEN! No valid items detected.");
             }
