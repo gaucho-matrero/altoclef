@@ -78,7 +78,7 @@ public class ItemTarget {
     }
 
     public Item[] getMatches() {
-        return _itemMatches;
+        return _itemMatches != null? _itemMatches : new Item[0];
     }
 
     public int getTargetCount() {

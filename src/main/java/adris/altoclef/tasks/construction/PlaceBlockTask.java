@@ -36,7 +36,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     private final boolean _useThrowaways;
     private final boolean _autoCollectStructureBlocks;
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3, true); // This can get stuck forever, so we increase the range.
     private Task _materialTask;
     private int _failCount = 0;
 
@@ -52,7 +52,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     public static int getMaterialCount(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
+        return mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
     }
 
     public static Task getMaterialTask(int count) {

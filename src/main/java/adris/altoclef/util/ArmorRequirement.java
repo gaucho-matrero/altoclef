@@ -1,9 +1,9 @@
 package adris.altoclef.util;
 
-import adris.altoclef.AltoClef;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
+@Deprecated
 public enum ArmorRequirement {
     NONE,
     LEATHER(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS),
@@ -17,7 +17,7 @@ public enum ArmorRequirement {
         _armors = armors;
     }
 
-    public boolean requirementMet(AltoClef mod) {
-        return mod.getInventoryTracker().isArmorEquipped(_armors);
+    public Item[] getArmors() {
+        return _armors;
     }
 }

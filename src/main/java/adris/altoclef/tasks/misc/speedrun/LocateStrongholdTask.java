@@ -4,19 +4,12 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
-import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.movement.EnterNetherPortalTask;
-import adris.altoclef.tasks.movement.GetToBlockTask;
-import adris.altoclef.tasks.movement.GetToXZTask;
-import adris.altoclef.tasks.movement.GetToYTask;
-import adris.altoclef.tasks.movement.GoInDirectionXZTask;
-import adris.altoclef.tasks.movement.PickupDroppedItemTask;
-import adris.altoclef.tasks.movement.SearchChunksExploreTask;
+import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
-import net.minecraft.block.Block;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -24,7 +17,6 @@ import net.minecraft.entity.EyeOfEnderEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -56,12 +48,16 @@ public class LocateStrongholdTask extends Task {
 
     private SearchStrongholdTask _searchTask;
 
+    private final ConstructNetherPortalObsidianTask _constructTask = new ConstructNetherPortalObsidianTask();
+
     public LocateStrongholdTask(int targetEyes) {
         _targetEyes = targetEyes;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getBehaviour().push();
+        mod.getBehaviour().addProtectedItems(Items.FLINT_AND_STEEL);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
     }
 
@@ -71,17 +67,13 @@ public class LocateStrongholdTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_strongholdEstimatePos != null) {
-            if (_strongholdEstimatePos != null) {
-            }
-        }
-        if (_strongholdEstimatePos == null && mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (_strongholdEstimatePos == null && WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to overworld");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
         // Pick up eye if we need to/want to.
-        if (mod.getInventoryTracker().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE) && 
+        if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE) && 
         !mod.getEntityTracker().entityFound(EyeOfEnderEntity.class)) {
             setDebugState("Picking up dropped ender eye.");
             return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
@@ -134,7 +126,7 @@ public class LocateStrongholdTask extends Task {
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
@@ -154,11 +146,11 @@ public class LocateStrongholdTask extends Task {
 
         // Throw the eye since we don't have any eye info.
         if (!mod.getEntityTracker().entityFound(EyeOfEnderEntity.class) && _strongholdEstimatePos == null) {
-            if (mod.getCurrentDimension() == Dimension.NETHER) {
+            if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
                 setDebugState("Going to overworld.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             }
-            if (!mod.getInventoryTracker().hasItem(Items.ENDER_EYE)) {
+            if (!mod.getItemStorage().hasItem(Items.ENDER_EYE)) {
                 setDebugState("Collecting eye of ender.");
                 return TaskCatalogue.getItemTask(Items.ENDER_EYE, 1);
             }
@@ -201,20 +193,21 @@ public class LocateStrongholdTask extends Task {
             setDebugState("Waiting for thrown eye to appear...");
             return null;
         }
-        if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || mod.getCurrentDimension() == Dimension.NETHER)) {
+        if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || WorldHelper.getCurrentDimension() == Dimension.NETHER)) {
             if (_cachedEducatedPortal != null) {
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
-                mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) >= 10) {
-                if (mod.getInventoryTracker().getItemCount(Items.COBBLESTONE) < 128){
-                    return TaskCatalogue.getItemTask(Items.COBBLESTONE,160); // ensure we have enouhg cobble to get out of the hole we dig -- just in case
-                }
-                if (mod.getCurrentDimension() != Dimension.NETHER) {
+                mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
+                if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
+                    if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                        setDebugState("Getting flint and steel before going into nether");
+                        return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+                    }
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
                 }
-                if (mod.getInventoryTracker().getItemCount(Items.OBSIDIAN) < 10 && !_netherGoalReached) {
+                if (mod.getItemStorage().getItemCount(Items.OBSIDIAN) < 10 && !_netherGoalReached) {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
@@ -226,7 +219,7 @@ public class LocateStrongholdTask extends Task {
                     _netherGoalPos = new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 1, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
                     // Also ensures that we don't have to break blocks we are standing on to place the portal. Gets within 120 blocks of the stronghold.
                 }
-                if (_netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
+                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }
@@ -243,7 +236,7 @@ public class LocateStrongholdTask extends Task {
                         _netherGoalPos = _educatedPortalStart;
                     }
                     setDebugState("Building portal");
-                    return new ConstructNetherPortalObsidianTask();
+                    return _constructTask;
                 } else {
                     if (_portalBuildRange > 2) {
                     _portalBuildRange = 2;
@@ -257,7 +250,7 @@ public class LocateStrongholdTask extends Task {
         
         // Travel to stronghold + search around stronghold if necessary.
         SearchStrongholdTask tryNewSearch = new SearchStrongholdTask(_strongholdEstimatePos);
-        if ((_searchTask == null || !_searchTask.equals(tryNewSearch)) && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+        if ((_searchTask == null || !_searchTask.equals(tryNewSearch)) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             Debug.logMessage("New Stronghold search task");
             _searchTask = tryNewSearch;
         }
@@ -268,6 +261,7 @@ public class LocateStrongholdTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBlockTracker().stopTracking(Blocks.END_PORTAL_FRAME);
+        mod.getBehaviour().pop();
     }
 
     @Override
@@ -320,6 +314,7 @@ public class LocateStrongholdTask extends Task {
             return Math.atan2(getDelta().getX(), getDelta().getZ());
         }
 
+        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public boolean hasDelta() {
             return _end != null;
         }
@@ -335,29 +330,19 @@ public class LocateStrongholdTask extends Task {
         return start2.add(direction2.multiply(t2));
     }
 
-    private static class SearchStrongholdTask extends SearchChunksExploreTask {
+    private static class SearchStrongholdTask extends SearchChunkForBlockTask {
 
-        private GetToBlockTask _goTask;
+        private final GetToBlockTask _goTask;
 
         public SearchStrongholdTask(Vec3d travelGoal) {
+            super(Blocks.STONE_BRICKS);
             _goTask = new GetToBlockTask(new BlockPos(travelGoal));
-        }
-
-        @Override
-        protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
-            boolean found = mod.getChunkTracker().scanChunk(pos, (block) ->
-                    mod.getWorld().getBlockState(block).getBlock() == Blocks.STONE_BRICKS
-            );
-            if (found) {
-                Debug.logMessage("Scanned chunk FOUND!");
-            }
-            return found;
         }
 
         @Override
         protected boolean isEqual(Task other) {
             if (other instanceof SearchStrongholdTask task) {
-                return task._goTask.equals(_goTask);
+                return task._goTask.equals(_goTask) && super.isEqual(other);
             }
             return false;
         }

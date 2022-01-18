@@ -1,24 +1,29 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.chest.PickupFromChestTask;
+import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
+import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.ContainerTracker;
+import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
+import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The parent for all "collect an item" tasks.
@@ -30,7 +35,7 @@ public abstract class ResourceTask extends Task {
     protected final ItemTarget[] _itemTargets;
 
     private final PickupDroppedItemTask _pickupTask;
-    private BlockPos _currentChest;
+    private ContainerCache _currentContainer;
 
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
@@ -54,8 +59,7 @@ public abstract class ResourceTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        //Debug.logInternal("FOOF: " + Arrays.toString(Util.toArray(ItemTarget.class, _itemTargets)));
-        return mod.getInventoryTracker().targetsMet(_itemTargets);
+        return StorageHelper.itemTargetsMetInventory(mod, _itemTargets);
     }
 
     @Override
@@ -71,6 +75,14 @@ public abstract class ResourceTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        // If we have an item in an INACCESSIBLE inventory slot
+        for (ItemTarget target : _itemTargets) {
+            if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
+                setDebugState("Moving from SPECIAL inventory slot");
+                return new MoveInaccessibleItemToInventoryTask(target);
+            }
+        }
+
         if (!shouldAvoidPickingUp(mod)) {
             // Check if items are on the floor. If so, pick em up.
             if (mod.getEntityTracker().itemDropped(_itemTargets)) {
@@ -82,52 +94,52 @@ public abstract class ResourceTask extends Task {
                         return _pickupTask;
                     }
                     // Only get items that are CLOSE to us.
-                    ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
-                    if (!closest.isInRange(mod.getPlayer(), 10)) {
+                    Optional<ItemEntity> closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+                    if (closest.isPresent() && !closest.get().isInRange(mod.getPlayer(), 10)) {
                         return onResourceTick(mod);
                     }
                 }
 
                 double range = mod.getModSettings().getResourcePickupRange();
-                ItemEntity closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
-                if (range < 0 || closest.isInRange(mod.getPlayer(), range) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
+                Optional<ItemEntity> closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
+                if (range < 0 || (closest.isPresent() && closest.get().isInRange(mod.getPlayer(), range)) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
                     return _pickupTask;
                 }
             }
         }
 
         // Check for chests and grab resources from them.
-        if (_currentChest != null) {
-            ContainerTracker.ChestData data = mod.getContainerTracker().getChestMap().getCachedChestData(_currentChest);
-            if (data == null) {
-                _currentChest = null;
-            } else {
-                if (!data.hasItem(_itemTargets)) {
-                    _currentChest = null;
+        if (_currentContainer != null) {
+            Optional<ContainerCache> container = mod.getItemStorage().getContainerAtPosition(_currentContainer.getBlockPos());
+            if (container.isPresent()) {
+                if (Arrays.stream(_itemTargets).noneMatch(target -> container.get().hasItem(target.getMatches()))) {
+                    _currentContainer = null;
                 } else {
                     // We have a current chest, grab from it.
-                    return new PickupFromChestTask(_currentChest, _itemTargets);
+                    return new PickupFromContainerTask(_currentContainer.getBlockPos(), _itemTargets);
                 }
+            } else {
+                _currentContainer = null;
             }
         }
-        List<BlockPos> chestsWithItem = mod.getContainerTracker().getChestMap().getBlocksWithItem(_itemTargets);
-        if (!chestsWithItem.isEmpty()) {
-            BlockPos closest = chestsWithItem.stream().min(StlHelper.compareValues(block -> block.getSquaredDistance(mod.getPlayer().getPos(), false))).get();
-            if (closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentChest = closest;
-                return new PickupFromChestTask(_currentChest, _itemTargets);
+        List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
+        if (!containersWithItem.isEmpty()) {
+            ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), true))).get();
+            if (closest.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
+                _currentContainer = closest;
+                return new PickupFromContainerTask(_currentContainer.getBlockPos(), _itemTargets);
             }
         }
 
         // We may just mine if a block is found.
         if (_mineIfPresent != null) {
             ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
-            satisfiedReqs.removeIf(block -> !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.getMinimumRequirementForBlock(block)));
+            satisfiedReqs.removeIf(block -> !StorageHelper.miningRequirementMet(mod, MiningRequirement.getMinimumRequirementForBlock(block)));
             if (!satisfiedReqs.isEmpty()) {
                 if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
-                    BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
-                    if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
-                        _mineLastClosest = closest;
+                    Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+                    if (closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
+                        _mineLastClosest = closest.get();
                     }
                     if (_mineLastClosest != null) {
                         if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
@@ -177,7 +189,7 @@ public abstract class ResourceTask extends Task {
 
     protected boolean isInWrongDimension(AltoClef mod) {
         if (_forceDimension) {
-            return mod.getCurrentDimension() != _targetDimension;
+            return WorldHelper.getCurrentDimension() != _targetDimension;
         }
         return false;
     }

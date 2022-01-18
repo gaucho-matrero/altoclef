@@ -22,6 +22,9 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         mod.getBehaviour().allowSwimThroughLava(true);
+        // Encourage placing of all blocks!
+        mod.getBehaviour().setBlockPlacePenalty(0);
+        mod.getBehaviour().setBlockBreakAdditionalPenalty(20); // Normally 2
     }
 
     @Override

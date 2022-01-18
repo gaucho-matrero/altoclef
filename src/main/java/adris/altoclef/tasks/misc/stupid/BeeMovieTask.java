@@ -102,7 +102,7 @@ public class BeeMovieTask extends Task {
         }
 
         if (_sharpenTheAxe) {
-            if (!mod.getInventoryTracker().hasItem(Items.DIAMOND_AXE) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_SHOVEL) || !mod.getInventoryTracker().hasItem(Items.DIAMOND_PICKAXE)) {
+            if (!mod.getItemStorage().hasItem(Items.DIAMOND_AXE) || !mod.getItemStorage().hasItem(Items.DIAMOND_SHOVEL) || !mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) {
                 setDebugState("Sharpening the axe: Tools");
                 return new CataloguedResourceTask(new ItemTarget(Items.DIAMOND_AXE, 1), new ItemTarget("diamond_shovel", 1), new ItemTarget("diamond_pickaxe", 1));
             }
@@ -110,14 +110,14 @@ public class BeeMovieTask extends Task {
                 setDebugState("Sharpening the axe: Signs");
                 return _extraSignAcquireTask;
             }
-            if (!mod.getInventoryTracker().hasItem(ItemHelper.WOOD_SIGN)) {
+            if (!mod.getItemStorage().hasItem(ItemHelper.WOOD_SIGN)) {
                 // Get a bunch of signs in bulk
                 return _extraSignAcquireTask;
             }
         }
 
         // Get building blocks
-        int buildCount = mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE);
+        int buildCount = mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE);
         if (buildCount < STRUCTURE_MATERIALS_BUFFER && (buildCount == 0 || _structureMaterialsTask.isActive())) {
             setDebugState("Collecting structure blocks...");
             return _structureMaterialsTask;

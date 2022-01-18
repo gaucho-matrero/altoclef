@@ -2,6 +2,7 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -66,7 +67,7 @@ public class SimpleChunkTracker {
         if (!isChunkLoaded(chunk)) return false;
         //Debug.logInternal("SCANNED CHUNK " + chunk.toString());
         for (int xx = chunk.getStartX(); xx <= chunk.getEndX(); ++xx) {
-            for (int yy = 0; yy <= 255; ++yy) {
+            for (int yy = WorldHelper.WORLD_FLOOR_Y; yy <= WorldHelper.WORLD_CEILING_Y; ++yy) {
                 for (int zz = chunk.getStartZ(); zz <= chunk.getEndZ(); ++zz) {
                     if (onBlockStop.test(new BlockPos(xx, yy, zz))) return true;
                 }

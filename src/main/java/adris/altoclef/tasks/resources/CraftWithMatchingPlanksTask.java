@@ -23,7 +23,7 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
     @Override
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {
         // Include logs
-        return mod.getInventoryTracker().getItemCount(sameItem) + mod.getInventoryTracker().getItemCount(ItemHelper.planksToLog(sameItem)) * 4;
+        return mod.getItemStorage().getItemCount(sameItem) + mod.getItemStorage().getItemCount(ItemHelper.planksToLog(sameItem)) * 4;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
         for (Item plankToGet : toGet) {
             Item log = ItemHelper.planksToLog(plankToGet);
             // Convert logs to planks
-            if (mod.getInventoryTracker().getItemCount(log) >= 1) {
+            if (mod.getItemStorage().getItemCount(log) >= 1) {
                 ItemTarget empty = null;
                 return new CraftInInventoryTask(new ItemTarget(plankToGet, 1), CraftingRecipe.newShapedRecipe("planks", new ItemTarget[]{new ItemTarget(log, 1), empty, empty, empty}, 4), false, true);
             }

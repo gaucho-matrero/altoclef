@@ -35,6 +35,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
+    private boolean _stayInBed;
+
     private static final Block[] BEDS = CollectBedTask.BEDS;
 
     private final TimerGame _regionScanTimer = new TimerGame(9);
@@ -76,6 +78,11 @@ public class PlaceBedAndSetSpawnTask extends Task {
     });
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
+
+    public PlaceBedAndSetSpawnTask stayInBed() {
+        _stayInBed = true;
+        return this;
+    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -131,27 +138,23 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Place on the middle block, reliably placing the bed.
 
         // We cannot do this anywhere but the overworld.
-        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
-        if (mod.getPlayer().isSleeping()) {
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
             _progressChecker.reset();
             setDebugState("Sleeping...");
-            // Click "leave bed" immediately.
-
-            Screen screen = MinecraftClient.getInstance().currentScreen;
-            if (_inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
-                _wasSleeping = true;
-                //Debug.logMessage("Closing sleeping thing");
-                _spawnSet = true;
-                screen.onClose();
-            }
+            _wasSleeping = true;
+            //Debug.logMessage("Closing sleeping thing");
+            _spawnSet = true;
+            screen.onClose();
             return null;
         }
 
-        if (_sleepAttemptMade) {
+        if (_sleepAttemptMade && !_stayInBed) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
@@ -179,28 +182,30 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         }
                     }
                 }
-                BlockPos targetMove = toSleepIn;
                 if (!closeEnough) {
                     try {
                         Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
                         Direction side = face.rotateYClockwise();
-                        targetMove = toSleepIn.offset(side);
+                        BlockPos targetMove = toSleepIn.offset(side).offset(side); // Twice, juust to make sure...
+                        return new GetToBlockTask(targetMove);
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
                     }
                 } else {
                     _inBedTimer.reset();
                 }
+                if (closeEnough) {
+                    _inBedTimer.reset();
+                }
                 // Keep track of where our spawn point is
                 _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
-                //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
                 _progressChecker.reset();
-                return new InteractWithBlockTask(targetMove);
+                return new InteractWithBlockTask(_bedForSpawnPoint);
             }, BEDS);
         }
 
         // Get a bed if we don't have one.
-        if (!mod.getInventoryTracker().hasItem(ItemHelper.BED)) {
+        if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
             setDebugState("Getting a bed first");
             return TaskCatalogue.getItemTask("bed", 1);
         }
@@ -299,7 +304,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             Debug.logWarning("Can't place spawnpoint/sleep in a bed unless we're in the overworld!");
             return true;
         }

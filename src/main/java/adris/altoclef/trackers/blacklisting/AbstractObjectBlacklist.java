@@ -3,6 +3,7 @@ package adris.altoclef.trackers.blacklisting;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public abstract class AbstractObjectBlacklist<T> {
         }
         BlacklistEntry entry = _entries.get(item);
         double newDistance = getPos(item).squaredDistanceTo(mod.getPlayer().getPos());
-        MiningRequirement newTool = mod.getInventoryTracker().getCurrentMiningRequirement();
+        MiningRequirement newTool = StorageHelper.getCurrentMiningRequirement(mod);
         // For distance, add a slight threshold so it doesn't reset EVERY time we move a tiny bit closer.
         if (newTool.ordinal() > entry.bestTool.ordinal() || (newDistance < entry.bestDistanceSq - 1)) {
             if (newTool.ordinal() > entry.bestTool.ordinal()) entry.bestTool = newTool;

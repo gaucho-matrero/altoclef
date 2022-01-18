@@ -4,11 +4,15 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.FollowPlayerTask;
-import adris.altoclef.tasks.slot.ThrowSlotTask;
+import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
@@ -42,7 +46,7 @@ public class GiveItemToPlayerTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName).add(0, 0.2f, 0);
 
         if (_droppingItems) {
             // THROW ITEMS
@@ -51,23 +55,32 @@ public class GiveItemToPlayerTask extends Task {
             for (int i = 0; i < _throwTarget.size(); ++i) {
                 ItemTarget target = _throwTarget.get(i);
                 if (target.getTargetCount() > 0) {
-                    Optional<Slot> has = mod.getInventoryTracker().getInventorySlotsWithItem(target.getMatches()).stream().findFirst();
+                    Optional<Slot> has = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
-                        Debug.logMessage("THROWING: " + has.get());
-                        ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(has.get());
-                        // Update target
-                        target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
-                        _throwTarget.set(i, target);
-                        return new ThrowSlotTask(has.get());
+                        Slot currentlyPresent = has.get();
+                        if (Slot.isCursor(currentlyPresent)) {
+                            ItemStack stack = StorageHelper.getItemStackInSlot(currentlyPresent);
+                            // Update target
+                            target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
+                            _throwTarget.set(i, target);
+                            Debug.logMessage("THROWING: " + has.get());
+                            return new ThrowCursorTask();
+                        } else {
+                            return new ClickSlotTask(currentlyPresent);
+                        }
                     }
                 }
             }
-            mod.log("Finished giving items.");
-            stop(mod);
-            return null;
+
+            if (!targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
+                mod.log("Finished giving items.");
+                stop(mod);
+                return null;
+            }
+            return new RunAwayFromPositionTask(6, WorldHelper.toBlockPos(targetPos));
         }
 
-        if (!mod.getInventoryTracker().targetsMet(_targets)) {
+        if (!StorageHelper.itemTargetsMet(mod, _targets)) {
             setDebugState("Collecting resources...");
             return _resourceTask;
         }

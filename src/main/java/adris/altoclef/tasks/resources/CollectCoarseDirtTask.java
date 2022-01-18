@@ -13,6 +13,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Optional;
+
 public class CollectCoarseDirtTask extends ResourceTask {
 
     private static final float CLOSE_ENOUGH_COARSE_DIRT = 128;
@@ -35,13 +37,13 @@ public class CollectCoarseDirtTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        double c = Math.ceil(Double.valueOf(_count-mod.getInventoryTracker().getItemCount(Items.COARSE_DIRT)) / 4) * 2; // Minimum number of dirt / gravel needed to complete the recipe, accounting for coarse dirt already collected.
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.COARSE_DIRT);
+        double c = Math.ceil((double) (_count - mod.getItemStorage().getItemCount(Items.COARSE_DIRT)) / 4) * 2; // Minimum number of dirt / gravel needed to complete the recipe, accounting for coarse dirt already collected.
+        Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.COARSE_DIRT);
 
         // If not enough dirt and gravel for the recipe, and coarse dirt within a certain distance, collect coarse dirt
-        if (!(mod.getInventoryTracker().getItemCount(Items.DIRT) >= c  && 
-            mod.getInventoryTracker().getItemCount(Items.GRAVEL) >= c) && 
-            closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_COARSE_DIRT)) { 
+        if (!(mod.getItemStorage().getItemCount(Items.DIRT) >= c  && 
+            mod.getItemStorage().getItemCount(Items.GRAVEL) >= c) && 
+            closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_COARSE_DIRT)) {
             return new MineAndCollectTask(new ItemTarget(Items.COARSE_DIRT), new Block[]{Blocks.COARSE_DIRT}, MiningRequirement.HAND).forceDimension(Dimension.OVERWORLD);
         }
         else {

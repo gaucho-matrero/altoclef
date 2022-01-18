@@ -99,7 +99,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         }
 
         // If we already have some of our target, we need less "same" materials.
-        int currentTargetCount = mod.getInventoryTracker().getItemCount(_target);
+        int currentTargetCount = mod.getItemStorage().getItemCount(_target);
         int currentTargetsRequired = _target.getTargetCount() - currentTargetCount;
 
         if (canCraftTotal >= currentTargetsRequired) {
@@ -109,7 +109,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             // We may need to convert our raw materials into our "matching" materials.
             int trueCanCraftTotal = 0;
             for (Item sameCheck : _sameResourceTarget.getMatches()) {
-                int trueCount = mod.getInventoryTracker().getItemCount(sameCheck);
+                int trueCount = mod.getItemStorage().getItemCount(sameCheck);
                 int trueCanCraft = (trueCount / _sameResourcePerRecipe) * _recipe.outputCount();
                 trueCanCraftTotal += trueCanCraft;
             }
@@ -120,7 +120,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
-            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe, true, true) : new CraftInInventoryTask(_target, samedRecipe, true, true);
+            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe) : new CraftInInventoryTask(_target, samedRecipe);
         }
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);
@@ -139,7 +139,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
     // Virtual
     protected int getExpectedTotalCountOfSameItem(AltoClef mod, Item sameItem) {
-        return mod.getInventoryTracker().getItemCount(sameItem);
+        return mod.getItemStorage().getItemCount(sameItem);
     }
 
     // Virtual

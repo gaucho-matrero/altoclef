@@ -3,6 +3,8 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
+import adris.altoclef.tasks.movement.IdleTask;
+import adris.altoclef.util.helpers.ConfigHelper;
 
 public class ReloadSettingsCommand extends Command {
     public ReloadSettingsCommand() {
@@ -11,12 +13,12 @@ public class ReloadSettingsCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
-        mod.getButler().reloadLists();
-        if (mod.reloadModSettings() != null) {
-            mod.log("Reload successful!");
-        } else {
-            mod.logWarning("Failed to reload some settings. Check Minecraft log for Exception.");
-        }
+        ConfigHelper.reloadAllConfigs();
+        mod.log("Reload successful!");
         finish();
+        // If we should idle and our settings change to make us idle...
+        if (!mod.getUserTaskChain().isActive() && mod.getModSettings().shouldIdleWhenNotActive()) {
+            mod.runUserTask(new IdleTask());
+        }
     }
 }

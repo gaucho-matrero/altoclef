@@ -7,8 +7,12 @@ import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.gui.screen.ingame.SmithingScreen;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
 
+import java.util.Iterator;
 import java.util.Objects;
 
 // Very helpful links
@@ -40,31 +44,30 @@ public abstract class Slot {
         }
     }
 
-    public static Slot getFromInventory(int inventorySlot) {
-        // -1 means cursor.
-        if (inventorySlot == CURSOR_SLOT_INDEX) {
-            return new CursorInventorySlot();
-        }
+    private static Slot getFromCurrentScreenAbstract(int slot, boolean inventory) {
         switch (getCurrentType()) {
             case PLAYER:
-                return new PlayerInventorySlot(inventorySlot);
+                return new PlayerSlot(slot, inventory);
             case CRAFTING_TABLE:
-                return new CraftingTableInventorySlot(inventorySlot);
+                return new CraftingTableSlot(slot, inventory);
             case FURNACE_OR_SMITH:
-                return new FurnaceInventorySlot(inventorySlot);
+                return new FurnaceSlot(slot, inventory);
             case CHEST_LARGE:
-                return new ChestInventorySlot(inventorySlot, true);
+                return new ChestSlot(slot, true, inventory);
             case CHEST_SMALL:
-                return new ChestInventorySlot(inventorySlot, false);
+                return new ChestSlot(slot, false, inventory);
+            default:
+                Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
+                return null;
         }
-        Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
-        return null;
     }
 
-    //@SuppressWarnings("CopyConstructorMissesField")
-    /*public Slot(Slot other) {
-        this(other._inventorySlot, true);
-    }*/
+    public static Slot getFromCurrentScreen(int windowSlot) {
+        return getFromCurrentScreenAbstract(windowSlot, false);
+    }
+    public static Slot getFromCurrentScreenInventory(int inventorySlot) {
+        return getFromCurrentScreenAbstract(inventorySlot, true);
+    }
 
     private static ContainerType getCurrentType() {
         Screen screen = MinecraftClient.getInstance().currentScreen;
@@ -83,7 +86,25 @@ public abstract class Slot {
     }
 
     public static boolean isCursor(Slot slot) {
-        return slot instanceof CursorInventorySlot;
+        return slot instanceof CursorSlot;
+    }
+
+    public static Iterable<Slot> getCurrentScreenSlots() {
+        return () -> new Iterator<>() {
+            final ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            final ScreenHandler handler = player != null? player.currentScreenHandler : null;
+            int i = 0;
+            final int MAX = handler != null? handler.slots.size() : 0;
+            @Override
+            public boolean hasNext() {
+                return i < MAX;
+            }
+
+            @Override
+            public Slot next() {
+                return Slot.getFromCurrentScreen(i++);
+            }
+        };
     }
 
     public int getInventorySlot() {
@@ -129,6 +150,20 @@ public abstract class Slot {
         return Objects.hash(getInventorySlot(), getWindowSlot());
     }
 
+    /**
+     * @return Whether this slot exists within the player's inventory or in a container that's disconnected from the player's inventory.
+     */
+    public boolean isSlotInPlayerInventory() {
+        ScreenHandler handler = MinecraftClient.getInstance().player != null? MinecraftClient.getInstance().player.currentScreenHandler : null;
+        int windowSlot = getWindowSlot();
+        if (handler instanceof PlayerScreenHandler) {
+            // Everything visible is player inventory.
+            return true;
+        }
+        int slotCount = handler != null? handler.slots.size() : 0;
+        return windowSlot >= (slotCount - (4 * 9));
+    }
+
     enum ContainerType {
         PLAYER,
         CRAFTING_TABLE,
@@ -136,4 +171,7 @@ public abstract class Slot {
         CHEST_LARGE,
         FURNACE_OR_SMITH
     }
+
+    @SuppressWarnings("StaticInitializerReferencesSubClass")
+    public static Slot UNDEFINED = new PlayerSlot(UNDEFINED_SLOT_INDEX);
 }

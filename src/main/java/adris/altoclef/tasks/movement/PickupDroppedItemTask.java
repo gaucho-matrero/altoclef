@@ -10,6 +10,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
@@ -79,12 +81,12 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         }
 
         // If we're getting a pickaxe for THIS resource...
-        if (isIsGettingPickaxeFirst(mod) && _collectingPickaxeForThisResource && !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+        if (isIsGettingPickaxeFirst(mod) && _collectingPickaxeForThisResource && !StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
             _progressChecker.reset();
             setDebugState("Collecting pickaxe first");
             return getPickaxeFirstTask;
         } else {
-            if (mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+            if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
                 isGettingPickaxeFirstFlag = false;
             }
             _collectingPickaxeForThisResource = false;
@@ -94,7 +96,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             _progressChecker.reset();
             if (_currentDrop != null && !_currentDrop.getStack().isEmpty()) {
                 // We might want to get a pickaxe first.
-                if (!isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst() && !mod.getInventoryTracker().miningRequirementMet(MiningRequirement.STONE)) {
+                if (!isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst() && !StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
                     Debug.logMessage("Failed to pick up drop, will try to collect a stone pickaxe first and try again!");
                     _collectingPickaxeForThisResource = true;
                     isGettingPickaxeFirstFlag = true;
@@ -143,8 +145,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     }
 
     @Override
-    protected ItemEntity getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return null;
+    protected Optional<ItemEntity> getClosestTo(AltoClef mod, Vec3d pos) {
+        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return Optional.empty();
         return mod.getEntityTracker().getClosestItemDrop(
                 pos,
                 // Don't go for falling item drops, they slow down baritone.
@@ -172,7 +174,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         boolean touching = _mod.getEntityTracker().isCollidingWithPlayer(itemEntity);
         if (touching) {
             if (_freeInventoryIfFull) {
-                if (_mod.getInventoryTracker().isInventoryFull()) {
+                if (_mod.getItemStorage().getSlotThatCanFitInOpenContainer(itemEntity.getStack(), false).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
             }

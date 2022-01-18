@@ -7,6 +7,7 @@ import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.item.Items;
 
@@ -37,7 +38,7 @@ public class CollectEggsTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Wrong dimension check.
-        if (_waitNearChickens.wasWandering() && mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (_waitNearChickens.wasWandering() && WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to right dimension.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }

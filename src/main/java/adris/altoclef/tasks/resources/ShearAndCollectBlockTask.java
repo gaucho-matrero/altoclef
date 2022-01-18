@@ -41,7 +41,7 @@ public class ShearAndCollectBlockTask extends MineAndCollectTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
+        if (!mod.getItemStorage().hasItem(Items.SHEARS)) {
             return TaskCatalogue.getItemTask(Items.SHEARS, 1);
         }
         return super.onResourceTick(mod);

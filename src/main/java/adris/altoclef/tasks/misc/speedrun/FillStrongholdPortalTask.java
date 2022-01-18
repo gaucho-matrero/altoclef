@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.misc.speedrun;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -9,11 +10,15 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+
+import java.util.Optional;
 
 public class FillStrongholdPortalTask extends Task {
 
@@ -48,10 +53,10 @@ public class FillStrongholdPortalTask extends Task {
         }
 
         if (_destroySilverfishSpawner) {
-            BlockPos silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> (WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
-            if (silverfishSpawner != null) {
+            Optional<BlockPos> silverfishSpawner = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), test -> (WorldHelper.getSpawnerEntity(mod, test) instanceof SilverfishEntity), Blocks.SPAWNER);
+            if (silverfishSpawner.isPresent()) {
                 setDebugState("Destroy silverfish spawner");
-                return new DestroyBlockTask(silverfishSpawner);
+                return new DestroyBlockTask(silverfishSpawner.get());
             }
         }
 
@@ -62,7 +67,7 @@ public class FillStrongholdPortalTask extends Task {
         }
         return new DoToClosestBlockTask(
                 pos -> new InteractWithBlockTask(new ItemTarget(Items.ENDER_EYE, 1), Direction.UP, pos, true),
-                test -> !BeatMinecraftTask.isEndPortalFrameFilled(mod, test),
+                test -> !isEndPortalFrameFilled(mod, test),
                 Blocks.END_PORTAL_FRAME
         );
     }
@@ -78,8 +83,8 @@ public class FillStrongholdPortalTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
-        return closest != null && mod.getChunkTracker().isChunkLoaded(closest);
+        Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.END_PORTAL);
+        return closest.isPresent() && mod.getChunkTracker().isChunkLoaded(closest.get());
     }
 
     @Override
@@ -93,5 +98,14 @@ public class FillStrongholdPortalTask extends Task {
     @Override
     protected String toDebugString() {
         return "Fill Stronghold Portal";
+    }
+
+    private static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos)) return false;
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+        }
+        return state.get(EndPortalFrameBlock.EYE);
     }
 }

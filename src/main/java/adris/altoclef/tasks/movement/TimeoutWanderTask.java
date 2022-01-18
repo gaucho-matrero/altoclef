@@ -2,7 +2,6 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -14,7 +13,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -227,6 +225,6 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     }
 
     private Task getFenceUnstuckTask(AltoClef mod, BlockPos fencePos) {
-        return new DestroyBlockTask(fencePos);
+        return new SafeRandomShimmyTask();
     }
 }

@@ -80,16 +80,16 @@ public class StaticMixinHookups {
 
     public static void onScreenOpenBegin(Screen screen) {
         if (screen == null) {
-            _mod.getContainerTracker().onScreenClose();
+            _mod.getContainerSubTracker().onScreenClose();
         }
     }
 
     public static void onScreenOpenEnd(Screen screen) {
-        _mod.getContainerTracker().onScreenOpenFirstTick(screen);
+        _mod.getContainerSubTracker().onScreenOpenFirstTick(screen);
     }
 
     public static void onBlockInteract(BlockHitResult hitResult, BlockState blockState) {
-        _mod.getContainerTracker().onBlockInteract(hitResult.getBlockPos(), blockState.getBlock());
+        _mod.getContainerSubTracker().onBlockInteract(hitResult.getBlockPos(), blockState.getBlock());
     }
 
     public static void onChunkLoad(WorldChunk chunk) {

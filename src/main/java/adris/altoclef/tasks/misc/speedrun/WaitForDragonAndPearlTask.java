@@ -7,9 +7,14 @@ import adris.altoclef.tasks.movement.GetToYTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.resources.GetBuildingMaterialsTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Optional;
 
 public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
@@ -20,12 +25,17 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     private static final int CLOSE_ENOUGH_DISTANCE = 15;
 
+    private static final double DRAGON_FIREBALL_TOO_CLOSE_RANGE = 10;
+
     private Task _heightPillarTask;
     private Task _throwPearlTask;
     private final Task _buildingMaterialsTask = new GetBuildingMaterialsTask(HEIGHT + 10);
 
     private BlockPos _targetToPearl;
     private boolean _dragonIsPerching;
+
+    // To avoid dragons breath
+    private Task _pillarUpFurther;
 
     @Override
     public void setExitPortalTop(BlockPos top) {
@@ -52,12 +62,20 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
             return _throwPearlTask;
         }
 
-        if (!mod.getInventoryTracker().hasItem(Items.ENDER_PEARL)) {
+        if (_pillarUpFurther != null && _pillarUpFurther.isActive() && !_pillarUpFurther.isFinished(mod)) {
+            setDebugState("PILLAR UP FURTHER to avoid dragon's breath");
+            return _pillarUpFurther;
+        }
+
+        if (!mod.getItemStorage().hasItem(Items.ENDER_PEARL)) {
             setDebugState("First get ender pearls.");
             return TaskCatalogue.getItemTask(Items.ENDER_PEARL, 1);
         }
 
-        if (mod.getInventoryTracker().getBuildingMaterialCount() < 5 || (_buildingMaterialsTask != null && _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod))) {
+        int minHeight = _targetToPearl.getY() + HEIGHT - 3;
+
+        int deltaY = minHeight - mod.getPlayer().getBlockPos().getY();
+        if (StorageHelper.getBuildingMaterialCount(mod) < Math.min(deltaY - 10, HEIGHT - 5) || (_buildingMaterialsTask != null && _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod))) {
             setDebugState("Collecting building materials...");
             return _buildingMaterialsTask;
         }
@@ -68,7 +86,6 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
             return _throwPearlTask;
         }
 
-        int minHeight = _targetToPearl.getY() + HEIGHT - 3;
         if (mod.getPlayer().getBlockPos().getY() < minHeight) {
             if (_heightPillarTask != null && _heightPillarTask.isActive() && !_heightPillarTask.isFinished(mod)) {
                 setDebugState("Pillaring up!");
@@ -76,6 +93,15 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
             }
         } else {
             setDebugState("We're high enough.");
+
+            // If a fireball is too close, run UP
+            Optional<Entity> dragonFireball = mod.getEntityTracker().getClosestEntity(DragonFireballEntity.class);
+            if (dragonFireball.isPresent() && dragonFireball.get().isInRange(mod.getPlayer(), DRAGON_FIREBALL_TOO_CLOSE_RANGE)) {
+                _pillarUpFurther = new GetToYTask(mod.getPlayer().getBlockY() + 5);
+                Debug.logMessage("HOLDUP");
+                return _pillarUpFurther;
+            }
+
             return null;
         }
 
@@ -101,8 +127,8 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return !_dragonIsPerching
-                && ((_throwPearlTask == null || !_throwPearlTask.isActive() || _throwPearlTask.isFinished(mod))
+        return _dragonIsPerching
+                && ((_throwPearlTask == null || (_throwPearlTask.isActive() && _throwPearlTask.isFinished(mod)))
                 || WorldHelper.inRangeXZ(mod.getPlayer(), _targetToPearl, CLOSE_ENOUGH_DISTANCE));
     }
 

@@ -5,12 +5,8 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.helpers.InputHelper;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.Stopwatch;
-import org.lwjgl.glfw.GLFW;
-
-import java.util.function.Consumer;
 
 // A task chain that runs a user defined task at the same priority.
 // This basically replaces our old Task Runner.
@@ -43,7 +39,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (!result.equals("")) {
             result += "and ";
         }
-        result += String.format("%.2f", (seconds % 60));
+        result += String.format("%.3f", (seconds % 60));
         return result;
     }
 
@@ -58,6 +54,9 @@ public class UserTaskChain extends SingleTaskChain {
 
     public void cancel(AltoClef mod) {
         if (_mainTask != null && _mainTask.isActive()) {
+            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
+                return;
+            }
             stop(mod);
             onTaskFinish(mod);
         }
@@ -65,15 +64,6 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
-        // Stop shortcut
-        if (_mainTask != null && _mainTask.isActive() && InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
-            // Ignore if we're idling as a background task.
-            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
-                return 50;
-            }
-            Debug.logMessage("(stop shortcut sent)");
-            cancel(mod);
-        }
         return 50;
     }
 

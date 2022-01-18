@@ -2,25 +2,23 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
-import adris.altoclef.chains.FoodChain;
-import adris.altoclef.chains.MobDefenseChain;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.mixins.ClientConnectionAccessor;
-import adris.altoclef.tasks.movement.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
+import adris.altoclef.trackers.storage.ContainerSubTracker;
+import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
 import adris.altoclef.util.control.BotBehaviour;
 import adris.altoclef.util.control.PlayerExtraController;
 import adris.altoclef.util.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -33,10 +31,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.function.Consumer;
@@ -62,10 +61,10 @@ public class AltoClef implements ModInitializer {
     private MobDefenseChain _mobDefenseChain;
     private MLGBucketFallChain _mlgBucketChain;
     // Trackers
-    private InventoryTracker _inventoryTracker;
+    private ItemStorageTracker _storageTracker;
+    private ContainerSubTracker _containerSubTracker;
     private EntityTracker _entityTracker;
     private BlockTracker _blockTracker;
-    private ContainerTracker _containerTracker;
     private SimpleChunkTracker _chunkTracker;
     private MiscBlockTracker _miscBlockTracker;
     // Renderers
@@ -103,10 +102,15 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        // Load settings
-        _settings = adris.altoclef.Settings.load();
-
         initializeBaritoneSettings();
+
+        // Load settings
+        adris.altoclef.Settings.load(newSettings -> {
+            _settings = newSettings;
+            // Baritone's `acceptableThrowawayItems` should match our own.
+            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(Arrays.asList(_settings.getThrowawayItems(this, true)));
+        });
+
 
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
@@ -125,10 +129,9 @@ public class AltoClef implements ModInitializer {
         _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
-        _inventoryTracker = new InventoryTracker(_trackerManager);
+        _storageTracker = new ItemStorageTracker(this, _trackerManager, container -> _containerSubTracker = container);
         _entityTracker = new EntityTracker(_trackerManager);
         _blockTracker = new BlockTracker(this, _trackerManager);
-        _containerTracker = new ContainerTracker(this, _trackerManager);
         _chunkTracker = new SimpleChunkTracker(this);
         _miscBlockTracker = new MiscBlockTracker(this);
 
@@ -160,8 +163,14 @@ public class AltoClef implements ModInitializer {
 
         _inputControls.onTickPre();
 
+        // Cancel shortcut
+        if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
+            _userTaskChain.cancel(this);
+        }
+
         // TODO: should this go here?
-        _containerTracker.onServerTick();
+        _storageTracker.setDirty();
+        _containerSubTracker.onServerTick();
         _miscBlockTracker.tick();
 
         _trackerManager.tick();
@@ -211,9 +220,6 @@ public class AltoClef implements ModInitializer {
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
 
-        // By default don't use shears.
-        getExtraBaritoneSettings().allowShears(false);
-
         // Give baritone more time to calculate paths. Sometimes they can be really far away.
         // Was: 2000L
         getClientBaritoneSettings().failureTimeoutMS.value = 6000L;
@@ -251,8 +257,8 @@ public class AltoClef implements ModInitializer {
     }
 
     // Trackers access
-    public InventoryTracker getInventoryTracker() {
-        return _inventoryTracker;
+    public ItemStorageTracker getItemStorage() {
+        return _storageTracker;
     }
 
     public EntityTracker getEntityTracker() {
@@ -263,8 +269,8 @@ public class AltoClef implements ModInitializer {
         return _blockTracker;
     }
 
-    public ContainerTracker getContainerTracker() {
-        return _containerTracker;
+    ContainerSubTracker getContainerSubTracker() {
+        return _containerSubTracker;
     }
 
     public SimpleChunkTracker getChunkTracker() {
@@ -288,26 +294,13 @@ public class AltoClef implements ModInitializer {
     }
 
     public AltoClefSettings getExtraBaritoneSettings() {
-        return Baritone.getAltoClefSettings();
+        return AltoClefSettings.getInstance();
     }
 
     public adris.altoclef.Settings getModSettings() {
         return _settings;
     }
 
-    public adris.altoclef.Settings reloadModSettings() {
-        adris.altoclef.Settings result = adris.altoclef.Settings.load();
-        //noinspection ConstantConditions
-        if (result != null) {
-            _settings = result;
-        }
-        // If we weren't running anything and are now "idling", idle.
-        if (getModSettings().shouldIdleWhenNotActive()) {
-            runUserTask(new IdleTask());
-        }
-
-        return result;
-    }
 
     public Butler getButler() {
         return _butler;
@@ -367,16 +360,6 @@ public class AltoClef implements ModInitializer {
 
     public MLGBucketFallChain getMLGBucketChain() {
         return _mlgBucketChain;
-    }
-
-    public Dimension getCurrentDimension() {
-        if (!inGame()) return Dimension.OVERWORLD;
-        if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
-        return Dimension.END;
-    }
-    public Vec3d getOverworldPosition() {
-        return WorldHelper.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {

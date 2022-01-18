@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
@@ -51,15 +52,20 @@ public class KillEnderDragonWithBedsTask extends Task {
                 // Perform "Default Wander" mode and avoid dragon breath.
          */
         if (_endPortalTop == null) {
-            _endPortalTop = locateExitPortalTop(mod); // Don't try to execute the set Exit Portal Top task until this is loaded.
-            return onTick(mod);
-        }else {
-            ((IDragonWaiter) _whenNotPerchingTask).setExitPortalTop(_endPortalTop);
+            _endPortalTop = locateExitPortalTop(mod);
+            if (_endPortalTop != null) {
+                ((IDragonWaiter) _whenNotPerchingTask).setExitPortalTop(_endPortalTop);
+            }
+        }
+
+        if (_endPortalTop == null) {
+            setDebugState("Searching for end portal top.");
+            return new GetToXZTask(0, 0);
         }
 
         if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
-            return null;
+            return new GetToXZTask(0, 0);
         }
         EnderDragonEntity dragon = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class).get(0);
 
@@ -89,11 +95,11 @@ public class KillEnderDragonWithBedsTask extends Task {
                 setDebugState("Going to position for bed cycle...");
                 return _positionTask;
             }
-            if (playerPosition.getX() != targetStandPosition.getX()
-                    || playerPosition.getZ() != targetStandPosition.getZ()
+            if (!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 1)
                     || playerPosition.getY() < targetStandPosition.getY()
             ) {
                 _positionTask = new GetToBlockTask(targetStandPosition);
+                setDebugState("Moving to target stand position");
                 return _positionTask;
             }
 

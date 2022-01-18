@@ -2,14 +2,13 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.Items;
@@ -39,7 +38,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
         // Won't work in the nether, duh
-        if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
+        if (WorldHelper.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
 
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
@@ -48,7 +47,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             return 100;
         } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
-            if (mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (mod.getItemStorage().hasItem(Items.BUCKET) && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
 
                 if (_lastMLG != null) {
                     BlockPos placed = _lastMLG.getWaterPlacedPos();
@@ -62,7 +61,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
-                                if (mod.getSlotHandler().forceEquipItem(new ItemTarget(Items.BUCKET, 1))) {
+                                if (mod.getSlotHandler().forceEquipItem(Items.BUCKET)) {
                                     if (_pickupRepeatTimer.elapsed()) {
                                         // Pick up
                                         _pickupRepeatTimer.reset();
@@ -106,7 +105,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
         }
-        if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+        if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
             // No bucket, no point.
             return false;
         }

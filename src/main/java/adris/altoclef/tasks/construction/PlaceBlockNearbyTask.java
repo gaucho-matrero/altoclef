@@ -9,9 +9,9 @@ import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementHelper;
@@ -110,7 +110,7 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         // Try to place at a particular spot.
-        if (_tryPlace == null || mod.getBlockTracker().unreachable(_tryPlace)) {
+        if (_tryPlace == null || !WorldHelper.canReach(mod, _tryPlace)) {
             _tryPlace = locateClosePlacePos(mod);
         }
         if (_tryPlace != null) {
@@ -170,7 +170,7 @@ public class PlaceBlockNearbyTask extends Task {
                     return null;
                 }
                 //Debug.logMessage("TEMP: B (actual): " + placePos);
-                if (!Baritone.getAltoClefSettings().shouldAvoidPlacingAt(placePos.getX(), placePos.getY(), placePos.getZ())) {
+                if (WorldHelper.canPlace(mod, placePos)) {
                     return placePos;
                 }
             }
@@ -179,7 +179,7 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     private boolean blockEquipped(AltoClef mod) {
-        return mod.getInventoryTracker().isEquipped(ItemHelper.blocksToItems(_toPlace));
+        return StorageHelper.isEquipped(mod, ItemHelper.blocksToItems(_toPlace));
     }
 
     private boolean place(AltoClef mod, BlockPos targetPlace) {
@@ -236,7 +236,7 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             // We can't place here.
-            if (mod.getBlockTracker().unreachable(blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
+            if (!WorldHelper.canReach(mod, blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
                 continue;
             }
             boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());

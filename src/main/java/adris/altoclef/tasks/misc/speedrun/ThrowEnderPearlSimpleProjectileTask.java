@@ -18,6 +18,8 @@ public class ThrowEnderPearlSimpleProjectileTask extends Task {
     private final TimerGame _thrownTimer = new TimerGame(5);
     private final BlockPos _target;
 
+    private boolean _thrown = false;
+
     public ThrowEnderPearlSimpleProjectileTask(BlockPos target) {
         _target = target;
     }
@@ -25,6 +27,7 @@ public class ThrowEnderPearlSimpleProjectileTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _thrownTimer.forceElapse();
+        _thrown = false;
     }
 
     @Override
@@ -39,6 +42,7 @@ public class ThrowEnderPearlSimpleProjectileTask extends Task {
                 LookHelper.lookAt(mod, lookTarget);
                 if (LookHelper.isLookingAt(mod, lookTarget)) {
                     mod.getInputControls().tryPress(Input.CLICK_RIGHT);
+                    _thrown = true;
                     _thrownTimer.reset();
                 }
             }
@@ -49,6 +53,11 @@ public class ThrowEnderPearlSimpleProjectileTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
 
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return _thrown && _thrownTimer.elapsed() || (!_thrown && !mod.getItemStorage().hasItem(Items.ENDER_PEARL));
     }
 
     @Override

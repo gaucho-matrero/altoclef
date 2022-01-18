@@ -13,6 +13,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
+import java.util.Optional;
+
 /**
  * Interacts with an entity while maintaining distance.
  *
@@ -57,15 +59,18 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return _wanderTask;
         }
 
-        Entity entity = getEntityTarget(mod);
+        Optional<Entity> checkEntity = getEntityTarget(mod);
 
-        mod.getMobDefenseChain().setTargetEntity(entity);
 
         // Oof
-        if (entity == null) {
+        if (checkEntity.isEmpty()) {
+            mod.getMobDefenseChain().resetTargetEntity();
             mod.getMobDefenseChain().resetForceField();
             return _wanderTask;
+        } else {
+            mod.getMobDefenseChain().setTargetEntity(checkEntity.get());
         }
+        Entity entity = checkEntity.get();
 
         double playerReach = mod.getModSettings().getEntityReachRange();
 
@@ -123,6 +128,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         return false;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean doubleCheck(double a, double b) {
         if (Double.isInfinite(a) == Double.isInfinite(b)) return true;
         return Math.abs(a - b) < 0.1;
@@ -138,6 +144,6 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         mod.getMobDefenseChain().resetForceField();
     }
 
-    protected abstract Entity getEntityTarget(AltoClef mod);
+    protected abstract Optional<Entity> getEntityTarget(AltoClef mod);
 
 }
