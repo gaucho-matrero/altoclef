@@ -3,6 +3,7 @@ adris.altoclef.butler
 adris.altoclef.chains
 adris.altoclef.commands
 adris.altoclef.commandsystem
+adris.altoclef.control
 adris.altoclef.mixins
 adris.altoclef.tasks
 adris.altoclef.tasks.construction
@@ -11,13 +12,13 @@ adris.altoclef.tasks.container
 adris.altoclef.tasks.entity
 adris.altoclef.tasks.examples
 adris.altoclef.tasks.misc
-adris.altoclef.tasks.misc.speedrun
-adris.altoclef.tasks.misc.stupid
 adris.altoclef.tasks.movement
 adris.altoclef.tasks.resources
 adris.altoclef.tasks.resources.wood
 adris.altoclef.tasks.slot
+adris.altoclef.tasks.speedrun
 adris.altoclef.tasks.squashed
+adris.altoclef.tasks.stupid
 adris.altoclef.tasksystem
 adris.altoclef.trackers
 adris.altoclef.trackers.blacklisting
@@ -25,7 +26,6 @@ adris.altoclef.trackers.storage
 adris.altoclef.ui
 adris.altoclef.util
 adris.altoclef.util.baritone
-adris.altoclef.util.control
 adris.altoclef.util.csharpisbetter
 adris.altoclef.util.helpers
 adris.altoclef.util.progresscheck

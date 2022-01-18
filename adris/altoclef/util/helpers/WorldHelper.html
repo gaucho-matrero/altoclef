@@ -73,6 +73,7 @@ loadScripts(document, 'script');</script>
 <section class="description">
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">WorldHelper</span></div>
+<div class="block">Super useful helper functions for getting information about the world.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -140,7 +141,9 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.BlockPos</code></div>
 <div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#getBedHead(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">getBedHead</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;posWithBed)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">
+<div class="block">Get the "head" of a block with a bed, if the block is a bed.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Iterable.html" title="class or interface in java.lang" class="external-link">Iterable</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#getBlocksTouchingPlayer(adris.altoclef.AltoClef)">getBlocksTouchingPlayer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
@@ -172,81 +175,86 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#getSpawnerEntity(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">getSpawnerEntity</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.entity.Entity,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#getTicks()">getTicks</a></span>()</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">
+<div class="block">Get the number of in-game ticks the game/world has been active for.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.entity.Entity,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
  net.minecraft.entity.Entity&nbsp;to,
  double&nbsp;range)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.util.math.BlockPos,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.util.math.BlockPos,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
  net.minecraft.util.math.BlockPos&nbsp;to,
  double&nbsp;range)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.util.math.Vec3d,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
+ net.minecraft.util.math.Vec3d&nbsp;to,
+ double&nbsp;range)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.entity.Entity,net.minecraft.util.math.Vec3d,double)">inRangeXZ</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.util.math.Vec3d,net.minecraft.util.math.Vec3d,double)">inRangeXZ</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;from,
  net.minecraft.util.math.Vec3d&nbsp;to,
  double&nbsp;range)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#inRangeXZ(net.minecraft.util.math.Vec3d,net.minecraft.util.math.Vec3d,double)">inRangeXZ</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;from,
- net.minecraft.util.math.Vec3d&nbsp;to,
- double&nbsp;range)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isAir(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isAir</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isAir(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isAir</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isAir(net.minecraft.block.Block)">isAir</a></span>&#8203;(net.minecraft.block.Block&nbsp;block)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChest(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isChest</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isAir(net.minecraft.block.Block)">isAir</a></span>&#8203;(net.minecraft.block.Block&nbsp;block)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChest(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isChest</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;block)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChest(net.minecraft.block.Block)">isChest</a></span>&#8203;(net.minecraft.block.Block&nbsp;b)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChestBig(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isChestBig</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChest(net.minecraft.block.Block)">isChest</a></span>&#8203;(net.minecraft.block.Block&nbsp;b)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isChestBig(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isChestBig</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;posWithChest)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isFallingBlock(net.minecraft.util.math.BlockPos)">isFallingBlock</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isInsidePlayer(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isInsidePlayer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isFallingBlock(net.minecraft.util.math.BlockPos)">isFallingBlock</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isInteractableBlock(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isInteractableBlock</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isInsidePlayer(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isInsidePlayer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isSolid(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isSolid</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isInteractableBlock(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isInteractableBlock</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isSourceBlock(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos,boolean)">isSourceBlock</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isSolid(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos)">isSolid</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#isSourceBlock(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos,boolean)">isSourceBlock</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;pos,
  boolean&nbsp;onlyAcceptStill)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Iterable.html" title="class or interface in java.lang" class="external-link">Iterable</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#scanRegion(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos,net.minecraft.util.math.BlockPos)">scanRegion</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Iterable.html" title="class or interface in java.lang" class="external-link">Iterable</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#scanRegion(adris.altoclef.AltoClef,net.minecraft.util.math.BlockPos,net.minecraft.util.math.BlockPos)">scanRegion</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;start,
  net.minecraft.util.math.BlockPos&nbsp;end)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.BlockPos</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toBlockPos(net.minecraft.util.math.Vec3d)">toBlockPos</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.Vec3d</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3d(net.minecraft.util.math.BlockPos)">toVec3d</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.BlockPos</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toBlockPos(net.minecraft.util.math.Vec3d)">toBlockPos</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.Vec3d</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3d(net.minecraft.util.math.Vec3i)">toVec3d</a></span>&#8203;(net.minecraft.util.math.Vec3i&nbsp;pos)</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3d(net.minecraft.util.math.BlockPos)">toVec3d</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.Vec3i</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3i(net.minecraft.util.math.Vec3d)">toVec3i</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos)</code></div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.Vec3d</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3d(net.minecraft.util.math.Vec3i)">toVec3d</a></span>&#8203;(net.minecraft.util.math.Vec3i&nbsp;pos)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table"><code>static net.minecraft.util.math.Vec3i</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table"><code><span class="member-name-link"><a href="#toVec3i(net.minecraft.util.math.Vec3d)">toVec3i</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </section>
@@ -288,6 +296,13 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method.detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="getTicks()">
+<h3>getTicks</h3>
+<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getTicks</span>()</div>
+<div class="block">Get the number of in-game ticks the game/world has been active for.</div>
+</section>
+</li>
 <li>
 <section class="detail" id="toVec3d(net.minecraft.util.math.BlockPos)">
 <h3>toVec3d</h3>
@@ -384,6 +399,7 @@ loadScripts(document, 'script');</script>
 <h3>getBedHead</h3>
 <div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">net.minecraft.util.math.BlockPos</span>&nbsp;<span class="element-name">getBedHead</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.util.math.BlockPos&nbsp;posWithBed)</span></div>
+<div class="block">Get the "head" of a block with a bed, if the block is a bed.</div>
 </section>
 </li>
 <li>

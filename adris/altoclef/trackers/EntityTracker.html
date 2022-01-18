@@ -83,6 +83,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">EntityTracker</span>
 <span class="extends-implements">extends <a href="Tracker.html" title="class in adris.altoclef.trackers">Tracker</a></span></div>
+<div class="block">Keeps track of entities so we can search/grab them.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -124,7 +125,9 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.entity.Entity&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getCloseEntities()">getCloseEntities</a></span>()</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Gets all entities that are within our interact range</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.entity.Entity&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getClosestEntity(java.lang.Class...)">getClosestEntity</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>...&nbsp;entityTypes)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -174,13 +177,19 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.entity.player.PlayerEntity&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getPlayerEntity(java.lang.String)">getPlayerEntity</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>net.minecraft.util.math.Vec3d</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Gets the player entity corresponding to a username, if they're loaded/within render distance.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.Vec3d&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getPlayerMostRecentPosition(java.lang.String)">getPlayerMostRecentPosition</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Get where we last saw a player, if we saw them at all.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../util/baritone/CachedProjectile.html" title="class in adris.altoclef.util.baritone">CachedProjectile</a>&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getProjectiles()">getProjectiles</a></span>()</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Gets a list of projectiles that we've cached/stored information about.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>&lt;T extends net.minecraft.entity.Entity&gt;<br><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;T&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getTrackedEntities(java.lang.Class)">getTrackedEntities</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -193,10 +202,14 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isEntityReachable(net.minecraft.entity.Entity)">isEntityReachable</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Whether we have decided that this entity is unreachable.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isPlayerLoaded(java.lang.String)">isPlayerLoaded</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Is a player loaded/within render distance?</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemDropped(adris.altoclef.util.ItemTarget...)">itemDropped</a></span>&#8203;(<a href="../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targets)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -209,7 +222,9 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#requestEntityUnreachable(net.minecraft.entity.Entity)">requestEntityUnreachable</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Tells the entity tracker that we were unable to reach this entity.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#reset()">reset</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -376,12 +391,14 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getCloseEntities()">
 <h3>getCloseEntities</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.entity.Entity&gt;</span>&nbsp;<span class="element-name">getCloseEntities</span>()</div>
+<div class="block">Gets all entities that are within our interact range</div>
 </section>
 </li>
 <li>
 <section class="detail" id="getProjectiles()">
 <h3>getProjectiles</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../util/baritone/CachedProjectile.html" title="class in adris.altoclef.util.baritone">CachedProjectile</a>&gt;</span>&nbsp;<span class="element-name">getProjectiles</span>()</div>
+<div class="block">Gets a list of projectiles that we've cached/stored information about.</div>
 </section>
 </li>
 <li>
@@ -394,30 +411,47 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="isPlayerLoaded(java.lang.String)">
 <h3>isPlayerLoaded</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isPlayerLoaded</span>&#8203;<span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Is a player loaded/within render distance?</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - Username on a multiplayer server</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="getPlayerMostRecentPosition(java.lang.String)">
 <h3>getPlayerMostRecentPosition</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">net.minecraft.util.math.Vec3d</span>&nbsp;<span class="element-name">getPlayerMostRecentPosition</span>&#8203;<span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.Vec3d&gt;</span>&nbsp;<span class="element-name">getPlayerMostRecentPosition</span>&#8203;<span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Get where we last saw a player, if we saw them at all.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>Username on a multiplayer server.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="getPlayerEntity(java.lang.String)">
 <h3>getPlayerEntity</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.entity.player.PlayerEntity&gt;</span>&nbsp;<span class="element-name">getPlayerEntity</span>&#8203;<span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Gets the player entity corresponding to a username, if they're loaded/within render distance.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - Username on a multiplayer server.</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="requestEntityUnreachable(net.minecraft.entity.Entity)">
 <h3>requestEntityUnreachable</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">requestEntityUnreachable</span>&#8203;<span class="parameters">(net.minecraft.entity.Entity&nbsp;entity)</span></div>
+<div class="block">Tells the entity tracker that we were unable to reach this entity.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="isEntityReachable(net.minecraft.entity.Entity)">
 <h3>isEntityReachable</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isEntityReachable</span>&#8203;<span class="parameters">(net.minecraft.entity.Entity&nbsp;entity)</span></div>
+<div class="block">Whether we have decided that this entity is unreachable.</div>
 </section>
 </li>
 <li>

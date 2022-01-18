@@ -83,7 +83,12 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">BlockTracker</span>
 <span class="extends-implements">extends <a href="Tracker.html" title="class in adris.altoclef.trackers">Tracker</a></span></div>
-<div class="block">Tracks blocks the way I want it, when I want it.</div>
+<div class="block">Tracks blocks the way we want it, when we want it.
+
+ Gives you a "Check and don't care" interface where you can check for blocks and their locations over and over again
+ without scanning the world over and over again.
+
+ Also keeps track of blacklists for unreachable blocks</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -115,11 +120,15 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#addBlock(net.minecraft.block.Block,net.minecraft.util.math.BlockPos)">addBlock</a></span>&#8203;(net.minecraft.block.Block&nbsp;block,
  net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Manually add a block at a position.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#anyFound(java.util.function.Predicate,net.minecraft.block.Block...)">anyFound</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.util.math.BlockPos&gt;&nbsp;isValidTest,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Checks whether any blocks of a type have been found.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#anyFound(net.minecraft.block.Block...)">anyFound</a></span>&#8203;(net.minecraft.block.Block...&nbsp;blocks)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -129,7 +138,9 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getKnownLocations(net.minecraft.block.Block...)">getKnownLocations</a></span>&#8203;(net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Returns the locations of all tracked blocks of a given type</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getNearestTracking(java.util.function.Predicate,net.minecraft.block.Block...)">getNearestTracking</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.util.math.BlockPos&gt;&nbsp;isValidTest,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
@@ -141,21 +152,25 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getNearestTracking(net.minecraft.util.math.Vec3d,java.util.function.Predicate,net.minecraft.block.Block...)">getNearestTracking</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos,
  <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.util.math.BlockPos&gt;&nbsp;isValidTest,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Gets the nearest tracked block.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getNearestTracking(net.minecraft.util.math.Vec3d,net.minecraft.block.Block...)">getNearestTracking</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>net.minecraft.util.math.BlockPos</code></div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getNearestWithinRange(net.minecraft.util.math.BlockPos,double,net.minecraft.block.Block...)">getNearestWithinRange</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos,
  double&nbsp;range,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>net.minecraft.util.math.BlockPos</code></div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getNearestWithinRange(net.minecraft.util.math.Vec3d,double,net.minecraft.block.Block...)">getNearestWithinRange</a></span>&#8203;(net.minecraft.util.math.Vec3d&nbsp;pos,
  double&nbsp;range,
  net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Scans a radius for the closest block of a given type .</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isTracking(net.minecraft.block.Block)">isTracking</a></span>&#8203;(net.minecraft.block.Block&nbsp;block)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -165,16 +180,22 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#requestBlockUnreachable(net.minecraft.util.math.BlockPos,int)">requestBlockUnreachable</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos,
  int&nbsp;allowedFailures)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Inform the block tracker that the bot was NOT able to reach a block.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#reset()">reset</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#stopTracking(net.minecraft.block.Block...)">stopTracking</a></span>&#8203;(net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Stops tracking some blocks, after calling <a href="#trackBlock(net.minecraft.block.Block...)"><code>trackBlock</code></a>.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#trackBlock(net.minecraft.block.Block...)">trackBlock</a></span>&#8203;(net.minecraft.block.Block...&nbsp;blocks)</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">
+<div class="block">Starts tracking/pay attention to some blocks.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#unreachable(net.minecraft.util.math.BlockPos)">unreachable</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;pos)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -246,12 +267,18 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="trackBlock(net.minecraft.block.Block...)">
 <h3>trackBlock</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">trackBlock</span>&#8203;<span class="parameters">(net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Starts tracking/pay attention to some blocks.
+ <b>IMPORTANT:</b> ALWAYS pair with <a href="#stopTracking(net.minecraft.block.Block...)"><code>stopTracking</code></a>! Otherwise this block type will be
+ tracked forever (not the end of the world, but other block types will be lost.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="stopTracking(net.minecraft.block.Block...)">
 <h3>stopTracking</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">stopTracking</span>&#8203;<span class="parameters">(net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Stops tracking some blocks, after calling <a href="#trackBlock(net.minecraft.block.Block...)"><code>trackBlock</code></a>.
+
+ Only call this once for every <a href="#trackBlock(net.minecraft.block.Block...)"><code>trackBlock</code></a>.</div>
 </section>
 </li>
 <li>
@@ -259,6 +286,12 @@ loadScripts(document, 'script');</script>
 <h3>addBlock</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addBlock</span>&#8203;<span class="parameters">(net.minecraft.block.Block&nbsp;block,
  net.minecraft.util.math.BlockPos&nbsp;pos)</span></div>
+<div class="block">Manually add a block at a position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>block</code> - </dd>
+<dd><code>pos</code> - </dd>
+</dl>
 </section>
 </li>
 <li>
@@ -272,6 +305,12 @@ loadScripts(document, 'script');</script>
 <h3>anyFound</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">anyFound</span>&#8203;<span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.util.math.BlockPos&gt;&nbsp;isValidTest,
  net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Checks whether any blocks of a type have been found.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>isValidTest</code> - A filter predicate, returns true if a block at a position should be included.</dd>
+<dd><code>blocks</code> - The blocks to check for</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -300,18 +339,28 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</span>&nbsp;<span class="element-name">getNearestTracking</span>&#8203;<span class="parameters">(net.minecraft.util.math.Vec3d&nbsp;pos,
  <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.util.math.BlockPos&gt;&nbsp;isValidTest,
  net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Gets the nearest tracked block.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>pos</code> - From what position? (defaults to the player's position)</dd>
+<dd><code>isValidTest</code> - Filter predicate</dd>
+<dd><code>blocks</code> - The blocks to check for</dd>
+<dt>Returns:</dt>
+<dd>Optional.of(block position) if found, otherwise Optional.empty</dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="getKnownLocations(net.minecraft.block.Block...)">
 <h3>getKnownLocations</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.util.math.BlockPos&gt;</span>&nbsp;<span class="element-name">getKnownLocations</span>&#8203;<span class="parameters">(net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Returns the locations of all tracked blocks of a given type</div>
 </section>
 </li>
 <li>
 <section class="detail" id="getNearestWithinRange(net.minecraft.util.math.BlockPos,double,net.minecraft.block.Block...)">
 <h3>getNearestWithinRange</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">net.minecraft.util.math.BlockPos</span>&nbsp;<span class="element-name">getNearestWithinRange</span>&#8203;<span class="parameters">(net.minecraft.util.math.BlockPos&nbsp;pos,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</span>&nbsp;<span class="element-name">getNearestWithinRange</span>&#8203;<span class="parameters">(net.minecraft.util.math.BlockPos&nbsp;pos,
  double&nbsp;range,
  net.minecraft.block.Block...&nbsp;blocks)</span></div>
 </section>
@@ -319,9 +368,16 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getNearestWithinRange(net.minecraft.util.math.Vec3d,double,net.minecraft.block.Block...)">
 <h3>getNearestWithinRange</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">net.minecraft.util.math.BlockPos</span>&nbsp;<span class="element-name">getNearestWithinRange</span>&#8203;<span class="parameters">(net.minecraft.util.math.Vec3d&nbsp;pos,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;net.minecraft.util.math.BlockPos&gt;</span>&nbsp;<span class="element-name">getNearestWithinRange</span>&#8203;<span class="parameters">(net.minecraft.util.math.Vec3d&nbsp;pos,
  double&nbsp;range,
  net.minecraft.block.Block...&nbsp;blocks)</span></div>
+<div class="block">Scans a radius for the closest block of a given type .</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>pos</code> - The center of this radius</dd>
+<dd><code>range</code> - Radius to scan for</dd>
+<dd><code>blocks</code> - What blocks to check for</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -335,6 +391,12 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="unreachable(net.minecraft.util.math.BlockPos)">
 <h3>unreachable</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">unreachable</span>&#8203;<span class="parameters">(net.minecraft.util.math.BlockPos&nbsp;pos)</span></div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>pos</code> - BlockPos to check for</dd>
+<dt>Returns:</dt>
+<dd>Whether that block is considered unreachable</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -342,6 +404,12 @@ loadScripts(document, 'script');</script>
 <h3>requestBlockUnreachable</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">requestBlockUnreachable</span>&#8203;<span class="parameters">(net.minecraft.util.math.BlockPos&nbsp;pos,
  int&nbsp;allowedFailures)</span></div>
+<div class="block">Inform the block tracker that the bot was NOT able to reach a block.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>pos</code> - block that we were unable to reach</dd>
+<dd><code>allowedFailures</code> - how many times we can try reaching before we finally declare this block "unreachable"</dd>
+</dl>
 </section>
 </li>
 <li>

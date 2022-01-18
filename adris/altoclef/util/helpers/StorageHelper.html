@@ -81,6 +81,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">StorageHelper</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<div class="block">Helper functions for interpreting containers/slots/windows/inventory</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -129,98 +130,101 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
 <div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#calculateInventoryFuelCount(adris.altoclef.AltoClef)">calculateInventoryFuelCount</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getBestToolSlot(adris.altoclef.AltoClef,net.minecraft.block.BlockState)">getBestToolSlot</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- net.minecraft.block.BlockState&nbsp;state)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getBuildingMaterialCount(adris.altoclef.AltoClef)">getBuildingMaterialCount</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a></code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getCurrentMiningRequirement(adris.altoclef.AltoClef)">getCurrentMiningRequirement</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#closeScreen()">closeScreen</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFilledInventorySlotInaccessibleToContainer(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget)">getFilledInventorySlotInaccessibleToContainer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getBestToolSlot(adris.altoclef.AltoClef,net.minecraft.block.BlockState)">getBestToolSlot</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ net.minecraft.block.BlockState&nbsp;state)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getBuildingMaterialCount(adris.altoclef.AltoClef)">getBuildingMaterialCount</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a></code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getCurrentMiningRequirement(adris.altoclef.AltoClef)">getCurrentMiningRequirement</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFilledInventorySlotInaccessibleToContainer(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget)">getFilledInventorySlotInaccessibleToContainer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;withItem)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
 <div class="block">There are slots in our inventory that can't be accessed by containers
 
  Mainly the crafting + armor + shield slot.</div>
 </div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceCookPercent()">getFurnaceCookPercent</a></span>()</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceCookPercent(net.minecraft.screen.AbstractFurnaceScreenHandler)">getFurnaceCookPercent</a></span>&#8203;(net.minecraft.screen.AbstractFurnaceScreenHandler&nbsp;handler)</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceCookPercent()">getFurnaceCookPercent</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceFuel()">getFurnaceFuel</a></span>()</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceCookPercent(net.minecraft.screen.AbstractFurnaceScreenHandler)">getFurnaceCookPercent</a></span>&#8203;(net.minecraft.screen.AbstractFurnaceScreenHandler&nbsp;handler)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceFuel(net.minecraft.screen.AbstractFurnaceScreenHandler)">getFurnaceFuel</a></span>&#8203;(net.minecraft.screen.AbstractFurnaceScreenHandler&nbsp;handler)</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceFuel()">getFurnaceFuel</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getGarbageSlot(adris.altoclef.AltoClef)">getGarbageSlot</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getFurnaceFuel(net.minecraft.screen.AbstractFurnaceScreenHandler)">getFurnaceFuel</a></span>&#8203;(net.minecraft.screen.AbstractFurnaceScreenHandler&nbsp;handler)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static net.minecraft.item.ItemStack</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getItemStackInCursorSlot()">getItemStackInCursorSlot</a></span>()</code></div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getGarbageSlot(adris.altoclef.AltoClef)">getGarbageSlot</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static net.minecraft.item.ItemStack</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getItemStackInSlot(adris.altoclef.util.slots.Slot)">getItemStackInSlot</a></span>&#8203;(<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&nbsp;slot)</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getItemStackInCursorSlot()">getItemStackInCursorSlot</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hasCataloguedItem(adris.altoclef.AltoClef,java.lang.String)">hasCataloguedItem</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;cataloguedName)</code></div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static net.minecraft.item.ItemStack</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getItemStackInSlot(adris.altoclef.util.slots.Slot)">getItemStackInSlot</a></span>&#8203;(<a href="../slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&nbsp;slot)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hasRecipeMaterialsOrTarget(adris.altoclef.AltoClef,adris.altoclef.util.RecipeTarget...)">hasRecipeMaterialsOrTarget</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hasCataloguedItem(adris.altoclef.AltoClef,java.lang.String)">hasCataloguedItem</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;cataloguedName)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hasRecipeMaterialsOrTarget(adris.altoclef.AltoClef,adris.altoclef.util.RecipeTarget...)">hasRecipeMaterialsOrTarget</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../RecipeTarget.html" title="class in adris.altoclef.util">RecipeTarget</a>...&nbsp;targets)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
 <div class="block">Returns whether we have the items in our inventory (or currently crafting)</div>
 </div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isArmorEquipped(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isArmorEquipped</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isArmorEquipped(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isArmorEquipped</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  net.minecraft.item.Item...&nbsp;any)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isArmorEquippedAll(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isArmorEquippedAll</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- net.minecraft.item.Item...&nbsp;items)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isBigCraftingOpen()">isBigCraftingOpen</a></span>()</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isArmorEquippedAll(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isArmorEquippedAll</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ net.minecraft.item.Item...&nbsp;items)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isEquipped(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isEquipped</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- net.minecraft.item.Item...&nbsp;items)</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isBigCraftingOpen()">isBigCraftingOpen</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isFurnaceOpen()">isFurnaceOpen</a></span>()</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isEquipped(adris.altoclef.AltoClef,net.minecraft.item.Item...)">isEquipped</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ net.minecraft.item.Item...&nbsp;items)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isItemInaccessibleToContainer(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget)">isItemInaccessibleToContainer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isFurnaceOpen()">isFurnaceOpen</a></span>()</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isItemInaccessibleToContainer(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget)">isItemInaccessibleToContainer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;item)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isPlayerInventoryOpen()">isPlayerInventoryOpen</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemTargetsMet(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targetsToMeet)</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isPlayerInventoryOpen()">isPlayerInventoryOpen</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemTargetsMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemTargetsMet(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targetsToMeet)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemTargetsMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targetsToMeet)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
 <div class="block">AVOID using this unless it's the end goal to keep an item in our inventory.</div>
 </div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMet(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMet(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -266,6 +270,12 @@ loadScripts(document, 'script');</script>
 <section class="method-details" id="method.detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="closeScreen()">
+<h3>closeScreen</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">closeScreen</span>()</div>
+</section>
+</li>
 <li>
 <section class="detail" id="getItemStackInSlot(adris.altoclef.util.slots.Slot)">
 <h3>getItemStackInSlot</h3>
