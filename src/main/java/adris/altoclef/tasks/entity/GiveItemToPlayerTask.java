@@ -31,6 +31,8 @@ public class GiveItemToPlayerTask extends Task {
     private final List<ItemTarget> _throwTarget = new ArrayList<>();
     private boolean _droppingItems;
 
+    private Task _throwTask;
+
     public GiveItemToPlayerTask(String player, ItemTarget... targets) {
         _playerName = player;
         _targets = targets;
@@ -46,7 +48,18 @@ public class GiveItemToPlayerTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        Vec3d targetPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName).add(0, 0.2f, 0);
+        if (_throwTask != null && _throwTask.isActive() && !_throwTask.isFinished(mod)) {
+            setDebugState("Throwing items");
+            return _throwTask;
+        }
+
+        Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+
+        if (lastPos.isEmpty()) {
+            setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
+            return null;
+        }
+        Vec3d targetPos = lastPos.get().add(0, 0.2f, 0);
 
         if (_droppingItems) {
             // THROW ITEMS
@@ -64,7 +77,8 @@ public class GiveItemToPlayerTask extends Task {
                             target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
                             _throwTarget.set(i, target);
                             Debug.logMessage("THROWING: " + has.get());
-                            return new ThrowCursorTask();
+                            _throwTask = new ThrowCursorTask();
+                            return _throwTask;
                         } else {
                             return new ClickSlotTask(currentlyPresent);
                         }
@@ -83,12 +97,6 @@ public class GiveItemToPlayerTask extends Task {
         if (!StorageHelper.itemTargetsMet(mod, _targets)) {
             setDebugState("Collecting resources...");
             return _resourceTask;
-        }
-
-        if (targetPos == null) {
-            mod.logWarning("Failed to get to player \"" + _playerName + "\" because we have no idea where they are.");
-            stop(mod);
-            return null;
         }
 
         if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
