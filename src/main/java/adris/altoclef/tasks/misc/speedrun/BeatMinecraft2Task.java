@@ -232,16 +232,16 @@ public class BeatMinecraft2Task extends Task {
 
         // Sleep through night.
         if (_config.sleepThroughNight && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+            if (WorldHelper.canSleep()) {
+                setDebugState("Sleeping through night");
+                return _sleepThroughNightTask;
+            }
             if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
                 if (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
                         || shouldForce(mod, _getOneBedTask)) {
                     setDebugState("Grabbing a bed we found to sleep through the night.");
                     return _getOneBedTask;
                 }
-            }
-            if (WorldHelper.canSleep()) {
-                setDebugState("Sleeping through night");
-                return _sleepThroughNightTask;
             }
         }
 
@@ -544,6 +544,9 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private Task getBlazeRodsTask(AltoClef mod, int count) {
+        if (mod.getEntityTracker().itemDropped(Items.BLAZE_POWDER)) {
+            return new PickupDroppedItemTask(Items.BLAZE_POWDER, 1);
+        }
         return new CollectBlazeRodsTask(count);
     }
     private Task getEnderPearlTask(AltoClef mod, int count) {
