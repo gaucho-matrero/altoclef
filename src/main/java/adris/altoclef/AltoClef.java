@@ -12,7 +12,6 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.Dimension;
 import adris.altoclef.util.InputControls;
 import adris.altoclef.util.control.BotBehaviour;
 import adris.altoclef.util.control.PlayerExtraController;
@@ -20,7 +19,6 @@ import adris.altoclef.util.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.helpers.InputHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -33,7 +31,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
@@ -363,16 +360,6 @@ public class AltoClef implements ModInitializer {
 
     public MLGBucketFallChain getMLGBucketChain() {
         return _mlgBucketChain;
-    }
-
-    public Dimension getCurrentDimension() {
-        if (!inGame()) return Dimension.OVERWORLD;
-        if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
-        return Dimension.END;
-    }
-    public Vec3d getOverworldPosition() {
-        return WorldHelper.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {

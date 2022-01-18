@@ -15,17 +15,11 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public interface WorldHelper {
 
@@ -78,6 +72,15 @@ public interface WorldHelper {
     static boolean inRangeXZ(Entity entity, Entity to, double range) {
         return inRangeXZ(entity, to.getPos(), range);
     }
+
+    static Dimension getCurrentDimension() {
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world == null) return Dimension.OVERWORLD;
+        if (world.getDimension().isUltrawarm()) return Dimension.NETHER;
+        if (world.getDimension().isNatural()) return Dimension.OVERWORLD;
+        return Dimension.END;
+    }
+
 
     static boolean isSolid(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
@@ -188,6 +191,13 @@ public interface WorldHelper {
         return pos.isWithinDistance(mod.getPlayer().getPos(), 2);
     }
 
+    static Iterable<BlockPos> getBlocksTouchingPlayer(AltoClef mod) {
+        Box boundingBox = mod.getPlayer().getBoundingBox();
+        BlockPos min = new BlockPos(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
+        BlockPos max = new BlockPos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ);
+        return scanRegion(mod, min, max);
+    }
+
     static Iterable<BlockPos> scanRegion(AltoClef mod, BlockPos start, BlockPos end) {
         return () -> new Iterator<>() {
             int x = start.getX(), y = start.getY(), z = start.getZ();
@@ -247,14 +257,14 @@ public interface WorldHelper {
         return new Vec3d(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
 
-    static Vec3d getOverworldPosition(AltoClef mod, Vec3d pos) {
-        if (mod.getCurrentDimension() == Dimension.NETHER) {
+    static Vec3d getOverworldPosition(Vec3d pos) {
+        if (getCurrentDimension() == Dimension.NETHER) {
             pos = pos.multiply(8.0, 1, 8.0);
         }
         return pos;
     }
-    static BlockPos getOverworldPosition(AltoClef mod, BlockPos pos) {
-        if (mod.getCurrentDimension() == Dimension.NETHER) {
+    static BlockPos getOverworldPosition(BlockPos pos) {
+        if (getCurrentDimension() == Dimension.NETHER) {
             pos = new BlockPos(pos.getX()*8, pos.getY(), pos.getZ()*8);
         }
         return pos;

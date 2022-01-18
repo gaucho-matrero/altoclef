@@ -59,7 +59,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         // We must go to the nether.
-        if (mod.getCurrentDimension() != Dimension.NETHER) {
+        if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
             setDebugState("Going to nether");
             return new DefaultGoToDimensionTask(Dimension.NETHER);
         }

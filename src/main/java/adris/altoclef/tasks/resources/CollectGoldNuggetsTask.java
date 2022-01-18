@@ -10,7 +10,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import net.minecraft.util.math.BlockPos;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -36,8 +36,8 @@ public class CollectGoldNuggetsTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        switch (mod.getCurrentDimension()) {
-            case OVERWORLD:
+        switch (WorldHelper.getCurrentDimension()) {
+            case OVERWORLD -> {
                 setDebugState("Getting gold ingots to convert to nuggets");
                 int potentialNuggies = mod.getItemStorage().getItemCount(Items.GOLD_NUGGET) + mod.getItemStorage().getItemCount(Items.GOLD_INGOT) * 9;
                 if (potentialNuggies >= _count && mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
@@ -47,15 +47,18 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 // Get gold ingots
                 int nuggiesStillNeeded = _count - potentialNuggies;
                 return TaskCatalogue.getItemTask(Items.GOLD_INGOT, (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
-            case NETHER:
+            }
+            case NETHER -> {
                 setDebugState("Mining nuggies");
-                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE, Blocks.GILDED_BLACKSTONE},MiningRequirement.WOOD);
-            case END:
+                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE, Blocks.GILDED_BLACKSTONE}, MiningRequirement.WOOD);
+            }
+            case END -> {
                 setDebugState("Going to overworld");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+            }
         }
 
-        setDebugState("INVALID DIMENSION??: " + mod.getCurrentDimension());
+        setDebugState("INVALID DIMENSION??: " + WorldHelper.getCurrentDimension());
         return null;
     }
 

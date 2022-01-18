@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -66,11 +67,7 @@ public class LocateStrongholdTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_strongholdEstimatePos != null) {
-            if (_strongholdEstimatePos != null) {
-            }
-        }
-        if (_strongholdEstimatePos == null && mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (_strongholdEstimatePos == null && WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to overworld");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
@@ -129,7 +126,7 @@ public class LocateStrongholdTask extends Task {
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
@@ -149,7 +146,7 @@ public class LocateStrongholdTask extends Task {
 
         // Throw the eye since we don't have any eye info.
         if (!mod.getEntityTracker().entityFound(EyeOfEnderEntity.class) && _strongholdEstimatePos == null) {
-            if (mod.getCurrentDimension() == Dimension.NETHER) {
+            if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
                 setDebugState("Going to overworld.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             }
@@ -196,13 +193,13 @@ public class LocateStrongholdTask extends Task {
             setDebugState("Waiting for thrown eye to appear...");
             return null;
         }
-        if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || mod.getCurrentDimension() == Dimension.NETHER)) {
+        if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || WorldHelper.getCurrentDimension() == Dimension.NETHER)) {
             if (_cachedEducatedPortal != null) {
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
                 mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
-                if (mod.getCurrentDimension() != Dimension.NETHER) {
+                if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
                     if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
                         setDebugState("Getting flint and steel before going into nether");
                         return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
@@ -248,7 +245,7 @@ public class LocateStrongholdTask extends Task {
         
         // Travel to stronghold + search around stronghold if necessary.
         SearchStrongholdTask tryNewSearch = new SearchStrongholdTask(_strongholdEstimatePos);
-        if ((_searchTask == null || !_searchTask.equals(tryNewSearch)) && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+        if ((_searchTask == null || !_searchTask.equals(tryNewSearch)) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             Debug.logMessage("New Stronghold search task");
             _searchTask = tryNewSearch;
         }
@@ -312,6 +309,7 @@ public class LocateStrongholdTask extends Task {
             return Math.atan2(getDelta().getX(), getDelta().getZ());
         }
 
+        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public boolean hasDelta() {
             return _end != null;
         }

@@ -183,7 +183,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         // Dimension
-        if (_toCollect == Blocks.WATER && mod.getCurrentDimension() == Dimension.NETHER) {
+        if (_toCollect == Blocks.WATER && WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 

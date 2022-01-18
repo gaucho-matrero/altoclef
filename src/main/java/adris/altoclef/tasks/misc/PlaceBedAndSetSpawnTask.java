@@ -138,7 +138,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Place on the middle block, reliably placing the bed.
 
         // We cannot do this anywhere but the overworld.
-        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
@@ -304,7 +304,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             Debug.logWarning("Can't place spawnpoint/sleep in a bed unless we're in the overworld!");
             return true;
         }

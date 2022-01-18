@@ -7,6 +7,7 @@ import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.entity.mob.MagmaCubeEntity;
 import net.minecraft.item.Items;
 
@@ -42,8 +43,8 @@ public class CollectMagmaCreamTask extends ResourceTask {
          */
         int currentCream = mod.getItemStorage().getItemCount(Items.MAGMA_CREAM);
         int neededCream = _count - currentCream;
-        switch (mod.getCurrentDimension()) {
-            case NETHER:
+        switch (WorldHelper.getCurrentDimension()) {
+            case NETHER -> {
                 if (mod.getEntityTracker().entityFound(MagmaCubeEntity.class)) {
                     setDebugState("Killing Magma cube");
                     return new KillAndLootTask(MagmaCubeEntity.class, new ItemTarget(Items.MAGMA_CREAM));
@@ -56,7 +57,8 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 }
                 setDebugState("Going back to overworld to kill slimes, we have enough blaze powder and no nearby magma cubes.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
-            case OVERWORLD:
+            }
+            case OVERWORLD -> {
                 int currentSlime = mod.getItemStorage().getItemCount(Items.SLIME_BALL);
                 if (neededCream > currentSlime) {
                     setDebugState("Getting slime balls");
@@ -64,12 +66,14 @@ public class CollectMagmaCreamTask extends ResourceTask {
                 }
                 setDebugState("Going to nether to get blaze powder and/or kill magma cubes");
                 return new DefaultGoToDimensionTask(Dimension.NETHER);
-            case END:
+            }
+            case END -> {
                 setDebugState("Going to overworld, no magma cream materials exist here.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+            }
         }
 
-        setDebugState("INVALID DIMENSION??: " + mod.getCurrentDimension());
+        setDebugState("INVALID DIMENSION??: " + WorldHelper.getCurrentDimension());
         return null;
     }
 

@@ -27,6 +27,7 @@ import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
@@ -193,7 +194,7 @@ public class Playground {
                 break;
             case "portal":
                 //mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER));
-                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), mod.getCurrentDimension() == Dimension.OVERWORLD? Dimension.NETHER : Dimension.OVERWORLD));
+                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), WorldHelper.getCurrentDimension() == Dimension.OVERWORLD? Dimension.NETHER : Dimension.OVERWORLD));
                 break;
             case "kill":
                 List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);

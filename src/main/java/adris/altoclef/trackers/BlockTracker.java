@@ -342,7 +342,7 @@ public class BlockTracker extends Tracker {
     }
 
     private PosCache currentCache() {
-        Dimension dimension = _mod.getCurrentDimension();
+        Dimension dimension = WorldHelper.getCurrentDimension();
         if (!_caches.containsKey(dimension)) {
             _caches.put(dimension, new PosCache(100, 64 * 1.5));
         }

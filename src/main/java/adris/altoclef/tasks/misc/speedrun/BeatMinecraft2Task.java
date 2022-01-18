@@ -43,6 +43,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+@SuppressWarnings("ALL")
 public class BeatMinecraft2Task extends Task {
 
     private static BeatMinecraftConfig _config;
@@ -176,7 +177,7 @@ public class BeatMinecraft2Task extends Task {
 
         // Portable crafting table.
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
-        if (mod.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
+        if (WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
                 && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
                         || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE) )) {
             setDebugState("Pick up crafting table while we're at it");
@@ -184,7 +185,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // End stuff.
-        if (mod.getCurrentDimension() == Dimension.END) {
+        if (WorldHelper.getCurrentDimension() == Dimension.END) {
             // If we have bed, do bed strats, otherwise punk normally.
             updateCachedEndItems(mod);
             // Grab beds
@@ -219,7 +220,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // Check for end portals. Always.
-        if (!endPortalOpened(mod, _endPortalCenterLocation) && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+        if (!endPortalOpened(mod, _endPortalCenterLocation) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             Optional<BlockPos> endPortal = mod.getBlockTracker().getNearestTracking(Blocks.END_PORTAL);
             if (endPortal.isPresent()) {
                 _endPortalCenterLocation = endPortal.get();
@@ -231,7 +232,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // Sleep through night.
-        if (_config.sleepThroughNight && mod.getCurrentDimension() == Dimension.OVERWORLD) {
+        if (_config.sleepThroughNight && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             if (WorldHelper.canSleep()) {
                 setDebugState("Sleeping through night");
                 return _sleepThroughNightTask;
@@ -246,7 +247,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // Do we need more eyes?
-        boolean noEyesPlease = (endPortalOpened(mod, _endPortalCenterLocation) || mod.getCurrentDimension() == Dimension.END);
+        boolean noEyesPlease = (endPortalOpened(mod, _endPortalCenterLocation) || WorldHelper.getCurrentDimension() == Dimension.END);
         int filledPortalFrames = getFilledPortalFrames(mod, _endPortalCenterLocation);
         int eyesNeededMin = noEyesPlease ? 0 : _targetEyesMin - filledPortalFrames;
         int eyesNeeded    = noEyesPlease ? 0 : _targetEyes    - filledPortalFrames;
@@ -259,7 +260,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // We have eyes. Locate our portal + enter.
-        switch (mod.getCurrentDimension()) {
+        switch (WorldHelper.getCurrentDimension()) {
             case OVERWORLD -> {
                 // If we found our end portal...
                 if (endPortalFound(mod, _endPortalCenterLocation)) {
@@ -308,7 +309,7 @@ public class BeatMinecraft2Task extends Task {
                     }
                 } else {
                     // Get beds before starting our portal location.
-                    if (mod.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
+                    if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
                         setDebugState("Getting beds before stronghold search.");
                         return getBedTask(mod);
                     }
@@ -449,7 +450,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // Get blaze rods + pearls...
-        switch (mod.getCurrentDimension()) {
+        switch (WorldHelper.getCurrentDimension()) {
             case OVERWORLD -> {
                 // Make sure we have gear, then food.
                 for (Item diamond : COLLECT_EYE_ARMOR) {

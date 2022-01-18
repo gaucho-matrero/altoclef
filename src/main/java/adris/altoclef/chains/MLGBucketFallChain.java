@@ -9,6 +9,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.Items;
@@ -38,7 +39,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
         // Won't work in the nether, duh
-        if (mod.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
+        if (WorldHelper.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
 
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();

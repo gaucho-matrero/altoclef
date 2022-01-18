@@ -4,6 +4,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -68,7 +69,7 @@ public class ContainerSubTracker extends Tracker {
             if (handler == null)
                 return;
 
-            HashMap<BlockPos, ContainerCache> dimCache = _containerCaches.get(_mod.getCurrentDimension());
+            HashMap<BlockPos, ContainerCache> dimCache = _containerCaches.get(WorldHelper.getCurrentDimension());
 
             // Container Type Mismatch, reset.
             if (dimCache.containsKey(containerPos)) {
@@ -83,7 +84,7 @@ public class ContainerSubTracker extends Tracker {
             if (!dimCache.containsKey(containerPos)) {
                 Block containerBlock = _lastBlockInteraction;
                 ContainerType interactType = ContainerType.getFromBlock(containerBlock);
-                ContainerCache newCache = new ContainerCache(_mod.getCurrentDimension(), containerPos, interactType);
+                ContainerCache newCache = new ContainerCache(WorldHelper.getCurrentDimension(), containerPos, interactType);
                 dimCache.put(containerPos, newCache);
                 // Special ender chest cache
                 if (interactType == ContainerType.ENDER_CHEST) {
@@ -98,9 +99,10 @@ public class ContainerSubTracker extends Tracker {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isContainerCacheValid(Dimension dimension, ContainerCache cache) {
         BlockPos pos = cache.getBlockPos();
-        if (_mod.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
+        if (WorldHelper.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
             ContainerType actualType = ContainerType.getFromBlock(_mod.getWorld().getBlockState(pos).getBlock());
             return actualType == cache.getContainerType();
         }
@@ -116,7 +118,7 @@ public class ContainerSubTracker extends Tracker {
         return cache;
     }
     public Optional<ContainerCache> getContainerAtPosition(BlockPos pos) {
-        return getContainerAtPosition(_mod.getCurrentDimension(), pos);
+        return getContainerAtPosition(WorldHelper.getCurrentDimension(), pos);
     }
     public Optional<ContainerCache> getEnderChestStorage() {
         return Optional.ofNullable(_enderChestCache);
@@ -149,7 +151,7 @@ public class ContainerSubTracker extends Tracker {
     public Optional<ContainerCache> getClosestTo(Vec3d pos, Predicate<ContainerCache> accept) {
         double bestDist = Double.POSITIVE_INFINITY;
         ContainerCache bestCache = null;
-        for (ContainerCache cache : _containerCaches.get(_mod.getCurrentDimension()).values()) {
+        for (ContainerCache cache : _containerCaches.get(WorldHelper.getCurrentDimension()).values()) {
             double dist = cache.getBlockPos().getSquaredDistance(pos, true);
             if (dist < bestDist) {
                 if (accept.test(cache)) {

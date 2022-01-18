@@ -13,6 +13,7 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
@@ -188,7 +189,7 @@ public abstract class ResourceTask extends Task {
 
     protected boolean isInWrongDimension(AltoClef mod) {
         if (_forceDimension) {
-            return mod.getCurrentDimension() != _targetDimension;
+            return WorldHelper.getCurrentDimension() != _targetDimension;
         }
         return false;
     }
