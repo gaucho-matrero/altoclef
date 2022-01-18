@@ -150,6 +150,15 @@ public class BotBehaviour {
         current().applyState();
     }
 
+    public void setBlockPlacePenalty(double penalty) {
+        current().blockPlacePenalty = penalty;
+        current().applyState();
+    }
+    public void setBlockBreakAdditionalPenalty(double penalty) {
+        current().blockBreakAdditionalPenalty = penalty;
+        current().applyState();
+    }
+
     public void avoidDodgingProjectile(Predicate<Entity> whenToDodge) {
         current().avoidDodgingProjectile.add(whenToDodge);
         // Not needed, nothing changes.
@@ -212,6 +221,8 @@ public class BotBehaviour {
         public boolean swimThroughLava;
         public boolean allowDiagonalAscend;
         public boolean preferredStairs;
+        public double blockPlacePenalty;
+        public double blockBreakAdditionalPenalty;
 
         // Alto Clef params
         public boolean exclusivelyMineLogs;
@@ -271,6 +282,8 @@ public class BotBehaviour {
             mineScanDroppedItems = s.mineScanDroppedItems.value;
             swimThroughLava = s.assumeWalkOnLava.value;
             allowDiagonalAscend = s.allowDiagonalAscend.value;
+            blockPlacePenalty = s.blockPlacementPenalty.value;
+            blockBreakAdditionalPenalty = s.blockBreakAdditionalPenalty.value;
             //preferredStairs = s.allowDownward.value;
         }
 
@@ -306,10 +319,11 @@ public class BotBehaviour {
             s.followOffsetDistance.value = followOffsetDistance;
             s.mineScanDroppedItems.value = mineScanDroppedItems;
             s.allowDiagonalAscend.value = allowDiagonalAscend;
+            s.blockPlacementPenalty.value = blockPlacePenalty;
+            s.blockBreakAdditionalPenalty.value = blockBreakAdditionalPenalty;
 
             // We need an alternrative method to handle this, this method makes navigation much less reliable.
             //s.allowDownward.value = preferredStairs;
-
 
             // Kinda jank but it works.
             synchronized (sa.getBreakMutex()) {
