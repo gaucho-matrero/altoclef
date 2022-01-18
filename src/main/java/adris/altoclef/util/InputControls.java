@@ -26,28 +26,18 @@ public class InputControls {
 
     private static KeyBinding inputToKeyBinding(Input input) {
         GameOptions o = MinecraftClient.getInstance().options;
-        switch (input) {
-            case MOVE_FORWARD:
-                return o.keyForward;
-            case MOVE_BACK:
-                return o.keyBack;
-            case MOVE_LEFT:
-                return o.keyLeft;
-            case MOVE_RIGHT:
-                return o.keyRight;
-            case CLICK_LEFT:
-                return o.keyAttack;
-            case CLICK_RIGHT:
-                return o.keyUse;
-            case JUMP:
-                return o.keyJump;
-            case SNEAK:
-                return o.keySneak;
-            case SPRINT:
-                return o.keySprint;
-            default:
-                throw new IllegalArgumentException("Invalid key input/not accounted for: " + input);
-        }
+        return switch (input) {
+            case MOVE_FORWARD -> o.keyForward;
+            case MOVE_BACK -> o.keyBack;
+            case MOVE_LEFT -> o.keyLeft;
+            case MOVE_RIGHT -> o.keyRight;
+            case CLICK_LEFT -> o.keyAttack;
+            case CLICK_RIGHT -> o.keyUse;
+            case JUMP -> o.keyJump;
+            case SNEAK -> o.keySneak;
+            case SPRINT -> o.keySprint;
+            default -> throw new IllegalArgumentException("Invalid key input/not accounted for: " + input);
+        };
     }
 
     public void tryPress(Input input) {
@@ -56,6 +46,8 @@ public class InputControls {
             return;
         }
         inputToKeyBinding(input).setPressed(true);
+        // Also necessary to ensure the game registers the input as "pressed"
+        KeyBinding.onKeyPressed(inputToKeyBinding(input).getDefaultKey());
         _toUnpress.add(input);
         _waitForRelease.add(input);
     }

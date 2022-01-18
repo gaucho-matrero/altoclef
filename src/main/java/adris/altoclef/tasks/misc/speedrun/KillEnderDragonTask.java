@@ -206,7 +206,7 @@ public class KillEnderDragonTask extends Task {
 
         private final HashMap<BlockPos, Double> _breathCostMap = new HashMap<>();
         private final TimerGame _hitHoldTimer = new TimerGame(0.1);
-        private final TimerGame _hitResetTimer = new TimerGame(2);
+        private final TimerGame _hitResetTimer = new TimerGame(0.4);
         private final TimerGame _randomWanderChangeTimeout = new TimerGame(20);
         private Mode _mode = Mode.WAITING_FOR_PERCH;
 
@@ -239,11 +239,12 @@ public class KillEnderDragonTask extends Task {
                     _wasReleased = true;
                 }
             }
-            if (_wasHitting && _hitResetTimer.elapsed() || mod.getPlayer().getAttackCooldownProgress(0) > 0.99) {
+            if (_wasHitting && _hitResetTimer.elapsed() && mod.getPlayer().getAttackCooldownProgress(0) > 0.99) {
                 _wasHitting = false;
                 // Code duplication maybe?
                 //mod.getControllerExtras().mouseClickOverride(0, false);
                 mod.getExtraBaritoneSettings().setInteractionPaused(false);
+                _hitResetTimer.reset();
             }
         }
 
