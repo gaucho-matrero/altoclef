@@ -1,7 +1,7 @@
 package adris.altoclef.trackers.storage;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;

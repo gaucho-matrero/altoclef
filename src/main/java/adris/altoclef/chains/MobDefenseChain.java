@@ -8,7 +8,7 @@ import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import adris.altoclef.tasks.movement.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.KillAura;
+import adris.altoclef.control.KillAura;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.csharpisbetter.TimerGame;

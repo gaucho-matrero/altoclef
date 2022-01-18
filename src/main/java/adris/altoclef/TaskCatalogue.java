@@ -1,7 +1,10 @@
 package adris.altoclef;
 
 import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.misc.speedrun.CollectBlazeRodsTask;
+import adris.altoclef.tasks.container.CraftInTableTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
+import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
+import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
@@ -20,8 +23,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-@SuppressWarnings({"rawtypes"})
-/*
+/**
  * Contains a hardcoded list of ALL obtainable resources.
  *
  * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
@@ -29,6 +31,7 @@ import java.util.function.Function;
  * Call `TaskCatalogue.getItemTask` to return a task given a resource key.
  * Call `TaskCatalogue.getSquashedItemTask` to return a task that gets multiple resources, combining their steps.
  */
+@SuppressWarnings({"rawtypes"})
 public class TaskCatalogue {
 
     private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();

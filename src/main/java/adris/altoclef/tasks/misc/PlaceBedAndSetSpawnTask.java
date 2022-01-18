@@ -117,8 +117,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
         _sleepAttemptMade = false;
         _wasSleeping = false;
 
-        mod.onGameMessage.addListener(onCheckGameMessage);
-        mod.onGameOverlayMessage.addListener(onOverlayMessage);
+        mod.getOnGameMessage().addListener(onCheckGameMessage);
+        mod.getOnGameOverlayMessage().addListener(onOverlayMessage);
     }
 
     public void resetSleep() {
@@ -288,8 +288,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(BEDS);
-        mod.onGameMessage.removeListener(onCheckGameMessage);
-        mod.onGameOverlayMessage.removeListener(onOverlayMessage);
+        mod.getOnGameMessage().removeListener(onCheckGameMessage);
+        mod.getOnGameOverlayMessage().removeListener(onOverlayMessage);
     }
 
     @Override

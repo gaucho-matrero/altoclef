@@ -24,12 +24,13 @@ public class FollowPlayerTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        Vec3d target = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
-        if (target == null) {
-            mod.logWarning("Failed to get to player \"" + _playerName + "\" because we have no idea where they are.");
-            stop(mod);
+        Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(_playerName);
+
+        if (lastPos.isEmpty()) {
+            setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
             return null;
         }
+        Vec3d target = lastPos.get();
 
         if (target.isInRange(mod.getPlayer().getPos(), 1) && !mod.getEntityTracker().isPlayerLoaded(_playerName)) {
             mod.logWarning("Failed to get to player \"" + _playerName + "\". We moved to where we last saw them but now have no idea where they are.");

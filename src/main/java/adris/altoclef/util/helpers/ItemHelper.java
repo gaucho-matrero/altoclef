@@ -15,6 +15,9 @@ import net.minecraft.util.DyeColor;
 
 import java.util.*;
 
+/**
+ * Helper functions and definitions for useful groupings of items
+ */
 public class ItemHelper {
 
     public static String stripItemName(Item item) {

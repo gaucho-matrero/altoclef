@@ -53,7 +53,7 @@ public class EquipArmorTask extends Task {
             } else {
                 if (!StorageHelper.isArmorEquipped(mod, item)) {
                     if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                        mod.getControllerExtras().closeScreen();
+                        StorageHelper.closeScreen();
                     }
                     Slot toMove = PlayerSlot.getEquipSlot(item.getSlotType());
                     if (toMove == null) {

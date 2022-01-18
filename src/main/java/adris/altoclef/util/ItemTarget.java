@@ -9,6 +9,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Defines an item and a count.
+ *
+ * Multiple Minecraft Items can meet the criteria of an "item" (ex. "wooden planks" can be satisfied by oak, acacia, spruce, jungle, etc.)
+ */
 public class ItemTarget {
 
     private static final int BASICALLY_INFINITY = 99999999;

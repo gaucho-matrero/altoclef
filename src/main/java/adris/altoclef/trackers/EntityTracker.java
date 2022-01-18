@@ -21,10 +21,10 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 import java.util.function.Predicate;
 
-@SuppressWarnings("rawtypes")
-/*
+/**
  * Keeps track of entities so we can search/grab them.
  */
+@SuppressWarnings("rawtypes")
 public class EntityTracker extends Tracker {
 
     private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
@@ -210,6 +210,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Gets all entities that are within our interact range
+     */
     public List<Entity> getCloseEntities() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -217,6 +220,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Gets a list of projectiles that we've cached/stored information about.
+     */
     public List<CachedProjectile> getProjectiles() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -231,6 +237,10 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Is a player loaded/within render distance?
+     * @param name Username on a multiplayer server
+     */
     public boolean isPlayerLoaded(String name) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -238,16 +248,21 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public Vec3d getPlayerMostRecentPosition(String name) {
+    /**
+     * Get where we last saw a player, if we saw them at all.
+     * @return Username on a multiplayer server.
+     */
+    public Optional<Vec3d> getPlayerMostRecentPosition(String name) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            if (_playerLastCoordinates.containsKey(name)) {
-                return _playerLastCoordinates.get(name);
-            }
+            return Optional.ofNullable(_playerLastCoordinates.getOrDefault(name, null));
         }
-        return null;
     }
 
+    /**
+     * Gets the player entity corresponding to a username, if they're loaded/within render distance.
+     * @param name Username on a multiplayer server.
+     */
     public Optional<PlayerEntity> getPlayerEntity(String name) {
         if (isPlayerLoaded(name)) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -257,10 +272,16 @@ public class EntityTracker extends Tracker {
         return Optional.empty();
     }
 
+    /**
+     * Tells the entity tracker that we were unable to reach this entity.
+     */
     public void requestEntityUnreachable(Entity entity) {
-        _entityBlacklist.blackListItem(_mod, entity, 2);
+        _entityBlacklist.blackListItem(_mod, entity, 3);
     }
 
+    /**
+     * Whether we have decided that this entity is unreachable.
+     */
     public boolean isEntityReachable(Entity entity) {
         return !_entityBlacklist.unreachable(entity);
     }

@@ -3,15 +3,16 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- * <p>
  * Use this whenever you want to travel to a target position that may change.
+ * <p>
+ * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
@@ -81,7 +82,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
                     double closestDistanceSqr = getPos(mod, _currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
-                    int lastTick = AltoClef.getTicks();
+                    int lastTick = WorldHelper.getTicks();
 
                     if (!_heuristicMap.containsKey(_currentlyPursuing)) {
                         _heuristicMap.put(_currentlyPursuing, new CachedHeuristic());

@@ -2,25 +2,24 @@ package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
-import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
-import adris.altoclef.tasks.misc.PlaceSignTask;
-import adris.altoclef.tasks.misc.speedrun.*;
-import adris.altoclef.tasks.misc.stupid.BeeMovieTask;
-import adris.altoclef.tasks.misc.stupid.ReplaceBlocksTask;
-import adris.altoclef.tasks.misc.stupid.SCP173Task;
-import adris.altoclef.tasks.misc.stupid.TerminatorTask;
-import adris.altoclef.tasks.movement.EnterNetherPortalTask;
-import adris.altoclef.tasks.movement.IdleTask;
-import adris.altoclef.tasks.movement.LocateDesertTempleTask;
-import adris.altoclef.tasks.movement.PickupDroppedItemTask;
+import adris.altoclef.tasks.construction.PlaceSignTask;
+import adris.altoclef.tasks.speedrun.*;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
+import adris.altoclef.tasks.stupid.TerminatorTask;
+import adris.altoclef.tasks.movement.*;
+import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.util.CraftingRecipe;
@@ -240,15 +239,6 @@ public class Playground {
                      */
                 }).start();
                 //mod.getItemStorage().equipItem(Items.AIR);
-                break;
-            case "throw":
-                new Thread(() -> {
-                    for (int i = 3; i > 0; --i) {
-                        Debug.logMessage(i + "...");
-                        sleepSec(1);
-                    }
-                    mod.getControllerExtras().dropCurrentStack(true);
-                }).start();
                 break;
             case "food":
                 mod.runUserTask(new CollectFoodTask(20));

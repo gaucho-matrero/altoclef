@@ -75,16 +75,15 @@ public class SimpleChunkTracker {
         }
         return false;
     }
-
-    public void reset(AltoClef mod) {
-        Debug.logInternal("CHUNKS RESET");
-        _loaded.clear();
-    }
-
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {
         scanChunk(chunk, (block) -> {
             onBlock.accept(block);
             return false;
         });
+    }
+
+    public void reset(AltoClef mod) {
+        Debug.logInternal("CHUNKS RESET");
+        _loaded.clear();
     }
 }

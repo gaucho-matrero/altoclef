@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.control.PlayerExtraController;
+import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -79,7 +79,7 @@ public class PlaceBlockNearbyTask extends Task {
         // -
 
         // Close screen first
-        mod.getControllerExtras().closeScreen();
+        StorageHelper.closeScreen();
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);

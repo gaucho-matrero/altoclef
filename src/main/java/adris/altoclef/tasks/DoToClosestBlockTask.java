@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Finds the closest reachable block and passes that block to a task.
+ * Finds the closest reachable block and runs a task on that block.
  */
 public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos> {
 

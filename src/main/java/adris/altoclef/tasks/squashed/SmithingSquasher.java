@@ -3,7 +3,7 @@ package adris.altoclef.tasks.squashed;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.UpgradeInSmithingTableTask;
+import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;

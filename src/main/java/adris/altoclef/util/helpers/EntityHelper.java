@@ -12,6 +12,9 @@ import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
+/**
+ * Helper functions to interpret entity state
+ */
 public class EntityHelper {
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
         boolean hostile = isGenerallyHostileToPlayer(mob);

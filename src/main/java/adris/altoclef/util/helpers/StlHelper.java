@@ -3,6 +3,9 @@ package adris.altoclef.util.helpers;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * Random functions that extend Java's STL
+ */
 public interface StlHelper {
     static <T> Comparator<T> compareValues(Function<T, Double> getValue) {
         return (left, right) -> (int) Math.signum(getValue.apply(left) - getValue.apply(right));

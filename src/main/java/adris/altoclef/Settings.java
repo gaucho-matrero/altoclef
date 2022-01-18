@@ -1,7 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.util.KillAura;
+import adris.altoclef.control.KillAura;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.serialization.IFailableConfigFile;
@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-@SuppressWarnings("ALL")
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 /**
  * The settings file, loaded and used across the codebase.
  *
  * Each setting is documented.
  */
+@SuppressWarnings("ALL")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Settings implements IFailableConfigFile {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";

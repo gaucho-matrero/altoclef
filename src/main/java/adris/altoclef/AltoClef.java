@@ -3,7 +3,6 @@ package adris.altoclef;
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.commandsystem.CommandExecutor;
-import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -12,10 +11,9 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.InputControls;
-import adris.altoclef.util.control.BotBehaviour;
-import adris.altoclef.util.control.PlayerExtraController;
-import adris.altoclef.util.control.SlotHandler;
+import adris.altoclef.control.InputControls;
+import adris.altoclef.control.PlayerExtraController;
+import adris.altoclef.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.helpers.InputHelper;
@@ -29,24 +27,25 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+/**
+ * Central access point for AltoClef
+ */
 public class AltoClef implements ModInitializer {
 
     // Static access to altoclef
     private static final Queue<Consumer<AltoClef>> _postInitQueue = new ArrayDeque<>();
 
-    public final Action<String> onGameMessage = new Action<>();
-    public final Action<String> onGameOverlayMessage = new Action<>();
+    private final Action<String> _onGameMessage = new Action<>();
+    private final Action<String> _onGameOverlayMessage = new Action<>();
     // I forget why this is here somebody help
     private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
@@ -78,14 +77,7 @@ public class AltoClef implements ModInitializer {
     // Butler
     private Butler _butler;
 
-    // uh oh static
-    public static int getTicks() {
-        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
-        return ((ClientConnectionAccessor) con).getTicks();
-    }
-
     // Are we in game (playing in a server/world)
-    // uh oh, static creep
     public static boolean inGame() {
         return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
     }
@@ -239,32 +231,52 @@ public class AltoClef implements ModInitializer {
         }
     }
 
-    // Main handlers access
+    /**
+     * Executes commands (ex. `@get`/`@gamer`)
+     */
     public static CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
 
+    /**
+     * Runs the highest priority task chain
+     * (task chains run the task tree)
+     */
     public TaskRunner getTaskRunner() {
         return _taskRunner;
     }
 
+    /**
+     * The user task chain (runs your command. Ex. Get Diamonds, Beat the Game)
+     */
     public UserTaskChain getUserTaskChain() {
         return _userTaskChain;
     }
 
+    /**
+     * Controls bot behaviours, like whether to temporarily "protect" certain blocks or items
+     */
     public BotBehaviour getBehaviour() {
         return _botBehaviour;
     }
 
-    // Trackers access
+    /**
+     * Tracks items in your inventory and in storage containers.
+     */
     public ItemStorageTracker getItemStorage() {
         return _storageTracker;
     }
 
+    /**
+     * Tracks loaded entities
+     */
     public EntityTracker getEntityTracker() {
         return _entityTracker;
     }
 
+    /**
+     * Tracks blocks and their positions
+     */
     public BlockTracker getBlockTracker() {
         return _blockTracker;
     }
@@ -273,15 +285,23 @@ public class AltoClef implements ModInitializer {
         return _containerSubTracker;
     }
 
+    /**
+     * Tracks of whether a chunk is loaded/visible or not
+     */
     public SimpleChunkTracker getChunkTracker() {
         return _chunkTracker;
     }
 
+    /**
+     * Tracks random block things, like the last nether portal we used
+     */
     public MiscBlockTracker getMiscBlockTracker() {
         return _miscBlockTracker;
     }
 
-    // Baritone access
+    /**
+     * Baritone access (could just be static honestly)
+     */
     public Baritone getClientBaritone() {
         if (getPlayer() == null) {
             return (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
@@ -289,75 +309,122 @@ public class AltoClef implements ModInitializer {
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
 
+    /**
+     * Baritone settings access (could just be static honestly)
+     */
     public Settings getClientBaritoneSettings() {
         return Baritone.settings();
     }
 
+    /**
+     * Baritone settings special to AltoClef (could just be static honestly)
+     */
     public AltoClefSettings getExtraBaritoneSettings() {
         return AltoClefSettings.getInstance();
     }
 
+    /**
+     * AltoClef Settings
+     */
     public adris.altoclef.Settings getModSettings() {
         return _settings;
     }
 
-
+    /**
+     * Butler controller. Keeps track of users and lets you receive user messages
+     */
     public Butler getButler() {
         return _butler;
     }
 
+    /**
+     * Sends chat messages (avoids auto-kicking)
+     */
     public MessageSender getMessageSender() {
         return _messageSender;
     }
 
+    /**
+     * Does Inventory/container slot actions
+     */
     public SlotHandler getSlotHandler() {
         return _slotHandler;
     }
 
-    // Minecraft access
+    /**
+     * Minecraft player client access (could just be static honestly)
+     */
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
 
+    /**
+     * Minecraft world access (could just be static honestly)
+     */
     public ClientWorld getWorld() {
         return MinecraftClient.getInstance().world;
     }
 
+    /**
+     * Minecraft client interaction controller access (could just be static honestly)
+     */
     public ClientPlayerInteractionManager getController() {
         return MinecraftClient.getInstance().interactionManager;
     }
 
+    /**
+     * Extra controls not present in ClientPlayerInteractionManager. This REALLY should be made static or combined with something else.
+     */
     public PlayerExtraController getControllerExtras() {
         return _extraController;
     }
 
+    /**
+     * Manual control over input actions (ex. jumping, attacking)
+     */
     public InputControls getInputControls() {
         return _inputControls;
     }
 
-    // Extra control
+    /**
+     * Run a user task
+     */
     public void runUserTask(Task task) {
         runUserTask(task, () -> { });
     }
 
+    /**
+     * Run a user task
+     */
     @SuppressWarnings("rawtypes")
     public void runUserTask(Task task, Runnable onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }
 
+    /**
+     * Cancel currently running user task
+     */
     public void cancelUserTask() {
         _userTaskChain.cancel(this);
     }
 
-    // Chains
+    /**
+     * Takes control away to eat food
+     */
     public FoodChain getFoodChain() {
         return _foodChain;
     }
 
+    /**
+     * Takes control away to defend against mobs
+     */
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
 
+    /**
+     * Takes control away to perform bucket saves
+     */
     public MLGBucketFallChain getMLGBucketChain() {
         return _mlgBucketChain;
     }
@@ -366,6 +433,9 @@ public class AltoClef implements ModInitializer {
         log(message, MessagePriority.TIMELY);
     }
 
+    /**
+     * Logs to the console and also messages any player using the bot as a butler.
+     */
     public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
         _butler.onLog(message, priority);
@@ -375,13 +445,34 @@ public class AltoClef implements ModInitializer {
         logWarning(message, MessagePriority.TIMELY);
     }
 
+    /**
+     * Logs a warning to the console and also alerts any player using the bot as a butler.
+     */
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
         _butler.onLogWarning(message, priority);
     }
 
+    /**
+     * Subscribe to detect when the game loads a chunk
+     * (should really be moved elsewhere)
+     */
     public Action<WorldChunk> getOnChunkLoad() {
         return _onChunkLoad;
+    }
+    /**
+     * Subscribe to detect when the game sends a message in chat. Only used for sleep task at the moment.
+     * (should really be moved elsewhere)
+     */
+    public Action<String> getOnGameMessage() {
+        return _onGameMessage;
+    }
+    /**
+     * Subscribe to detect when the game sends a message in the overlay (ex. You cannot sleep as there are monsters nearby). Only used for sleep task.
+     * (should really be moved elsewhere)
+     */
+    public Action<String> getOnGameOverlayMessage() {
+        return _onGameOverlayMessage;
     }
 
     private void runEnqueuedPostInits() {
@@ -391,6 +482,10 @@ public class AltoClef implements ModInitializer {
             }
         }
     }
+
+    /**
+     * Use this to access AltoClef as an external library.
+     */
     public static void subscribeToPostInit(Consumer<AltoClef> onPostInit) {
         synchronized (_postInitQueue) {
             _postInitQueue.add(onPostInit);

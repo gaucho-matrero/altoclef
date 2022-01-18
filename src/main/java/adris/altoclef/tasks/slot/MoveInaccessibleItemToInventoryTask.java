@@ -29,7 +29,7 @@ public class MoveInaccessibleItemToInventoryTask extends Task {
 
         // Ensure inventory is closed.
         if (!StorageHelper.isPlayerInventoryOpen()) {
-            mod.getControllerExtras().closeScreen();
+            StorageHelper.closeScreen();
             setDebugState("Closing screen first (hope this doesn't get spammed a million times)");
             return null;
         }

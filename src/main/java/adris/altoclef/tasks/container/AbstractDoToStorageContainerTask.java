@@ -13,6 +13,9 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 
+/**
+ * Opens a STORAGE container and does whatever you want inside of it
+ */
 public abstract class AbstractDoToStorageContainerTask extends Task {
 
     private ContainerType _currentContainerType = null;

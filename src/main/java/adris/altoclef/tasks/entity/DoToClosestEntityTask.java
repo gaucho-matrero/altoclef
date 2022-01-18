@@ -12,10 +12,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-@SuppressWarnings("ALL")
 /**
- * Finds the closest entity and passes it to a task.
+ * Finds the closest entity and runs a task on that entity
  */
+@SuppressWarnings("ALL")
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
 
     private final Class[] _targetEntities;

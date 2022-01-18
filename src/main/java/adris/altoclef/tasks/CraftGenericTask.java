@@ -48,7 +48,7 @@ public class CraftGenericTask extends Task {
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
                 // Make sure we're not in another screen before we craft,
                 // otherwise crafting won't work
-                mod.getControllerExtras().closeScreen();
+                StorageHelper.closeScreen();
                 // Just to be safe
             }
         }

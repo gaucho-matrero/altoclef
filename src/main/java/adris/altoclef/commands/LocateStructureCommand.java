@@ -5,7 +5,7 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.tasks.misc.speedrun.LocateStrongholdTask;
+import adris.altoclef.tasks.movement.LocateStrongholdTask;
 import adris.altoclef.tasks.movement.LocateDesertTempleTask;
 
 public class LocateStructureCommand extends Command {

@@ -1,6 +1,7 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.util.Dimension;
 import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
@@ -15,17 +16,29 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
 import java.util.*;
 
+/**
+ * Super useful helper functions for getting information about the world.
+ */
 public interface WorldHelper {
 
     // God bless 1.18
     int WORLD_CEILING_Y = 255;
     int WORLD_FLOOR_Y = 0;
+
+    /**
+     * Get the number of in-game ticks the game/world has been active for.
+     */
+    static int getTicks() {
+        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
+        return ((ClientConnectionAccessor) con).getTicks();
+    }
 
     static Vec3d toVec3d(BlockPos pos) {
         if (pos == null) return null;
@@ -90,6 +103,9 @@ public interface WorldHelper {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }
 
+    /**
+     * Get the "head" of a block with a bed, if the block is a bed.
+     */
     static BlockPos getBedHead(AltoClef mod, BlockPos posWithBed) {
         BlockState state = mod.getWorld().getBlockState(posWithBed);
         if (state.getBlock() instanceof BedBlock) {

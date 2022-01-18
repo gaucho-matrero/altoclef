@@ -14,6 +14,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
 /**
+ * Connects client mixins to our AltoClef instance
+ *
  * Mixins have no way (currently) to access our mod.
  * <p>
  * As a result I'll do this statically.
@@ -105,7 +107,7 @@ public class StaticMixinHookups {
     }
 
     public static void onGameMessage(String message, boolean nonChat) {
-        _mod.onGameMessage.invoke(message);
+        _mod.getOnGameMessage().invoke(message);
         boolean debug = _mod.getModSettings().isWhisperFormatDebug();
         if (debug) {
             Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
@@ -118,7 +120,7 @@ public class StaticMixinHookups {
     }
 
     public static void onGameOverlayMessage(String message) {
-        _mod.onGameOverlayMessage.invoke(message);
+        _mod.getOnGameOverlayMessage().invoke(message);
     }
 
     public static void onPlayerCollidedWithEntity(PlayerEntity player, Entity entity) {

@@ -24,6 +24,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * Dumps items in any container, placing a chest if we can't find any.
+ */
 public class StoreInAnyContainerTask extends Task {
 
     private final String _uniqueId;
@@ -107,7 +110,7 @@ public class StoreInAnyContainerTask extends Task {
                             _progressChecker.reset();
                         }
                         _currentChestTry = blockPos;
-                        return new DumpInContainerTask(blockPos, _uniqueId, _getNextItemTargetToDump, altoClef -> null);
+                        return new StoreInContainerTask(blockPos, _uniqueId, _getNextItemTargetToDump, altoClef -> null);
                     },
                     validContainer,
                     TO_SCAN);

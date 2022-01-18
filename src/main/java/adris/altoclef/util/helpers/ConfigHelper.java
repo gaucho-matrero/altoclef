@@ -121,7 +121,7 @@ public class ConfigHelper {
 
         result.onLoadStart();
 
-        File loadFrom = new File(path);
+        File loadFrom = getConfigFile(path);
         if (!loadFrom.exists()) {
             // Empty
             Debug.logInternal("Lists file not found at " + path);
