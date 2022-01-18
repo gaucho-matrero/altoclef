@@ -7,6 +7,7 @@ import adris.altoclef.tasks.DoStuffInContainerTask;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.SmeltInFurnaceTask;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
@@ -32,6 +33,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -299,6 +301,16 @@ public class BeatMinecraft2Task extends Task {
                                 Blocks.END_PORTAL
                         );
                     } else {
+
+                        // Destroy silverfish spawner
+                        if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
+                            Optional<BlockPos> silverfish = mod.getBlockTracker().getNearestTracking(blockPos -> {
+                                return WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity;
+                            }, Blocks.SPAWNER);
+                            if (silverfish.isPresent()) {
+                                return new DestroyBlockTask(silverfish.get());
+                            }
+                        }
                         // Open the portal! (we have enough eyes, do it)
                         setDebugState("Opening End Portal");
                         return new DoToClosestBlockTask(
