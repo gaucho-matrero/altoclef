@@ -23,6 +23,10 @@ import java.util.*;
 
 public interface WorldHelper {
 
+    // God bless 1.18
+    int WORLD_CEILING_Y = 255;
+    int WORLD_FLOOR_Y = 0;
+
     static Vec3d toVec3d(BlockPos pos) {
         if (pos == null) return null;
         return new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
@@ -123,7 +127,7 @@ public interface WorldHelper {
     }
 
     static int getGroundHeight(AltoClef mod, int x, int z) {
-        for (int y = 255; y >= 0; --y) {
+        for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
             BlockPos check = new BlockPos(x, y, z);
             if (isSolid(mod, check)) return y;
         }
@@ -132,7 +136,7 @@ public interface WorldHelper {
 
     static int getGroundHeight(AltoClef mod, int x, int z, Block... groundBlocks) {
         Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
-        for (int y = 255; y >= 0; --y) {
+        for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
             BlockPos check = new BlockPos(x, y, z);
             if (possibleBlocks.contains(mod.getWorld().getBlockState(check).getBlock())) return y;
 
@@ -145,6 +149,31 @@ public interface WorldHelper {
                 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos)
                 && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos)
                 && canReach(mod, pos);
+    }
+
+    static boolean dangerousToBreakIfRightAbove(AltoClef mod, BlockPos toBreak) {
+        // There might be mumbo jumbo next to it, we fall and we get killed by lava or something.
+        if (MovementHelper.avoidBreaking(mod.getClientBaritone().bsi, toBreak.getX(), toBreak.getY(), toBreak.getZ(), mod.getWorld().getBlockState(toBreak))) {
+            return true;
+        }
+        // Fall down
+        for (int dy = 1; dy <= toBreak.getY() - WORLD_FLOOR_Y; ++dy) {
+            BlockPos check = toBreak.down(dy);
+            BlockState s = mod.getWorld().getBlockState(check);
+            boolean tooFarToFall = dy > mod.getClientBaritoneSettings().maxFallHeightNoWater.value;
+            // Don't fall in lava
+            if (MovementHelper.isLava(s))
+                return true;
+            // Always fall in water
+            // TODO: If there's a 1 meter thick layer of water and then a massive drop below, the bot will think it is safe.
+            if (MovementHelper.isWater(s))
+                return false;
+            // We hit ground, depends
+            if (WorldHelper.isSolid(mod, check))
+                return tooFarToFall;
+        }
+        // At this point we probably fall through the void, so not safe.
+        return true;
     }
 
     static boolean canPlace(AltoClef mod, BlockPos pos) {
