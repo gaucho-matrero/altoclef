@@ -95,16 +95,19 @@ public class UserTaskChain extends SingleTaskChain {
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
         double seconds = _taskStopwatch.time();
-        Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
+        _mainTask = null;
         if (_currentOnFinish != null) {
             //noinspection unchecked
             _currentOnFinish.run();
         }
-        _currentOnFinish = null;
-        onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
-        _mainTask = null;
-        if (shouldIdle) {
-            mod.runUserTask(new IdleTask());
+        // our `onFinish` might have triggered more tasks.
+        boolean actuallyDone = _mainTask == null;
+        if (actuallyDone) {
+            Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
+            onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
+            if (shouldIdle) {
+                mod.runUserTask(new IdleTask());
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.client.MinecraftClient;
@@ -108,25 +107,24 @@ public class Butler {
 
     private void executeWhisper(String username, String message) {
         String prevUser = _currentUser;
-        try {
-            _commandInstantRan = true;
-            _commandFinished = false;
-            _currentUser = username;
-            sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-            AltoClef.getCommandExecutor().execute("@" + message, (nothing) -> {
-                // On finish
-                sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
-                if (!_commandInstantRan) {
-                    _currentUser = null;
-                }
-                _commandFinished = true;
-            });
-            _commandInstantRan = false;
-        } catch (CommandException e) {
+        _commandInstantRan = true;
+        _commandFinished = false;
+        _currentUser = username;
+        sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
+        AltoClef.getCommandExecutor().execute("@" + message, () -> {
+            // On finish
+            sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
+            if (!_commandInstantRan) {
+                _currentUser = null;
+            }
+            _commandFinished = true;
+        }, e -> {
             sendWhisper("TASK FAILED: " + e.getMessage(), MessagePriority.ASAP);
-            _currentUser = null;
             e.printStackTrace();
-        }
+            _currentUser = null;
+            _commandInstantRan = false;
+        });
+        _commandInstantRan = false;
         // Only set the current user if we're still running.
         if (_commandFinished) {
             _currentUser = prevUser;

@@ -51,12 +51,7 @@ public class StaticMixinHookups {
         String line = e.getMessage();
         if (AltoClef.getCommandExecutor().isClientCommand(line)) {
             e.cancel();
-            try {
-                AltoClef.getCommandExecutor().execute(line);
-            } catch (CommandException ex) {
-                Debug.logWarning(ex.getMessage());
-                //ex.printStackTrace();
-            }
+            AltoClef.getCommandExecutor().execute(line, ex -> Debug.logWarning(ex.getMessage()));
         }
     }
 

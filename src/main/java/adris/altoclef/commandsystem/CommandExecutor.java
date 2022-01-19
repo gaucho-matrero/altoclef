@@ -32,21 +32,39 @@ public class CommandExecutor {
         return line.startsWith(_commandPrefix);
     }
 
-    public void execute(String line, Consumer onFinish) throws CommandException {
-        if (!isClientCommand(line)) return;
-        line = line.substring(_commandPrefix.length());
-        Command c = getCommand(line);
-        if (c != null) {
-            try {
-                c.run(_mod, line, onFinish);
-            } catch (CommandException ae) {
-                throw new CommandException(ae.getMessage() + "\nUsage: " + c.getHelpRepresentation(), ae);
-            }
+    // This is how we "nest" command finishes so we can complete them in order.
+    private void executeRecursive(Command[] commands, String[] parts, int index, Runnable onFinish, Consumer<CommandException> getException){
+        if (index >= commands.length) {
+            onFinish.run();
+            return;
+        }
+        Command command = commands[index];
+        String part = parts[index];
+        try {
+            command.run(_mod, part, () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
+        } catch (CommandException ae) {
+            getException.accept(new CommandException(ae.getMessage() + "\nUsage: " + command.getHelpRepresentation(), ae));
         }
     }
 
-    public void execute(String line) throws CommandException {
-        execute(line, null);
+    public void execute(String line, Runnable onFinish, Consumer<CommandException> getException) {
+        if (!isClientCommand(line)) return;
+        line = line.substring(_commandPrefix.length());
+        // Run commands separated by ;
+        String[] parts = line.split(";");
+        Command[] commands = new Command[parts.length];
+        try {
+            for (int i = 0; i < parts.length; ++i) {
+                commands[i] = getCommand(parts[i]);
+            }
+        } catch (CommandException e) {
+            getException.accept(e);
+        }
+        executeRecursive(commands, parts, 0, onFinish, getException);
+    }
+
+    public void execute(String line, Consumer<CommandException> getException) {
+        execute(line, ()->{}, getException);
     }
 
     private Command getCommand(String line) throws CommandException {
