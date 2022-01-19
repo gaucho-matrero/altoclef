@@ -82,7 +82,7 @@ public class CommandExecutor {
     }
 
     private Command getCommand(String line) throws CommandException {
-
+        line = line.trim();
         if (line.length() != 0) {
             String command = line;
             int firstSpace = line.indexOf(' ');
