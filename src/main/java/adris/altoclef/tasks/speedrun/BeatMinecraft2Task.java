@@ -516,10 +516,6 @@ public class BeatMinecraft2Task extends Task {
                 }
                 // Then go to the nether.
                 setDebugState("Going to Nether");
-                if (!mod.getItemStorage().hasItem(Items.CRAFTING_TABLE)) {
-                    setDebugState("Grab a crafting table first tho");
-                    return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
-                }
                 return _goToNetherTask;
             }
             case NETHER -> {
