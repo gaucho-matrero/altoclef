@@ -2,7 +2,6 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.movement.IdleTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.csharpisbetter.Action;
@@ -16,6 +15,9 @@ public class UserTaskChain extends SingleTaskChain {
     public final Action<String> onTaskFinish = new Action<>();
     private final Stopwatch _taskStopwatch = new Stopwatch();
     private Runnable _currentOnFinish = null;
+
+    private boolean _runningIdleTask;
+    private boolean _nextTaskIdleFlag;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -54,9 +56,6 @@ public class UserTaskChain extends SingleTaskChain {
 
     public void cancel(AltoClef mod) {
         if (_mainTask != null && _mainTask.isActive()) {
-            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
-                return;
-            }
             stop(mod);
             onTaskFinish(mod);
         }
@@ -73,8 +72,14 @@ public class UserTaskChain extends SingleTaskChain {
     }
 
     public void runTask(AltoClef mod, Task task, Runnable onFinish) {
+        _runningIdleTask = _nextTaskIdleFlag;
+        _nextTaskIdleFlag = false;
+
         _currentOnFinish = onFinish;
-        Debug.logMessage("User Task Set: " + task.toString());
+
+        if (!_runningIdleTask) {
+            Debug.logMessage("User Task Set: " + task.toString());
+        }
         mod.getTaskRunner().enable();
         _taskStopwatch.begin();
         setTask(task);
@@ -87,7 +92,7 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     protected void onTaskFinish(AltoClef mod) {
-        boolean shouldIdle = mod.getModSettings().shouldIdleWhenNotActive();
+        boolean shouldIdle = mod.getModSettings().shouldRunIdleCommandWhenNotActive();
         if (!shouldIdle) {
             // Stop.
             mod.getTaskRunner().disable();
@@ -103,11 +108,24 @@ public class UserTaskChain extends SingleTaskChain {
         // our `onFinish` might have triggered more tasks.
         boolean actuallyDone = _mainTask == null;
         if (actuallyDone) {
-            Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
-            onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
+            if (!_runningIdleTask) {
+                Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
+                onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
+            }
             if (shouldIdle) {
-                mod.runUserTask(new IdleTask());
+                AltoClef.getCommandExecutor().executeWithPrefix(mod.getModSettings().getIdleCommand());
+                signalNextTaskToBeIdleTask();
+                _runningIdleTask = true;
             }
         }
+    }
+
+    public boolean isRunningIdleTask() {
+        return isActive() && _runningIdleTask;
+    }
+
+    // The next task will be an idle task.
+    public void signalNextTaskToBeIdleTask() {
+        _nextTaskIdleFlag = true;
     }
 }

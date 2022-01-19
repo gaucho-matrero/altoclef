@@ -41,7 +41,12 @@ public class CommandExecutor {
         Command command = commands[index];
         String part = parts[index];
         try {
-            command.run(_mod, part, () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
+            if (command == null) {
+                getException.accept(new CommandException("Invalid command:" + part));
+                executeRecursive(commands, parts, index + 1, onFinish, getException);
+            } else {
+                command.run(_mod, part, () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
+            }
         } catch (CommandException ae) {
             getException.accept(new CommandException(ae.getMessage() + "\nUsage: " + command.getHelpRepresentation(), ae));
         }
@@ -65,6 +70,15 @@ public class CommandExecutor {
 
     public void execute(String line, Consumer<CommandException> getException) {
         execute(line, ()->{}, getException);
+    }
+    public void execute(String line) {
+        execute(line, ex -> Debug.logWarning(ex.getMessage()));
+    }
+    public void executeWithPrefix(String line) {
+        if (!line.startsWith(_commandPrefix)) {
+            line = _commandPrefix + line;
+        }
+        execute(line);
     }
 
     private Command getCommand(String line) throws CommandException {

@@ -244,19 +244,13 @@ public class Settings implements IFailableConfigFile {
     private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
     /**
-     * If set, will run this command by default when all other commands finish.
+     * If set, will run this command by default when no other commands are running.
      *
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
      * Or "follow <Your Username>" to follow you when not doing anything.
+     * Or "goto <Home base coords>" to return to home base when the bot finishes its work.
      */
-    private boolean whisperFormatDebug = false;
-
-    /**
-     * If true, the bot will perform basic survival tasks when no commands are in progress
-     * (eat food, force field mobs, etc.)
-     * It will only perform survival tasks allowed by other parameters in the settings file.
-     */
-    private boolean idleWhenNotActive = false;
+    private String idleCommand = "";
 
     /**
      * If we need to throw away something, throw away these items first.
@@ -461,8 +455,11 @@ public class Settings implements IFailableConfigFile {
         return forceFieldStrategy;
     }
 
-    public boolean shouldIdleWhenNotActive() {
-        return idleWhenNotActive;
+    public String getIdleCommand() {
+        return idleCommand;
+    }
+    public boolean shouldRunIdleCommandWhenNotActive() {
+        return idleCommand != null && !idleCommand.isBlank();
     }
 
     public boolean shouldAutoMLGBucket() {

@@ -96,14 +96,6 @@ public class AltoClef implements ModInitializer {
 
         initializeBaritoneSettings();
 
-        // Load settings
-        adris.altoclef.Settings.load(newSettings -> {
-            _settings = newSettings;
-            // Baritone's `acceptableThrowawayItems` should match our own.
-            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(Arrays.asList(_settings.getThrowawayItems(this, true)));
-        });
-
-
         // Central Managers
         _commandExecutor = new CommandExecutor(this, "@");
         _taskRunner = new TaskRunner(this);
@@ -144,6 +136,18 @@ public class AltoClef implements ModInitializer {
 
 
         initializeCommands();
+
+        // Load settings
+        adris.altoclef.Settings.load(newSettings -> {
+            _settings = newSettings;
+            // Baritone's `acceptableThrowawayItems` should match our own.
+            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(Arrays.asList(_settings.getThrowawayItems(this, true)));
+            // If we should run an idle command...
+            if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
+                getUserTaskChain().signalNextTaskToBeIdleTask();
+                AltoClef.getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
+            }
+        });
 
         Playground.IDLE_TEST_INIT_FUNCTION(this);
         runEnqueuedPostInits();
