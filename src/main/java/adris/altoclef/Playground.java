@@ -119,8 +119,8 @@ public class Playground {
 
         switch (arg) {
             case "":
-                // Idle
-                mod.runUserTask(new IdleTask());
+                // None specified
+                Debug.logWarning("Please specify a test (ex. stacked, bed, terminate)");
                 break;
             case "sign":
                 mod.runUserTask(new PlaceSignTask("Hello there!"));
