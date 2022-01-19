@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
@@ -94,6 +95,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         _origin = mod.getPlayer().getPos();
         _progressChecker.reset();
         _failCounter = 0;
+        StorageHelper.closeScreen();
     }
 
     @Override

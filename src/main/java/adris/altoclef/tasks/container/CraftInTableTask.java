@@ -83,9 +83,7 @@ public class CraftInTableTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         // Close the crafting table screen
-        if (mod.getPlayer() != null) {
-            StorageHelper.closeScreen();
-        }
+        StorageHelper.closeScreen();
         //mod.getControllerExtras().closeCurrentContainer();
     }
 
@@ -147,9 +145,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     protected void onStop(AltoClef mod, Task interruptTask) {
         super.onStop(mod, interruptTask);
         mod.getBehaviour().pop();
-        if (AltoClef.inGame()) {
-            StorageHelper.closeScreen();
-        }
+        StorageHelper.closeScreen();
     }
 
     @Override

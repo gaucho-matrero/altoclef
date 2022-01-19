@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalBlock;
@@ -42,6 +43,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     protected void onStart(AltoClef mod) {
         _tryToMineTimer.forceElapse();
         _wanderTask.resetWander();
+        StorageHelper.closeScreen();
     }
 
     @Override

@@ -7,6 +7,7 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
@@ -48,6 +49,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     protected void onStart(AltoClef mod) {
         _wanderTask.resetWander();
         _progress.reset();
+        StorageHelper.closeScreen(); // Kinda duct tape but it should be future proof ish
     }
 
     @Override
