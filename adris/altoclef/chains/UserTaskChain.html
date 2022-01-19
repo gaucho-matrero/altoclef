@@ -139,16 +139,22 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>float</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getPriority(adris.altoclef.AltoClef)">getPriority</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onTaskFinish(adris.altoclef.AltoClef)">onTaskFinish</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isRunningIdleTask()">isRunningIdleTask</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onTick(adris.altoclef.AltoClef)">onTick</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onTaskFinish(adris.altoclef.AltoClef)">onTaskFinish</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#runTask(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task,java.lang.Runnable)">runTask</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onTick(adris.altoclef.AltoClef)">onTick</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#runTask(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task,java.lang.Runnable)">runTask</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;task,
  <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Runnable.html" title="class or interface in java.lang" class="external-link">Runnable</a>&nbsp;onFinish)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#signalNextTaskToBeIdleTask()">signalNextTaskToBeIdleTask</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
@@ -253,6 +259,18 @@ loadScripts(document, 'script');</script>
 <dt>Specified by:</dt>
 <dd><code><a href="SingleTaskChain.html#onTaskFinish(adris.altoclef.AltoClef)">onTaskFinish</a></code>&nbsp;in class&nbsp;<code><a href="SingleTaskChain.html" title="class in adris.altoclef.chains">SingleTaskChain</a></code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isRunningIdleTask()">
+<h3>isRunningIdleTask</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isRunningIdleTask</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="signalNextTaskToBeIdleTask()">
+<h3>signalNextTaskToBeIdleTask</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">signalNextTaskToBeIdleTask</span>()</div>
 </section>
 </li>
 </ul>
