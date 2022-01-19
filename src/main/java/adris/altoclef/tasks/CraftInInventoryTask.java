@@ -42,13 +42,16 @@ public class CraftInInventoryTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         _fullCheckFailed = false;
+        StorageHelper.closeScreen(); // Just to be safe I guess
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Grab from output FIRST
-        if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
-            return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+        if (StorageHelper.isPlayerInventoryOpen()) {
+            if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
+                return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+            }
         }
 
         ItemTarget toGet = _itemTargets[0];

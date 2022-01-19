@@ -15,8 +15,6 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
@@ -42,15 +40,13 @@ public class CraftGenericTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
-        boolean bigCrafting = (mod.getPlayer().currentScreenHandler instanceof CraftingScreenHandler);
+        boolean bigCrafting = StorageHelper.isBigCraftingOpen();
 
-        if (!bigCrafting) {
-            if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                // Make sure we're not in another screen before we craft,
-                // otherwise crafting won't work
-                StorageHelper.closeScreen();
-                // Just to be safe
-            }
+        if (!bigCrafting && !StorageHelper.isPlayerInventoryOpen()) {
+            // Make sure we're not in another screen before we craft,
+            // otherwise crafting won't work
+            StorageHelper.closeScreen();
+            // Just to be safe
         }
 
         // For each slot in table
