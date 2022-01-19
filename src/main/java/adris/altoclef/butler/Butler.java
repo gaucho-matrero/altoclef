@@ -50,14 +50,14 @@ public class Butler {
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
-        } else if (_mod.getModSettings().isWhisperFormatDebug()){
+        } else if (ButlerConfig.getInstance().whisperFormatDebug){
             Debug.logMessage("    Not Parsing: MSG format not found.");
         }
     }
 
     public void receiveWhisper(String username, String message) {
 
-        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
+        boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
         // Ignore messages from other bots.
         if (message.startsWith(BUTLER_MESSAGE_START)) {
             if (debug) {

@@ -1,6 +1,6 @@
 package adris.altoclef;
 
-import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.butler.ButlerConfig;
 import baritone.api.event.events.ChatEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
@@ -103,7 +103,7 @@ public class StaticMixinHookups {
 
     public static void onGameMessage(String message, boolean nonChat) {
         _mod.getOnGameMessage().invoke(message);
-        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
+        boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
         if (debug) {
             Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
         }
