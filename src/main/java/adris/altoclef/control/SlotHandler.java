@@ -75,7 +75,12 @@ public class SlotHandler {
         registerSlotAction();
         int syncId = player.currentScreenHandler.syncId;
 
-        _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+        try {
+            _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+        } catch (Exception e) {
+            Debug.logWarning("Slot Click Error (ignored)");
+            e.printStackTrace();
+        }
     }
 
     public boolean forceEquipItem(Item toEquip) {

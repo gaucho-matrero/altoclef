@@ -64,8 +64,15 @@ public class StorageHelper {
             if (slot.equals(PlayerInventorySlot.ARMOR_BOOTS_SLOT))
                 return inv.getArmorStack(0).copy();
         }
-        net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-        return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
+        try {
+            // We might have messed up and opened the wrong slot.
+            net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
+            return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
+        } catch (Exception e) {
+            Debug.logWarning("Screen Slot Error (ignored)");
+            e.printStackTrace();
+            return ItemStack.EMPTY;
+        }
     }
 
     public static MiningRequirement getCurrentMiningRequirement(AltoClef mod) {
