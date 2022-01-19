@@ -2,14 +2,17 @@ package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
@@ -29,6 +32,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     private final TimerGame _tryToMineTimer = new TimerGame(5);
 
+    // For vines and stuff
+    private boolean _wasClose = false;
+
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
     }
@@ -37,6 +43,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     protected void onStart(AltoClef mod) {
         _tryToMineTimer.forceElapse();
         _wanderTask.resetWander();
+        StorageHelper.closeScreen();
     }
 
     @Override
@@ -52,6 +59,14 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             mod.getBlockTracker().requestBlockUnreachable(_pos);
             _wanderTask.resetWander();
             return _wanderTask;
+        }
+
+        // do NOT break if we're standing above it and it's dangerous below...
+        if (mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().getPos(), 1.2)) {
+            if (WorldHelper.dangerousToBreakIfRightAbove(mod, _pos)) {
+                setDebugState("It's dangerous to break as we're right above it, moving away and trying again.");
+                return new RunAwayFromPositionTask(3, _pos.getY() + 1, _pos);
+            }
         }
 
         // We're trying to mine
@@ -81,9 +96,15 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             }
         } else {
             setDebugState("Getting to block...");
+            boolean isClose = _pos.isWithinDistance(mod.getPlayer().getPos(), 1);
+            if (isClose != _wasClose) {
+                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                _wasClose = isClose;
+            }
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalNear(_pos, 1));
+                // If we're close, go TO the block (potentially disrupts vines and stuff)
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(isClose? new GoalBlock(_pos) : new GoalNear(_pos, 1));
             }
         }
 

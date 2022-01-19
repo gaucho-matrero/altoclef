@@ -1,16 +1,20 @@
 package adris.altoclef.util;
 
+import net.minecraft.item.Item;
+
 import java.util.Objects;
 
 public class SmeltTarget {
 
     private ItemTarget _material;
     private final ItemTarget _item;
+    private final Item[] _optionalMaterials;
 
-    public SmeltTarget(ItemTarget item, ItemTarget material) {
+    public SmeltTarget(ItemTarget item, ItemTarget material, Item... optionalMaterials) {
         _item = item;
         _material = material;
         _material = new ItemTarget(material, _item.getTargetCount());
+        _optionalMaterials = optionalMaterials;
     }
 
     public ItemTarget getItem() {
@@ -19,6 +23,10 @@ public class SmeltTarget {
 
     public ItemTarget getMaterial() {
         return _material;
+    }
+
+    public Item[] getOptionalMaterials() {
+        return _optionalMaterials;
     }
 
     @Override

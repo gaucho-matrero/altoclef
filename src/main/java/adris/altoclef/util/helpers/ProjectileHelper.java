@@ -8,6 +8,9 @@ import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 
+/**
+ * Projectile motion math functions
+ */
 public class ProjectileHelper {
 
     public static final double ARROW_GRAVITY_ACCEL = 0.05000000074505806;

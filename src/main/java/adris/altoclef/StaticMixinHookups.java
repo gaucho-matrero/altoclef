@@ -1,6 +1,6 @@
 package adris.altoclef;
 
-import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.butler.ButlerConfig;
 import baritone.api.event.events.ChatEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,6 +14,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
 /**
+ * Connects client mixins to our AltoClef instance
+ *
  * Mixins have no way (currently) to access our mod.
  * <p>
  * As a result I'll do this statically.
@@ -49,12 +51,7 @@ public class StaticMixinHookups {
         String line = e.getMessage();
         if (AltoClef.getCommandExecutor().isClientCommand(line)) {
             e.cancel();
-            try {
-                AltoClef.getCommandExecutor().execute(line);
-            } catch (CommandException ex) {
-                Debug.logWarning(ex.getMessage());
-                //ex.printStackTrace();
-            }
+            AltoClef.getCommandExecutor().execute(line);
         }
     }
 
@@ -80,16 +77,16 @@ public class StaticMixinHookups {
 
     public static void onScreenOpenBegin(Screen screen) {
         if (screen == null) {
-            _mod.getContainerTracker().onScreenClose();
+            _mod.getContainerSubTracker().onScreenClose();
         }
     }
 
     public static void onScreenOpenEnd(Screen screen) {
-        _mod.getContainerTracker().onScreenOpenFirstTick(screen);
+        _mod.getContainerSubTracker().onScreenOpenFirstTick(screen);
     }
 
     public static void onBlockInteract(BlockHitResult hitResult, BlockState blockState) {
-        _mod.getContainerTracker().onBlockInteract(hitResult.getBlockPos(), blockState.getBlock());
+        _mod.getContainerSubTracker().onBlockInteract(hitResult.getBlockPos(), blockState.getBlock());
     }
 
     public static void onChunkLoad(WorldChunk chunk) {
@@ -105,8 +102,8 @@ public class StaticMixinHookups {
     }
 
     public static void onGameMessage(String message, boolean nonChat) {
-        _mod.onGameMessage.invoke(message);
-        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
+        _mod.getOnGameMessage().invoke(message);
+        boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
         if (debug) {
             Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
         }
@@ -118,7 +115,7 @@ public class StaticMixinHookups {
     }
 
     public static void onGameOverlayMessage(String message) {
-        _mod.onGameOverlayMessage.invoke(message);
+        _mod.getOnGameOverlayMessage().invoke(message);
     }
 
     public static void onPlayerCollidedWithEntity(PlayerEntity player, Entity entity) {

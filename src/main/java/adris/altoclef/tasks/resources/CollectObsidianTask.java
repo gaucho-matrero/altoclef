@@ -9,6 +9,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
@@ -95,7 +96,7 @@ public class CollectObsidianTask extends ResourceTask {
         }
 
         // Get a diamond pickaxe FIRST
-        if (!mod.getInventoryTracker().miningRequirementMet(MiningRequirement.DIAMOND)) {
+        if (!StorageHelper.miningRequirementMet(mod, MiningRequirement.DIAMOND)) {
             setDebugState("Getting diamond pickaxe first");
             return new SatisfyMiningRequirementTask(MiningRequirement.DIAMOND);
         }
@@ -153,7 +154,7 @@ public class CollectObsidianTask extends ResourceTask {
             }
         }
         // Try to see if we can nudge the obsidian placer closer to lava.
-        if (_placeObsidianTask != null && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+        if (_placeObsidianTask != null && !mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
             // We've moved sort of far away from our post, and this will STOP running when we grab our lava
             // (which is exactly when we want it to run and no more!
             if (!_placeObsidianTask.getPos().isWithinDistance(mod.getPlayer().getPos(), 4)) {

@@ -20,6 +20,9 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
+/**
+ * Helper functions to interpret and change our player's look direction
+ */
 public interface LookHelper {
 
     static Optional<Rotation> getReach(BlockPos target, Direction side) {
@@ -153,7 +156,7 @@ public interface LookHelper {
     private static boolean isCollidingInteractable(AltoClef mod) {
 
         if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            mod.getControllerExtras().closeScreen();
+            StorageHelper.closeScreen();
             return true;
         }
 

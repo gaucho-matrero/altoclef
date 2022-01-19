@@ -22,7 +22,7 @@ import java.util.Set;
  * - Search a nether fortress for blaze spawners
  * - Search a stronghold for the portal
  */
-public abstract class ChunkSearchTask extends Task {
+abstract class ChunkSearchTask extends Task {
 
     private final BlockPos _startPoint;
     private final Object _searchMutex = new Object();

@@ -5,7 +5,7 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.tasks.misc.KillPlayerTask;
+import adris.altoclef.tasks.entity.KillPlayerTask;
 
 public class PunkCommand extends Command {
     public PunkCommand() throws CommandException {

@@ -1,34 +1,30 @@
 package adris.altoclef.trackers;
 
-import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
+import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 import java.util.function.Predicate;
 
-@SuppressWarnings("rawtypes")
-/*
+/**
  * Keeps track of entities so we can search/grab them.
  */
+@SuppressWarnings("rawtypes")
 public class EntityTracker extends Tracker {
 
     private final HashMap<Item, List<ItemEntity>> _itemDropLocations = new HashMap<>();
@@ -58,14 +54,6 @@ public class EntityTracker extends Tracker {
         _entitiesCollidingWithPlayerAccumulator.get(player).add(entity);
     }
 
-    public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
-        boolean hostile = isGenerallyHostileToPlayer(mob);
-        if (mob instanceof LivingEntity entity) {
-            return hostile && entity.canSee(mod.getPlayer());
-        }
-        return hostile;
-    }
-
     /**
      * Squash a class that may have sub classes into one distinguishable class type.
      * For ease of use.
@@ -81,36 +69,6 @@ public class EntityTracker extends Tracker {
         return type;
     }
 
-    public static boolean isGenerallyHostileToPlayer(Entity hostile) {
-        // TODO: Ignore on Peaceful difficulty.
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        // NOTE: These do not work.
-        if (hostile instanceof EndermanEntity enderman) {
-            return enderman.isAngryAt(player) && enderman.isAngry();
-        }
-        // TODO: Ignore if wearing any gold armor.
-        if (hostile instanceof HoglinEntity) {
-            return true;
-        }
-        if (hostile instanceof ZombifiedPiglinEntity zombie) {
-            // Will ALWAYS be false.
-            return zombie.hasAngerTime() && zombie.isAngryAt(player);
-        }
-        return !isTradingPiglin(hostile);
-    }
-
-    public static boolean isTradingPiglin(Entity entity) {
-        if (entity instanceof PiglinEntity pig) {
-            for (ItemStack stack : pig.getItemsHand()) {
-                if (stack.getItem().equals(Items.GOLD_INGOT)) {
-                    // We're trading with this one, ignore it.
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public boolean isCollidingWithPlayer(PlayerEntity player, Entity entity) {
         return _entitiesCollidingWithPlayer.containsKey(player) && _entitiesCollidingWithPlayer.get(player).contains(entity);
     }
@@ -118,19 +76,19 @@ public class EntityTracker extends Tracker {
         return isCollidingWithPlayer(_mod.getPlayer(), entity);
     }
 
-    public ItemEntity getClosestItemDrop(Item... items) {
+    public Optional<ItemEntity> getClosestItemDrop(Item... items) {
         return getClosestItemDrop(_mod.getPlayer().getPos(), items);
     }
-    public ItemEntity getClosestItemDrop(Vec3d position, Item... items) {
+    public Optional<ItemEntity> getClosestItemDrop(Vec3d position, Item... items) {
         return getClosestItemDrop(position, entity -> true, items);
     }
-    public ItemEntity getClosestItemDrop(Vec3d position, ItemTarget... items) {
+    public Optional<ItemEntity> getClosestItemDrop(Vec3d position, ItemTarget... items) {
         return getClosestItemDrop(position, entity -> true, items);
     }
-    public ItemEntity getClosestItemDrop(Predicate<ItemEntity> acceptPredicate, Item... items) {
+    public Optional<ItemEntity> getClosestItemDrop(Predicate<ItemEntity> acceptPredicate, Item... items) {
         return getClosestItemDrop(_mod.getPlayer().getPos(), acceptPredicate, items);
     }
-    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, Item... items) {
+    public Optional<ItemEntity> getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, Item... items) {
         ensureUpdated();
         ItemTarget[] tempTargetList = new ItemTarget[items.length];
         for (int i = 0; i < items.length; ++i) {
@@ -139,15 +97,15 @@ public class EntityTracker extends Tracker {
         return getClosestItemDrop(position, acceptPredicate, tempTargetList);
     }
 
-    public ItemEntity getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, ItemTarget... targets) {
+    public Optional<ItemEntity> getClosestItemDrop(Vec3d position, Predicate<ItemEntity> acceptPredicate, ItemTarget... targets) {
         ensureUpdated();
         if (targets.length == 0) {
             Debug.logError("You asked for the drop position of zero items... Most likely a typo.");
-            return null;
+            return Optional.empty();
         }
         if (!itemDropped(targets)) {
             Debug.logError("You forgot to check for whether item (example): " + targets[0].getMatches()[0].getTranslationKey() + " was dropped before finding its drop location.");
-            return null;
+            return Optional.empty();
         }
 
         ItemEntity closestEntity = null;
@@ -168,36 +126,38 @@ public class EntityTracker extends Tracker {
                 }
             }
         }
-        return closestEntity;
+        return Optional.ofNullable(closestEntity);
     }
 
-    public Entity getClosestEntity(Class... entityTypes) {
+    public Optional<Entity> getClosestEntity(Class... entityTypes) {
         return getClosestEntity(_mod.getPlayer().getPos(), entityTypes);
     }
-    public Entity getClosestEntity(Vec3d position, Class... entityTypes) {
+    public Optional<Entity> getClosestEntity(Vec3d position, Class... entityTypes) {
         return this.getClosestEntity(position, (entity) -> true, entityTypes);
     }
-    public Entity getClosestEntity(Predicate<Entity> acceptPredicate, Class... entityTypes) {
+    public Optional<Entity> getClosestEntity(Predicate<Entity> acceptPredicate, Class... entityTypes) {
         return getClosestEntity(_mod.getPlayer().getPos(), acceptPredicate, entityTypes);
     }
-    public Entity getClosestEntity(Vec3d position, Predicate<Entity> acceptPredicate, Class... entityTypes) {
+    public Optional<Entity> getClosestEntity(Vec3d position, Predicate<Entity> acceptPredicate, Class... entityTypes) {
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
         for (Class toFind : entityTypes) {
-            if (_entityMap.containsKey(toFind)) {
-                for (Entity entity : _entityMap.get(toFind)) {
-                    // Don't accept entities that no longer exist
-                    if (!entity.isAlive()) continue;
-                    if (!acceptPredicate.test(entity)) continue;
-                    double cost = entity.squaredDistanceTo(position);
-                    if (cost < minCost) {
-                        minCost = cost;
-                        closestEntity = entity;
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                if (_entityMap.containsKey(toFind)) {
+                    for (Entity entity : _entityMap.get(toFind)) {
+                        // Don't accept entities that no longer exist
+                        if (!entity.isAlive()) continue;
+                        if (!acceptPredicate.test(entity)) continue;
+                        double cost = entity.squaredDistanceTo(position);
+                        if (cost < minCost) {
+                            minCost = cost;
+                            closestEntity = entity;
+                        }
                     }
                 }
             }
         }
-        return closestEntity;
+        return Optional.ofNullable(closestEntity);
     }
 
     public boolean itemDropped(Item... items) {
@@ -232,7 +192,9 @@ public class EntityTracker extends Tracker {
     public boolean entityFound(Class... types) {
         ensureUpdated();
         for (Class type : types) {
-            if (_entityMap.containsKey(type)) return true;
+            synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+                if (_entityMap.containsKey(type)) return true;
+            }
         }
         return false;
     }
@@ -248,6 +210,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Gets all entities that are within our interact range
+     */
     public List<Entity> getCloseEntities() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -255,6 +220,9 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Gets a list of projectiles that we've cached/stored information about.
+     */
     public List<CachedProjectile> getProjectiles() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -269,6 +237,10 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    /**
+     * Is a player loaded/within render distance?
+     * @param name Username on a multiplayer server
+     */
     public boolean isPlayerLoaded(String name) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
@@ -276,29 +248,40 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public Vec3d getPlayerMostRecentPosition(String name) {
+    /**
+     * Get where we last saw a player, if we saw them at all.
+     * @return Username on a multiplayer server.
+     */
+    public Optional<Vec3d> getPlayerMostRecentPosition(String name) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            if (_playerLastCoordinates.containsKey(name)) {
-                return _playerLastCoordinates.get(name);
-            }
+            return Optional.ofNullable(_playerLastCoordinates.getOrDefault(name, null));
         }
-        return null;
     }
 
-    public PlayerEntity getPlayerEntity(String name) {
+    /**
+     * Gets the player entity corresponding to a username, if they're loaded/within render distance.
+     * @param name Username on a multiplayer server.
+     */
+    public Optional<PlayerEntity> getPlayerEntity(String name) {
         if (isPlayerLoaded(name)) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                return _playerMap.get(name);
+                return Optional.of(_playerMap.get(name));
             }
         }
-        return null;
+        return Optional.empty();
     }
 
+    /**
+     * Tells the entity tracker that we were unable to reach this entity.
+     */
     public void requestEntityUnreachable(Entity entity) {
-        _entityBlacklist.blackListItem(_mod, entity, 2);
+        _entityBlacklist.blackListItem(_mod, entity, 3);
     }
 
+    /**
+     * Whether we have decided that this entity is unreachable.
+     */
     public boolean isEntityReachable(Entity entity) {
         return !_entityBlacklist.unreachable(entity);
     }
@@ -347,16 +330,19 @@ public class EntityTracker extends Tracker {
                 if (entity instanceof ItemEntity ientity) {
                     Item droppedItem = ientity.getStack().getItem();
 
-                    if (!_itemDropLocations.containsKey(droppedItem)) {
-                        _itemDropLocations.put(droppedItem, new ArrayList<>());
+                    // Only cared about GROUNDED item entities
+                    if (ientity.isOnGround() || ientity.isTouchingWater()) {
+                        if (!_itemDropLocations.containsKey(droppedItem)) {
+                            _itemDropLocations.put(droppedItem, new ArrayList<>());
+                        }
+                        _itemDropLocations.get(droppedItem).add(ientity);
                     }
-                    _itemDropLocations.get(droppedItem).add(ientity);
                 } else if (entity instanceof MobEntity) {
 
                     //noinspection ConstantConditions
                     if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
 
-                        if (isAngryAtPlayer(_mod, entity)) {
+                        if (EntityHelper.isAngryAtPlayer(_mod, entity)) {
 
                             // Check if the mob is facing us or is close enough
                             boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);

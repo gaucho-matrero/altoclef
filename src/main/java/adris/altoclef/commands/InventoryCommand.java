@@ -47,7 +47,7 @@ public class InventoryCommand extends Command {
                 finish();
                 return;
             }
-            int count = mod.getInventoryTracker().getItemCount(matches);
+            int count = mod.getItemStorage().getItemCount(matches);
             if (count == 0) {
                 mod.log(item + " COUNT: (none)");
             } else {

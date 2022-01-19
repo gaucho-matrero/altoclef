@@ -11,7 +11,6 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 public class GetCommand extends Command {
 
@@ -23,7 +22,7 @@ public class GetCommand extends Command {
 
     // We may ignore our "one item" rule in place of an item array.
     @Override
-    public void run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
+    public void run(AltoClef mod, String line, Runnable onFinish) throws CommandException {
         try {
             super.run(mod, line, onFinish);
         } catch (CommandException e) {

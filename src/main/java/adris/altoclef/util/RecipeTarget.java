@@ -33,7 +33,7 @@ public class RecipeTarget {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RecipeTarget that = (RecipeTarget) o;
-        return _recipe.equals(that._recipe) && (_item == null) == (that._item == null) && (_item == null || _item.equals(that._item));
+        return _recipe.equals(that._recipe) && Objects.equals (_item, that._item);
     }
 
     @Override

@@ -4,8 +4,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Optional;
 
 /**
  * Some generic tasks require us to go to the nether/overworld/end.
@@ -30,11 +33,11 @@ public class DefaultGoToDimensionTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (mod.getCurrentDimension() == _target) return null;
+        if (WorldHelper.getCurrentDimension() == _target) return null;
 
         switch (_target) {
             case OVERWORLD:
-                switch (mod.getCurrentDimension()) {
+                switch (WorldHelper.getCurrentDimension()) {
                     case NETHER:
                         return goToOverworldFromNetherTask(mod);
                     case END:
@@ -42,7 +45,7 @@ public class DefaultGoToDimensionTask extends Task {
                 }
                 break;
             case NETHER:
-                switch (mod.getCurrentDimension()) {
+                switch (WorldHelper.getCurrentDimension()) {
                     case OVERWORLD:
                         return goToNetherFromOverworldTask(mod);
                     case END:
@@ -51,7 +54,7 @@ public class DefaultGoToDimensionTask extends Task {
                 }
                 break;
             case END:
-                switch (mod.getCurrentDimension()) {
+                switch (WorldHelper.getCurrentDimension()) {
                     case NETHER:
                         // First go to the overworld
                         return goToOverworldFromNetherTask(mod);
@@ -61,7 +64,7 @@ public class DefaultGoToDimensionTask extends Task {
                 break;
         }
 
-        setDebugState(mod.getCurrentDimension() + " -> " + _target + " is NOT IMPLEMENTED YET!");
+        setDebugState(WorldHelper.getCurrentDimension() + " -> " + _target + " is NOT IMPLEMENTED YET!");
         return null;
     }
 
@@ -85,7 +88,7 @@ public class DefaultGoToDimensionTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getCurrentDimension() == _target;
+        return WorldHelper.getCurrentDimension() == _target;
     }
 
     private Task goToOverworldFromNetherTask(AltoClef mod) {
@@ -128,8 +131,8 @@ public class DefaultGoToDimensionTask extends Task {
 
     private boolean netherPortalIsClose(AltoClef mod) {
         if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
-            BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
-            return closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), 2000);
+            Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+            return closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), 2000);
         }
         return false;
     }

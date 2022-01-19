@@ -2,34 +2,31 @@ package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
-import adris.altoclef.tasks.SmeltInFurnaceTask;
-import adris.altoclef.tasks.chest.StoreInAnyChestTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
+import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
-import adris.altoclef.tasks.misc.PlaceSignTask;
-import adris.altoclef.tasks.misc.speedrun.*;
-import adris.altoclef.tasks.movement.EnterNetherPortalTask;
-import adris.altoclef.tasks.movement.IdleTask;
-import adris.altoclef.tasks.movement.LocateDesertTempleTask;
-import adris.altoclef.tasks.movement.PickupDroppedItemTask;
+import adris.altoclef.tasks.construction.PlaceSignTask;
+import adris.altoclef.tasks.speedrun.*;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
+import adris.altoclef.tasks.stupid.TerminatorTask;
+import adris.altoclef.tasks.movement.*;
+import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotTask;
-import adris.altoclef.tasks.misc.stupid.BeeMovieTask;
-import adris.altoclef.tasks.misc.stupid.ReplaceBlocksTask;
-import adris.altoclef.tasks.misc.stupid.SCP173Task;
-import adris.altoclef.tasks.misc.stupid.TerminatorTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.slots.PlayerInventorySlot;
-import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
@@ -44,6 +41,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -121,8 +119,8 @@ public class Playground {
 
         switch (arg) {
             case "":
-                // Idle
-                mod.runUserTask(new IdleTask());
+                // None specified
+                Debug.logWarning("Please specify a test (ex. stacked, bed, terminate)");
                 break;
             case "sign":
                 mod.runUserTask(new PlaceSignTask("Hello there!"));
@@ -195,7 +193,7 @@ public class Playground {
                 break;
             case "portal":
                 //mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalBucketTask(), Dimension.NETHER));
-                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), mod.getCurrentDimension() == Dimension.OVERWORLD? Dimension.NETHER : Dimension.OVERWORLD));
+                mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), WorldHelper.getCurrentDimension() == Dimension.OVERWORLD? Dimension.NETHER : Dimension.OVERWORLD));
                 break;
             case "kill":
                 List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
@@ -223,7 +221,7 @@ public class Playground {
                     Item toEquip = Items.BUCKET;//Items.AIR;
                     Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
 
-                    InventoryTracker t = mod.getInventoryTracker();
+                    InventoryTracker t = mod.getItemStorage();
 
                     // Already equipped
                     if (t.getItemStackInSlot(target).getItem() == toEquip) {
@@ -240,16 +238,7 @@ public class Playground {
                     }
                      */
                 }).start();
-                //mod.getInventoryTracker().equipItem(Items.AIR);
-                break;
-            case "throw":
-                new Thread(() -> {
-                    for (int i = 3; i > 0; --i) {
-                        Debug.logMessage(i + "...");
-                        sleepSec(1);
-                    }
-                    mod.getControllerExtras().dropCurrentStack(true);
-                }).start();
+                //mod.getItemStorage().equipItem(Items.AIR);
                 break;
             case "food":
                 mod.runUserTask(new CollectFoodTask(20));
@@ -288,20 +277,6 @@ public class Playground {
             case "piglin":
                 mod.runUserTask(new TradeWithPiglinsTask(32, new ItemTarget(Items.ENDER_PEARL, 12)));
                 break;
-            case "throwaway":
-                Slot toThrow = mod.getInventoryTracker().getGarbageSlot();
-                if (toThrow != null) {
-                    // mod.getInventoryTracker().throwSlot(toThrow);
-                    // Equip then throw
-                    //mod.getInventoryTracker().equipSlot(toThrow);
-                    //mod.getInventoryTracker().equipItem(mod.getInventoryTracker().getItemStackInSlot(toThrow).getItem());
-                    /*int count = mod.getInventoryTracker().getItemStackInSlot(toThrow).getCount();
-                    for (int i = 0; i < count; ++i) {
-                        mod.getControllerExtras().dropCurrentStack(true);
-                    }
-                     */
-                }
-                break;
             case "stronghold":
                 mod.runUserTask(new LocateStrongholdTask(12));
                 break;
@@ -329,7 +304,12 @@ public class Playground {
                 mod.runUserTask(new KillEnderDragonTask());
                 break;
             case "chest":
-                mod.runUserTask(new StoreInAnyChestTask(new ItemTarget(Items.DIAMOND, 3)));
+                mod.runUserTask(new StoreInAnyContainerTask("diamondstuff", altoClef -> {
+                    if (altoClef.getItemStorage().getItemCount(Items.DIAMOND) >= 3) {
+                        return Optional.of(new ItemTarget(Items.DIAMOND, 3));
+                    }
+                    return Optional.empty();
+                }));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());
@@ -348,9 +328,6 @@ public class Playground {
                         new ItemTarget("netherite_chestplate", 1),
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
-                break;
-            case "equip":
-                mod.runUserTask(new MoveItemToSlotTask(new ItemTarget("diamond_chestplate", 1), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT));
                 break;
             case "whisper": {
                 File check = new File("whisper.txt");

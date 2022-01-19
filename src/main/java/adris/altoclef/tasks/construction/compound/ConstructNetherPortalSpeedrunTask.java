@@ -144,20 +144,20 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         mod.getBehaviour().setAllowWalkThroughFlowingWater(false);
 
         // Get bucket if we don't have one.
-        if (!mod.getInventoryTracker().hasItem(Items.BUCKET) && !mod.getInventoryTracker().hasItem(Items.WATER_BUCKET) && !mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+        if (!mod.getItemStorage().hasItem(Items.BUCKET) && !mod.getItemStorage().hasItem(Items.WATER_BUCKET) && !mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
             setDebugState("Getting bucket");
             return TaskCatalogue.getItemTask(Items.BUCKET, 1);
         }
 
         // Get flint & steel if we don't have one
-        if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
+        if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
             setDebugState("Getting flint & steel");
             return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
         }
 
         boolean needsToLookForPortal = _portalOrigin == null;
         if (needsToLookForPortal) {
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Getting water");
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
@@ -214,7 +214,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
         if (!_portalFrameBuilt) {
             BlockPos waterSourcePos = _portalOrigin.add(WATER_SOURCE_ORIGIN);
             if (MinecraftClient.getInstance().world.getBlockState(waterSourcePos).getBlock() != Blocks.WATER) {
-                if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+                if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                     setDebugState("Getting water");
                     return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
                 }
@@ -235,7 +235,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
             if (!lavaTarget.isSatisfied(_portalOrigin)) {
 
                 // Get lava if we don't have it.
-                if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
+                if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
                     setDebugState("Getting Lava");
                     _isPlacingLiquid = true;
                     return _collectLavaTask;

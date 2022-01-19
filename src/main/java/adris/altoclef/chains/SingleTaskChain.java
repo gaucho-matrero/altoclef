@@ -71,7 +71,7 @@ public abstract class SingleTaskChain extends TaskChain {
         // Stop our task. When we're started up again, let our task know we need to run.
         _interrupted = true;
         if (_mainTask != null && _mainTask.isActive()) {
-            _mainTask.stop(mod);
+            _mainTask.interrupt(mod, null);
         }
     }
 
