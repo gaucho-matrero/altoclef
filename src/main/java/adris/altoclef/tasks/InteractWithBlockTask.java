@@ -225,6 +225,11 @@ public class InteractWithBlockTask extends Task {
         // Don't interact if baritone can't interact.
         if (mod.getExtraBaritoneSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
 
+        // We can't interact while a screen is open.
+        if (!StorageHelper.isPlayerInventoryOpen()) {
+            StorageHelper.closeScreen();
+        }
+
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
             //Debug.logMessage("Reachable: UPDATE");
