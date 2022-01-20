@@ -162,6 +162,9 @@ public class AltoClef implements ModInitializer {
         // Cancel shortcut
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
             _userTaskChain.cancel(this);
+            if (_taskRunner.getCurrentTaskChain() != null) {
+                _taskRunner.getCurrentTaskChain().stop(this);
+            }
         }
 
         // TODO: should this go here?
