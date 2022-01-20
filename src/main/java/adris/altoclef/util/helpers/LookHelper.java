@@ -175,7 +175,7 @@ public interface LookHelper {
 
     static void randomOrientation(AltoClef mod) {
         Rotation r = new Rotation((float) Math.random() * 360f, -90 + (float) Math.random() * 180f);
-        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
+        lookAt(mod, r);
     }
 
     static boolean isLookingAt(AltoClef mod, Rotation rotation) {
@@ -189,6 +189,8 @@ public interface LookHelper {
 
     static void lookAt(AltoClef mod, Rotation rotation) {
         mod.getClientBaritone().getLookBehavior().updateTarget(rotation, true);
+        mod.getPlayer().setYaw(rotation.getYaw());
+        mod.getPlayer().setPitch(rotation.getPitch());
     }
     static void lookAt(AltoClef mod, Vec3d toLook) {
         Rotation targetRotation = getLookRotation(mod, toLook);
