@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screen.ingame.*;
 import net.minecraft.item.Item;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.util.Pair;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -63,6 +64,14 @@ public class ContainerSubTracker extends Tracker {
     public void onServerTick() {
         if (MinecraftClient.getInstance().player == null)
             return;
+        // If we haven't registered interacting with a block, try the currently "looking at" block
+        if (_containerOpen && _lastBlockPosInteraction == null && _lastBlockInteraction == null) {
+            if (MinecraftClient.getInstance().crosshairTarget instanceof BlockHitResult bhit) {
+                Debug.logWarning("Screen open but no block interaction detected, using the block we're currently looking at.");
+                _lastBlockPosInteraction = bhit.getBlockPos();
+                _lastBlockInteraction = _mod.getWorld().getBlockState(_lastBlockPosInteraction).getBlock();
+            }
+        }
         if (_containerOpen && _lastBlockPosInteraction != null && _lastBlockInteraction != null) {
             BlockPos containerPos = _lastBlockPosInteraction;
             ScreenHandler handler = MinecraftClient.getInstance().player.currentScreenHandler;
