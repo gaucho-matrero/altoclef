@@ -14,6 +14,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -31,7 +32,6 @@ public class LootContainerTask extends Task {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(target);
-        _pickupTask = new PickupFromContainerTask(chest, new ItemTarget(target, 1));
     }
 
     @Override
@@ -47,8 +47,10 @@ public class LootContainerTask extends Task {
                 return new EnsureFreeInventorySlotTask();
             }
         }
-        setDebugState("Looting a container for 1 " + target.toString());
-        return _pickupTask;
+        Optional<Slot> optimal = getAMatchingSlot(mod);
+        if (optimal.isEmpty()) return null;
+        setDebugState("Looting a container for all of their " + target.toString());
+        return new ClickSlotTask(optimal.get());
     }
 
     @Override
@@ -61,12 +63,15 @@ public class LootContainerTask extends Task {
         return task instanceof LootContainerTask;
     }
 
+    private Optional<Slot> getAMatchingSlot(AltoClef mod) {
+        List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(target);
+        if (slots.isEmpty()) return null;
+        else return Optional.ofNullable(slots.get(0));
+    }
+
     @Override
     public boolean isFinished(AltoClef mod) {
-        Debug.logMessage("Isfinished: " + _pickupTask.isFinished(mod));
-        Debug.logMessage("Isactive: " + _pickupTask.isActive());
-        Debug.logMessage("Isempty: " + StorageHelper.getItemStackInCursorSlot().isEmpty());
-        return _pickupTask.isFinished(mod) && !_pickupTask.isActive() && StorageHelper.getItemStackInCursorSlot().isEmpty();
+        return getAMatchingSlot(mod).isEmpty();
     }
 
     @Override
