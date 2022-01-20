@@ -206,7 +206,9 @@ public interface WorldHelper {
 
     static boolean canReach(AltoClef mod, BlockPos pos) {
         if (mod.getModSettings().shouldAvoidOcean()) {
-            if (mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
+            // 45 is roughly the ocean floor. We add 2 just cause why not.
+            // This > 47 can clearly cause a stuck bug.
+            if (mod.getPlayer().getY() > 47 && mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
                 // Block is in an ocean biome. If it's below sea level...
                 if (pos.getY() < 64 && getGroundHeight(mod, pos.getX(), pos.getZ(), Blocks.WATER) > pos.getY()) {
                     return false;
