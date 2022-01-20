@@ -235,6 +235,9 @@ public class ItemStorageTracker extends Tracker {
     public Optional<ContainerCache> getContainerAtPosition(BlockPos pos) {
         return _containers.getContainerAtPosition(pos);
     }
+    public boolean isContainerCached(BlockPos pos) {
+        return getContainerAtPosition(pos).isPresent();
+    }
     public Optional<ContainerCache> getEnderChestStorage() {
         return _containers.getEnderChestStorage();
     }
