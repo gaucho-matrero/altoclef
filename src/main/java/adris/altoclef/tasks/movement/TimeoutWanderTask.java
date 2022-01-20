@@ -26,7 +26,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     static {
         ANNOYING_STUCK_BLOCKS = new HashSet<>();
         ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.WOOD_FENCE).map(Block::getBlockFromItem).toList());
-        ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.WOOD_DOOR).map(Block::getBlockFromItem).toList());
+        //ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.WOOD_DOOR).map(Block::getBlockFromItem).toList());
         ANNOYING_STUCK_BLOCKS.addAll(Arrays.stream(ItemHelper.FLOWER).map(Block::getBlockFromItem).toList());
         ANNOYING_STUCK_BLOCKS.addAll(Arrays.asList(Blocks.VINE,
                 Blocks.NETHER_SPROUTS,
