@@ -214,7 +214,6 @@ public class LocateStrongholdTask extends Task {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
-                //ensure we have enough building materials to reach goal
                 if (_netherGoalPos == null) {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
