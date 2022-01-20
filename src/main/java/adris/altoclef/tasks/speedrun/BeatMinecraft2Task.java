@@ -54,7 +54,8 @@ public class BeatMinecraft2Task extends Task {
     private static final Block[] TRACK_BLOCKS = new Block[] {
             Blocks.END_PORTAL_FRAME,
             Blocks.END_PORTAL,
-            Blocks.CRAFTING_TABLE // For pearl trading + gold crafting
+            Blocks.CRAFTING_TABLE, // For pearl trading + gold crafting
+            Blocks.SPAWNER // For silverfish
     };
 
     private static final Item[] COLLECT_EYE_ARMOR = new Item[] {
@@ -186,6 +187,16 @@ public class BeatMinecraft2Task extends Task {
 
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
+
+            // If we find an ender portal, just GO to it!!!
+            if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
+                setDebugState("WOOHOO");
+                return new DoToClosestBlockTask(
+                        blockPos -> new GetToBlockTask(blockPos.up()),
+                        Blocks.END_PORTAL
+                );
+            }
+
             // If we have bed, do bed strats, otherwise punk normally.
             updateCachedEndItems(mod);
             // Grab beds
