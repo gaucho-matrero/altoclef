@@ -170,7 +170,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
                     - (materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0)
                     - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0);
-            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot.getItem()) * _furnaceCache.fuelSlot.getCount() + _furnaceCache.burningFuelCount;
+            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot) + _furnaceCache.burningFuelCount + _furnaceCache.burnPercentage;
             // Fuel needed = (mat_target - out_in_inventory - out_in_furnace - totalFuelInFurnace)
             double fuelNeeded = _ignoreMaterials
                         ? Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
