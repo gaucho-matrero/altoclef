@@ -6,13 +6,16 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EyeOfEnderEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -40,6 +43,7 @@ public class LocateStrongholdTask extends Task {
     private Entity _currentThrownEye = null;
     private Vec3d _strongholdEstimatePos = null;
     private BlockPos _netherGoalPos = null;
+    private boolean _netherGoalAdjusted=false;
     private BlockPos _cachedEducatedPortal = null;
     private BlockPos _educatedPortalStart = null;
     private boolean _netherGoalReached = false;
@@ -130,6 +134,7 @@ public class LocateStrongholdTask extends Task {
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
+                _netherGoalAdjusted = false;
                 _netherGoalReached = false;
                 _portalBuildRange = 2;
             }
@@ -214,13 +219,20 @@ public class LocateStrongholdTask extends Task {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
+
                 if (_netherGoalPos == null) {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
                 }
-                if(mod.getPlayer().getPos().getX() - _netherGoalPos.getX() < Math.abs(15) && mod.getPlayer().getZ() - _netherGoalPos.getZ() < Math.abs(15) && mod.getPlayer().getPos().getY() > _netherGoalPos.getY()){
-                    _netherGoalPos = new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 1, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
-                    // Also ensures that we don't have to break blocks we are standing on to place the portal. Gets within 120 blocks of the stronghold.
+                if(!_netherGoalAdjusted && mod.getPlayer().getPos().getX() - _netherGoalPos.getX() < Math.abs(15) && mod.getPlayer().getZ() - _netherGoalPos.getZ() < Math.abs(15) && mod.getPlayer().getPos().getY() > _netherGoalPos.getY()){
+                    _netherGoalPos =
+                            new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 2, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
+                    Debug.logMessage("Adjusted");
+                    _netherGoalAdjusted = true;
+                    // Also ensures that we don't
+                    // have to
+                    // break blocks we
+                    // are standing on to place the portal. Gets within 120 blocks of the stronghold.
                 }
                 if (_constructTask.isActive() && !_constructTask.isFinished(mod) || (WorldHelper.getCurrentDimension() == Dimension.NETHER && _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange))) {
                     if (_portalBuildRange == 2) {
