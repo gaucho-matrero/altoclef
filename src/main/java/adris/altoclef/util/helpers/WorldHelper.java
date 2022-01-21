@@ -118,6 +118,20 @@ public interface WorldHelper {
         }
         return null;
     }
+    /**
+     * Get the "foot" of a block with a bed, if the block is a bed.
+     */
+    static BlockPos getBedFoot(AltoClef mod, BlockPos posWithBed) {
+        BlockState state = mod.getWorld().getBlockState(posWithBed);
+        if (state.getBlock() instanceof BedBlock) {
+            Direction facing = state.get(BedBlock.FACING);
+            if (mod.getWorld().getBlockState(posWithBed).get(BedBlock.PART).equals(BedPart.FOOT)) {
+                return posWithBed;
+            }
+            return posWithBed.offset(facing.getOpposite());
+        }
+        return null;
+    }
 
     // Get the left side of a chest, given a block pos.
     // Used to consistently identify whether a double chest is part of the same chest.

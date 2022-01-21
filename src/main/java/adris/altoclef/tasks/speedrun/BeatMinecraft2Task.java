@@ -96,6 +96,9 @@ public class BeatMinecraft2Task extends Task {
 
     private final HashMap<Item, Integer> _cachedEndItemDrops = new HashMap<>();
 
+    // Controls whether we CAN walk on the end portal.
+    private boolean _enterindEndPortal = false;
+
     private Task _foodTask;
     private Task _gearTask;
     private final Task _buildMaterialsTask;
@@ -134,7 +137,15 @@ public class BeatMinecraft2Task extends Task {
         mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.CRAFTING_TABLE);
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
         // Allow walking on end portal
-        mod.getBehaviour().allowWalkingOn(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
+        mod.getBehaviour().allowWalkingOn(blockPos -> _enterindEndPortal && mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
+
+        // Don't break the bed we placed near the end portal
+        mod.getBehaviour().avoidBlockBreaking(blockPos -> {
+            if (_bedSpawnLocation != null) {
+                return blockPos.equals(WorldHelper.getBedHead(mod, _bedSpawnLocation)) || blockPos.equals(WorldHelper.getBedFoot(mod, _bedSpawnLocation));
+            }
+            return false;
+        });
     }
 
     @Override
@@ -169,6 +180,9 @@ public class BeatMinecraft2Task extends Task {
             @just hit the dragon normally
          */
 
+        // By default, don't walk over end portals.
+        _enterindEndPortal = false;
+
         Predicate<Task> isCraftingTableTask = task -> {
             if (task instanceof DoStuffInContainerTask cont) {
                 return cont.getContainerTarget().matches(Items.CRAFTING_TABLE);
@@ -191,6 +205,7 @@ public class BeatMinecraft2Task extends Task {
             // If we find an ender portal, just GO to it!!!
             if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
+                _enterindEndPortal = true;
                 return new DoToClosestBlockTask(
                         blockPos -> new GetToBlockTask(blockPos.up()),
                         Blocks.END_PORTAL
@@ -243,7 +258,7 @@ public class BeatMinecraft2Task extends Task {
         }
 
         // Sleep through night.
-        if (_config.sleepThroughNight && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
+        if (_config.sleepThroughNight && !_endPortalOpened && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             if (WorldHelper.canSleep()) {
                 setDebugState("Sleeping through night");
                 return _sleepThroughNightTask;
@@ -293,7 +308,7 @@ public class BeatMinecraft2Task extends Task {
                         if (!hasItemOrDroppedInEnd(mod, Items.IRON_SWORD) && !hasItemOrDroppedInEnd(mod, Items.DIAMOND_SWORD)) {
                             return TaskCatalogue.getItemTask(Items.IRON_SWORD, 1);
                         }
-                        if (!hasItemOrDroppedInEnd(mod, Items.WATER_BUCKET) && !hasItemOrDroppedInEnd(mod, Items.BUCKET)) {
+                        if (!hasItemOrDroppedInEnd(mod, Items.WATER_BUCKET)) {
                             return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
                         }
                         if (!hasItemOrDroppedInEnd(mod, Items.IRON_PICKAXE) && !hasItemOrDroppedInEnd(mod, Items.DIAMOND_PICKAXE)) {
@@ -305,6 +320,7 @@ public class BeatMinecraft2Task extends Task {
 
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
+                        _enterindEndPortal = true;
                         return new DoToClosestBlockTask(
                                 blockPos -> new GetToBlockTask(blockPos.up()),
                                 Blocks.END_PORTAL
@@ -543,9 +559,10 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private Task setSpawnNearPortalTask(AltoClef mod) {
-        _bedSpawnLocation = null;
         if (_setBedSpawnTask.isSpawnSet()) {
             _bedSpawnLocation = _setBedSpawnTask.getBedSleptPos();
+        } else {
+            _bedSpawnLocation = null;
         }
         if (shouldForce(mod, _setBedSpawnTask)) {
             // Set spawnpoint and set our bed spawn when it happens.
@@ -574,10 +591,6 @@ public class BeatMinecraft2Task extends Task {
                 return new EquipArmorTask(Items.GOLDEN_BOOTS);
             }
             int goldBuffer = 32;
-            if (!mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && mod.getItemStorage().getItemCount(Items.GOLD_INGOT) >= goldBuffer && mod.getBlockTracker().anyFound(Blocks.CRAFTING_TABLE)) {
-                setDebugState("Getting crafting table ");
-                return TaskCatalogue.getItemTask(Items.CRAFTING_TABLE, 1);
-            }
             return new TradeWithPiglinsTask(32, Items.ENDER_PEARL, count);
         } else {
             if (mod.getEntityTracker().entityFound(EndermanEntity.class) || mod.getEntityTracker().itemDropped(Items.ENDER_PEARL)) {
@@ -602,7 +615,11 @@ public class BeatMinecraft2Task extends Task {
         return _bedsToCollect + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
     }
     private boolean needsBeds(AltoClef mod) {
-        return mod.getItemStorage().getItemCount(ItemHelper.BED) < getTargetBeds(mod);
+        int inEnd = 0;
+        for (Item item : ItemHelper.BED) {
+            inEnd += _cachedEndItemDrops.getOrDefault(item, 0);
+        }
+        return (mod.getItemStorage().getItemCount(ItemHelper.BED) + inEnd) < getTargetBeds(mod);
     }
     private Task getBedTask(AltoClef mod) {
         int targetBeds = getTargetBeds(mod);
