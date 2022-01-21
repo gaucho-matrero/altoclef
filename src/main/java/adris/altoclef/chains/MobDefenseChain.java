@@ -15,6 +15,8 @@ import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -53,6 +55,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private Entity _targetEntity;
     private boolean _doingFunkyStuff = false;
     private boolean _wasPuttingOutFire = false;
+    private boolean _isBlockingWithShield = false;
     private CustomBaritoneGoalTask _runAwayTask;
 
     private float _cachedLastPriority;
@@ -133,14 +136,19 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Dodge projectiles
-        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+        Optional<Vec3d> closeProjectile = getACloseProjectile(mod);
+        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && closeProjectile.isPresent()) {
             _doingFunkyStuff = true;
             //Debug.logMessage("DODGING");
             _runAwayTask = null;
+            activateShieldIfPossible(mod, closeProjectile.get());
             setTask(new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL));
             return 65;
         }
-
+        // Stop blocking with a shield
+        if (closeProjectile.isEmpty() && _isBlockingWithShield) {
+            stopBlocking(mod);
+        }
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod)) {
             _doingFunkyStuff = true;
@@ -339,6 +347,24 @@ public class MobDefenseChain extends SingleTaskChain {
         _killAura.tickEnd(mod);
     }
 
+    private void activateShieldIfPossible(AltoClef mod, Vec3d projectile) {
+        if (projectile.distanceTo(mod.getPlayer().getPos()) <= 1 && !_isBlockingWithShield) {
+            // We are too late to block now, running is our best bet
+            return;
+        }
+        if (!mod.getClientBaritone().getMineProcess().isActive() && projectile.distanceTo(mod.getPlayer().getPos()) <= 15) {
+            for (Slot slot : mod.getItemStorage().getSlotsWithItemPlayerInventory(true, Items.SHIELD)) {
+                if (slot.equals(PlayerSlot.OFFHAND_SLOT)) {
+                    mod.getInputControls().hold(Input.CLICK_RIGHT);
+                    _isBlockingWithShield = true;
+                    BlockPos projectilePos = new BlockPos(projectile.getX(), projectile.getY(), projectile.getZ());
+                    mod.getClientBaritone().getLookBehavior().updateTarget(RotationUtils.calcRotationFromCoords(mod.getPlayer().getBlockPos().up(1), projectilePos), true);
+                    break;
+                }
+            }
+        }
+    }
+
     private void applyForceField(AltoClef mod, Entity entity) {
         if (_targetEntity != null && _targetEntity.equals(entity)) return;
         _killAura.applyAura(mod, entity);
@@ -369,7 +395,14 @@ public class MobDefenseChain extends SingleTaskChain {
         return target;
     }
 
-    private boolean isProjectileClose(AltoClef mod) {
+    private void stopBlocking(AltoClef mod) {
+        if (!mod.getFoodChain().isTryingToEat()) {
+            mod.getInputControls().release(Input.CLICK_RIGHT);
+        }
+        _isBlockingWithShield = false;
+    }
+
+    private Optional<Vec3d> getACloseProjectile(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
 
         try {
@@ -395,12 +428,12 @@ public class MobDefenseChain extends SingleTaskChain {
                 double verticalDistance = delta.y;
 
                 if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
-                    return true;
+                    return Optional.ofNullable(projectile.position);
             }
         } catch (ConcurrentModificationException e) {
             Debug.logWarning("Weird exception caught and ignored while checking for nearby projectiles.");
         }
-        return false;
+        return Optional.empty();
     }
 
     private Optional<Entity> getUniversallyDangerousMob(AltoClef mod) {
@@ -479,6 +512,8 @@ public class MobDefenseChain extends SingleTaskChain {
     public boolean isDoingAcrobatics() {
         return _doingFunkyStuff;
     }
+
+    public boolean isBlockingWithShield() { return  _isBlockingWithShield; }
 
     @Override
     public boolean isActive() {
