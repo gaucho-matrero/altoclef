@@ -194,16 +194,19 @@ public class LocateStrongholdTask extends Task {
             return null;
         }
         if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || WorldHelper.getCurrentDimension() == Dimension.NETHER)) {
+            // We WILL need this at some point, so we should run it always.
+            // If the bot drops the flint and steel in the nether, grab it.
+            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                setDebugState("Getting flint and steel first");
+                return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+            }
             if (_cachedEducatedPortal != null) {
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
-            if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
+            if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 ||
                 mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
                 if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
-                    if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                        setDebugState("Getting flint and steel before going into nether");
-                        return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
-                    }
+
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
                 }
