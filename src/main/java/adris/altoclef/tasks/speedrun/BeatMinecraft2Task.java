@@ -19,6 +19,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -98,6 +99,9 @@ public class BeatMinecraft2Task extends Task {
 
     // Controls whether we CAN walk on the end portal.
     private boolean _enterindEndPortal = false;
+
+    // For some reason, after death there's a frame where the game thinks there are NO items in the end.
+    private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(2);
 
     private Task _foodTask;
     private Task _gearTask;
@@ -243,6 +247,9 @@ public class BeatMinecraft2Task extends Task {
             }
             setDebugState("No beds, regular strats.");
             return new KillEnderDragonTask();
+        } else {
+            // We're not in the end so reset our "end cache" timer
+            _cachedEndItemNothingWaitTime.reset();
         }
 
         // Check for end portals. Always.
@@ -374,8 +381,17 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private void updateCachedEndItems(AltoClef mod) {
+        List<ItemEntity> droppedItems = mod.getEntityTracker().getDroppedItems();
+        // If we have no items, it COULD be because we're dead. Wait a little.
+        if (droppedItems.isEmpty()) {
+            if (!_cachedEndItemNothingWaitTime.elapsed()) {
+                return;
+            }
+        } else {
+            _cachedEndItemNothingWaitTime.reset();
+        }
         _cachedEndItemDrops.clear();
-        for (ItemEntity entity : mod.getEntityTracker().getDroppedItems()) {
+        for (ItemEntity entity : droppedItems) {
             Item item = entity.getStack().getItem();
             int count = entity.getStack().getCount();
             _cachedEndItemDrops.put(item, _cachedEndItemDrops.getOrDefault(item, 0) + count);
