@@ -381,38 +381,11 @@ public class BeatMinecraft2Task extends Task {
             lootable.add(Items.GOLD_INGOT);
             lootable.add(Items.FLINT);
             lootable.add(Items.GOLDEN_BOOTS);
-            if (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
                 lootable.add(Items.FLINT_AND_STEEL);
             }
         }
         return lootable;
-    }
-
-    private boolean canBeLootablePortalChest(AltoClef mod, BlockPos blockPos) {
-        if (mod.getWorld().getBlockState(blockPos.up(1)).getBlock() == Blocks.WATER || blockPos.getY() < 50) {
-            return false;
-        }
-        for (BlockPos check : WorldHelper.scanRegion(mod, blockPos.add(-4, -2, -4), blockPos.add(4, 2, 4))) {
-            Debug.logMessage("WE GOT HERE BUT WHAT THE HECK");
-            if (mod.getWorld().getBlockState(check).getBlock() == Blocks.NETHERRACK) {
-                return true;
-            }
-        }
-        _notRuinedPortalChests.add(blockPos);
-        return false;
-    }
-
-    boolean isChestNotOpened(AltoClef mod, BlockPos pos) {
-        return !mod.getItemStorage().getContainerAtPosition(pos).isPresent();
-    }
-
-    private Optional<BlockPos> locateClosestUnopenedRuinedPortalChest(AltoClef mod) {
-        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
-            return null;
-        }
-        Debug.logMessage("Does dis run doe?");
-        Debug.logMessage("Chests: " + mod.getBlockTracker().getKnownLocations(Blocks.CHEST).size());
-        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && isChestNotOpened(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 
     @Override
@@ -464,6 +437,31 @@ public class BeatMinecraft2Task extends Task {
         }
         return 0;
     }
+
+    private boolean canBeLootablePortalChest(AltoClef mod, BlockPos blockPos) {
+        if (mod.getWorld().getBlockState(blockPos.up(1)).getBlock() == Blocks.WATER || blockPos.getY() < 50) {
+            return false;
+        }
+        for (BlockPos check : WorldHelper.scanRegion(mod, blockPos.add(-4, -2, -4), blockPos.add(4, 2, 4))) {
+            if (mod.getWorld().getBlockState(check).getBlock() == Blocks.NETHERRACK) {
+                return true;
+            }
+        }
+        _notRuinedPortalChests.add(blockPos);
+        return false;
+    }
+
+    boolean isChestNotOpened(AltoClef mod, BlockPos pos) {
+        return mod.getItemStorage().getContainerAtPosition(pos).isEmpty();
+    }
+
+    private Optional<BlockPos> locateClosestUnopenedRuinedPortalChest(AltoClef mod) {
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
+            return Optional.empty();
+        }
+        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && isChestNotOpened(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
+    }
+
     private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
         Vec3i[] frameOffsets = new Vec3i[] {
                 new Vec3i(2, 0, 1),
@@ -519,9 +517,19 @@ public class BeatMinecraft2Task extends Task {
                         return new EquipArmorTask(COLLECT_EYE_ARMOR);
                     }
                 }
-                if(shouldForce(mod, _lootTask)) {
+                // Check for ruined portals
+                Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
+                if (chest.isPresent()) {
+                    // Interact with it
+                    setDebugState("Interacting with ruined portal chest");
+                    return new InteractWithBlockTask(chest.get());
+                }
+                if(_lootTask != null && !_lootTask.isFinished(mod)) {
                     setDebugState("Looting ruined portal chest for goodies");
                     return _lootTask;
+                } else {
+                    if (_lootTask != null)
+                    Debug.logMessage(_lootTask.isFinished(mod) ? "true" : "false");
                 }
                 if (shouldForce(mod, _gearTask) && !StorageHelper.isArmorEquippedAll(mod, COLLECT_EYE_ARMOR)) {
                     setDebugState("Getting gear for Ender Eye journey");
@@ -545,19 +553,12 @@ public class BeatMinecraft2Task extends Task {
                     }
                 }
 
-                // Check for ruined portals
-                Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
-                if (chest.isPresent()) {
-                    // Interact with it
-                    Debug.logMessage("WILL THIS EVER RUN???");
-                    setDebugState("Interacting with ruined portal chest");
-                    return new InteractWithBlockTask(chest.get());
-                }
                 // Check for chests with items we need (ruined portal chests)
                 List<Item> wantedLoot = lootableItems(mod);
                 for (Item wanted : wantedLoot) {
                     Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), wanted);
                     if (closest.isPresent()) {
+                        Debug.logMessage("NEW: " + wanted.toString());
                         _lootTask = new LootContainerTask(closest.get().getBlockPos(), wanted);
                         return _lootTask;
                     }
