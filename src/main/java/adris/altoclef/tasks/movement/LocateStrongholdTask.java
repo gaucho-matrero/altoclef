@@ -219,7 +219,15 @@ public class LocateStrongholdTask extends Task {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
-
+                if(mod.getItemStorage().getItemCount(new ItemTarget(Items.NETHERRACK),new ItemTarget(Items.COBBLESTONE))<128){
+                    //Died and need more building materials before we go?
+                    if(WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
+                        return TaskCatalogue.getItemTask(new ItemTarget(Items.COBBLESTONE,15));
+                    }else{
+                        //get building materials if in the nether.
+                        return TaskCatalogue.getItemTask(new ItemTarget(Items.NETHERRACK,15));
+                    }
+                }
                 if (_netherGoalPos == null) {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
