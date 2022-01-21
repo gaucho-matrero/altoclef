@@ -219,7 +219,7 @@ public class LocateStrongholdTask extends Task {
                     _netherGoalPos = new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 1, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
                     // Also ensures that we don't have to break blocks we are standing on to place the portal. Gets within 120 blocks of the stronghold.
                 }
-                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
+                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || (WorldHelper.getCurrentDimension() == Dimension.NETHER && _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange))) {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }
