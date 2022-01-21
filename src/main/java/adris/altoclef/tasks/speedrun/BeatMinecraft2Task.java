@@ -192,7 +192,7 @@ public class BeatMinecraft2Task extends Task {
 
         // Portable crafting table.
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
-        if (WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
+        if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
                 && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
                         || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE) )) {
             setDebugState("Pick up crafting table while we're at it");
@@ -570,11 +570,11 @@ public class BeatMinecraft2Task extends Task {
             return _setBedSpawnTask;
         }
         // Get close to portal. If we're close enough, set our bed spawn somewhere nearby.
-        if (_endPortalCenterLocation.isWithinDistance(mod.getPlayer().getPos(), END_PORTAL_BED_SPAWN_RANGE)) {
+        if (WorldHelper.inRangeXZ(mod.getPlayer(), WorldHelper.toVec3d(_endPortalCenterLocation), END_PORTAL_BED_SPAWN_RANGE)) {
             return _setBedSpawnTask;
         } else {
             setDebugState("Approaching portal (to set spawnpoint)");
-            return new GetCloseToBlockTask(_endPortalCenterLocation);
+            return new GetToXZTask(_endPortalCenterLocation.getX(), _endPortalCenterLocation.getZ());
         }
     }
 
