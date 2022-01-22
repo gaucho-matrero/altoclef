@@ -205,6 +205,14 @@ public class Settings implements IFailableConfigFile {
     private boolean avoidDrowning = true;
 
     /**
+     * If enabled, the bot will close the open screen (furnace/crafting/chest/whatever) when the bot detects
+     * that its look direction has changed OR that it is mining something.
+     *
+     * This is here to stop the bot from getting stuck in a screen container.
+     */
+    private boolean autoCloseScreenWhenLookingOrMining = true;
+
+    /**
      * If enabled, will attempt to extinguish ourselves when on fire (and not immune to fire)
      */
     private boolean extinguishSelfWithWater = true;
@@ -472,6 +480,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldAvoidDrowning() {
         return avoidDrowning;
+    }
+
+    public boolean shouldCloseScreenWhenLookingOrMining() {
+        return autoCloseScreenWhenLookingOrMining;
     }
 
     public boolean shouldExtinguishSelfWithWater() {
