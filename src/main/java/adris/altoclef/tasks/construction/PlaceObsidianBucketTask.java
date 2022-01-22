@@ -74,6 +74,7 @@ public class PlaceObsidianBucketTask extends Task {
         if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
             // The only excuse is that we have lava at our position.
             if (!mod.getBlockTracker().blockIsValid(_pos, Blocks.LAVA)) {
+                _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
             }
         }
@@ -84,7 +85,8 @@ public class PlaceObsidianBucketTask extends Task {
             _progressChecker.reset();
             return _wanderTask;
         }
-        if (_progressChecker.check(mod)) {
+        if (!_progressChecker.check(mod)) {
+            _progressChecker.reset();
             return _wanderTask;
         }
 
@@ -139,6 +141,7 @@ public class PlaceObsidianBucketTask extends Task {
 
             // Make sure we have water, juuust in case we have another creeper appear run end here
             if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
