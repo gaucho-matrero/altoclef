@@ -343,10 +343,10 @@ public class LocateStrongholdTask extends Task {
 
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public boolean hasDelta() {
-            return _end != null;
+            return _end != null && getDelta().lengthSquared() > 0.00001;
         }
     }
-    
+
     static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
         Vec3d s1 = start1;
         Vec3d s2 = start2;
