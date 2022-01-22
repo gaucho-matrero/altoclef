@@ -176,10 +176,16 @@ public interface WorldHelper {
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {
-        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
+        // JANK: Temporarily check if we can break WITHOUT paused interactions.
+        // Not doing this creates bugs where we loop back and forth through the nether portal and stuff.
+        boolean prevInteractionPaused = mod.getExtraBaritoneSettings().isInteractionPaused();
+        mod.getExtraBaritoneSettings().setInteractionPaused(false);
+        boolean result = mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
                 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos)
                 && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos)
                 && canReach(mod, pos);
+        mod.getExtraBaritoneSettings().setInteractionPaused(prevInteractionPaused);
+        return result;
     }
 
     static boolean isInNetherPortal(AltoClef mod) {
