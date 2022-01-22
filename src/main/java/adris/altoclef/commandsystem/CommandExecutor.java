@@ -11,11 +11,9 @@ public class CommandExecutor {
 
     private final HashMap<String, Command> _commandSheet = new HashMap<>();
     private final AltoClef _mod;
-    private final String _commandPrefix;
 
-    public CommandExecutor(AltoClef mod, String commandPrefix) {
+    public CommandExecutor(AltoClef mod) {
         _mod = mod;
-        _commandPrefix = commandPrefix;
     }
 
     public void registerNewCommand(Command ...commands) {
@@ -28,8 +26,12 @@ public class CommandExecutor {
         }
     }
 
+    private String getCommandPrefix() {
+        return _mod.getModSettings().getCommandPrefix();
+    }
+
     public boolean isClientCommand(String line) {
-        return line.startsWith(_commandPrefix);
+        return line.startsWith(getCommandPrefix());
     }
 
     // This is how we "nest" command finishes so we can complete them in order.
@@ -54,7 +56,7 @@ public class CommandExecutor {
 
     public void execute(String line, Runnable onFinish, Consumer<CommandException> getException) {
         if (!isClientCommand(line)) return;
-        line = line.substring(_commandPrefix.length());
+        line = line.substring(getCommandPrefix().length());
         // Run commands separated by ;
         String[] parts = line.split(";");
         Command[] commands = new Command[parts.length];
@@ -75,8 +77,8 @@ public class CommandExecutor {
         execute(line, ex -> Debug.logWarning(ex.getMessage()));
     }
     public void executeWithPrefix(String line) {
-        if (!line.startsWith(_commandPrefix)) {
-            line = _commandPrefix + line;
+        if (!line.startsWith(getCommandPrefix())) {
+            line = getCommandPrefix() + line;
         }
         execute(line);
     }

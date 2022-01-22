@@ -131,13 +131,15 @@ public class LocateStrongholdTask extends Task {
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) || _completedFastTravel) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
+            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) && _completedFastTravel) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
                 _netherGoalAdjusted = false;
                 _netherGoalReached = false;
                 _portalBuildRange = 2;
+                _cachedEyeDirection = null;
+                _cachedEyeDirection2 = null;
             }
         }
 
@@ -343,10 +345,10 @@ public class LocateStrongholdTask extends Task {
 
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public boolean hasDelta() {
-            return _end != null;
+            return _end != null && getDelta().lengthSquared() > 0.00001;
         }
     }
-    
+
     static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
         Vec3d s1 = start1;
         Vec3d s2 = start2;

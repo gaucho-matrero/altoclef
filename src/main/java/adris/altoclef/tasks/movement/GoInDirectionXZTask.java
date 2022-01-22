@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalDirectionXZ;
 import baritone.api.pathing.goals.Goal;
@@ -24,7 +25,12 @@ public class GoInDirectionXZTask extends CustomBaritoneGoalTask {
 
     @Override
     protected Goal newGoal(AltoClef mod) {
-        return new GoalDirectionXZ(_origin, _delta, _sidePenalty);
+        try {
+            return new GoalDirectionXZ(_origin, _delta, _sidePenalty);
+        } catch (Exception e) {
+            Debug.logMessage("Invalid goal direction XZ (probably zero distance)");
+            return null;
+        }
     }
 
     @Override

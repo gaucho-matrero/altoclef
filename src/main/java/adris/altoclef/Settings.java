@@ -51,6 +51,16 @@ public class Settings implements IFailableConfigFile {
     private boolean showTaskChains = true;
 
     /**
+     * The prefix for commands (ex. @gamer )
+     */
+    private String commandPrefix = "@";
+
+    /**
+     * When logging to chat, will prepend this to each log.
+     */
+    private String chatLogPrefix = "[Alto Clef] ";
+
+    /**
      * If true, will show a timer.
      */
     private boolean showTimer = false;
@@ -397,6 +407,13 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+
+    public String getCommandPrefix() {
+        return commandPrefix;
+    }
+    public String getChatLogPrefix() {
+        return chatLogPrefix;
     }
 
     public boolean shouldShowTimer() {
