@@ -5,6 +5,7 @@ import net.minecraft.item.Items;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
@@ -23,6 +24,7 @@ public class GetToXZWithElytraTask extends Task {
     private final int _x, _z;
     private boolean _isFinished;
     private boolean _isMovingElytra = false;
+    private boolean _isCollectingFireWork = false;
 
     public GetToXZWithElytraTask(int x, int z) {
         _x = x;
@@ -45,6 +47,13 @@ public class GetToXZWithElytraTask extends Task {
             
         }
 
+        //Get some fireworks if doesn't have many
+        if ((mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < 16 || _isCollectingFireWork) && mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < 32) {
+            _isCollectingFireWork = true;
+            return TaskCatalogue.getItemTask(Items.FIREWORK_ROCKET, 32);
+        }
+        _isCollectingFireWork = false;
+        
         //Equip elytra, if didn't equipped,
         if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) { 
             //EquipArmorTask(Items.ELYTRA) crash the game for unknown reason
