@@ -132,7 +132,6 @@ public class LocateStrongholdTask extends Task {
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
             if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) && _completedFastTravel) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
-                Debug.logMessage("RESETTING PORTAL ESTIMATION (too close and no portal!)");
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
