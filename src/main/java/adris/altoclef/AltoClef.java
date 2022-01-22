@@ -88,6 +88,7 @@ public class AltoClef implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        Debug.jankModInstance = this;
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // As such, nothing will be loaded here but basic initialization.
@@ -101,7 +102,7 @@ public class AltoClef implements ModInitializer {
         initializeBaritoneSettings();
 
         // Central Managers
-        _commandExecutor = new CommandExecutor(this, "@");
+        _commandExecutor = new CommandExecutor(this);
         _taskRunner = new TaskRunner(this);
         _trackerManager = new TrackerManager(this);
         _botBehaviour = new BotBehaviour(this);
