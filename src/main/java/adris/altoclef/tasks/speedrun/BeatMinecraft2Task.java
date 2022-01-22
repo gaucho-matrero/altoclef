@@ -564,11 +564,13 @@ public class BeatMinecraft2Task extends Task {
                         return new EquipArmorTask(COLLECT_EYE_ARMOR);
                     }
                 }
-                // Check for ruined portals
-                Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
-                if (chest.isPresent()) {
-                    setDebugState("Interacting with ruined portal chest");
-                    return new InteractWithBlockTask(chest.get());
+                if (_config.searchRuinedPortals) {
+                    // Check for ruined portals
+                    Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
+                    if (chest.isPresent()) {
+                        setDebugState("Interacting with ruined portal chest");
+                        return new InteractWithBlockTask(chest.get());
+                    }
                 }
                 if(_lootTask != null && !_lootTask.isFinished(mod)) {
                     setDebugState("Looting ruined portal chest for goodies");
