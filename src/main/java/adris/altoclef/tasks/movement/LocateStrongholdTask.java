@@ -6,13 +6,16 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EyeOfEnderEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -40,9 +43,11 @@ public class LocateStrongholdTask extends Task {
     private Entity _currentThrownEye = null;
     private Vec3d _strongholdEstimatePos = null;
     private BlockPos _netherGoalPos = null;
+    private boolean _netherGoalAdjusted=false;
     private BlockPos _cachedEducatedPortal = null;
     private BlockPos _educatedPortalStart = null;
     private boolean _netherGoalReached = false;
+    private boolean _completedFastTravel = false;
     private int _portalBuildRange = 2;
     private final TimerGame _throwTimer = new TimerGame(5);
 
@@ -126,10 +131,11 @@ public class LocateStrongholdTask extends Task {
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
+            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) || _completedFastTravel) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
+                _netherGoalAdjusted = false;
                 _netherGoalReached = false;
                 _portalBuildRange = 2;
             }
@@ -194,16 +200,20 @@ public class LocateStrongholdTask extends Task {
             return null;
         }
         if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || WorldHelper.getCurrentDimension() == Dimension.NETHER)) {
+            // We WILL need this at some point, so we should run it always.
+            // If the bot drops the flint and steel in the nether, grab it.
+            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                setDebugState("Getting flint and steel first");
+                return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+            }
             if (_cachedEducatedPortal != null) {
+                _completedFastTravel = true;
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
-            if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 || 
+            if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 ||
                 mod.getItemStorage().getItemCount(Items.OBSIDIAN) >= 10) {
                 if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
-                    if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                        setDebugState("Getting flint and steel before going into nether");
-                        return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
-                    }
+
                     setDebugState("Going to nether");
                     return new DefaultGoToDimensionTask(Dimension.NETHER);
                 }
@@ -211,15 +221,30 @@ public class LocateStrongholdTask extends Task {
                     setDebugState("Collecting obsidian");
                     return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
+                if(mod.getItemStorage().getItemCount(new ItemTarget(Items.NETHERRACK),new ItemTarget(Items.COBBLESTONE))<128){
+                    //Died and need more building materials before we go?
+                    if(WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
+                        return TaskCatalogue.getItemTask(new ItemTarget(Items.COBBLESTONE,15));
+                    }else{
+                        //get building materials if in the nether.
+                        return TaskCatalogue.getItemTask(new ItemTarget(Items.NETHERRACK,15));
+                    }
+                }
                 if (_netherGoalPos == null) {
                     _netherGoalPos = new BlockPos(_strongholdEstimatePos.multiply(0.125, 0, 0.125));
                     _netherGoalPos = _netherGoalPos.add(0, PORTAL_TARGET_HEIGHT, 0);
                 }
-                if(mod.getPlayer().getPos().getX() - _netherGoalPos.getX() < Math.abs(15) && mod.getPlayer().getZ() - _netherGoalPos.getZ() < Math.abs(15) && mod.getPlayer().getPos().getY() > _netherGoalPos.getY()){
-                    _netherGoalPos = new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 1, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
-                    // Also ensures that we don't have to break blocks we are standing on to place the portal. Gets within 120 blocks of the stronghold.
+                if(!_netherGoalAdjusted && mod.getPlayer().getPos().getX() - _netherGoalPos.getX() < Math.abs(15) && mod.getPlayer().getZ() - _netherGoalPos.getZ() < Math.abs(15) && mod.getPlayer().getPos().getY() > _netherGoalPos.getY()){
+                    _netherGoalPos =
+                            new BlockPos(mod.getPlayer().getBlockPos().getX(), mod.getPlayer().getBlockPos().getY() + 2, mod.getPlayer().getBlockPos().getZ()); // ensure that baritone doesn't get lost over the lava since it has a hard time pathing large gaps of air blocks.
+                    Debug.logMessage("Adjusted");
+                    _netherGoalAdjusted = true;
+                    // Also ensures that we don't
+                    // have to
+                    // break blocks we
+                    // are standing on to place the portal. Gets within 120 blocks of the stronghold.
                 }
-                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange)) {
+                if (_constructTask.isActive() && !_constructTask.isFinished(mod) || (WorldHelper.getCurrentDimension() == Dimension.NETHER && _netherGoalPos.isWithinDistance(mod.getPlayer().getPos(), _portalBuildRange))) {
                     if (_portalBuildRange == 2) {
                         _portalBuildRange = 20;
                     }

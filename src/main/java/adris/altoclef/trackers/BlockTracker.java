@@ -228,12 +228,12 @@ public class BlockTracker extends Tracker {
      * @param blocks What blocks to check for
      */
     public Optional<BlockPos> getNearestWithinRange(Vec3d pos, double range, Block... blocks) {
-        int minX = (int) Math.round(pos.x - range),
-                maxX = (int) Math.round(pos.x + range),
-                minY = (int) Math.round(pos.y - range),
-                maxY = (int) Math.round(pos.y + range),
-                minZ = (int) Math.round(pos.z - range),
-                maxZ = (int) Math.round(pos.z + range);
+        int minX = (int) Math.floor(pos.x - range),
+                maxX = (int) Math.floor(pos.x + range),
+                minY = (int) Math.floor(pos.y - range),
+                maxY = (int) Math.floor(pos.y + range),
+                minZ = (int) Math.floor(pos.z - range),
+                maxZ = (int) Math.floor(pos.z + range);
         double closestDistance = Float.POSITIVE_INFINITY;
         BlockPos nearest = null;
         for (int x = minX; x <= maxX; ++x) {
@@ -611,7 +611,7 @@ public class BlockTracker extends Tracker {
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
-                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, false)))
+                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, true)))
                             .collect(Collectors.toList());
                     tracking = tracking.stream()
                             .limit(_config.maxCacheSizePerBlockType)

@@ -62,10 +62,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         }
 
         // do NOT break if we're standing above it and it's dangerous below...
-        if (mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().getPos(), 1.2)) {
+        if (!WorldHelper.isSolid(mod, _pos.up()) && mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().isOnGround()? mod.getPlayer().getPos() : mod.getPlayer().getPos().add(0, -1, 0), 0.89)) {
             if (WorldHelper.dangerousToBreakIfRightAbove(mod, _pos)) {
                 setDebugState("It's dangerous to break as we're right above it, moving away and trying again.");
-                return new RunAwayFromPositionTask(3, _pos.getY() + 1, _pos);
+                return new RunAwayFromPositionTask(3, _pos.getY(), _pos);
             }
         }
 

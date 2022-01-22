@@ -3,6 +3,7 @@ package adris.altoclef.tasks.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasks.movement.GetToYTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.movement.ThrowEnderPearlSimpleProjectileTask;
@@ -17,10 +18,18 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
 
+// TODO:
+// The 10 Portal pillars form a 43 block radius, but the angle offset/cycle is random.
+// Have an internal "cycle" value or something to keep track of where that cycle is
+// Detect that value by scrolling around the 43 block radius in search of obsidian and finding
+// the "midpoint" between two spots of obsidian and anything else
+// Then, when pillaring, make sure we move to one of those areas (so we can move further out without
+// risking hitting an obsidian tower)
 public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     // How far to travel away from the portal, in XZ
     private static final double XZ_RADIUS = 30;
+    private static final double XZ_RADIUS_TOO_FAR = 38;
     // How high to pillar
     private static final int HEIGHT = 38;
 
@@ -109,6 +118,9 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
         if (WorldHelper.inRangeXZ(mod.getPlayer(), _targetToPearl, XZ_RADIUS)) {
             setDebugState("Moving away from center...");
             return new RunAwayFromPositionTask(XZ_RADIUS, _targetToPearl);
+        } else if (!WorldHelper.inRangeXZ(mod.getPlayer(), _targetToPearl, XZ_RADIUS_TOO_FAR)) {
+            setDebugState("Moving in (too far, might hit pillars)");
+            return new GetToXZTask(0, 0);
         }
 
         // We're far enough, pillar up!

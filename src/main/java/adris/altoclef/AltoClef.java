@@ -3,6 +3,9 @@ package adris.altoclef;
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.control.InputControls;
+import adris.altoclef.control.PlayerExtraController;
+import adris.altoclef.control.SlotHandler;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -11,9 +14,6 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.control.InputControls;
-import adris.altoclef.control.PlayerExtraController;
-import adris.altoclef.control.SlotHandler;
 import adris.altoclef.util.csharpisbetter.Action;
 import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.helpers.InputHelper;
@@ -27,14 +27,18 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Central access point for AltoClef
@@ -141,7 +145,10 @@ public class AltoClef implements ModInitializer {
         adris.altoclef.Settings.load(newSettings -> {
             _settings = newSettings;
             // Baritone's `acceptableThrowawayItems` should match our own.
-            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(Arrays.asList(_settings.getThrowawayItems(this, true)));
+            List<Item> baritoneCanPlace = Arrays.stream(_settings.getThrowawayItems(this, true))
+                    .filter(item -> item != Items.SOUL_SAND) // Don't place soul sand, that messes us up.
+                    .collect(Collectors.toList());
+            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
             // If we should run an idle command...
             if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
                 getUserTaskChain().signalNextTaskToBeIdleTask();
@@ -162,6 +169,9 @@ public class AltoClef implements ModInitializer {
         // Cancel shortcut
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
             _userTaskChain.cancel(this);
+            if (_taskRunner.getCurrentTaskChain() != null) {
+                _taskRunner.getCurrentTaskChain().stop(this);
+            }
         }
 
         // TODO: should this go here?

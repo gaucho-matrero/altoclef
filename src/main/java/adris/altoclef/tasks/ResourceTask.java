@@ -90,6 +90,7 @@ public abstract class ResourceTask extends Task {
                 // If we're picking up a pickaxe (we can't go far underground or mine much)
                 if (PickupDroppedItemTask.isIsGettingPickaxeFirst(mod)) {
                     if (_pickupTask.isCollectingPickaxeForThis()) {
+                        setDebugState("Picking up (pickaxe first!)");
                         // Our pickup task is the one collecting the pickaxe, keep it going.
                         return _pickupTask;
                     }
@@ -103,6 +104,7 @@ public abstract class ResourceTask extends Task {
                 double range = mod.getModSettings().getResourcePickupRange();
                 Optional<ItemEntity> closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
                 if (range < 0 || (closest.isPresent() && closest.get().isInRange(mod.getPlayer(), range)) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
+                    setDebugState("Picking up");
                     return _pickupTask;
                 }
             }
@@ -116,6 +118,7 @@ public abstract class ResourceTask extends Task {
                     _currentContainer = null;
                 } else {
                     // We have a current chest, grab from it.
+                    setDebugState("Picking up from container");
                     return new PickupFromContainerTask(_currentContainer.getBlockPos(), _itemTargets);
                 }
             } else {

@@ -67,54 +67,52 @@ public class DeathMenuChain extends TaskChain {
         } else {
             _deathRetryTimer.reset();
         }
-
-        if (screen != null && screen.getClass() != _prevScreen) {
-
-            // Keep track of the last server we were on so we can re-connect.
-            if (AltoClef.inGame()) {
-                _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
-            }
-
-            if (screen instanceof DeathScreen) {
-                if (_waitOnDeathScreenBeforeRespawnTimer.elapsed()) {
-                    if (shouldAutoRespawn(mod)) {
-                        _deathCount++;
-                        Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
-                        assert MinecraftClient.getInstance().player != null;
-                        MinecraftClient.getInstance().player.requestRespawn();
-                        MinecraftClient.getInstance().setScreen(null);
-                    } else {
-                        // Cancel if we die and are not auto-respawning.
-                        mod.cancelUserTask();
-                    }
-                }
-            } else {
-                _waitOnDeathScreenBeforeRespawnTimer.reset();
-                if (screen instanceof DisconnectedScreen) {
-                    if (shouldAutoReconnect(mod)) {
-                        Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
-                        _reconnecting = true;
-                        MinecraftClient.getInstance().setScreen(new MultiplayerScreen(new TitleScreen()));
-                    } else {
-                        // Cancel if we disconnect and are not auto-reconnecting.
-                        mod.cancelUserTask();
-                    }
-                } else if (screen instanceof MultiplayerScreen && _reconnecting && _reconnectTimer.elapsed()) {
-                    _reconnectTimer.reset();
-                    Debug.logMessage("RECONNECTING: Going ");
-                    _reconnecting = false;
-
-                    if (_prevServerEntry == null) {
-                        Debug.logWarning("Failed to re-connect to server, no server entry cached.");
-                    } else {
-                        MinecraftClient client = MinecraftClient.getInstance();
-                        ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
-                        //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
-                    }
-                }
-            }
-            _prevScreen = screen.getClass();
+        // Keep track of the last server we were on so we can re-connect.
+        if (AltoClef.inGame()) {
+            _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
         }
+
+        if (screen instanceof DeathScreen) {
+            if (_waitOnDeathScreenBeforeRespawnTimer.elapsed()) {
+                _waitOnDeathScreenBeforeRespawnTimer.reset();
+                if (shouldAutoRespawn(mod)) {
+                    _deathCount++;
+                    Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
+                    assert MinecraftClient.getInstance().player != null;
+                    MinecraftClient.getInstance().player.requestRespawn();
+                    MinecraftClient.getInstance().setScreen(null);
+                } else {
+                    // Cancel if we die and are not auto-respawning.
+                    mod.cancelUserTask();
+                }
+            }
+        } else {
+            _waitOnDeathScreenBeforeRespawnTimer.reset();
+            if (screen instanceof DisconnectedScreen) {
+                if (shouldAutoReconnect(mod)) {
+                    Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
+                    _reconnecting = true;
+                    MinecraftClient.getInstance().setScreen(new MultiplayerScreen(new TitleScreen()));
+                } else {
+                    // Cancel if we disconnect and are not auto-reconnecting.
+                    mod.cancelUserTask();
+                }
+            } else if (screen instanceof MultiplayerScreen && _reconnecting && _reconnectTimer.elapsed()) {
+                _reconnectTimer.reset();
+                Debug.logMessage("RECONNECTING: Going ");
+                _reconnecting = false;
+
+                if (_prevServerEntry == null) {
+                    Debug.logWarning("Failed to re-connect to server, no server entry cached.");
+                } else {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
+                    //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
+                }
+            }
+        }
+        if (screen != null)
+            _prevScreen = screen.getClass();
         return Float.NEGATIVE_INFINITY;
     }
 
