@@ -47,6 +47,7 @@ public class LocateStrongholdTask extends Task {
     private BlockPos _cachedEducatedPortal = null;
     private BlockPos _educatedPortalStart = null;
     private boolean _netherGoalReached = false;
+    private boolean _completedFastTravel = false;
     private int _portalBuildRange = 2;
     private final TimerGame _throwTimer = new TimerGame(5);
 
@@ -130,7 +131,7 @@ public class LocateStrongholdTask extends Task {
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
+            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) || _completedFastTravel) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD){
                 _strongholdEstimatePos = null;
                 _cachedEducatedPortal = null;
                 _netherGoalPos = null;
@@ -206,6 +207,7 @@ public class LocateStrongholdTask extends Task {
                 return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
             }
             if (_cachedEducatedPortal != null) {
+                _completedFastTravel = true;
                 return new EnterNetherPortalTask(new GetToBlockTask(_cachedEducatedPortal, false), Dimension.OVERWORLD);
             }
             if (_strongholdEstimatePos.distanceTo(_cachedEyeDirection2.getOrigin()) > 400 ||
