@@ -3,7 +3,6 @@ package adris.altoclef.commandsystem;
 import java.util.ArrayList;
 import java.util.List;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class ArgParser {
     int argCounter;
     int unitCounter;

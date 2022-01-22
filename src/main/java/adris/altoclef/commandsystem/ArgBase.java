@@ -2,7 +2,6 @@ package adris.altoclef.commandsystem;
 
 import java.lang.reflect.ParameterizedType;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class ArgBase {
     protected int _minArgCountToUseDefault;
     protected boolean _hasDefault;

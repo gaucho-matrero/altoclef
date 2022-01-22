@@ -3,7 +3,6 @@ package adris.altoclef.commandsystem;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class Command {
 
     private AltoClef _mod;

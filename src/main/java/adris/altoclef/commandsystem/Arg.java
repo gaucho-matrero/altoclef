@@ -2,7 +2,6 @@ package adris.altoclef.commandsystem;
 
 import java.util.HashMap;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class Arg<T> extends ArgBase {
     public T Default;
     private final Class<T> _tType;
