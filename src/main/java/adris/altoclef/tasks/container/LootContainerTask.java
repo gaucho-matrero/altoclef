@@ -1,7 +1,6 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
@@ -28,7 +27,6 @@ public class LootContainerTask extends Task {
     public LootContainerTask(BlockPos chestPos, Item item) {
         chest = chestPos;
         target = item;
-        Debug.logMessage("NEW: " + item);
     }
 
     @Override
@@ -42,7 +40,6 @@ public class LootContainerTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        Debug.logMessage("TICK: " + target.toString());
         if(!ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
             setDebugState("Interact with container");
             return new InteractWithBlockTask(chest);
