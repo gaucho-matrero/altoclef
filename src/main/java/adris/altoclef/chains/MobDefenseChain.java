@@ -404,7 +404,6 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private Optional<Vec3d> getACloseProjectile(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
-
         try {
             for (CachedProjectile projectile : projectiles) {
 
