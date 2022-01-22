@@ -19,14 +19,16 @@ import java.util.Optional;
 
 
 public class LootContainerTask extends Task {
-    private final BlockPos chest;
-    private final Item target;
     private Task _pickupTask;
     private boolean _wasProtected = true;
+
+    public final BlockPos chest;
+    public final Item target;
 
     public LootContainerTask(BlockPos chestPos, Item item) {
         chest = chestPos;
         target = item;
+        Debug.logMessage("NEW: " + item);
     }
 
     @Override
@@ -40,6 +42,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        Debug.logMessage("TICK: " + target.toString());
         if(!ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
             setDebugState("Interact with container");
             return new InteractWithBlockTask(chest);
@@ -57,7 +60,6 @@ public class LootContainerTask extends Task {
         }
         Optional<Slot> optimal = getAMatchingSlot(mod);
         if (optimal.isEmpty()) {
-            Debug.logMessage("P:false");
             return null;
         }
         setDebugState("Looting a container for all of their " + target.toString());
@@ -73,8 +75,8 @@ public class LootContainerTask extends Task {
     }
 
     @Override
-    protected boolean isEqual(Task task) {
-        return task instanceof LootContainerTask;
+    protected boolean isEqual(Task other) {
+        return other instanceof LootContainerTask && target == ((LootContainerTask) other).target;
     }
 
     private Optional<Slot> getAMatchingSlot(AltoClef mod) {
@@ -85,7 +87,6 @@ public class LootContainerTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        Debug.logMessage("P:" + getAMatchingSlot(mod).isPresent());
         return getAMatchingSlot(mod).isEmpty();
     }
 

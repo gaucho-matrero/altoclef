@@ -377,13 +377,17 @@ public class BeatMinecraft2Task extends Task {
         lootable.add(Items.GLISTERING_MELON_SLICE);
         lootable.add(Items.GOLDEN_CARROT);
         lootable.add(Items.OBSIDIAN);
-        if (!StorageHelper.isArmorEquippedAll(mod, COLLECT_EYE_ARMOR)) {
-            lootable.add(Items.GOLD_INGOT);
-            lootable.add(Items.FLINT);
+        if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_BOOTS)) {
             lootable.add(Items.GOLDEN_BOOTS);
-            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                lootable.add(Items.FLINT_AND_STEEL);
-            }
+        }
+        if ((mod.getItemStorage().getItemCountInventoryOnly(Items.GOLD_INGOT) < 4 && !StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_BOOTS)) || _config.barterPearlsInsteadOfEndermanHunt) {
+            lootable.add(Items.GOLD_INGOT);
+        }
+        if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT_AND_STEEL)) {
+            lootable.add(Items.FLINT_AND_STEEL);
+        }
+        if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT)) {
+            lootable.add(Items.FLINT);
         }
         return lootable;
     }
@@ -520,16 +524,12 @@ public class BeatMinecraft2Task extends Task {
                 // Check for ruined portals
                 Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
                 if (chest.isPresent()) {
-                    // Interact with it
                     setDebugState("Interacting with ruined portal chest");
                     return new InteractWithBlockTask(chest.get());
                 }
                 if(_lootTask != null && !_lootTask.isFinished(mod)) {
                     setDebugState("Looting ruined portal chest for goodies");
                     return _lootTask;
-                } else {
-                    if (_lootTask != null)
-                    Debug.logMessage(_lootTask.isFinished(mod) ? "true" : "false");
                 }
                 if (shouldForce(mod, _gearTask) && !StorageHelper.isArmorEquippedAll(mod, COLLECT_EYE_ARMOR)) {
                     setDebugState("Getting gear for Ender Eye journey");
@@ -558,7 +558,6 @@ public class BeatMinecraft2Task extends Task {
                 for (Item wanted : wantedLoot) {
                     Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), wanted);
                     if (closest.isPresent()) {
-                        Debug.logMessage("NEW: " + wanted.toString());
                         _lootTask = new LootContainerTask(closest.get().getBlockPos(), wanted);
                         return _lootTask;
                     }

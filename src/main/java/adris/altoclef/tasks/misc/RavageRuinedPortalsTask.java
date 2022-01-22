@@ -6,7 +6,7 @@ import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ContainerType;
+import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
@@ -23,8 +23,6 @@ public class RavageRuinedPortalsTask extends Task {
     private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
     private Task _lootTask;
     private Task _interactTask;
-    private boolean _inContainer = false;
-    private BlockPos _currentContainer;
 
     private final Item[] LOOT = {
             Items.IRON_NUGGET,
@@ -32,7 +30,26 @@ public class RavageRuinedPortalsTask extends Task {
             Items.OBSIDIAN,
             Items.FIRE_CHARGE,
             Items.FLINT_AND_STEEL,
-            Items.GOLD_NUGGET
+            Items.GOLD_NUGGET,
+            Items.GOLDEN_APPLE,
+            Items.GOLDEN_AXE,
+            Items.GOLDEN_HOE,
+            Items.GOLDEN_PICKAXE,
+            Items.GOLDEN_SHOVEL,
+            Items.GOLDEN_SWORD,
+            Items.GOLDEN_HELMET,
+            Items.GOLDEN_CHESTPLATE,
+            Items.GOLDEN_LEGGINGS,
+            Items.GOLDEN_BOOTS,
+            Items.GLISTERING_MELON_SLICE,
+            Items.GOLDEN_CARROT,
+            Items.GOLD_INGOT,
+            Items.CLOCK,
+            Items.LIGHT_WEIGHTED_PRESSURE_PLATE,
+            Items.GOLDEN_HORSE_ARMOR,
+            Items.GOLD_BLOCK,
+            Items.BELL,
+            Items.ENCHANTED_GOLDEN_APPLE
     };
 
     public RavageRuinedPortalsTask() {
@@ -50,25 +67,16 @@ public class RavageRuinedPortalsTask extends Task {
         if(_lootTask != null && !_lootTask.isFinished(mod)) {
             return _lootTask;
         }
-        if(ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
-            _interactTask = null;
-            for (Item lootable : LOOT) {
-                if (mod.getItemStorage().getContainerAtPosition(_currentContainer).get().hasItem(lootable)) {
-                    setDebugState("Looting this chest of " + lootable.toString());
-                    return new LootContainerTask(_currentContainer, lootable);
-                }
+        for (Item lootable : LOOT) {
+            Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), lootable);
+            if (closest.isPresent()) {
+                _lootTask = new LootContainerTask(closest.get().getBlockPos(), lootable);
+                return _lootTask;
             }
-            _inContainer = false;
-            _currentContainer = null;
-        }
-        if(_interactTask != null) {
-            return _interactTask;
         }
         Optional<BlockPos> closest = locateClosestUnopenedRuinedPortalChest(mod);
         if (closest.isPresent()) {
-            _currentContainer = closest.get();
             _interactTask = new InteractWithBlockTask(closest.get());
-            _inContainer = true;
             setDebugState("Ruined portal chest found, interacting...");
             return _interactTask;
         }
