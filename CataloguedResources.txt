@@ -99,6 +99,7 @@ chiseled_nether_bricks
 chiseled_red_sandstone
 chiseled_sandstone
 chiseled_stone_bricks
+clay
 clay_ball
 clock
 coal
@@ -339,6 +340,7 @@ magenta_wool
 magma_block
 magma_cream
 map
+melon
 melon_seeds
 melon_slice
 milk
