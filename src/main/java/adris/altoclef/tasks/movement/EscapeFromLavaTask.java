@@ -43,6 +43,11 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     }
 
     @Override
+    public boolean isFinished(AltoClef mod) {
+        return !mod.getPlayer().isInLava() && !mod.getPlayer().isOnFire();
+    }
+
+    @Override
     protected String toDebugString() {
         return "Escaping lava";
     }

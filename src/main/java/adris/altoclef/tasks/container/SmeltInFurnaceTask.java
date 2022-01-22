@@ -170,7 +170,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
                     - (materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0)
                     - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0);
-            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot.getItem()) * _furnaceCache.fuelSlot.getCount() + _furnaceCache.burningFuelCount;
+            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot) + _furnaceCache.burningFuelCount + _furnaceCache.burnPercentage;
             // Fuel needed = (mat_target - out_in_inventory - out_in_furnace - totalFuelInFurnace)
             double fuelNeeded = _ignoreMaterials
                         ? Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
@@ -246,7 +246,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
             int neededMaterialsInSlot = materialTarget.getTargetCount()
                     - mod.getItemStorage().getItemCountInventoryOnly(_target.getItem().getMatches())
                     - (_target.getItem().matches(output.getItem()) ? output.getCount() : 0);
-            if (neededMaterialsInSlot > material.getCount()) {
+            // We don't have the right material or we need more
+            if (!_allMaterials.matches(material.getItem()) || neededMaterialsInSlot > material.getCount()) {
                 int materialsAlreadyIn = (materialTarget.matches(material.getItem()) ? material.getCount() : 0);
                 setDebugState("Moving Materials");
                 return new MoveItemToSlotFromInventoryTask(new ItemTarget(materialTarget, neededMaterialsInSlot - materialsAlreadyIn), FurnaceSlot.INPUT_SLOT_MATERIALS);

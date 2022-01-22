@@ -2,6 +2,7 @@ package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientConnectionAccessor;
+import adris.altoclef.mixins.EntityAccessor;
 import adris.altoclef.util.Dimension;
 import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
@@ -117,6 +118,20 @@ public interface WorldHelper {
         }
         return null;
     }
+    /**
+     * Get the "foot" of a block with a bed, if the block is a bed.
+     */
+    static BlockPos getBedFoot(AltoClef mod, BlockPos posWithBed) {
+        BlockState state = mod.getWorld().getBlockState(posWithBed);
+        if (state.getBlock() instanceof BedBlock) {
+            Direction facing = state.get(BedBlock.FACING);
+            if (mod.getWorld().getBlockState(posWithBed).get(BedBlock.PART).equals(BedPart.FOOT)) {
+                return posWithBed;
+            }
+            return posWithBed.offset(facing.getOpposite());
+        }
+        return null;
+    }
 
     // Get the left side of a chest, given a block pos.
     // Used to consistently identify whether a double chest is part of the same chest.
@@ -167,6 +182,12 @@ public interface WorldHelper {
                 && canReach(mod, pos);
     }
 
+    static boolean isInNetherPortal(AltoClef mod) {
+        if (mod.getPlayer() == null)
+            return false;
+        return ((EntityAccessor)mod.getPlayer()).isInNetherPortal();
+    }
+
     static boolean dangerousToBreakIfRightAbove(AltoClef mod, BlockPos toBreak) {
         // There might be mumbo jumbo next to it, we fall and we get killed by lava or something.
         if (MovementHelper.avoidBreaking(mod.getClientBaritone().bsi, toBreak.getX(), toBreak.getY(), toBreak.getZ(), mod.getWorld().getBlockState(toBreak))) {
@@ -199,7 +220,9 @@ public interface WorldHelper {
 
     static boolean canReach(AltoClef mod, BlockPos pos) {
         if (mod.getModSettings().shouldAvoidOcean()) {
-            if (mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
+            // 45 is roughly the ocean floor. We add 2 just cause why not.
+            // This > 47 can clearly cause a stuck bug.
+            if (mod.getPlayer().getY() > 47 && mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
                 // Block is in an ocean biome. If it's below sea level...
                 if (pos.getY() < 64 && getGroundHeight(mod, pos.getX(), pos.getZ(), Blocks.WATER) > pos.getY()) {
                     return false;

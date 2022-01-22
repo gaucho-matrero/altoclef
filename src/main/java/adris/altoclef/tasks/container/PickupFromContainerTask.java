@@ -39,7 +39,7 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
     @Override
     protected String toDebugString() {
-        return "Picking up from a container: " + Arrays.toString(_targets);
+        return "Picking up from container at (" + _targetContainer.toShortString() + "): " + Arrays.toString(_targets);
     }
 
     @Override

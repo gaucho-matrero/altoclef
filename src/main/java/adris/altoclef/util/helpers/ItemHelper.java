@@ -374,6 +374,9 @@ public class ItemHelper {
         }
         return total;
     }
+    public static double getFuelAmount(ItemStack stack) {
+        return getFuelAmount(stack.getItem()) * stack.getCount();
+    }
 
     public static boolean isFuel(Item item) {
         return getFuelTimeMap().containsKey(item);

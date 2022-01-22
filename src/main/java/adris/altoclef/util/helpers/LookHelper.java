@@ -116,6 +116,18 @@ public interface LookHelper {
         return raycast(entity, start, end, maxRange);
     }
 
+    static Rotation getLookRotation(Entity entity) {
+        float pitch = entity.getPitch();
+        float yaw = entity.getYaw();
+        return new Rotation(pitch, yaw);
+    }
+    static Rotation getLookRotation() {
+        if (MinecraftClient.getInstance().player == null) {
+            return new Rotation(0,0);
+        }
+        return getLookRotation(MinecraftClient.getInstance().player);
+    }
+
     static Vec3d getCameraPos(Entity entity) {
         boolean isSneaking = false;
         if (entity instanceof PlayerEntity player) {
@@ -175,13 +187,11 @@ public interface LookHelper {
 
     static void randomOrientation(AltoClef mod) {
         Rotation r = new Rotation((float) Math.random() * 360f, -90 + (float) Math.random() * 180f);
-        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
+        lookAt(mod, r);
     }
 
     static boolean isLookingAt(AltoClef mod, Rotation rotation) {
-        float pitch = mod.getPlayer().getPitch();
-        float yaw = mod.getPlayer().getYaw();
-        return rotation.isReallyCloseTo(new Rotation(yaw, pitch));
+        return rotation.isReallyCloseTo(getLookRotation());
     }
     static boolean isLookingAt(AltoClef mod, BlockPos blockPos) {
         return mod.getClientBaritone().getPlayerContext().isLookingAt(blockPos);
@@ -189,6 +199,8 @@ public interface LookHelper {
 
     static void lookAt(AltoClef mod, Rotation rotation) {
         mod.getClientBaritone().getLookBehavior().updateTarget(rotation, true);
+        mod.getPlayer().setYaw(rotation.getYaw());
+        mod.getPlayer().setPitch(rotation.getPitch());
     }
     static void lookAt(AltoClef mod, Vec3d toLook) {
         Rotation targetRotation = getLookRotation(mod, toLook);

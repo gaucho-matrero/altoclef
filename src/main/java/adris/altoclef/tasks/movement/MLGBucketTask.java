@@ -72,7 +72,6 @@ public class MLGBucketTask extends Task {
             // If we're water, we're ok. Do nothing.
             BlockState willLandInState = mod.getWorld().getBlockState(willLandIn);
             if (willLandInState.getBlock() == Blocks.WATER) {
-                _placedPos = willLandIn;
                 // We good.
                 setDebugState("Waiting to fall into water");
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
