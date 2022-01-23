@@ -104,7 +104,6 @@ public class SlotHandler {
             return true;
         }
 
-        Debug.logWarning("Failed to equip item " + toEquip.getTranslationKey());
         return false;
     }
 
