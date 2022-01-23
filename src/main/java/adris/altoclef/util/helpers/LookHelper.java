@@ -89,7 +89,7 @@ public interface LookHelper {
     }
 
     static boolean cleanLineOfSight(Entity entity, BlockPos block, double maxRange) {
-        Vec3d center = WorldHelper.blockCenter(block);
+        Vec3d center = WorldHelper.toVec3d(block);
         BlockHitResult hit = raycast(entity, getCameraPos(entity), center, maxRange);
         if (hit == null) return true;
         return switch (hit.getType()) {
@@ -119,7 +119,7 @@ public interface LookHelper {
     static Rotation getLookRotation(Entity entity) {
         float pitch = entity.getPitch();
         float yaw = entity.getYaw();
-        return new Rotation(pitch, yaw);
+        return new Rotation(yaw, pitch);
     }
     static Rotation getLookRotation() {
         if (MinecraftClient.getInstance().player == null) {
@@ -223,4 +223,5 @@ public interface LookHelper {
     static Rotation getLookRotation(AltoClef mod, BlockPos toLook) {
         return getLookRotation(mod, WorldHelper.toVec3d(toLook));
     }
+
 }
