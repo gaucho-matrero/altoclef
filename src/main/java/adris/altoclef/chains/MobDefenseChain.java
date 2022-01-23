@@ -85,7 +85,8 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
-        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // Doing you a favor by disabling avoidance
 
 
         // Pause if we're not loaded into a world.
