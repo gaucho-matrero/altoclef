@@ -14,6 +14,7 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
@@ -152,7 +153,7 @@ public class PlayerInteractionFixChain extends TaskChain {
             _mouseMovingButScreenOpenTimeout.reset();
         }
         // We're in the player screen/a screen we DON'T want to cancel out of
-        if (openScreen == null || openScreen instanceof ChatScreen || openScreen instanceof GameMenuScreen) {
+        if (openScreen == null || openScreen instanceof ChatScreen || openScreen instanceof GameMenuScreen || openScreen instanceof DeathScreen) {
             _mouseMovingButScreenOpenTimeout.reset();
             return false;
         }
