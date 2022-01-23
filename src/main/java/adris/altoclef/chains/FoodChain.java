@@ -51,6 +51,12 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
+        // do NOT eat while in lava if we are escaping it (spaghetti code dependencies go brrrr)
+        if (mod.getPlayer().isInLava()) {
+            stopEat(mod);
+            return Float.NEGATIVE_INFINITY;
+        }
+
         /*
         - Eats if:
         - We're hungry and have food that fits
