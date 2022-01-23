@@ -204,9 +204,6 @@ public class Playground {
                     mod.runUserTask(new KillEntityTask(entity));
                 }
                 break;
-            case "elytra":
-                    mod.runUserTask(new GetToXZWithElytraTask(1000,1000));
-                break;
             case "craft":
                 // Test de-equip
                 new Thread(() -> {
