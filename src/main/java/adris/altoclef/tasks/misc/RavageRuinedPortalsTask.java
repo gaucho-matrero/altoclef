@@ -22,8 +22,7 @@ public class RavageRuinedPortalsTask extends Task {
     private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
     private Task _lootTask;
     private Task _interactTask;
-
-    private final Item[] LOOT = {
+    public final Item[] LOOT = {
             Items.IRON_NUGGET,
             Items.FLINT,
             Items.OBSIDIAN,
@@ -75,9 +74,8 @@ public class RavageRuinedPortalsTask extends Task {
         }
         Optional<BlockPos> closest = locateClosestUnopenedRuinedPortalChest(mod);
         if (closest.isPresent()) {
-            _interactTask = new InteractWithBlockTask(closest.get());
             setDebugState("Ruined portal chest found, interacting...");
-            return _interactTask;
+            return new InteractWithBlockTask(closest.get());
         }
         return new TimeoutWanderTask();
     }

@@ -8,6 +8,7 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
+import adris.altoclef.tasks.misc.RavageDesertTemplesTask;
 import adris.altoclef.tasks.misc.RavageRuinedPortalsTask;
 import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
@@ -182,6 +183,9 @@ public class Playground {
                 break;
             case "ravage":
                 mod.runUserTask(new RavageRuinedPortalsTask());
+                break;
+            case "temples":
+                mod.runUserTask(new RavageDesertTemplesTask());
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
