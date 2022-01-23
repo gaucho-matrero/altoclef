@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
@@ -16,6 +17,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
@@ -40,24 +42,25 @@ public class MLGBucketTask extends Task {
     protected Task onTick(AltoClef mod) {
         // Check AROUND player instead of directly under.
         // We may crop the edge of a block or wall.
-        Vec3d[] offsets = new Vec3d[]{
-                new Vec3d(0, 0, 0),
-                new Vec3d(-0.5, 0, 0),
-                new Vec3d(0, 0, 0.5),
-                new Vec3d(0.5, 0, 0),
-                new Vec3d(0, 0, -0.5),
-                new Vec3d(-0.5, 0, -0.5),
-                new Vec3d(-0.5, 0, 0.5),
-                new Vec3d(0.5, 0, -0.5),
-                new Vec3d(0.5, 0, 0.5),
+        Vec3d velCheck = mod.getPlayer().getVelocity();
+        // Flatten and slightly exaggerate the velocity
+        velCheck.multiply(10,0,10);
+        Box b = mod.getPlayer().getBoundingBox().offset(velCheck);
+        Vec3d c = b.getCenter();
+        Vec3d[] coords = new Vec3d[]{
+                c,
+                new Vec3d(b.minX, c.y, b.minZ),
+                new Vec3d(b.maxX, c.y, b.minZ),
+                new Vec3d(b.minX, c.y, b.maxZ),
+                new Vec3d(b.maxX, c.y, b.maxZ),
         };
         BlockHitResult result = null;
         double bestSqDist = Double.POSITIVE_INFINITY;
-        for (Vec3d offset : offsets) {
-            RaycastContext rctx = test(mod.getPlayer(), offset);
+        for (Vec3d rayOrigin : coords) {
+            RaycastContext rctx = test(mod.getPlayer(), rayOrigin);
             BlockHitResult hit = mod.getWorld().raycast(rctx);
             if (hit.getType() == HitResult.Type.BLOCK) {
-                double curDis = hit.squaredDistanceTo(mod.getPlayer());
+                double curDis = hit.getPos().squaredDistanceTo(rayOrigin);
                 if (curDis < bestSqDist) {
                     result = hit;
                     bestSqDist = curDis;
@@ -86,7 +89,7 @@ public class MLGBucketTask extends Task {
             Optional<Rotation> reachable = RotationUtils.reachable(ctx.player(), toPlaceOn, ctx.playerController().getBlockReachDistance());
             if (reachable.isPresent()) {
                 setDebugState("Performing MLG");
-                mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
+                LookHelper.lookAt(mod, reachable.get());
                 if (mod.getClientBaritone().getPlayerContext().isLookingAt(toPlaceOn)) {
                     Debug.logMessage("HIT: " + willLandIn);
                     _placedPos = willLandIn;
@@ -97,7 +100,7 @@ public class MLGBucketTask extends Task {
                 setDebugState("Waiting to reach target block...");
                 // Look down by default
                 //mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
-                mod.getPlayer().setPitch(90);
+                //mod.getPlayer().setPitch(90);
             }
             //player.rotationPitch = 90f
             //playerController.processRightClick(player, world, hand)
@@ -107,9 +110,8 @@ public class MLGBucketTask extends Task {
         return null;
     }
 
-    private RaycastContext test(Entity player, Vec3d offset) {
-        Vec3d pos = player.getPos();
-        return new RaycastContext(pos, pos.add(0, -5.33, 0).add(offset), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, player);
+    private RaycastContext test(Entity player, Vec3d origin) {
+        return new RaycastContext(origin, origin.add(0, -6, 0), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, player);
     }
 
     @Override
