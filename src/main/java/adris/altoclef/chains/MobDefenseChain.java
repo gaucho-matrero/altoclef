@@ -312,7 +312,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean shouldForce = false;
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
-                    if (EntityHelper.isGenerallyHostileToPlayer(entity)) {
+                    if (EntityHelper.isGenerallyHostileToPlayer(mod, entity)) {
                         if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }

@@ -8,14 +8,12 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EyeOfEnderEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -37,7 +35,7 @@ public class LocateStrongholdTask extends Task {
     private static final int PORTAL_TARGET_HEIGHT = 48; // target height for educated portal 
 
     private final List<BlockPos> _cachedPortalFrame = new ArrayList<>();
-    private final int _targetEyes;
+    private int _targetEyes;
     private EyeDirection _cachedEyeDirection = null;
     private EyeDirection _cachedEyeDirection2 = null;
     private Entity _currentThrownEye = null;
@@ -63,7 +61,12 @@ public class LocateStrongholdTask extends Task {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(Items.FLINT_AND_STEEL);
+        mod.getBehaviour().addProtectedItems(Items.FIRE_CHARGE);
         mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
+    }
+
+    public void setTargetEyes(int targetEyes) {
+        _targetEyes = targetEyes;
     }
 
     public boolean isSearching() {
@@ -204,7 +207,11 @@ public class LocateStrongholdTask extends Task {
         if (_strongholdEstimatePos != null && (_strongholdEstimatePos.distanceTo(mod.getPlayer().getPos()) > 256 || WorldHelper.getCurrentDimension() == Dimension.NETHER)) {
             // We WILL need this at some point, so we should run it always.
             // If the bot drops the flint and steel in the nether, grab it.
-            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) && !mod.getItemStorage().hasItem(Items.FIRE_CHARGE)) {
+                if (mod.getEntityTracker().itemDropped(Items.FIRE_CHARGE)) {
+                    setDebugState("Picking up dropped fire charge");
+                    return new PickupDroppedItemTask(Items.FIRE_CHARGE, 1);
+                }
                 setDebugState("Getting flint and steel first");
                 return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
             }

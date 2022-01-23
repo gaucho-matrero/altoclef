@@ -153,7 +153,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected String toDebugString() {
-        return "Place structure at " + _target.toShortString();
+        return "Place structure" + ArrayUtils.toString(_toPlace) + " at " + _target.toShortString();
     }
 
     private boolean tryingAlternativeWay() {

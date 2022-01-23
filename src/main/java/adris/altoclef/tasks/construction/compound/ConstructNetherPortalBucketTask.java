@@ -17,6 +17,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -100,7 +101,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         });
 
         // Protect some used items
-        mod.getBehaviour().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL);
+        mod.getBehaviour().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL, Items.FIRE_CHARGE);
 
         _progressChecker.reset();
     }
@@ -145,7 +146,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         }
 
         // Get flint & steel if we don't have one
-        if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+        if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) && !mod.getItemStorage().hasItem(Items.FIRE_CHARGE)) {
             setDebugState("Getting flint & steel");
             _progressChecker.reset();
             return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
@@ -229,7 +230,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget(new Item[]{Items.FLINT_AND_STEEL, Items.FIRE_CHARGE}, 1), Direction.UP, _portalOrigin.down(), true);
     }
 
     @Override

@@ -86,10 +86,6 @@ public class BeatMinecraft2Task extends Task {
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
 
-    private final boolean _shouldSetSpawnNearEndPortal;
-    private final int _targetEyesMin;
-    private final int _targetEyes;
-    private final int _bedsToCollect;
 
     private BlockPos _endPortalCenterLocation;
     private boolean _ranStrongholdLocator;
@@ -113,24 +109,21 @@ public class BeatMinecraft2Task extends Task {
     private Task _lootTask;
     private final Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
-    private final Task _locateStrongholdTask;
+    private final LocateStrongholdTask _locateStrongholdTask;
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private boolean _collectingEyes;
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();
 
-    public BeatMinecraft2Task(boolean setSpawnNearEndPortal, int targetEnderEyesMin, int targetEnderEyes, int bedsToCollect) {
-        _shouldSetSpawnNearEndPortal = setSpawnNearEndPortal;
-        _targetEyesMin = targetEnderEyesMin;
-        _targetEyes = targetEnderEyes;
-        _bedsToCollect = bedsToCollect;
-        _locateStrongholdTask = new LocateStrongholdTask(_targetEyes);
-
+    public BeatMinecraft2Task() {
+        _locateStrongholdTask = new LocateStrongholdTask(_config.targetEyes);
         _buildMaterialsTask = new GetBuildingMaterialsTask(_config.buildMaterialCount);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
+        // Config jank
+        _locateStrongholdTask.setTargetEyes(_config.targetEyes);
 
         // Add a warning to make sure the user at least knows to change the settings.
         String settingsWarningTail = "in \".minecraft/altoclef_settings.json\". @gamer may break if you don't add this! (sorry!)";
@@ -225,7 +218,7 @@ public class BeatMinecraft2Task extends Task {
             // If we have bed, do bed strats, otherwise punk normally.
             updateCachedEndItems(mod);
             // Grab beds
-            if (mod.getEntityTracker().itemDropped(ItemHelper.BED) && mod.getItemStorage().getItemCount(ItemHelper.BED) < 10)
+            if (mod.getEntityTracker().itemDropped(ItemHelper.BED) && mod.getItemStorage().getItemCount(ItemHelper.BED) < _config.requiredBeds)
                 return new PickupDroppedItemTask(new ItemTarget(ItemHelper.BED), true);
             // Grab tools
             if (!mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)) {
@@ -288,8 +281,8 @@ public class BeatMinecraft2Task extends Task {
         // Do we need more eyes?
         boolean noEyesPlease = (endPortalOpened(mod, _endPortalCenterLocation) || WorldHelper.getCurrentDimension() == Dimension.END);
         int filledPortalFrames = getFilledPortalFrames(mod, _endPortalCenterLocation);
-        int eyesNeededMin = noEyesPlease ? 0 : _targetEyesMin - filledPortalFrames;
-        int eyesNeeded    = noEyesPlease ? 0 : _targetEyes    - filledPortalFrames;
+        int eyesNeededMin = noEyesPlease ? 0 : _config.minimumEyes - filledPortalFrames;
+        int eyesNeeded    = noEyesPlease ? 0 : _config.targetEyes  - filledPortalFrames;
         int eyes = mod.getItemStorage().getItemCount(Items.ENDER_EYE);
         if (eyes < eyesNeededMin || (!_ranStrongholdLocator && _collectingEyes && eyes < eyesNeeded)) {
             _collectingEyes = true;
@@ -308,7 +301,7 @@ public class BeatMinecraft2Task extends Task {
                         setDebugState("Collecting beds.");
                         return getBedTask(mod);
                     }
-                    if (_shouldSetSpawnNearEndPortal) {
+                    if (_config.placeSpawnNearEndPortal) {
                         if (!spawnSetNearPortal(mod, _endPortalCenterLocation)) {
                             setDebugState("Setting spawn near end portal");
                             return setSpawnNearPortalTask(mod);
@@ -428,6 +421,9 @@ public class BeatMinecraft2Task extends Task {
         }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT_AND_STEEL)) {
             lootable.add(Items.FLINT_AND_STEEL);
+            if (!mod.getItemStorage().hasItemInventoryOnly(Items.FIRE_CHARGE)) {
+                lootable.add(Items.FIRE_CHARGE);
+            }
         }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT)) {
             lootable.add(Items.FLINT);
@@ -693,7 +689,7 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private int getTargetBeds(AltoClef mod) {
-        boolean needsToSetSpawn = _shouldSetSpawnNearEndPortal &&
+        boolean needsToSetSpawn = _config.placeSpawnNearEndPortal &&
                 (
                         !spawnSetNearPortal(mod, _endPortalCenterLocation)
                                 && !shouldForce(mod, _setBedSpawnTask)
@@ -703,7 +699,7 @@ public class BeatMinecraft2Task extends Task {
             bedsInEnd += _cachedEndItemDrops.getOrDefault(bed, 0);
         }
 
-        return _bedsToCollect + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
+        return _config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
     }
     private boolean needsBeds(AltoClef mod) {
         int inEnd = 0;

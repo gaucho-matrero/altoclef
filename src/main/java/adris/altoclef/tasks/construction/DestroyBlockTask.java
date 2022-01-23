@@ -80,7 +80,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                 // Break the block, force it.
                 mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                LookHelper.lookAt(mod, reach.get());
+                if (!LookHelper.isLookingAt(mod, _pos)) {
+                    LookHelper.lookAt(mod, reach.get());
+                }
                 if (LookHelper.isLookingAt(mod, _pos)) {
                     // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
                     mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);

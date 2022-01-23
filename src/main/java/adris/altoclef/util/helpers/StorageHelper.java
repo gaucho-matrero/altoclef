@@ -12,6 +12,7 @@ import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.GameOptionsScreen;
@@ -33,12 +34,15 @@ public class StorageHelper {
     public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.OFFHAND_SLOT)), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
 
     public static void closeScreen() {
+        if (MinecraftClient.getInstance().player == null)
+            return;
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (!(screen instanceof GameMenuScreen)
-                && !(screen instanceof GameOptionsScreen)) {
+        if (
+                !(screen instanceof GameMenuScreen) &&
+                !(screen instanceof GameOptionsScreen) &&
+                !(screen instanceof ChatScreen)) {
             // Close the screen if we're in-game
-            if (MinecraftClient.getInstance().player != null)
-                MinecraftClient.getInstance().player.closeHandledScreen();
+            MinecraftClient.getInstance().player.closeHandledScreen();
         }
     }
 
