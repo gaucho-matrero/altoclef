@@ -266,9 +266,12 @@ public interface WorldHelper {
     }
 
     static Iterable<BlockPos> getBlocksTouchingPlayer(AltoClef mod) {
-        Box boundingBox = mod.getPlayer().getBoundingBox();
-        BlockPos min = new BlockPos(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
-        BlockPos max = new BlockPos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ);
+        return getBlocksTouchingBox(mod, mod.getPlayer().getBoundingBox());
+    }
+    
+    static Iterable<BlockPos> getBlocksTouchingBox(AltoClef mod, Box box) {
+        BlockPos min = new BlockPos(box.minX, box.minY, box.minZ);
+        BlockPos max = new BlockPos(box.maxX, box.maxY, box.maxZ);
         return scanRegion(mod, min, max);
     }
 
@@ -325,10 +328,6 @@ public interface WorldHelper {
             }
         }
         return null;
-    }
-
-    static Vec3d blockCenter(BlockPos block) {
-        return new Vec3d(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
 
     static Vec3d getOverworldPosition(Vec3d pos) {
