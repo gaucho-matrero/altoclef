@@ -124,16 +124,23 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isAngryAtPlayer(adris.altoclef.AltoClef,net.minecraft.entity.Entity)">isAngryAtPlayer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- net.minecraft.entity.Entity&nbsp;mob)</code></div>
-<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static double</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#calculateResultingPlayerDamage(net.minecraft.entity.player.PlayerEntity,net.minecraft.entity.damage.DamageSource,double)">calculateResultingPlayerDamage</a></span>&#8203;(net.minecraft.entity.player.PlayerEntity&nbsp;player,
+ net.minecraft.entity.damage.DamageSource&nbsp;source,
+ double&nbsp;damageAmount)</code></div>
+<div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
+<div class="block">Calculate the resulting damage dealt to a player as a result of some damage.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isGenerallyHostileToPlayer(net.minecraft.entity.Entity)">isGenerallyHostileToPlayer</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;hostile)</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isAngryAtPlayer(adris.altoclef.AltoClef,net.minecraft.entity.Entity)">isAngryAtPlayer</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ net.minecraft.entity.Entity&nbsp;mob)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isTradingPiglin(net.minecraft.entity.Entity)">isTradingPiglin</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity)</code></div>
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isGenerallyHostileToPlayer(net.minecraft.entity.Entity)">isGenerallyHostileToPlayer</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;hostile)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isTradingPiglin(net.minecraft.entity.Entity)">isTradingPiglin</a></span>&#8203;(net.minecraft.entity.Entity&nbsp;entity)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -200,6 +207,16 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="isTradingPiglin(net.minecraft.entity.Entity)">
 <h3>isTradingPiglin</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isTradingPiglin</span>&#8203;<span class="parameters">(net.minecraft.entity.Entity&nbsp;entity)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="calculateResultingPlayerDamage(net.minecraft.entity.player.PlayerEntity,net.minecraft.entity.damage.DamageSource,double)">
+<h3>calculateResultingPlayerDamage</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">calculateResultingPlayerDamage</span>&#8203;<span class="parameters">(net.minecraft.entity.player.PlayerEntity&nbsp;player,
+ net.minecraft.entity.damage.DamageSource&nbsp;source,
+ double&nbsp;damageAmount)</span></div>
+<div class="block">Calculate the resulting damage dealt to a player as a result of some damage.
+ If this player were to receive this damage, the player's health will be subtracted by the resulting value.</div>
 </section>
 </li>
 </ul>
