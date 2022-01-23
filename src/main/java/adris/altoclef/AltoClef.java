@@ -181,7 +181,9 @@ public class AltoClef implements ModInitializer {
         _miscBlockTracker.tick();
 
         _trackerManager.tick();
+        _blockTracker.preTickTask();
         _taskRunner.tick();
+        _blockTracker.postTickTask();
 
         _butler.tick();
         _messageSender.tick();
