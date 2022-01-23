@@ -124,6 +124,16 @@ public class BotBehaviour {
         current().applyState();
     }
 
+    //Way of disabling MLG and MobDefense from a task
+    public boolean disableDefence() {
+        return current().disableDefence; //get value with mod.getBehaviour().disableDefence()
+    }
+
+    public void disableDefence(boolean value) { //and set value with mod.getBehaviour().disableDefence(true|false)
+        current().disableDefence = value;
+        current().applyState();
+    }
+
     public void setPauseOnLostFocus(boolean pauseOnLostFocus) {
         current().pauseOnLostFocus = pauseOnLostFocus;
         current().applyState();
@@ -246,6 +256,7 @@ public class BotBehaviour {
         // Alto Clef params
         public boolean exclusivelyMineLogs;
         public boolean forceFieldPlayers;
+        public boolean disableDefence;
         public List<Predicate<Entity>> avoidDodgingProjectile = new ArrayList<>();
 
         public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();

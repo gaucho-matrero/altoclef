@@ -102,7 +102,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     }
 
     public boolean isFallingOhNo(AltoClef mod) {
-        if (!mod.getModSettings().shouldAutoMLGBucket()) {
+        if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().disableDefence()) {
             return false;
         }
         if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
