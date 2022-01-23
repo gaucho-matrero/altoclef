@@ -43,10 +43,10 @@ public class GetToXZWithElytraTask extends Task {
     private boolean _isFlyRunning = false;
     private boolean _hasJumped = false;
     private boolean _wasMovingToSurface = false;
-    private boolean _wasDoingWanderTask = false;
     private double _oldCoordsY;
+    private int _yGoal = 0;
     private final TimerGame _fireWorkTimer = new TimerGame(3);
-    private final TimerGame _wanderTimer = new TimerGame(5);
+    private final TimerGame _wanderTimer = new TimerGame(2);
     private final TimerGame _jumpTimer = new TimerGame(0.1);
 
     public GetToXZWithElytraTask(int x, int z) {
@@ -98,26 +98,17 @@ public class GetToXZWithElytraTask extends Task {
 
             //We move to the surface, because we can't fly in caves :)
             setDebugState("Moving to the surface");
-            int y = WorldHelper.getGroundHeight(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z);
-            if (y > mod.getPlayer().getPos().y && !_wasDoingWanderTask) {
-                _wasMovingToSurface = true;
-                _wanderTimer.reset();
-                return new GetToYTask(y); //Get to the surface
+            
+            int y = getGroundHeightWithRadius(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z);
+            if (_yGoal == 0 || _yGoal < mod.getPlayer().getPos().y) {
+                _yGoal = y;
             }
-            //Find a place to take off
-            setDebugState("Finding a place to take off");
-            if (_wasMovingToSurface && !_wanderTimer.elapsed()) {
-                _wasDoingWanderTask = true;
-                return new TimeoutWanderTask(); //move randomly until we find a place to fly
-            } else {
-                if (haveSpaceToTakeOff(mod,mod.getPlayer().getBlockPos())) { //if there is a space to fly
-                    _wasMovingToSurface = false;
-                    _wasDoingWanderTask = false;
-                    //this will allow the bot to continue and start trying to fly
-                } else {
+            if (y > mod.getPlayer().getPos().y || !_wanderTimer.elapsed()) {
+                _wasMovingToSurface = true;
+                if (y > mod.getPlayer().getPos().y) {
                     _wanderTimer.reset();
-                    return new TimeoutWanderTask();//wander again if there is some blocks
                 }
+                return new GetToYTask(_yGoal); //Get to the surface
             }
         }
         _isFlyRunning = true;
@@ -144,11 +135,6 @@ public class GetToXZWithElytraTask extends Task {
             }
             //If we can use firework rocket (every 5 secs), if we have one, and are under y=260
             if (_fireWorkTimer.elapsed() && mod.getPlayer().getPos().y < 260 && mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET)) {
-                int y = WorldHelper.getGroundHeight(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z); //Look if there is a block on top of us
-                if (y > mod.getPlayer().getPos().y) { //if there is one
-                    _isFlyRunning = false; //cancel the flight
-                    return null;
-                }
                 if (mod.getSlotHandler().forceEquipItem(Items.FIREWORK_ROCKET)) {//try to equip the item
                     mod.getInputControls().tryPress(Input.CLICK_RIGHT); //and use it
                     _fireWorkTimer.reset();
@@ -192,30 +178,23 @@ public class GetToXZWithElytraTask extends Task {
     protected String toDebugString() {
         return "Moving using Elytra";
     }
-    private boolean haveSpaceToTakeOff(AltoClef mod, BlockPos pos) {
-        final Vec3i[] CHECK = new Vec3i[]{
-                new Vec3i(0, 0, 0),
-                new Vec3i(-1, 0, 0),
-                new Vec3i(1, 0, 0),
-                new Vec3i(0, 0, 1),
-                new Vec3i(-1, 0, 1),
-                new Vec3i(1, 0, 1),
-                new Vec3i(0, 0, -1),
-                new Vec3i(-1, 0, -1),
-                new Vec3i(1, 0, -1),
-                new Vec3i(0, 1, 0),
-                new Vec3i(-1, 1, 0),
-                new Vec3i(1, 1, 0),
-                new Vec3i(0, 1, 1),
-                new Vec3i(-1, 1, 1),
-                new Vec3i(1, 1, 1),
-                new Vec3i(0, 1, -1),
-                new Vec3i(-1, 1, -1),
-                new Vec3i(1, 1, -1),
-        };
-        for (Vec3i offs : CHECK) {
-            if (WorldHelper.isSolid(mod, pos.add(offs))) return false;
+    private int getGroundHeight(AltoClef mod, int x, int z) {
+        for (int y = WorldHelper.WORLD_CEILING_Y; y >= WorldHelper.WORLD_FLOOR_Y; --y) {
+            BlockPos check = new BlockPos(x, y, z);
+            if (!WorldHelper.isAir(mod, check)) return y;
         }
-        return true;
+        return -1;
+    }
+    private int getGroundHeightWithRadius(AltoClef mod, int x, int z) {
+        int topY = 0;
+        for (int x2 = 5; x2 >= -5; --x2) {
+            for (int z2 = 5; z2 >= -5; --z2) {
+                int tmpy = getGroundHeight(mod,x+x2,z+z2);
+                if (tmpy > topY) {
+                    topY = tmpy;
+                }
+            }
+        }
+        return topY;
     }
 }
