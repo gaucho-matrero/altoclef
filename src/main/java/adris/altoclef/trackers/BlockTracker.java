@@ -78,9 +78,12 @@ public class BlockTracker extends Tracker {
 
     @Override
     protected void reset() {
+        // Tasks will handle de-tracking blocks.
+        /*
         synchronized (_trackingBlocks) {
             _trackingBlocks.clear();
         }
+         */
         for (PosCache cache : _caches.values()) {
             cache.clear();
         }
