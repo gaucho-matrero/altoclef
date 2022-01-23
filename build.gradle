@@ -1,11 +1,10 @@
 plugins {
-    id "fabric-loom" version "0.8-SNAPSHOT"
+    id "fabric-loom" version "0.10-SNAPSHOT"
     id "maven-publish"
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -32,15 +31,16 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.10.1'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.10.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    include 'com.fasterxml.jackson.core:jackson-core:2.13.0'
+    include 'com.fasterxml.jackson.core:jackson-annotations:2.13.0'
+    include 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.10.1')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.10.1')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.10.1')
+
 
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
@@ -53,15 +53,8 @@ dependencies {
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
 }
-shadowJar {
-    configurations = [project.configurations.shadow]
-    classifier = 'shadow'
-}
 
-remapJar {
-    dependsOn(":shadowJar")
-    input.set(shadowJar.archiveFile)
-}
+
 
 processResources {
     inputs.property "version", project.version
