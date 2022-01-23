@@ -11,7 +11,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.HoglinEntity;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -26,23 +25,23 @@ public class EntityHelper {
     public static final double ENTITY_GRAVITY = 0.08; // per second
 
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
-        boolean hostile = isGenerallyHostileToPlayer(mob);
+        boolean hostile = isGenerallyHostileToPlayer(mod, mob);
         if (mob instanceof LivingEntity entity) {
             return hostile && entity.canSee(mod.getPlayer());
         }
         return hostile;
     }
 
-    public static boolean isGenerallyHostileToPlayer(Entity hostile) {
+    public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
         // TODO: Ignore on Peaceful difficulty.
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         // NOTE: These do not work.
         if (hostile instanceof EndermanEntity enderman) {
             return enderman.isAngryAt(player) && enderman.isAngry();
         }
-        // TODO: Ignore if wearing any gold armor.
-        if (hostile instanceof HoglinEntity) {
-            return true;
+        if (hostile instanceof PiglinEntity) {
+            // Angry if we're not wearing gold
+            return !StorageHelper.isArmorEquipped(mod, ItemHelper.GOLDEN_ARMORS);
         }
         if (hostile instanceof ZombifiedPiglinEntity zombie) {
             // Will ALWAYS be false.
@@ -82,6 +81,7 @@ public class EntityHelper {
         if (!source.isUnblockable()) {
             int k;
             if (player.hasStatusEffect(StatusEffects.RESISTANCE) && source != DamageSource.OUT_OF_WORLD) {
+                //noinspection ConstantConditions
                 k = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - k;
                 double f = damageAmount * (double)j;
