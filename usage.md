@@ -20,7 +20,7 @@ Commands are prefixed with `@`. Here's a list along with their functions:
 | `list` | Prints a list of all get-able items | |
 | `give [player=<you>] [item] [quantity=1]` | Gives `[player]` `[quantity]` units of `[item]`, getting said items if the bot doesn't have them. If sent via `/msg`, will follow the player who sent the command. | `/msg Bot give iron_pickaxe` |
 | `goto [x] [y] [z] [dimension=<current>]` | Goes to (`[x]`,`[y]`, `[z]`) in a given `[dimension]`. Travels to `[dimension]` if not there already. Can also omit coordinates to just go to a dimension. Passing 2 values as coordinates goes to X Z coordinates instead. | `@goto 100 64 100 overworld` `@goto nether` `@goto 100 100` |
-| `elytra [x] [z]` | Goes to (`[x]`, `[z]`) using an elytra, it will do the same thing as `goto [x] [z]` if doesn't have one| `@elytra 1000 500` |
+| `elytra [x] [z]` | Goes to (`[x]`, `[z]`) using an elytra, it will do the same thing as `goto [x] [z]` if we don't have one| `@elytra 1000 500` |
 | `inventory [item?]` | Prints the bots inventory, OR how many items of a specific type the bot has. Mostly useful when running through `/msg`. | `/msg Bot inventory` `/msg Bot inventory cobblestone` |
 | `locate_structure [structure_type]` | Attempts to locate a `[structure_type]` structure. Can find strongholds or desert temples. | `@locate_structure stronghold`, `@locate_structure desert_temple` |
 | `punk [player]` | Attacks `[player]`. | |
