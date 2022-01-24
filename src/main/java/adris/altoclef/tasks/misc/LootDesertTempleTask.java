@@ -1,29 +1,21 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
-import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ContainerCache;
-import adris.altoclef.trackers.storage.ContainerType;
-import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.List;
-import java.util.Optional;
 
 public class LootDesertTempleTask extends Task {
     private final BlockPos _temple;
     private final List<Item> _wanted;
     private Task _lootTask;
-    private Task _interactTask;
     private short _looted = 0;
-    private boolean _isLooting = false;
     public final Vec3i[] CHEST_POSITIONS_RELATIVE = {
             new Vec3i(2, 0, 0),
             new Vec3i(-2, 0, 0),
@@ -43,37 +35,24 @@ public class LootDesertTempleTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_interactTask != null) {
-            if (!ContainerType.screenHandlerMatches(ContainerType.CHEST)) return _interactTask;
-            _interactTask = null;
-            _looted++;
-        }
-        if (_lootTask != null && !_lootTask.isFinished(mod)) {
-            setDebugState("Looting a desert temple chest");
-            return _lootTask;
-        }
-        for (Item lootable : _wanted) {
-            Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), lootable);
-            if (closest.isPresent()) {
+        if (_lootTask != null) {
+            if (!_lootTask.isFinished(mod)) {
                 setDebugState("Looting a desert temple chest");
-                _isLooting = true;
-                _lootTask = new LootContainerTask(closest.get().getBlockPos(), lootable);
                 return _lootTask;
             }
+            _looted++;
         }
-        _isLooting = false;
         if (mod.getWorld().getBlockState(_temple).getBlock() == Blocks.STONE_PRESSURE_PLATE) {
             setDebugState("Breaking pressure plate");
             return new DestroyBlockTask(_temple);
         }
-        if (_looted == 4) {
-            setDebugState("Why is this still running?");
-            return null;
+        if (_looted < 4) {
+            setDebugState("Looting a desert temple chest");
+            _lootTask = new LootContainerTask(_temple.add(CHEST_POSITIONS_RELATIVE[_looted]), _wanted);
+            return _lootTask;
         }
-        StorageHelper.closeScreen();
-        setDebugState("Interacting with chest");
-        _interactTask = new InteractWithBlockTask(_temple.add(CHEST_POSITIONS_RELATIVE[_looted]));
-        return _interactTask;
+        setDebugState("Why is this still running? Report this");
+        return null;
     }
 
     @Override
@@ -88,7 +67,7 @@ public class LootDesertTempleTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _looted == 4 && !_isLooting;
+        return _looted == 4;
     }
 
     @Override

@@ -8,6 +8,7 @@ public class BeatMinecraftConfig {
     public boolean sleepThroughNight = true;
     public boolean rePickupCraftingTable = true;
     public boolean searchRuinedPortals = true;
+    public boolean searchDesertTemples = true;
     public int minFoodUnits = 10;
     public int foodUnits = 220;
     public int requiredBeds = 10;

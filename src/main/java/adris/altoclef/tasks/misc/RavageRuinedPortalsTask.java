@@ -1,11 +1,9 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
@@ -21,7 +19,6 @@ import java.util.Optional;
 public class RavageRuinedPortalsTask extends Task {
     private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
     private Task _lootTask;
-    private Task _interactTask;
     public final Item[] LOOT = {
             Items.IRON_NUGGET,
             Items.FLINT,
@@ -65,17 +62,10 @@ public class RavageRuinedPortalsTask extends Task {
         if(_lootTask != null && !_lootTask.isFinished(mod)) {
             return _lootTask;
         }
-        for (Item lootable : LOOT) {
-            Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), lootable);
-            if (closest.isPresent()) {
-                _lootTask = new LootContainerTask(closest.get().getBlockPos(), lootable);
-                return _lootTask;
-            }
-        }
         Optional<BlockPos> closest = locateClosestUnopenedRuinedPortalChest(mod);
         if (closest.isPresent()) {
-            setDebugState("Ruined portal chest found, interacting...");
-            return new InteractWithBlockTask(closest.get());
+            _lootTask = new LootContainerTask(closest.get(), List.of(LOOT));
+            return _lootTask;
         }
         return new TimeoutWanderTask();
     }
