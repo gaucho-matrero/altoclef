@@ -488,17 +488,6 @@ public class BeatMinecraft2Task extends Task {
         return 0;
     }
 
-    private Optional<BlockPos> getADesertTemple(AltoClef mod) { // Stolen? NAHHHHHHHHHH
-        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
-            if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
-                    mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
-                    mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
-                return Optional.of(pos);
-            }
-        }
-        return Optional.empty();
-    }
-
     private boolean canBeLootablePortalChest(AltoClef mod, BlockPos blockPos) {
         if (mod.getWorld().getBlockState(blockPos.up(1)).getBlock() == Blocks.WATER || blockPos.getY() < 50) {
             return false;
@@ -593,10 +582,10 @@ public class BeatMinecraft2Task extends Task {
                 }
                 if (_config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                     // Check for desert temples
-                    Optional<BlockPos> temple = getADesertTemple(mod);
-                    if (temple.isPresent()) {
+                    BlockPos temple = WorldHelper.getADesertTemple(mod);
+                    if (temple != null) {
                         setDebugState("Looting desert temple for goodies");
-                        _lootTask = new LootDesertTempleTask(temple.get(), lootableItems(mod));
+                        _lootTask = new LootDesertTempleTask(temple, lootableItems(mod));
                         return _lootTask;
                     }
                 }
