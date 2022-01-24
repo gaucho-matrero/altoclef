@@ -13,18 +13,19 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 public class LootContainerTask extends Task {
     private final List<Item> _protected = new ArrayList<>();
-
+    private boolean _weDoneHere = false;
     public final BlockPos chest;
     public final List<Item> targets = new ArrayList<>();
 
@@ -63,6 +64,7 @@ public class LootContainerTask extends Task {
         }
         Optional<Slot> optimal = getAMatchingSlot(mod);
         if (optimal.isEmpty()) {
+            _weDoneHere = true;
             return null;
         }
         setDebugState("Looting items: " + targets);
@@ -71,7 +73,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        StorageHelper.closeScreen();
+        if (ContainerType.screenHandlerMatches(ContainerType.CHEST)) StorageHelper.closeScreen();
         for (Item item : _protected) {
             mod.getBehaviour().removeProtectedItems(item);
         }
@@ -86,15 +88,25 @@ public class LootContainerTask extends Task {
     private Optional<Slot> getAMatchingSlot(AltoClef mod) {
         for (Item item : targets) {
             List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(item);
-            if (!slots.isEmpty()) return Optional.of(slots.get(0));
+            if (!slots.isEmpty()) for (Slot slot : slots) {
+                boolean hasBinding = false;
+                for (NbtElement elm : StorageHelper.getItemStackInSlot(slot).getEnchantments()) {
+                    NbtCompound comp = (NbtCompound) elm;
+                    if (comp.getString("id").equals("minecraft:binding_curse")) {
+                        hasBinding = true;
+                        break;
+                    }
+                }
+                if (!hasBinding) return Optional.of(slot);
+            }
         }
         return Optional.empty();
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return ContainerType.screenHandlerMatches(ContainerType.CHEST) &&
-                getAMatchingSlot(mod).isEmpty();
+        return _weDoneHere || (ContainerType.screenHandlerMatches(ContainerType.CHEST) &&
+                getAMatchingSlot(mod).isEmpty());
     }
 
     @Override

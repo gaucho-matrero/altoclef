@@ -429,6 +429,9 @@ public class BeatMinecraft2Task extends Task {
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.BUCKET) && !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
             lootable.add(Items.IRON_INGOT);
         }
+        if (!StorageHelper.itemTargetsMetInventory(mod, COLLECT_EYE_GEAR_MIN)) {
+            lootable.add(Items.DIAMOND);
+        }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT)) {
             lootable.add(Items.FLINT);
         }
@@ -578,7 +581,7 @@ public class BeatMinecraft2Task extends Task {
                 if(_lootTask != null && !_lootTask.isFinished(mod)) {
                     return _lootTask;
                 }
-                _lootTask = null;
+                _lootTask = null; // This is duct tape that might not be needed anymore
                 if (_config.searchRuinedPortals) {
                     // Check for ruined portals
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
