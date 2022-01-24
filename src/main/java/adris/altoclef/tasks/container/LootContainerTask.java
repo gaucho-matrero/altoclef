@@ -11,24 +11,30 @@ import adris.altoclef.util.slots.Slot;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 
 public class LootContainerTask extends Task {
-    private final List<Item> _protected = new ArrayList<>();
     private boolean _weDoneHere = false;
+    private final Predicate<ItemStack> _check;
     public final BlockPos chest;
     public final List<Item> targets = new ArrayList<>();
 
     public LootContainerTask(BlockPos chestPos, List<Item> items) {
         chest = chestPos;
         targets.addAll(items);
+        _check = x -> true;
+    }
+
+    public LootContainerTask(BlockPos chestPos, List<Item> items, Predicate<ItemStack> pred) {
+        chest = chestPos;
+        targets.addAll(items);
+        _check = pred;
     }
 
     @Override
@@ -37,7 +43,6 @@ public class LootContainerTask extends Task {
         for (Item item : targets) {
             if (!mod.getBehaviour().isProtected(item)) {
                 mod.getBehaviour().addProtectedItems(item);
-                _protected.add(item);
             }
         }
     }
@@ -70,10 +75,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        if (ContainerType.screenHandlerMatches(ContainerType.CHEST)) StorageHelper.closeScreen();
-        for (Item item : _protected) {
-            mod.getBehaviour().removeProtectedItems(item);
-        }
+        StorageHelper.closeScreen();
         mod.getBehaviour().pop();
     }
 
@@ -86,15 +88,7 @@ public class LootContainerTask extends Task {
         for (Item item : targets) {
             List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(item);
             if (!slots.isEmpty()) for (Slot slot : slots) {
-                boolean hasBinding = false;
-                for (NbtElement elm : StorageHelper.getItemStackInSlot(slot).getEnchantments()) {
-                    NbtCompound comp = (NbtCompound) elm;
-                    if (comp.getString("id").equals("minecraft:binding_curse")) {
-                        hasBinding = true;
-                        break;
-                    }
-                }
-                if (!hasBinding) return Optional.of(slot);
+                if (_check.test(StorageHelper.getItemStackInSlot(slot))) return Optional.of(slot);
             }
         }
         return Optional.empty();

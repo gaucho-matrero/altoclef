@@ -165,6 +165,17 @@ public interface WorldHelper {
         return -1;
     }
 
+    static BlockPos getADesertTemple(AltoClef mod) {
+        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
+            if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
+                    mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
+                    mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
+                return pos;
+            }
+        }
+        return null;
+    }
+
     static int getGroundHeight(AltoClef mod, int x, int z, Block... groundBlocks) {
         Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
         for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {

@@ -5,6 +5,7 @@ import adris.altoclef.tasks.movement.SearchWithinBiomeTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -62,7 +63,7 @@ public class RavageDesertTemplesTask extends Task {
             _pickaxeTask = new CataloguedResourceTask(new ItemTarget(Items.WOODEN_PICKAXE, 2));
             return _pickaxeTask;
         }
-        _currentTemple = getADesertTemple(mod);
+        _currentTemple = WorldHelper.getADesertTemple(mod);
         if (_currentTemple != null) {
             _lootTask = new LootDesertTempleTask(_currentTemple, List.of(LOOT));
             setDebugState("Looting found temple");
@@ -90,16 +91,5 @@ public class RavageDesertTemplesTask extends Task {
     @Override
     protected String toDebugString() {
         return "Ravaging Desert Temples";
-    }
-
-    private BlockPos getADesertTemple(AltoClef mod) { // Stolen? NAHHHHHHHHHH
-        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
-            if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
-                    mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
-                    mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
-                return pos;
-            }
-        }
-        return null;
     }
 }
