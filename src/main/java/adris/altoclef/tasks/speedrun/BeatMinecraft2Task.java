@@ -567,10 +567,9 @@ public class BeatMinecraft2Task extends Task {
                         return new EquipArmorTask(COLLECT_EYE_ARMOR);
                     }
                 }
-                if(_lootTask != null && !_lootTask.isFinished(mod)) {
+                if(shouldForce(mod, _lootTask)) {
                     return _lootTask;
                 }
-                _lootTask = null; // This is duct tape that might not be needed anymore
                 if (_config.searchRuinedPortals) {
                     // Check for ruined portals
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
