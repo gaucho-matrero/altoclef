@@ -96,7 +96,7 @@ public class LootContainerTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _weDoneHere || (ContainerType.screenHandlerMatches(ContainerType.CHEST) &&
+        return _weDoneHere || (ContainerType.screenHandlerMatchesAny() &&
                 getAMatchingSlot(mod).isEmpty());
     }
 
