@@ -426,6 +426,9 @@ public class BeatMinecraft2Task extends Task {
                 lootable.add(Items.FIRE_CHARGE);
             }
         }
+        if (!mod.getItemStorage().hasItemInventoryOnly(Items.BUCKET) && !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
+            lootable.add(Items.IRON_INGOT);
+        }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT)) {
             lootable.add(Items.FLINT);
         }
@@ -575,6 +578,7 @@ public class BeatMinecraft2Task extends Task {
                 if(_lootTask != null && !_lootTask.isFinished(mod)) {
                     return _lootTask;
                 }
+                _lootTask = null;
                 if (_config.searchRuinedPortals) {
                     // Check for ruined portals
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
@@ -584,7 +588,7 @@ public class BeatMinecraft2Task extends Task {
                         return _lootTask;
                     }
                 }
-                if (_config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
+                if (_config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                     // Check for desert temples
                     Optional<BlockPos> temple = getADesertTemple(mod);
                     if (temple.isPresent()) {

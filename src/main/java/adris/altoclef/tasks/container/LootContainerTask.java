@@ -46,8 +46,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if(!ContainerType.screenHandlerMatches(ContainerType.CHEST) || !isLookingAtTarget()) {
-            StorageHelper.closeScreen();
+        if(!ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
             setDebugState("Interact with container");
             return new InteractWithBlockTask(chest);
         }
@@ -72,6 +71,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
+        StorageHelper.closeScreen();
         for (Item item : _protected) {
             mod.getBehaviour().removeProtectedItems(item);
         }
@@ -91,22 +91,9 @@ public class LootContainerTask extends Task {
         return Optional.empty();
     }
 
-    private boolean isLookingAtTarget() {
-        HitResult hit = MinecraftClient.getInstance().crosshairTarget;
-        if (hit == null) {
-            Debug.logMessage("Got weird hit; ignoring...");
-            return false;
-        }
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            Vec3d lookingAt = hit.getPos();
-            return lookingAt.squaredDistanceTo(chest.getX(), chest.getY(), chest.getZ()) < 2;
-        } else return false;
-    }
-
     @Override
     public boolean isFinished(AltoClef mod) {
         return ContainerType.screenHandlerMatches(ContainerType.CHEST) &&
-                isLookingAtTarget() &&
                 getAMatchingSlot(mod).isEmpty();
     }
 
