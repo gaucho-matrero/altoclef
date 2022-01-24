@@ -5,6 +5,8 @@ import adris.altoclef.tasks.movement.SearchWithinBiomeTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
@@ -58,7 +60,7 @@ public class RavageDesertTemplesTask extends Task {
             setDebugState("Need to get pickaxes first");
             return _pickaxeTask;
         }
-        if (!mod.getItemStorage().hasItemInventoryOnly(Items.WOODEN_PICKAXE) && !mod.getItemStorage().hasItemInventoryOnly(Items.STONE_PICKAXE)) {
+        if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
             setDebugState("Need to get pickaxes first");
             _pickaxeTask = new CataloguedResourceTask(new ItemTarget(Items.WOODEN_PICKAXE, 2));
             return _pickaxeTask;
