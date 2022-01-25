@@ -59,7 +59,7 @@ public class RavageRuinedPortalsTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if(_lootTask != null && !_lootTask.isFinished(mod)) {
+        if(_lootTask != null && _lootTask.isActive() && !_lootTask.isFinished(mod)) {
             return _lootTask;
         }
         Optional<BlockPos> closest = locateClosestUnopenedRuinedPortalChest(mod);

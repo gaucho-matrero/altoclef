@@ -36,7 +36,10 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -53,7 +56,6 @@ public class BeatMinecraft2Task extends Task {
     static {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
     }
-
     private static final Block[] TRACK_BLOCKS = new Block[] {
             Blocks.END_PORTAL_FRAME,
             Blocks.END_PORTAL,
@@ -104,6 +106,18 @@ public class BeatMinecraft2Task extends Task {
 
     // For some reason, after death there's a frame where the game thinks there are NO items in the end.
     private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(2);
+
+    // We don't want curse of binding
+    private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
+        boolean hasBinding = false;
+        for (NbtElement elm : stack.getEnchantments()) {
+            NbtCompound comp = (NbtCompound) elm;
+            if (comp.getString("id").equals("minecraft:binding_curse")) {
+                return false;
+            }
+        }
+        return true;
+    };
 
     private Task _foodTask;
     private Task _gearTask;
@@ -571,7 +585,7 @@ public class BeatMinecraft2Task extends Task {
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
                     if (chest.isPresent()) {
                         setDebugState("Looting ruined portal chest for goodies");
-                        _lootTask = new LootContainerTask(chest.get(), lootableItems(mod));
+                        _lootTask = new LootContainerTask(chest.get(), lootableItems(mod), _noCurseOfBinding);
                         return _lootTask;
                     }
                 }

@@ -52,13 +52,13 @@ public class RavageDesertTemplesTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_lootTask != null && !_lootTask.isFinished(mod)) {
-            setDebugState("Looting found temple");
-            return _lootTask;
-        }
         if (_pickaxeTask != null && !_pickaxeTask.isFinished(mod)) {
             setDebugState("Need to get pickaxes first");
             return _pickaxeTask;
+        }
+        if (_lootTask != null && !_lootTask.isFinished(mod)) {
+            setDebugState("Looting found temple");
+            return _lootTask;
         }
         if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
             setDebugState("Need to get pickaxes first");
