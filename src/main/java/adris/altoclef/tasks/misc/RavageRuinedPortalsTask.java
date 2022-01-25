@@ -104,14 +104,10 @@ public class RavageRuinedPortalsTask extends Task {
         return false;
     }
 
-    boolean isChestNotOpened(AltoClef mod, BlockPos pos) {
-        return mod.getItemStorage().getContainerAtPosition(pos).isEmpty();
-    }
-
     private Optional<BlockPos> locateClosestUnopenedRuinedPortalChest(AltoClef mod) {
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             return Optional.empty();
         }
-        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && isChestNotOpened(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
+        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 }
