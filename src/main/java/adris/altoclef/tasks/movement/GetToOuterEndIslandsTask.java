@@ -24,6 +24,7 @@ import net.minecraft.util.math.Vec3i;
 
 public class GetToOuterEndIslandsTask extends Task {
     private Task _beatTheGame;
+    public final int END_ISLAND_START_RADIUS = 800;
     public final Vec3i[] OFFSETS = {
             new Vec3i(1, -1, 1),
             new Vec3i(1, -1, -1),
@@ -55,7 +56,7 @@ public class GetToOuterEndIslandsTask extends Task {
             BlockPos gateway = mod.getBlockTracker().getNearestTracking(Blocks.END_GATEWAY).get();
             int blocksNeeded = Math.abs(mod.getPlayer().getBlockY() - gateway.getY()) +
                     Math.abs(mod.getPlayer().getBlockX() - gateway.getX()) +
-                    Math.abs(mod.getPlayer().getBlockZ() - gateway.getZ()) - 1;
+                    Math.abs(mod.getPlayer().getBlockZ() - gateway.getZ()) - 3;
             if (StorageHelper.getBuildingMaterialCount(mod) < blocksNeeded) {
                 setDebugState("Getting building materials");
                 return new GetBuildingMaterialsTask(blocksNeeded);
@@ -91,7 +92,7 @@ public class GetToOuterEndIslandsTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         return WorldHelper.getCurrentDimension() == Dimension.END &&
-                mod.getPlayer().getPos().distanceTo(new Vec3d(0, 64, 0)) > 450;
+                !WorldHelper.inRangeXZ(new Vec3d(0, 64, 0), mod.getPlayer().getPos(), END_ISLAND_START_RADIUS);
     }
 
     @Override
