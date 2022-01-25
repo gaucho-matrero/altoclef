@@ -2,6 +2,8 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.trackers.BlockTracker.BlockTrackerConfig;
+import adris.altoclef.trackers.BlockTracker.PosCache;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.BaritoneHelper;

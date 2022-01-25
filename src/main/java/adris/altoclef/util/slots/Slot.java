@@ -1,6 +1,7 @@
 package adris.altoclef.util.slots;
 
 import adris.altoclef.Debug;
+import adris.altoclef.util.slots.Slot.ContainerType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;

@@ -4,6 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask.DoSmeltInFurnaceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask.FurnaceCache;
 import adris.altoclef.tasks.resources.CollectFuelTask;
 import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.Task;

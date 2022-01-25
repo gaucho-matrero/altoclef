@@ -4,7 +4,6 @@ import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
-import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.resources.wood.*;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
@@ -344,7 +343,7 @@ public class TaskCatalogue {
             shapedRecipeStairs("cut_copper_stairs", Items.CUT_COPPER_STAIRS, "cut_copper");
             shapedRecipeSlab("cobbled_deepslate_slab", Items.COBBLED_DEEPSLATE_SLAB, "cobbled_deepslate");
             shapedRecipeStairs("cobbled_deepslate_stairs", Items.COBBLED_DEEPSLATE_STAIRS, "cobbled_deepslate");
-            shapedRecipeWall("cobbled_deepslate_wall", Items.DEEPSLATE_WALL, "cobbled_deepslate");
+            shapedRecipeWall("cobbled_deepslate_wall", Items.COBBLED_DEEPSLATE_WALL, "cobbled_deepslate");
             shapedRecipeSlab("polished_deepslate_slab", Items.POLISHED_DEEPSLATE_SLAB, "polished_deepslate");
             shapedRecipeStairs("polished_deepslate_stairs", Items.POLISHED_DEEPSLATE_STAIRS, "polished_deepslate");
             shapedRecipeWall("polished_deepslate_wall", Items.POLISHED_DEEPSLATE_WALL, "polished_deepslate");

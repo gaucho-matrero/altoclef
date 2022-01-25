@@ -9,7 +9,6 @@ import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;

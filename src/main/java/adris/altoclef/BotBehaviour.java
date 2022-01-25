@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.BotBehaviour.State;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;

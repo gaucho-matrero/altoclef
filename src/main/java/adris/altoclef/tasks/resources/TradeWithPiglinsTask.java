@@ -6,6 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask.PerformTradeWithPiglin;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
