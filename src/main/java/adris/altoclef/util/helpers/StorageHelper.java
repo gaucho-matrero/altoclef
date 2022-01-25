@@ -468,6 +468,16 @@ public class StorageHelper {
         return ItemStack.EMPTY;
     }
 
+    public static double getBrewingStandFuel() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof BrewingStandScreenHandler stand)
+            return getBrewingStandFuel(stand);
+        return -1;
+    }
+
+    public static double getBrewingStandFuel(BrewingStandScreenHandler handler) {
+        return handler.getFuel();
+    }
+
     public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
         PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor) handler).getPropertyDelegate();
         return (double) d.get(0) / 200.0;

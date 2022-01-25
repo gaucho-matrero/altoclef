@@ -176,6 +176,10 @@ public interface WorldHelper {
         return null;
     }
 
+    static boolean isUnopenedChest(AltoClef mod, BlockPos pos) {
+        return mod.getItemStorage().getContainerAtPosition(pos).isEmpty();
+    }
+
     static int getGroundHeight(AltoClef mod, int x, int z, Block... groundBlocks) {
         Set<Block> possibleBlocks = new HashSet<>(Arrays.asList(groundBlocks));
         for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
