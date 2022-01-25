@@ -468,13 +468,13 @@ public class StorageHelper {
         return ItemStack.EMPTY;
     }
 
-    public static double getBrewingStandFuel() {
+    public static int getBrewingStandFuel() {
         if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof BrewingStandScreenHandler stand)
             return getBrewingStandFuel(stand);
         return -1;
     }
 
-    public static double getBrewingStandFuel(BrewingStandScreenHandler handler) {
+    public static int getBrewingStandFuel(BrewingStandScreenHandler handler) {
         return handler.getFuel();
     }
 
