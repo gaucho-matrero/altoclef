@@ -90,7 +90,8 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         if (mod.getPlayer().hasStatusEffect(StatusEffects.LEVITATION) &&
                 !mod.getPlayer().getItemCooldownManager().isCoolingDown(Items.CHORUS_FRUIT) &&
                 mod.getPlayer().getActiveStatusEffects().get(StatusEffects.LEVITATION).getDuration() <= 70 &&
-                mod.getItemStorage().hasItemInventoryOnly(Items.CHORUS_FRUIT)) {
+                mod.getItemStorage().hasItemInventoryOnly(Items.CHORUS_FRUIT) &&
+                !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
             _doingChorusFruit = true;
             mod.getSlotHandler().forceEquipItem(Items.CHORUS_FRUIT);
             mod.getInputControls().hold(Input.CLICK_RIGHT);
