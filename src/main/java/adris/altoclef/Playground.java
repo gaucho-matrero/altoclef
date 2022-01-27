@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
+import adris.altoclef.tasks.construction.compound.ConstructIronGolemTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -191,6 +192,9 @@ public class Playground {
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
+                break;
+            case "iron":
+                mod.runUserTask(new ConstructIronGolemTask());
                 break;
             case "avoid":
                 // Test block break predicate
