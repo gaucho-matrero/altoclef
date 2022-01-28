@@ -147,7 +147,7 @@ public class AltoClef implements ModInitializer {
             _settings = newSettings;
             // Baritone's `acceptableThrowawayItems` should match our own.
             List<Item> baritoneCanPlace = Arrays.stream(_settings.getThrowawayItems(this, true))
-                    .filter(item -> item != Items.SOUL_SAND) // Don't place soul sand, that messes us up.
+                    .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK) // Don't place soul sand or magma blocks, that messes us up.
                     .collect(Collectors.toList());
             getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
             // If we should run an idle command...
