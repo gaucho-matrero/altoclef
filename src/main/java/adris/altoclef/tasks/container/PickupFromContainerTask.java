@@ -59,7 +59,7 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCount(target) >= target.getTargetCount());
+        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
     public static Optional<Slot> getBestSlotToTransfer(AltoClef mod, ItemTarget itemToMove, int currentItemQuantity, List<Slot> grabPotentials, Function<ItemStack, Boolean> canStackFit) {
