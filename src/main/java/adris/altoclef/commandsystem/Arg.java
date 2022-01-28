@@ -2,7 +2,6 @@ package adris.altoclef.commandsystem;
 
 import java.util.HashMap;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class Arg<T> extends ArgBase {
     public T Default;
     private final Class<T> _tType;
@@ -27,8 +26,8 @@ public class Arg<T> extends ArgBase {
             }
         } else {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
-                throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class, ItemList.class)) {
+                throw new CommandException("Arguments are not programmed to parse the following type: " + _tType +". This is either not implemented intentionally or by accident somehow.");
             }
         }
     }
@@ -147,6 +146,11 @@ public class Arg<T> extends ArgBase {
             }
         }
 
+        // Some custom types
+        if (isInstanceOf(vType, ItemList.class)) {
+            return getConverted(vType, ItemList.parseRemainder(String.join(" ", unitPlusRemainder)));
+        }
+
         // Now do String parsing.
         if (isInstanceOf(vType, String.class)) {
             // Remove quotes
@@ -216,5 +220,12 @@ public class Arg<T> extends ArgBase {
     @Override
     public <V> V getDefault(Class<V> vType) {
         return getConverted(vType, Default);
+    }
+
+    @Override
+    public boolean isArbitrarilyLong() {
+        // Some arguments don't fit into individual "units".
+        // I should _really_ rewrite this system...
+        return isInstanceOf(_tType, ItemList.class);
     }
 }

@@ -3,7 +3,6 @@ package adris.altoclef.commandsystem;
 import java.util.ArrayList;
 import java.util.List;
 
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class ArgParser {
     int argCounter;
     int unitCounter;
@@ -78,12 +77,12 @@ public class ArgParser {
         if (argCounter >= _args.length) {
             throw new CommandException("You tried grabbing more arguments than you had... Bad move.");
         }
-        if (argUnits.length > _args.length) {
+        ArgBase arg = _args[argCounter];
+        if (!arg.isArbitrarilyLong() && argUnits.length > _args.length) {
             throw new CommandException(String.format("Too many arguments provided %d. The maximum is %d.", argUnits.length, _args.length));
         }
 
         // Current values from arrays
-        ArgBase arg = _args[argCounter];
         ++argCounter;
         if (arg.isArray()) {
             argCounter = _args.length;

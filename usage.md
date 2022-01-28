@@ -30,6 +30,14 @@ Commands are prefixed with `@`. Here's a list along with their functions:
 | `stop` | Forcefully stops the currently running command. The shortcut `CTRL+K` also achieves this. | |
 | `test [testname=<run idle test>]` | Runs a "test" command. These vary, and will be described below. | |
 
+### Command chaining
+
+Execute consecutve commands by separating them with `;`
+
+`@get iron_axe;get log 100;goto 0 0;give Player log 100`
+
+will get an iron axe, then get 100 logs, then go to `x=0 z=0` and then give 100 logs to a player with the name `Player`
+
 ### Notable test commands
 
 Test commands are temporary/only exist as an experiment, but some of these might be interesting.
@@ -49,12 +57,11 @@ Here's a list of some highlights.
 | `bed` | Right clicks a nearby bed to set the bot's spawnpoint, placing one if it does not exist. |
 
 
-## Bot Settings
+## Bot Settings/Configuration
 
-After running the game with the mod once, a file called `altoclef_settings.json` should appear in your `.minecraft` directory. This contains `altoclef` related settings.
+After running the game with the mod once, a folder called `altoclef` should appear in your `.minecraft` directory. This contains `altoclef` related settings and configurations.
 
-Check [Settings.java](https://github.com/gaucho-matrero/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
-for descriptions on what each setting does.
+With regards to the `altoclef_settings.json` file Check [Settings.java](https://github.com/gaucho-matrero/altoclef/blob/main/src/main/java/adris/altoclef/Settings.java)
 
 After modifying your local settings, run `@reload_settings` to apply your changes in-game.
 
@@ -64,7 +71,7 @@ After modifying your local settings, run `@reload_settings` to apply your change
 This bot lets other players run commands on the bot via server messages. When sending a command via `/msg` you may omit the `@`.
 
 You'll have to append each player's name to a file called `altoclef_butler_whitelist.txt`
-located in your `.minecraft` directory. Make sure your name is not found in `altoclef_butler_blacklist.txt` too.
+located in your `.minecraft/altoclef` directory. Make sure your name is not found in `altoclef_butler_blacklist.txt` too.
 
 ### Disabling/Enabling Blacklist/Whitelist
 

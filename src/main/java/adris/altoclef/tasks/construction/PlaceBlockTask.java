@@ -62,7 +62,8 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStart(AltoClef mod) {
         _progressChecker.reset();
-        _wanderTask.resetWander();
+        // If we get interrupted by another task, this might cause problems...
+        //_wanderTask.resetWander();
     }
 
     @Override
@@ -152,7 +153,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected String toDebugString() {
-        return "Place structure at " + _target.toShortString();
+        return "Place structure" + ArrayUtils.toString(_toPlace) + " at " + _target.toShortString();
     }
 
     private boolean tryingAlternativeWay() {

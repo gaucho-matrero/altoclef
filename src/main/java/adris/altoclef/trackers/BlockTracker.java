@@ -21,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -52,11 +53,17 @@ public class BlockTracker extends Tracker {
 
     private final TimerGame _forceElapseTimer = new TimerGame(_config.scanIntervalWhenNewBlocksFound);
 
+    // A scan can last no more than 15 seconds
+    private final TimerGame _asyncForceResetScanFlag = new TimerGame(15);
+
     private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
     private final Object _scanMutex = new Object();
 
     private boolean _scanning = false;
+
+    // Only perform scans at the END of our frame
+    private final Semaphore _endOfFrameMutex = new Semaphore(1);
 
     //private Block _currentlyTracking = null;
     private final AltoClef _mod;
@@ -76,11 +83,27 @@ public class BlockTracker extends Tracker {
         }
     }
 
+    // We want our `_trackingBlocks` value to be read AFTER tasks have finished ticking
+    public void preTickTask() {
+        try {
+            _endOfFrameMutex.acquire();
+        } catch (InterruptedException e) {
+            Debug.logWarning("Pre-tick failed to acquire block track mutex! (send logs)");
+            e.printStackTrace();
+        }
+    }
+    public void postTickTask() {
+        _endOfFrameMutex.release();
+    }
+
     @Override
     protected void reset() {
+        // Tasks will handle de-tracking blocks.
+        /*
         synchronized (_trackingBlocks) {
             _trackingBlocks.clear();
         }
+         */
         for (PosCache cache : _caches.values()) {
             cache.clear();
         }
@@ -228,12 +251,12 @@ public class BlockTracker extends Tracker {
      * @param blocks What blocks to check for
      */
     public Optional<BlockPos> getNearestWithinRange(Vec3d pos, double range, Block... blocks) {
-        int minX = (int) Math.round(pos.x - range),
-                maxX = (int) Math.round(pos.x + range),
-                minY = (int) Math.round(pos.y - range),
-                maxY = (int) Math.round(pos.y + range),
-                minZ = (int) Math.round(pos.z - range),
-                maxZ = (int) Math.round(pos.z + range);
+        int minX = (int) Math.floor(pos.x - range),
+                maxX = (int) Math.floor(pos.x + range),
+                minY = (int) Math.floor(pos.y - range),
+                maxY = (int) Math.floor(pos.y + range),
+                minZ = (int) Math.floor(pos.z - range),
+                maxZ = (int) Math.floor(pos.z + range);
         double closestDistance = Float.POSITIVE_INFINITY;
         BlockPos nearest = null;
         for (int x = minX; x <= maxX; ++x) {
@@ -277,21 +300,38 @@ public class BlockTracker extends Tracker {
         _timer.setInterval(_config.scanInterval);
         CalculationContext ctx = new CalculationContext(_mod.getClientBaritone(), _config.scanAsynchronously);
         if (_config.scanAsynchronously) {
+            if (_scanning && _asyncForceResetScanFlag.elapsed()) {
+                Debug.logMessage("SCANNING TOOK TOO LONG! Will assume it ended mid way. Hopefully this won't break anything...");
+                _scanning = false;
+            }
             if (!_scanning) {
-                _scanning = true;
                 Baritone.getExecutor().execute(() -> {
-                    rescanWorld(ctx);
+                    _scanning = true;
+                    _asyncForceResetScanFlag.reset();
+                    rescanWorld(ctx, true);
                     _scanning = false;
                 });
             }
         } else {
             // Synchronous scanning.
-            rescanWorld(ctx);
+            rescanWorld(ctx, false);
         }
     }
 
-    private void rescanWorld(CalculationContext ctx) {
+    private void rescanWorld(CalculationContext ctx, boolean async) {
         Block[] blocksToScan;
+        if (async) {
+            // Wait for end of frame
+            try {
+                _endOfFrameMutex.acquire();
+                _endOfFrameMutex.release();
+            } catch (InterruptedException e) {
+                Debug.logWarning("RESCAN INTERRUPTED! Will SKIP the scan (see logs)");
+                _endOfFrameMutex.release();
+                e.printStackTrace();
+                return;
+            }
+        }
         synchronized (_trackingBlocks) {
             Debug.logInternal("Rescanning world for " + _trackingBlocks.size() + " blocks... Hopefully not dummy slow.");
             blocksToScan = new Block[_trackingBlocks.size()];
@@ -315,7 +355,7 @@ public class BlockTracker extends Tracker {
 
         // The scanning may run asynchronously.
         BlockOptionalMetaLookup boml = new BlockOptionalMetaLookup(blocksToScan);
-        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, 64, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        List<BlockPos> found = MineProcess.searchWorld(ctx, boml, _config.maxCacheSizePerBlockType, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
         synchronized (_scanMutex) {
             if (MinecraftClient.getInstance().world != null) {
@@ -611,7 +651,7 @@ public class BlockTracker extends Tracker {
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
-                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, false)))
+                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, true)))
                             .collect(Collectors.toList());
                     tracking = tracking.stream()
                             .limit(_config.maxCacheSizePerBlockType)

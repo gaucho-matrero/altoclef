@@ -13,8 +13,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
+import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 
@@ -362,6 +365,10 @@ public class EntityTracker extends Tracker {
                         if (entity instanceof PersistentProjectileEntity) {
                             inGround = ((PersistentProjectileEntityAccessor) entity).isInGround();
                         }
+
+                        // Ignore some of the harlmess projectiles
+                        if (projEntity instanceof FishingBobberEntity || projEntity instanceof EnderPearlEntity || projEntity instanceof ExperienceBottleEntity)
+                            continue;
 
                         if (!inGround) {
                             proj.position = projEntity.getPos();

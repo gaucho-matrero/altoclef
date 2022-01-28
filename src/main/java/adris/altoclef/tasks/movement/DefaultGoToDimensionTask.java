@@ -2,6 +2,7 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -103,8 +104,8 @@ public class DefaultGoToDimensionTask extends Task {
             return new GetToBlockTask(closest);
         }
 
-        setDebugState("We're totally lost, wandering to shoot in the dark.");
-        return new TimeoutWanderTask();
+        setDebugState("Constructing nether portal with obsidian");
+        return new ConstructNetherPortalObsidianTask();
     }
 
     private Task goToOverworldFromEndTask(AltoClef mod) {

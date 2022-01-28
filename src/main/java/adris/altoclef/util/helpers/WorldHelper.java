@@ -2,6 +2,7 @@ package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientConnectionAccessor;
+import adris.altoclef.mixins.EntityAccessor;
 import adris.altoclef.util.Dimension;
 import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
@@ -117,6 +118,20 @@ public interface WorldHelper {
         }
         return null;
     }
+    /**
+     * Get the "foot" of a block with a bed, if the block is a bed.
+     */
+    static BlockPos getBedFoot(AltoClef mod, BlockPos posWithBed) {
+        BlockState state = mod.getWorld().getBlockState(posWithBed);
+        if (state.getBlock() instanceof BedBlock) {
+            Direction facing = state.get(BedBlock.FACING);
+            if (mod.getWorld().getBlockState(posWithBed).get(BedBlock.PART).equals(BedPart.FOOT)) {
+                return posWithBed;
+            }
+            return posWithBed.offset(facing.getOpposite());
+        }
+        return null;
+    }
 
     // Get the left side of a chest, given a block pos.
     // Used to consistently identify whether a double chest is part of the same chest.
@@ -161,10 +176,22 @@ public interface WorldHelper {
     }
 
     static boolean canBreak(AltoClef mod, BlockPos pos) {
-        return mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
+        // JANK: Temporarily check if we can break WITHOUT paused interactions.
+        // Not doing this creates bugs where we loop back and forth through the nether portal and stuff.
+        boolean prevInteractionPaused = mod.getExtraBaritoneSettings().isInteractionPaused();
+        mod.getExtraBaritoneSettings().setInteractionPaused(false);
+        boolean result = mod.getWorld().getBlockState(pos).getHardness(mod.getWorld(), pos) >= 0
                 && !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos)
                 && MineProcess.plausibleToBreak(new CalculationContext(mod.getClientBaritone()), pos)
                 && canReach(mod, pos);
+        mod.getExtraBaritoneSettings().setInteractionPaused(prevInteractionPaused);
+        return result;
+    }
+
+    static boolean isInNetherPortal(AltoClef mod) {
+        if (mod.getPlayer() == null)
+            return false;
+        return ((EntityAccessor)mod.getPlayer()).isInNetherPortal();
     }
 
     static boolean dangerousToBreakIfRightAbove(AltoClef mod, BlockPos toBreak) {
@@ -199,7 +226,9 @@ public interface WorldHelper {
 
     static boolean canReach(AltoClef mod, BlockPos pos) {
         if (mod.getModSettings().shouldAvoidOcean()) {
-            if (mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
+            // 45 is roughly the ocean floor. We add 2 just cause why not.
+            // This > 47 can clearly cause a stuck bug.
+            if (mod.getPlayer().getY() > 47 && mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
                 // Block is in an ocean biome. If it's below sea level...
                 if (pos.getY() < 64 && getGroundHeight(mod, pos.getX(), pos.getZ(), Blocks.WATER) > pos.getY()) {
                     return false;
@@ -237,9 +266,12 @@ public interface WorldHelper {
     }
 
     static Iterable<BlockPos> getBlocksTouchingPlayer(AltoClef mod) {
-        Box boundingBox = mod.getPlayer().getBoundingBox();
-        BlockPos min = new BlockPos(boundingBox.minX, boundingBox.minY, boundingBox.minZ);
-        BlockPos max = new BlockPos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ);
+        return getBlocksTouchingBox(mod, mod.getPlayer().getBoundingBox());
+    }
+    
+    static Iterable<BlockPos> getBlocksTouchingBox(AltoClef mod, Box box) {
+        BlockPos min = new BlockPos(box.minX, box.minY, box.minZ);
+        BlockPos max = new BlockPos(box.maxX, box.maxY, box.maxZ);
         return scanRegion(mod, min, max);
     }
 
@@ -296,10 +328,6 @@ public interface WorldHelper {
             }
         }
         return null;
-    }
-
-    static Vec3d blockCenter(BlockPos block) {
-        return new Vec3d(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
     }
 
     static Vec3d getOverworldPosition(Vec3d pos) {

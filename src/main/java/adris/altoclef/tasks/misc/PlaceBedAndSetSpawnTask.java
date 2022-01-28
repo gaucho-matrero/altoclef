@@ -182,12 +182,18 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         }
                     }
                 }
+                _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
+                if (_bedForSpawnPoint == null) {
+                    _bedForSpawnPoint = toSleepIn;
+                }
                 if (!closeEnough) {
                     try {
                         Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
                         Direction side = face.rotateYClockwise();
+                        /*
                         BlockPos targetMove = toSleepIn.offset(side).offset(side); // Twice, juust to make sure...
-                        return new GetToBlockTask(targetMove);
+                         */
+                        return new GetToBlockTask(_bedForSpawnPoint.add(side.getVector()));
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
                     }
@@ -198,7 +204,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
                     _inBedTimer.reset();
                 }
                 // Keep track of where our spawn point is
-                _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
                 _progressChecker.reset();
                 return new InteractWithBlockTask(_bedForSpawnPoint);
             }, BEDS);

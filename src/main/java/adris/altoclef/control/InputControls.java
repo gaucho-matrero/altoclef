@@ -19,6 +19,7 @@ import java.util.Set;
  * <p>
  * But this will alleviate all confusion.
  */
+@SuppressWarnings("UnnecessaryDefault")
 public class InputControls {
 
     private final Queue<Input> _toUnpress = new ArrayDeque<>();
@@ -53,6 +54,9 @@ public class InputControls {
     }
 
     public void hold(Input input) {
+        if (!inputToKeyBinding(input).isPressed()) {
+            KeyBinding.onKeyPressed(inputToKeyBinding(input).getDefaultKey());
+        }
         inputToKeyBinding(input).setPressed(true);
     }
 

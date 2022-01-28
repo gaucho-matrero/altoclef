@@ -4,9 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.PutOutFireTask;
-import adris.altoclef.tasks.movement.EscapeFromLavaTask;
-import adris.altoclef.tasks.movement.GetToBlockTask;
-import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
+import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
@@ -17,11 +15,8 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -31,8 +26,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
     private final TimerGame _wasInLavaTimer = new TimerGame(1);
     private boolean _wasAvoidingDrowning;
-    private boolean _wasStuckInPortal;
-    private int _portalStuckTimer;
+    private TimerGame _portalStuckTimer = new TimerGame(5);
 
     private BlockPos _extinguishWaterPosition;
 
@@ -66,7 +60,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
         // Extinguish with water
         if (mod.getModSettings().shouldExtinguishSelfWithWater()) {
-            if (!(_mainTask instanceof EscapeFromLavaTask) && mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE) && !mod.getWorld().getDimension().isUltrawarm()) {
+            if (!(_mainTask instanceof EscapeFromLavaTask && isCurrentlyRunning(mod)) && mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE) && !mod.getWorld().getDimension().isUltrawarm()) {
                 // Extinguish ourselves
                 if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                     BlockPos targetWaterPos = mod.getPlayer().getBlockPos();
@@ -98,18 +92,19 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
         // Portal stuck
         if (isStuckInNetherPortal(mod)) {
-            _portalStuckTimer++;
-            _wasStuckInPortal = true;
+            // We can't break or place while inside a portal (not really)
+            mod.getExtraBaritoneSettings().setInteractionPaused(true);
         } else {
-            _portalStuckTimer = 0;
+            // We're no longer stuck, but we might want to move AWAY from our stuck position.
+            _portalStuckTimer.reset();
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
-        if (_portalStuckTimer > 10) {
+        if (_portalStuckTimer.elapsed()) {
             // We're stuck inside a portal, so get out.
             // Don't allow breaking while we're inside the portal.
             setTask(new SafeRandomShimmyTask());
             return 60;
         }
-        _wasStuckInPortal = false;
 
         return Float.NEGATIVE_INFINITY;
     }
@@ -156,15 +151,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
     }
 
     private boolean isStuckInNetherPortal(AltoClef mod) {
-        // We're stuck if we're inside a portal, are breaking it and can ONLY look at the portal.
-        boolean inPortal = mod.getBlockTracker().blockIsValid(mod.getPlayer().getBlockPos(), Blocks.NETHER_PORTAL);
-        boolean breakingPortal = mod.getControllerExtras().isBreakingBlock() && mod.getBlockTracker().blockIsValid(mod.getControllerExtras().getBreakingBlockPos(), Blocks.NETHER_PORTAL);
-        if (MinecraftClient.getInstance().crosshairTarget != null && MinecraftClient.getInstance().crosshairTarget.getType() == HitResult.Type.BLOCK) {
-            BlockHitResult currentLook = (BlockHitResult) MinecraftClient.getInstance().crosshairTarget;
-            boolean collidingWithportal = (currentLook != null && mod.getBlockTracker().blockIsValid(currentLook.getBlockPos(), Blocks.NETHER_PORTAL));
-            return inPortal && collidingWithportal && (breakingPortal || _wasStuckInPortal);
-        }
-        return false;
+        return WorldHelper.isInNetherPortal(mod) && !mod.getUserTaskChain().getCurrentTask().thisOrChildSatisfies(task -> task instanceof EnterNetherPortalTask);
     }
 
     @Override
@@ -176,5 +163,10 @@ public class WorldSurvivalChain extends SingleTaskChain {
     public boolean isActive() {
         // Always check for survival.
         return true;
+    }
+
+    @Override
+    protected void onStop(AltoClef mod) {
+        super.onStop(mod);
     }
 }

@@ -58,22 +58,6 @@ public class ItemStorageTracker extends Tracker {
     public int getItemCount(Item ...items) {
         int inConversionSlots = Arrays.stream(getCurrentConversionSlots()).mapToInt(slot -> {
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-            if (slot instanceof FurnaceSlot) {
-                // We accept furnace slots ONLY if we're running a furnace task and
-                // the input is a material OR fuel.
-                boolean found = false;
-                for (Task task : _mod.getTaskRunner().getCurrentTaskChain().getTasks()) {
-                    if (task instanceof SmeltInFurnaceTask smeltTask) {
-                        // Some materials may be converted in furnace smelting.
-                        if (Arrays.stream(smeltTask.getTargets()).anyMatch(target -> target.getItem().matches(stack.getItem()))) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found)
-                    return 0;
-            }
             if (ArrayUtils.contains(items, stack.getItem())) {
                 return stack.getCount();
             }
@@ -234,6 +218,9 @@ public class ItemStorageTracker extends Tracker {
     }
     public Optional<ContainerCache> getContainerAtPosition(BlockPos pos) {
         return _containers.getContainerAtPosition(pos);
+    }
+    public boolean isContainerCached(BlockPos pos) {
+        return getContainerAtPosition(pos).isPresent();
     }
     public Optional<ContainerCache> getEnderChestStorage() {
         return _containers.getEnderChestStorage();

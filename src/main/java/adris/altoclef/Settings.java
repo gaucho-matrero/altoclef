@@ -51,6 +51,16 @@ public class Settings implements IFailableConfigFile {
     private boolean showTaskChains = true;
 
     /**
+     * The prefix for commands (ex. @gamer )
+     */
+    private String commandPrefix = "@";
+
+    /**
+     * When logging to chat, will prepend this to each log.
+     */
+    private String chatLogPrefix = "[Alto Clef] ";
+
+    /**
      * If true, will show a timer.
      */
     private boolean showTimer = false;
@@ -203,6 +213,14 @@ public class Settings implements IFailableConfigFile {
      * no problems, but disable it if you want the bot to be able to sink.
      */
     private boolean avoidDrowning = true;
+
+    /**
+     * If enabled, the bot will close the open screen (furnace/crafting/chest/whatever) when the bot detects
+     * that its look direction has changed OR that it is mining something.
+     *
+     * This is here to stop the bot from getting stuck in a screen container.
+     */
+    private boolean autoCloseScreenWhenLookingOrMining = true;
 
     /**
      * If enabled, will attempt to extinguish ourselves when on fire (and not immune to fire)
@@ -391,6 +409,13 @@ public class Settings implements IFailableConfigFile {
         return showTaskChains;
     }
 
+    public String getCommandPrefix() {
+        return commandPrefix;
+    }
+    public String getChatLogPrefix() {
+        return chatLogPrefix;
+    }
+
     public boolean shouldShowTimer() {
         return showTimer;
     }
@@ -472,6 +497,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldAvoidDrowning() {
         return avoidDrowning;
+    }
+
+    public boolean shouldCloseScreenWhenLookingOrMining() {
+        return autoCloseScreenWhenLookingOrMining;
     }
 
     public boolean shouldExtinguishSelfWithWater() {

@@ -85,7 +85,8 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
-        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // Doing you a favor by disabling avoidance
 
 
         // Pause if we're not loaded into a world.
@@ -311,7 +312,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean shouldForce = false;
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
-                    if (EntityHelper.isGenerallyHostileToPlayer(entity)) {
+                    if (EntityHelper.isGenerallyHostileToPlayer(mod, entity)) {
                         if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }

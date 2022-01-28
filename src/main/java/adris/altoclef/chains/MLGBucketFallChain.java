@@ -37,8 +37,6 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     @Override
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
-        // Won't work in the nether, duh
-        if (WorldHelper.getCurrentDimension() == Dimension.NETHER) return Float.NEGATIVE_INFINITY;
 
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
@@ -103,10 +101,6 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
 
     public boolean isFallingOhNo(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().disableDefence()) {
-            return false;
-        }
-        if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-            // No bucket, no point.
             return false;
         }
         if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {

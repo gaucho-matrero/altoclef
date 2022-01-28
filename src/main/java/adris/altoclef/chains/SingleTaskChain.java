@@ -75,6 +75,10 @@ public abstract class SingleTaskChain extends TaskChain {
         }
     }
 
+    protected boolean isCurrentlyRunning(AltoClef mod) {
+        return !_interrupted && _mainTask.isActive() && !_mainTask.isFinished(mod);
+    }
+
     public Task getCurrentTask() {
         return _mainTask;
     }
