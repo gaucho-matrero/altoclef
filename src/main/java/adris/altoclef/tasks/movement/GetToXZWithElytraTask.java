@@ -29,10 +29,8 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-
+import net.minecraft.item.ItemStack;
 import java.util.Optional;
-
-import static net.minecraft.world.event.GameEvent.ELYTRA_FREE_FALL;
 
 public class GetToXZWithElytraTask extends Task {
 
@@ -45,7 +43,10 @@ public class GetToXZWithElytraTask extends Task {
     private boolean _wasMovingToSurface = false;
     private double _oldCoordsY;
     private int _yGoal = 0;
+    private int _fx = 0;
+    private int _fz = 0;
     private final TimerGame _fireWorkTimer = new TimerGame(3);
+    private final TimerGame _messageProgessTimer = new TimerGame(3);
     private final TimerGame _wanderTimer = new TimerGame(2);
     private final TimerGame _jumpTimer = new TimerGame(0.1);
 
@@ -57,12 +58,15 @@ public class GetToXZWithElytraTask extends Task {
     protected void onStart(AltoClef mod) {
         _jumpTimer.reset();
         _fireWorkTimer.reset();
+        _messageProgessTimer.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
         double dist = mod.getPlayer().getPos().distanceTo(new Vec3d(_x, mod.getPlayer().getPos().y, _z)); //Calculate distance
         if (!_isFlyRunning) {
+            _fx = 0;
+            _fz = 0;
             mod.getBehaviour().disableDefence(false); //Enable mob defence
             if ((int)dist == 0) { //We are where we need to go !
                 _isFinished = true;
@@ -76,6 +80,13 @@ public class GetToXZWithElytraTask extends Task {
             //If we don't have elytra, cancel the task
             if (!mod.getItemStorage().hasItem(Items.ELYTRA) && !_isMovingElytra && StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) {
                 setDebugState("Walking to goal, since we don't have an elytra");
+                return new GetToXZTask(_x, _z);
+            }
+
+            ItemStack elytraItem = StorageHelper.getItemStackInSlot(new PlayerSlot(6)); //Get the equipped elytra
+            int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage(); //Get it's durability
+            if (durabilityLeft < 35) { //If we don't have enough durability
+                setDebugState("Walking to goal, elytra is broken / will broke");
                 return new GetToXZTask(_x, _z);
             }
 
@@ -108,14 +119,18 @@ public class GetToXZWithElytraTask extends Task {
                 if (y > mod.getPlayer().getPos().y) {
                     _wanderTimer.reset();
                 }
-                return new GetToYTask(_yGoal); //Get to the surface
+                return new GetToYTask(_yGoal+1); //Get to the surface
             }
         }
         _isFlyRunning = true;
         mod.getBehaviour().disableDefence(true); //Disable MobDefence and MLG, because it get interupted by that
         
-        float yaw = LookHelper.getLookRotation(mod,new Vec3d(_x, 1, _z)).getYaw();
-        float pitch;
+        //Get the elytra's durability
+        ItemStack elytraItem = StorageHelper.getItemStackInSlot(new PlayerSlot(6));
+        int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage();
+        
+        float yaw = LookHelper.getLookRotation(mod,new Vec3d(_x, 1, _z)).getYaw(); //The players's direction
+        float pitch; //Players's pitch
 
         if (mod.getPlayer().getPos().y > 255) { //When flying up upper y=255
             if (_oldCoordsY > mod.getPlayer().getPos().y && _fireWorkTimer.elapsed()) {
@@ -126,10 +141,21 @@ public class GetToXZWithElytraTask extends Task {
         } else {
             pitch = (float)-40; //When flying up under y=255, need to go in the sky!
         }
-
+        
         setDebugState("Going to "+_x+" "+_z);
-        if (dist > 15) {
-            if (_jumpTimer.elapsed()) {//every 0.1 sec, jump, to enable elytra
+        if (durabilityLeft < 35) { //If it's below 35, we need to get on the ground safely before the elytra break
+            if ((mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)) > 30) || _fx == 0 || _fz == 0) {
+               _fx = (int)mod.getPlayer().getPos().x; //We will set a landing point where we are
+               _fz = (int)mod.getPlayer().getPos().z;
+            }
+            if (_fx != 0 && _fz != 0) { //If the landing point is not equal 0 (null value)
+                dist = mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)); //Recalculate distance
+                yaw = LookHelper.getLookRotation(mod,new Vec3d(_fx, 1, _fz)).getYaw(); //And the players's direction
+                //Setting that will make the bot land
+            }
+        }
+        if (dist > 15) { //Things to do when flying
+            if (_jumpTimer.elapsed()) {//every 0.1 sec: jump, to enable elytra
                 mod.getInputControls().tryPress(Input.JUMP);
                 _jumpTimer.reset();
             }
@@ -141,20 +167,29 @@ public class GetToXZWithElytraTask extends Task {
                     pitch = (float)-10;
                 }
             }
+            //Log a message in chat
+            if (_messageProgessTimer.elapsed()) {
+                Debug.logMessage("Distance: "+(int)dist+", Elytra durability: "+durabilityLeft);
+                _messageProgessTimer.reset();
+            }
         } else { //if the distance is under 15, we need to land slowly
             setDebugState("Landing...");
-            pitch = (float)20; //look a bit down
+            if (getGroundHeightWithRadius(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z)+50 > mod.getPlayer().getPos().y) {
+                pitch = (float)20; //look a bit down
+            } else {
+                pitch = (float)50; //look down, to land faster
+            }
         }
 
         if (dist > 6) { //if the distance is upper than 6
             if (!LookHelper.isLookingAt(mod, new Rotation(yaw, pitch))) {
-                LookHelper.lookAt(mod, new Rotation(yaw, pitch)); //Look at where to look
+                LookHelper.lookAt(mod, new Rotation(yaw, pitch)); //Look at the target
             }
             
         }
         //if we have landed, and the distance is under 12 or we don't have any fireworks
         if (_oldCoordsY == mod.getPlayer().getPos().y && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
-            _isFlyRunning = false; //reset the whole task
+            _isFlyRunning = false; //reset the task
         }
          _oldCoordsY = mod.getPlayer().getPos().y; //save old player y position
         return null;
