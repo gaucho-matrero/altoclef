@@ -12,12 +12,10 @@ import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -25,7 +23,6 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
@@ -269,8 +266,6 @@ public class KillEnderDragonTask extends Task {
         @Override
         protected Task onTick(AltoClef mod) {
 
-            updateBreathCostMap(mod);
-
             if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
                 setDebugState("No dragon found.");
                 return null;
@@ -328,7 +323,7 @@ public class KillEnderDragonTask extends Task {
                             }
                             if (closest != null) {
                                 mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(
-                                        new GoalAnd(new AvoidDragonFireGoal(), new GoalGetToBlock(closest))
+                                        new GoalGetToBlock(closest)
                                 );
                             }
                         }
@@ -345,7 +340,7 @@ public class KillEnderDragonTask extends Task {
                         break;
                     }
                     // Run around aimlessly, dodging dragon fire
-                    if (_randomWanderPos != null && mod.getPlayer().getBlockPos().isWithinDistance(_randomWanderPos, 2)) {
+                    if (_randomWanderPos != null && WorldHelper.inRangeXZ(mod.getPlayer(), _randomWanderPos, 2)) {
                         _randomWanderPos = null;
                     }
                     if (_randomWanderPos != null && _randomWanderChangeTimeout.elapsed()) {
@@ -359,7 +354,7 @@ public class KillEnderDragonTask extends Task {
                     }
                     if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                         mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(
-                                new GoalAnd(new AvoidDragonFireGoal(), new GoalGetToBlock(_randomWanderPos))
+                                new GoalGetToBlock(_randomWanderPos)
                         );
                     }
                     setDebugState("Waiting for perch");
@@ -410,42 +405,6 @@ public class KillEnderDragonTask extends Task {
                 }
             }
             return pos;
-        }
-
-
-        private void updateBreathCostMap(AltoClef mod) {
-            _breathCostMap.clear();
-            double radius = 4;
-            for (AreaEffectCloudEntity cloud : mod.getEntityTracker().getTrackedEntities(AreaEffectCloudEntity.class)) {
-                Vec3d c = cloud.getPos();
-                for (int x = (int) (c.getX() - radius); x <= (int) (c.getX() + radius); ++x) {
-                    for (int z = (int) (c.getZ() - radius); z <= (int) (c.getZ() + radius); ++z) {
-                        BlockPos p = new BlockPos(x, cloud.getBlockPos().getY(), z);
-                        double sqDist = p.getSquaredDistance(c, false);
-                        if (sqDist < radius) {
-                            double cost = 1000.0 / (sqDist + 1);
-                            _breathCostMap.put(p, cost);
-                            _breathCostMap.put(p.up(), cost);
-                            _breathCostMap.put(p.down(), cost);
-                        }
-                    }
-                }
-            }
-        }
-
-        private class AvoidDragonFireGoal implements Goal {
-
-            @Override
-            public boolean isInGoal(int x, int y, int z) {
-                BlockPos pos = new BlockPos(x, y, z);
-                return !_breathCostMap.containsKey(pos);
-            }
-
-            @Override
-            public double heuristic(int x, int y, int z) {
-                BlockPos pos = new BlockPos(x, y, z);
-                return _breathCostMap.getOrDefault(pos, 0.0);
-            }
         }
     }
 }
