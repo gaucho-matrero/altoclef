@@ -8,7 +8,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import net.minecraft.advancement.Advancement;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.IronGolemEntity;
@@ -56,8 +55,8 @@ public class ConstructIronGolemTask extends Task {
                 _position = mod.getPlayer().getBlockPos();
             }
         }
-        if (mod.getWorld().getBlockState(_position).getBlock() != Blocks.IRON_BLOCK) {
-            if (mod.getWorld().getBlockState(_position).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position, Blocks.IRON_BLOCK)) {
+            if (!WorldHelper.isBlock(mod, _position, Blocks.AIR)) {
                 setDebugState("Destroying block in way of base iron block");
                 return new DestroyBlockTask(_position);
             }
@@ -65,39 +64,39 @@ public class ConstructIronGolemTask extends Task {
             return new PlaceBlockTask(_position, Blocks.IRON_BLOCK);
         }
 //        mod.getPlayer().getServer().getPlayerManager().getPlayer("camelCasedSnivy").getAdvancementTracker()
-        if (mod.getWorld().getBlockState(_position.up()).getBlock() != Blocks.IRON_BLOCK) {
-            if (mod.getWorld().getBlockState(_position.up()).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.up(), Blocks.IRON_BLOCK)) {
+            if (!WorldHelper.isBlock(mod, _position.up(), Blocks.AIR)) {
                 setDebugState("Destroying block in way of center iron block");
                 return new DestroyBlockTask(_position.up());
             }
             setDebugState("Placing the center iron block");
             return new PlaceBlockTask(_position.up(), Blocks.IRON_BLOCK);
         }
-        if (mod.getWorld().getBlockState(_position.up().east()).getBlock() != Blocks.IRON_BLOCK) {
-            if (mod.getWorld().getBlockState(_position.up().east()).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.up().east(), Blocks.IRON_BLOCK)) {
+            if (!WorldHelper.isBlock(mod, _position.up().east(), Blocks.AIR)) {
                 setDebugState("Destroying block in way of east iron block");
                 return new DestroyBlockTask(_position.up().east());
             }
             setDebugState("Placing the east iron block");
             return new PlaceBlockTask(_position.up().east(), Blocks.IRON_BLOCK);
         }
-        if (mod.getWorld().getBlockState(_position.up().west()).getBlock() != Blocks.IRON_BLOCK) {
-            if (mod.getWorld().getBlockState(_position.up().west()).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.up().west(), Blocks.IRON_BLOCK)) {
+            if (!WorldHelper.isBlock(mod, _position.up().west(), Blocks.AIR)) {
                 setDebugState("Destroying block in way of west iron block");
                 return new DestroyBlockTask(_position.up().west());
             }
             setDebugState("Placing the west iron block");
             return new PlaceBlockTask(_position.up().west(), Blocks.IRON_BLOCK);
         }
-        if (mod.getWorld().getBlockState(_position.east()).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.east(), Blocks.AIR)) {
             setDebugState("Clearing area on east side...");
             return new DestroyBlockTask(_position.east());
         }
-        if (mod.getWorld().getBlockState(_position.west()).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.west(), Blocks.AIR)) {
             setDebugState("Clearing area on west side...");
             return new DestroyBlockTask(_position.west());
         }
-        if (mod.getWorld().getBlockState(_position.up(2)).getBlock() != Blocks.AIR) {
+        if (!WorldHelper.isBlock(mod, _position.up(2), Blocks.AIR)) {
             setDebugState("Destroying block in way of pumpkin");
             return new DestroyBlockTask(_position.up(2));
         }
