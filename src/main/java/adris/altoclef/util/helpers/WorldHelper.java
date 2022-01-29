@@ -366,6 +366,10 @@ public interface WorldHelper {
         return b instanceof ChestBlock || b instanceof EnderChestBlock;
     }
 
+    static boolean isBlock(AltoClef mod, BlockPos pos, Block block) {
+        return mod.getWorld().getBlockState(pos).getBlock() == block;
+    }
+
     static boolean canSleep() {
         int time = 0;
         ClientWorld world = MinecraftClient.getInstance().world;
