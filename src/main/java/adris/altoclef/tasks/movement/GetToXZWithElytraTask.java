@@ -2,35 +2,21 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.helpers.ItemHelper;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.slots.PlayerSlot;
-import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.movement.GetToBlockTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.movement.GetToYTask;
-import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
-import adris.altoclef.tasks.misc.EquipArmorTask;
-import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
-import baritone.api.utils.input.Input;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.item.Items;
-import net.minecraft.block.BlockState;
+import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import baritone.api.utils.Rotation;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import baritone.api.utils.input.Input;
 import net.minecraft.item.ItemStack;
-import java.util.Optional;
+import net.minecraft.item.Items;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class GetToXZWithElytraTask extends Task {
 
@@ -40,14 +26,13 @@ public class GetToXZWithElytraTask extends Task {
     private boolean _isCollectingFireWork = false;
     private boolean _isFlyRunning = false;
     private boolean _hasJumped = false;
-    private boolean _wasMovingToSurface = false;
     private double _oldCoordsY;
     private int _yGoal = 0;
     private int _fx = 0;
     private int _fz = 0;
     private final TimerGame _fireWorkTimer = new TimerGame(3);
     private final TimerGame _messageProgessTimer = new TimerGame(3);
-    private final TimerGame _wanderTimer = new TimerGame(2);
+    private final TimerGame _getToSurfaceTimer = new TimerGame(2);
     private final TimerGame _jumpTimer = new TimerGame(0.1);
 
     public GetToXZWithElytraTask(int x, int z) {
@@ -64,20 +49,20 @@ public class GetToXZWithElytraTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         double dist = mod.getPlayer().getPos().distanceTo(new Vec3d(_x, mod.getPlayer().getPos().y, _z)); //Calculate distance
-        if (!_isFlyRunning) {
+        if (!_isFlyRunning) { //If we are already flying, jump that code section
             _fx = 0;
             _fz = 0;
             mod.getBehaviour().disableDefence(false); //Enable mob defence
             if ((int)dist == 0) { //We are where we need to go !
-                _isFinished = true;
+                _isFinished = true; //End the task
                 return null;
             }
-            if (dist < 64) { //We are near, but not exactly where we need to go
+            if (dist < 64) { //We are near our goal
                 setDebugState("Walking to goal");
-                return new GetToXZTask(_x, _z);
+                return new GetToXZTask(_x, _z); //Get to our goal
             }
 
-            //If we don't have elytra, cancel the task
+            //If we don't have elytra, walk to our goal
             if (!mod.getItemStorage().hasItem(Items.ELYTRA) && !_isMovingElytra && StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) {
                 setDebugState("Walking to goal, since we don't have an elytra");
                 return new GetToXZTask(_x, _z);
@@ -87,7 +72,7 @@ public class GetToXZWithElytraTask extends Task {
             int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage(); //Get it's durability
             if (durabilityLeft < 35) { //If we don't have enough durability
                 setDebugState("Walking to goal, elytra is broken / will broke");
-                return new GetToXZTask(_x, _z);
+                return new GetToXZTask(_x, _z); //Walk to our goal
             }
 
             //Get some fireworks if doesn't have many
@@ -101,7 +86,7 @@ public class GetToXZWithElytraTask extends Task {
             //Equip elytra, if didn't equipped,
             setDebugState("Equipping elytra");
             if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) { 
-                //EquipArmorTask(Items.ELYTRA) crash the game for unknown reason
+                //EquipArmorTask(Items.ELYTRA) was crashing the game because of "class net.minecraft.item.ElytraItem cannot be cast to class net.minecraft.item.ArmorItem"
                 _isMovingElytra = true;
                 return new MoveItemToSlotFromInventoryTask(new ItemTarget(Items.ELYTRA, 1), new PlayerSlot(6));//So we move it manually
             }
@@ -110,19 +95,20 @@ public class GetToXZWithElytraTask extends Task {
             //We move to the surface, because we can't fly in caves :)
             setDebugState("Moving to the surface");
             
-            int y = getGroundHeightWithRadius(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z);
-            if (_yGoal == 0 || _yGoal < mod.getPlayer().getPos().y) {
-                _yGoal = y;
+            int y = getGroundHeightWithRadius(mod, (int)mod.getPlayer().getPos().x, (int)mod.getPlayer().getPos().z); //get the highest block near the player
+            if (_yGoal == 0 || _yGoal < mod.getPlayer().getPos().y) { //If we don't have a goal or the player is higher than our current goal
+                _yGoal = y; //Set the new goal
             }
-            if (y > mod.getPlayer().getPos().y || !_wanderTimer.elapsed()) {
-                _wasMovingToSurface = true;
-                if (y > mod.getPlayer().getPos().y) {
-                    _wanderTimer.reset();
+            if (y > mod.getPlayer().getPos().y || !_getToSurfaceTimer.elapsed()) { //if the highest block is higher than the player or the _getToSurfaceTimer isn't elapsed
+                if (y > mod.getPlayer().getPos().y) { //if the highest block is higher than the player
+                    _getToSurfaceTimer.reset(); //reset the timer
                 }
                 return new GetToYTask(_yGoal+1); //Get to the surface
             }
+            _yGoal = 0;
         }
-        _isFlyRunning = true;
+        _isFlyRunning = true; //We will now try to fly, we don't need to check the code before this for now.
+
         mod.getBehaviour().disableDefence(true); //Disable MobDefence and MLG, because it get interupted by that
         
         //Get the elytra's durability
@@ -130,37 +116,39 @@ public class GetToXZWithElytraTask extends Task {
         int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage();
         
         float yaw = LookHelper.getLookRotation(mod,new Vec3d(_x, 1, _z)).getYaw(); //The players's direction
-        float pitch; //Players's pitch
+        float pitch; //Players's pitch, will be set later
 
-        if (mod.getPlayer().getPos().y > 255) { //When flying up upper y=255
+        if (mod.getPlayer().getPos().y > WorldHelper.WORLD_CEILING_Y) { //When flying higher than the world's height limit
             if (_oldCoordsY > mod.getPlayer().getPos().y && _fireWorkTimer.elapsed()) {
-                pitch = (float)10; //When flying down
+                pitch = (float)10; //Look a bit down, when flying down
             } else {
-                pitch = (float)-10; // If we are flying up or using a firework
+                pitch = (float)-10; //If we are flying up or using a firework, look a bit up
             }
         } else {
-            pitch = (float)-40; //When flying up under y=255, need to go in the sky!
+            pitch = (float)-40; //When flying under the world's height limit, we need to go up, so we look up
         }
         
         setDebugState("Going to "+_x+" "+_z);
-        if (durabilityLeft < 35) { //If it's below 35, we need to get on the ground safely before the elytra break
-            if ((mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)) > 30) || _fx == 0 || _fz == 0) {
-               _fx = (int)mod.getPlayer().getPos().x; //We will set a landing point where we are
+
+        if (durabilityLeft < 35) { //If the durability is below 35, we need to get on the ground safely before the elytra break
+            if ((mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)) > 30) || _fx == 0 || _fz == 0) { //if we need to set the "land point"
+               _fx = (int)mod.getPlayer().getPos().x; //Set a landing point where we are
                _fz = (int)mod.getPlayer().getPos().z;
             }
-            if (_fx != 0 && _fz != 0) { //If the landing point is not equal 0 (null value)
-                dist = mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)); //Recalculate distance
-                yaw = LookHelper.getLookRotation(mod,new Vec3d(_fx, 1, _fz)).getYaw(); //And the players's direction
-                //Setting that will make the bot land
+            if (_fx != 0 && _fz != 0) { //If there is a landing point
+                dist = mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)); //Recalculate distance for the landing point
+                yaw = LookHelper.getLookRotation(mod,new Vec3d(_fx, 1, _fz)).getYaw(); //And the players's direction too
+                //Setting that will trigget the bot to land
             }
         }
-        if (dist > 15) { //Things to do when flying
+
+        if (dist > 15) { //Things to do when flying (or trying to fly)
             if (_jumpTimer.elapsed()) {//every 0.1 sec: jump, to enable elytra
                 mod.getInputControls().tryPress(Input.JUMP);
                 _jumpTimer.reset();
             }
-            //If we can use firework rocket (every 5 secs), if we have one, and are under y=260
-            if (_fireWorkTimer.elapsed() && mod.getPlayer().getPos().y < 260 && mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET)) {
+            //If we can use firework rocket, if we have one, and are under y=WorldHelper.WORLD_CEILING_Y+8
+            if (_fireWorkTimer.elapsed() && mod.getPlayer().getPos().y < WorldHelper.WORLD_CEILING_Y+8 && mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET)) {
                 if (mod.getSlotHandler().forceEquipItem(Items.FIREWORK_ROCKET)) {//try to equip the item
                     mod.getInputControls().tryPress(Input.CLICK_RIGHT); //and use it
                     _fireWorkTimer.reset();
@@ -189,9 +177,9 @@ public class GetToXZWithElytraTask extends Task {
         }
         //if we have landed, and the distance is under 12 or we don't have any fireworks
         if (_oldCoordsY == mod.getPlayer().getPos().y && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
-            _isFlyRunning = false; //reset the task
+            _isFlyRunning = false; //Recheck the code at the start of this task
         }
-         _oldCoordsY = mod.getPlayer().getPos().y; //save old player y position
+         _oldCoordsY = mod.getPlayer().getPos().y; //save the old player y position
         return null;
     }
 
