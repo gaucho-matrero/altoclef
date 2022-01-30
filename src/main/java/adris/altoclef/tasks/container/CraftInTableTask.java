@@ -249,10 +249,10 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // TODO: If we have an axe, lower the cost.
         if (mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
-            return 15*5;
+            return 10;
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
-        return 300*2;
+        return 100;
     }
 
     private Item[] getMaterialsArray() {
