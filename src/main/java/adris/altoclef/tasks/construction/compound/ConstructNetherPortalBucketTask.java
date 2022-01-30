@@ -142,6 +142,12 @@ public class ConstructNetherPortalBucketTask extends Task {
         if (bucketCount < 2) {
             setDebugState("Getting buckets");
             _progressChecker.reset();
+            // If we have lava/water, get the inverse. Otherwise we dropped a bucket, just get a bucket.
+            if (mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+            } else if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
+            }
             return TaskCatalogue.getItemTask(Items.BUCKET, 2);
         }
 
