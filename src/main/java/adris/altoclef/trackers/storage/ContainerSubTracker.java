@@ -131,6 +131,9 @@ public class ContainerSubTracker extends Tracker {
         BlockPos pos = cache.getBlockPos();
         if (WorldHelper.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
             ContainerType actualType = ContainerType.getFromBlock(_mod.getWorld().getBlockState(pos).getBlock());
+            if (actualType == ContainerType.EMPTY) {
+                return false;
+            }
             return actualType == cache.getContainerType();
         }
         return true;
@@ -177,8 +180,16 @@ public class ContainerSubTracker extends Tracker {
 
     public Optional<ContainerCache> getClosestTo(Vec3d pos, Predicate<ContainerCache> accept) {
         double bestDist = Double.POSITIVE_INFINITY;
+        Dimension dim = WorldHelper.getCurrentDimension();
+
+        List<BlockPos> toRemove = new ArrayList<>();
+
         ContainerCache bestCache = null;
-        for (ContainerCache cache : _containerCaches.get(WorldHelper.getCurrentDimension()).values()) {
+        for (ContainerCache cache : _containerCaches.get(dim).values()) {
+            if (!isContainerCacheValid(dim, cache)) {
+                toRemove.add(cache.getBlockPos());
+                continue;
+            }
             double dist = cache.getBlockPos().getSquaredDistance(pos, true);
             if (dist < bestDist) {
                 if (accept.test(cache)) {
@@ -186,6 +197,10 @@ public class ContainerSubTracker extends Tracker {
                     bestCache = cache;
                 }
             }
+        }
+        // Clear anything invalid
+        for (BlockPos remove : toRemove) {
+            _containerCaches.get(dim).remove(remove);
         }
         return Optional.ofNullable(bestCache);
     }

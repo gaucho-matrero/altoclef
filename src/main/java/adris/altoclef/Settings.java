@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.control.KillAura;
+import adris.altoclef.util.BlockRange;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.serialization.IFailableConfigFile;
@@ -388,7 +389,7 @@ public class Settings implements IFailableConfigFile {
      *      },
      * ],
      */
-    private List<ProtectionRange> areasToProtect = Collections.emptyList();
+    private List<BlockRange> areasToProtect = Collections.emptyList();
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -559,8 +560,8 @@ public class Settings implements IFailableConfigFile {
     }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
-        for (ProtectionRange protection : areasToProtect) {
-            if (protection.includes(pos)) return true;
+        for (BlockRange protection : areasToProtect) {
+            if (protection.contains(pos)) return true;
         }
         return false;
     }
@@ -585,20 +586,5 @@ public class Settings implements IFailableConfigFile {
 
     public static void load(Consumer<Settings> onReload) {
         ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
-    }
-
-    private static class ProtectionRange {
-        public BlockPos start;
-        public BlockPos end;
-
-        public boolean includes(BlockPos pos) {
-            return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
-                    start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
-                    start.getY() <= pos.getY() && pos.getY() <= end.getY());
-        }
-
-        public String toString() {
-            return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
-        }
     }
 }

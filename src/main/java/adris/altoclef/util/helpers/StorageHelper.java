@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 /**
  * Helper functions for interpreting containers/slots/windows/inventory
  */
+@SuppressWarnings("ConstantConditions")
 public class StorageHelper {
 
     public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.OFFHAND_SLOT)), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
@@ -484,6 +485,24 @@ public class StorageHelper {
         if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler furnace)
             return getFurnaceCookPercent(furnace);
         return -1;
+    }
+
+    public static ItemTarget[] getAllInventoryItemsAsTargets(Predicate<Slot> accept) {
+        HashMap<Item, Integer> counts = new HashMap<>();
+        for (Slot slot : Slot.getCurrentScreenSlots()) {
+            if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
+                ItemStack stack = getItemStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
+                }
+            }
+        }
+        ItemTarget[] results = new ItemTarget[counts.size()];
+        int i = 0;
+        for (Item item : counts.keySet()) {
+            results[i++] = new ItemTarget(item, counts.get(item));
+        }
+        return results;
     }
 
 }

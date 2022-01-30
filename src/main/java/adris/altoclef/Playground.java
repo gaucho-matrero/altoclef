@@ -311,7 +311,7 @@ public class Playground {
                 mod.runUserTask(new KillEnderDragonTask());
                 break;
             case "chest":
-                mod.runUserTask(new StoreInAnyContainerTask(new ItemTarget(Items.DIAMOND, 3)));
+                mod.runUserTask(new StoreInAnyContainerTask(true, new ItemTarget(Items.DIAMOND, 3)));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());

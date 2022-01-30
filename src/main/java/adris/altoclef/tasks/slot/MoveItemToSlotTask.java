@@ -52,7 +52,7 @@ public class MoveItemToSlotTask extends Task {
             // We need to deal with our cursor stack OR put an item there (to move).
             boolean wrongItemHeld = !Arrays.asList(validItems).contains(currentHeld.getItem());
             if (currentHeld.isEmpty() || wrongItemHeld) {
-                Optional<Slot> toPlace = Optional.empty();
+                Optional<Slot> toPlace;
                 if (currentHeld.isEmpty()) {
                     // Just pick up
                     toPlace = getBestSlotToPickUp(mod, validItems);
@@ -72,7 +72,7 @@ public class MoveItemToSlotTask extends Task {
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
-            if (currentHeld.getCount() + currentlyPlaced  < _toMove.getTargetCount()) {
+            if (currentHeld.getCount() + currentlyPlaced <= _toMove.getTargetCount()) {
                 // Just place all of 'em
                 return new ClickSlotTask(_destination);
             } else {

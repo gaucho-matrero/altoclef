@@ -16,6 +16,8 @@ public class AltoClefCommands {
                 new FollowCommand(),
                 new GiveCommand(),
                 new EquipCommand(),
+                new DepositCommand(),
+                new StashCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
                 new CoordsCommand(),

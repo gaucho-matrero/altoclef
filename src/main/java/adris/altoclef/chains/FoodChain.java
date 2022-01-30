@@ -43,6 +43,7 @@ public class FoodChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
 
         if (!AltoClef.inGame()) {
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -94,7 +95,7 @@ public class FoodChain extends SingleTaskChain {
             }
 
             startEat(mod, toUse);
-        } else if (_isTryingToEat) {
+        } else {
             stopEat(mod);
         }
 
@@ -191,12 +192,7 @@ public class FoodChain extends SingleTaskChain {
 
     @Override
     protected void onStop(AltoClef mod) {
-        if (_isTryingToEat) {
-            mod.getInputControls().release(Input.CLICK_RIGHT);
-            _isTryingToEat = false;
-            _requestFillup = false;
-            mod.getExtraBaritoneSettings().setInteractionPaused(false);
-        }
+        stopEat(mod);
         super.onStop(mod);
     }
 
