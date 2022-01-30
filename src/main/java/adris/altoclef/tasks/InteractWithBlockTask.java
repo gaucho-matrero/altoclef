@@ -157,6 +157,7 @@ public class InteractWithBlockTask extends Task {
 
         switch (rightClick(mod)) {
             case CANT_REACH -> {
+                setDebugState("Getting to our goal");
                 // Get to our goal then
                 if (!proc.isActive()) {
                     proc.setGoalAndPath(moveGoal);
@@ -164,12 +165,14 @@ public class InteractWithBlockTask extends Task {
                 _clickTimer.reset();
             }
             case WAIT_FOR_CLICK -> {
+                setDebugState("Waiting for click");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
                 _clickTimer.reset();
             }
             case CLICK_ATTEMPTED -> {
+                Debug.logInternal("(InteractWithBlockTask: Click attempted!)");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
