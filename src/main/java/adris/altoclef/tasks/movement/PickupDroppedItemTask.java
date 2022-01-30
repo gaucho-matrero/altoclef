@@ -174,7 +174,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         boolean touching = _mod.getEntityTracker().isCollidingWithPlayer(itemEntity);
         if (touching) {
             if (_freeInventoryIfFull) {
-                if (_mod.getItemStorage().getSlotThatCanFitInOpenContainer(itemEntity.getStack(), false).isEmpty()) {
+                if (_mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(itemEntity.getStack(), false).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
             }

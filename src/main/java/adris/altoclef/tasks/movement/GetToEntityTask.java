@@ -71,6 +71,6 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected String toDebugString() {
-        return "Approach entity " + _entity.getDisplayName().asString();
+        return "Approach entity " + _entity.getType().getTranslationKey();
     }
 }
