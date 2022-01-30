@@ -8,8 +8,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -31,7 +30,6 @@ import java.util.Optional;
  */
 public class InteractWithBlockTask extends Task {
 
-    public final Action TimedOut = new Action();
     private final ItemTarget _toUse;
     private final Direction _direction;
     private final BlockPos _target;
@@ -151,7 +149,6 @@ public class InteractWithBlockTask extends Task {
         if (!_moveChecker.check(mod)) {
             Debug.logMessage("Failed, blacklisting and wandering.");
             mod.getBlockTracker().requestBlockUnreachable(_target);
-            TimedOut.invoke();
             return _wanderTask;
         }
 
@@ -179,7 +176,6 @@ public class InteractWithBlockTask extends Task {
                 if (_clickTimer.elapsed()) {
                     // We tried clicking but failed.
                     _clickTimer.reset();
-                    TimedOut.invoke();
                     mod.getBlockTracker().requestBlockUnreachable(_target);
                     return _wanderTask;
                 }

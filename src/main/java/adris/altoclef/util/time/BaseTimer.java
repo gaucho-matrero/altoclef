@@ -1,4 +1,4 @@
-package adris.altoclef.util.csharpisbetter;
+package adris.altoclef.util.time;
 
 public abstract class BaseTimer {
     private double _prevTime = 0;

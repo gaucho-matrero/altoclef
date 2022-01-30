@@ -2,7 +2,8 @@ package adris.altoclef.mixins;
 
 // ActionResult ClientPlayerInteractionManager.interactBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult);
 
-import adris.altoclef.StaticMixinHookups;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.BlockInteractEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
@@ -23,7 +24,7 @@ public final class ClientInteractWithBlockMixin {
     private void onClientBlockInteract(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> ci) {
         //Debug.logMessage("(client) INTERACTED WITH: " + (hitResult != null? hitResult.getBlockPos() : "(nothing)"));
         if (hitResult != null) {
-            StaticMixinHookups.onBlockInteract(hitResult, world.getBlockState(hitResult.getBlockPos()));
+            EventBus.publish(new BlockInteractEvent(hitResult, world));
         }
 
     }

@@ -2,27 +2,30 @@ package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
-import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
+import adris.altoclef.tasks.construction.PlaceSignTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
-import adris.altoclef.tasks.misc.RavageRuinedPortalsTask;
-import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
-import adris.altoclef.tasks.construction.PlaceSignTask;
-import adris.altoclef.tasks.speedrun.*;
-import adris.altoclef.tasks.stupid.BeeMovieTask;
-import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
-import adris.altoclef.tasks.stupid.SCP173Task;
-import adris.altoclef.tasks.stupid.TerminatorTask;
+import adris.altoclef.tasks.misc.RavageRuinedPortalsTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
+import adris.altoclef.tasks.speedrun.FillStrongholdPortalTask;
+import adris.altoclef.tasks.speedrun.KillEnderDragonTask;
+import adris.altoclef.tasks.speedrun.KillEnderDragonWithBedsTask;
+import adris.altoclef.tasks.speedrun.WaitForDragonAndPearlTask;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
+import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -42,7 +45,6 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -53,6 +55,7 @@ import java.util.Scanner;
  * but getting timed tests and testing worlds set up in Minecraft might be
  * challenging, so this is the temporary resting place for garbage test code for now.
  */
+@SuppressWarnings("EnhancedSwitchMigration")
 public class Playground {
 
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
@@ -308,12 +311,7 @@ public class Playground {
                 mod.runUserTask(new KillEnderDragonTask());
                 break;
             case "chest":
-                mod.runUserTask(new StoreInAnyContainerTask("diamondstuff", altoClef -> {
-                    if (altoClef.getItemStorage().getItemCount(Items.DIAMOND) >= 3) {
-                        return Optional.of(new ItemTarget(Items.DIAMOND, 3));
-                    }
-                    return Optional.empty();
-                }));
+                mod.runUserTask(new StoreInAnyContainerTask(new ItemTarget(Items.DIAMOND, 3)));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());

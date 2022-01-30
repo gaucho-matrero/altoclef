@@ -2,9 +2,12 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChatMessageEvent;
+import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.MessageType;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
@@ -33,17 +36,28 @@ public class Butler {
     public Butler(AltoClef mod) {
         _mod = mod;
         _userAuth = new UserAuth(mod);
-        _mod.getUserTaskChain().onTaskFinish.addListener(
-                new ActionListener<>(msg -> {
-                    if (_currentUser != null) {
-                        //sendWhisper("Finished. " + msg);
-                        _currentUser = null;
-                    }
-                })
-        );
+
+        // Revoke our current user whenever a task finishes.
+        EventBus.subscribe(TaskFinishedEvent.class, evt -> {
+            if (_currentUser != null) {
+                _currentUser = null;
+            }
+        });
+
+        // Receive system events
+        EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            if (evt.messageType == MessageType.SYSTEM) {
+                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+                String message = evt.message.getString();
+                if (debug) {
+                    Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+                }
+                _mod.getButler().receiveMessage(message);
+            }
+        });
     }
 
-    public void receiveMessage(String msg) {
+    private void receiveMessage(String msg) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
         String ourName = MinecraftClient.getInstance().getName();
@@ -55,7 +69,7 @@ public class Butler {
         }
     }
 
-    public void receiveWhisper(String username, String message) {
+    private void receiveWhisper(String username, String message) {
 
         boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
         // Ignore messages from other bots.

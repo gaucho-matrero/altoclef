@@ -3,6 +3,9 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.Subscription;
+import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -14,8 +17,7 @@ import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -32,6 +34,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
@@ -58,26 +61,14 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private BlockPos _currentBedRegion;
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
-    private final ActionListener<String> onCheckGameMessage = new ActionListener<>(value -> {
-        if (value.contains("Respawn point set")) {
-            _spawnSet = true;
-            _inBedTimer.reset();
-        }
-    });
+    private Subscription<ChatMessageEvent> _respawnPointSetMessageCheck;
     private boolean _sleepAttemptMade;
-    private final ActionListener<String> onOverlayMessage = new ActionListener<>(value -> {
-        final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
-        for (String checkMessage : NEUTRAL_MESSAGES) {
-            if (value.contains(checkMessage)) {
-                if (!_sleepAttemptMade) {
-                    _bedInteractTimeout.reset();
-                }
-                _sleepAttemptMade = true;
-            }
-        }
-    });
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
+
+    public PlaceBedAndSetSpawnTask() {
+
+    }
 
     public PlaceBedAndSetSpawnTask stayInBed() {
         _stayInBed = true;
@@ -117,8 +108,23 @@ public class PlaceBedAndSetSpawnTask extends Task {
         _sleepAttemptMade = false;
         _wasSleeping = false;
 
-        mod.getOnGameMessage().addListener(onCheckGameMessage);
-        mod.getOnGameOverlayMessage().addListener(onOverlayMessage);
+        _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            String msg = evt.message.asString();
+            if (msg.contains("Respawn point set")) {
+                _spawnSet = true;
+                _inBedTimer.reset();
+            }
+            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
+            for (String checkMessage : NEUTRAL_MESSAGES) {
+                if (msg.contains(checkMessage)) {
+                    if (!_sleepAttemptMade) {
+                        _bedInteractTimeout.reset();
+                    }
+                    _sleepAttemptMade = true;
+                }
+            }
+            throw new NotImplementedException("Check for message type!!");
+        });
     }
 
     public void resetSleep() {
@@ -293,8 +299,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(BEDS);
-        mod.getOnGameMessage().removeListener(onCheckGameMessage);
-        mod.getOnGameOverlayMessage().removeListener(onOverlayMessage);
+        EventBus.unsubscribe(_respawnPointSetMessageCheck);
     }
 
     @Override
