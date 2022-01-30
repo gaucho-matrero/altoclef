@@ -13,6 +13,7 @@ import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
+import adris.altoclef.tasks.misc.RepairToolTask;
 import adris.altoclef.tasks.construction.PlaceSignTask;
 import adris.altoclef.tasks.speedrun.*;
 import adris.altoclef.tasks.stupid.BeeMovieTask;
@@ -188,6 +189,10 @@ public class Playground {
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
                 break;
+            case "repair":
+                //mod.runUserTask(new RepairToolTask(new ItemTarget("leather_chestplate", 1), new ItemTarget("golden_boots", 1) , new ItemTarget("iron_sword", 1)));
+                mod.runUserTask(new RepairToolTask());
+            break;
             case "avoid":
                 // Test block break predicate
                 mod.getBehaviour().avoidBlockBreaking((BlockPos b) -> (-1000 < b.getX() && b.getX() < 1000)

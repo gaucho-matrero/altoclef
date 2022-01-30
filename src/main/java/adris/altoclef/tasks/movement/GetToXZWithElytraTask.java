@@ -4,6 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
+import adris.altoclef.tasks.misc.RepairToolTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.csharpisbetter.TimerGame;
@@ -11,12 +14,14 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import java.util.List;
 
 public class GetToXZWithElytraTask extends Task {
 
@@ -25,7 +30,7 @@ public class GetToXZWithElytraTask extends Task {
     private boolean _isMovingElytra = false;
     private boolean _isCollectingFireWork = false;
     private boolean _isFlyRunning = false;
-    private boolean _hasJumped = false;
+    private boolean _repairElytra = false;
     private double _oldCoordsY;
     private int _yGoal = 0;
     private int _fx = 0;
@@ -57,20 +62,29 @@ public class GetToXZWithElytraTask extends Task {
                 _isFinished = true; //End the task
                 return null;
             }
-            if (dist < 64) { //We are near our goal
+            if (dist < 128) { //We are near our goal
                 setDebugState("Walking to goal");
                 return new GetToXZTask(_x, _z); //Get to our goal
             }
-
             //If we don't have elytra, walk to our goal
             if (!mod.getItemStorage().hasItem(Items.ELYTRA) && !_isMovingElytra && StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) {
                 setDebugState("Walking to goal, since we don't have an elytra");
                 return new GetToXZTask(_x, _z);
             }
 
-            ItemStack elytraItem = StorageHelper.getItemStackInSlot(new PlayerSlot(6)); //Get the equipped elytra
-            int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage(); //Get it's durability
-            if (durabilityLeft < 35) { //If we don't have enough durability
+            if (_repairElytra && RepairToolTask.needRepair(mod, new ItemTarget(Items.ELYTRA))) { //If we can repair it
+                setDebugState("Repairing elytra");
+                return new RepairToolTask(new ItemTarget(Items.ELYTRA)); //Run the task to repair it
+            } else {
+                _repairElytra = false;
+            }
+            int durabilityLeft = RepairToolTask.getDurabilityOfRepairableItem(mod, new ItemTarget(Items.ELYTRA)); //Get the elytra durability
+
+            if (durabilityLeft < 35 && durabilityLeft != -1) { //If we need to repair it before flying
+                if (RepairToolTask.needRepair(mod, new ItemTarget(Items.ELYTRA))) {
+                    _repairElytra = true;
+                    return null;
+                }
                 setDebugState("Walking to goal, elytra is broken / will broke");
                 return new GetToXZTask(_x, _z); //Walk to our goal
             }
@@ -106,6 +120,7 @@ public class GetToXZWithElytraTask extends Task {
                 return new GetToYTask(_yGoal+1); //Get to the surface
             }
             _yGoal = 0;
+            _fireWorkTimer.forceElapse();
         }
         _isFlyRunning = true; //We will now try to fly, we don't need to check the code before this for now.
 
@@ -177,7 +192,18 @@ public class GetToXZWithElytraTask extends Task {
         }
         //if we have landed, and the distance is under 12 or we don't have any fireworks
         if (_oldCoordsY == mod.getPlayer().getPos().y && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
-            _isFlyRunning = false; //Recheck the code at the start of this task
+            if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() == Items.ELYTRA) { //Unequip elytra
+                return new ClickSlotTask(new PlayerSlot(6)); //Click on the elytra in the armor slot
+            } else if (!StorageHelper.getItemStackInCursorSlot().isEmpty()){ //Once it's in the cursor slot
+                List<Slot> airslot = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, Items.AIR); //Click on a empty inv slot
+                if (airslot.size() == 0) {
+                    return new EnsureFreeInventorySlotTask(); //If there is no space
+                } else {
+                    return new ClickSlotTask(airslot.get(0)); //Click on the slot to put elytra back in inventory
+                }
+            } else {
+                 _isFlyRunning = false; //Recheck the code at the start of this task to
+            }
         }
          _oldCoordsY = mod.getPlayer().getPos().y; //save the old player y position
         return null;
