@@ -24,6 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//TODO
+// SPLIT INTO LocateStrongholdCoordinates and FastTravel Tasks
+//  - ADD DELIMITERS TO SEPERATE SECTIONS
+//  - FRAME SECTIONS
+//  - TEST FIND_STRONGHOLD
+//  - TEST FAST TRAVEL
+
 public class LocateStrongholdTask extends Task {
 
     private static final int EYE_THROW_MINIMUM_Y_POSITION = 68;
