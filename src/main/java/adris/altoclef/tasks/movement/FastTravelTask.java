@@ -2,8 +2,14 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.helpers.WorldHelper;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -15,7 +21,7 @@ public class FastTravelTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-
+        _goToOverworldTask = new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), Dimension.OVERWORLD, goodPos -> throw new NotImplementedException("Check for close enough"));
     }
 
     @Override
@@ -50,29 +56,19 @@ public class FastTravelTask extends Task {
 
     }
 
-    /*
-        function computeNetherCoordinates(BlockPos targetCoords):
-            _nethercords = targetCoords/8;
-            if block at _nethercords = air or lava: [ belongs in on Tick] IT MAY BE BETTER TO ENSURE THAT THERE ARE NO LAVA BLOCKS IN A 4x4x4 CUBE AROUND THE TARGET
-                _nethercords = (_nethercords.x, _nethercords.y+1,_nethercords.z)
-     */
-
-    /*
-        function getToNetherCoords(BlockPos finalNetherCords):
-            baritone get to nether coords
-     */
-        private Task getToNetherCoords(AltoClef mod, BlockPos finalNetherCoords){
-            //Any special checks needed go here
-            return new GetToBlockTask(finalNetherCoords);
+    private int getOverworldThreshold(AltoClef mod) {
+        int threshold;
+        if (_threshold == null) {
+            threshold = mod.getModSettings().getNetherFastTravelWalkingRange();
+        } else {
+            threshold = _threshold;
         }
-    /*
-        function getJourneySupplies():
-            mine origin portal
-            mine netherrack if we dont have at least 1.5 stacks
-     */
-        private Task getJourneySupplies(AltoClef mod){
-            return TaskCatalogue.getItemTask(new ItemTarget(Items.OBSIDIAN));
-        }
+        // We should never leave the nether and STILL be outside our walk zone.
+        threshold = Math.max((int) (IN_NETHER_CLOSE_ENOUGH_THRESHOLD * 8) + 32, threshold);
+        // Nether portals less than 16 blocks point to the same portal (128 overworld), so make sure we don't redo work. Just a redundancy check
+        threshold = Math.max(16 * 8, threshold);
+        return threshold;
+    }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
