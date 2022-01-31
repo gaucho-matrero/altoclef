@@ -12,6 +12,7 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -165,13 +166,14 @@ public class CollectFoodTask extends Task {
                 setDebugState("Crafting Bread");
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
-                _currentResourceTask = new CraftInTableTask(new ItemTarget(Items.BREAD).infinite(), CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1), false, false);
+                // jank
+                _currentResourceTask = new CraftInTableTask(new RecipeTarget(Items.BREAD, 99999999, CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1)), false, false);
                 return _currentResourceTask;
             }
             if (mod.getItemStorage().getItemCount(Items.HAY_BLOCK) >= 1) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new ItemTarget(Items.WHEAT).infinite(), CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9), false, false);
+                _currentResourceTask = new CraftInInventoryTask(new RecipeTarget(Items.WHEAT, 99999999, CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9)), false, false);
                 return _currentResourceTask;
             }
             // Convert raw foods -> cooked foods

@@ -1,7 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
-import adris.altoclef.tasks.CraftGenericTask;
+import adris.altoclef.tasks.CraftGenericManuallyTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceSignTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -26,10 +26,7 @@ import adris.altoclef.tasks.stupid.BeeMovieTask;
 import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
 import adris.altoclef.tasks.stupid.SCP173Task;
 import adris.altoclef.tasks.stupid.TerminatorTask;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -223,7 +220,7 @@ public class Playground {
                     Item[] s = new Item[]{Items.STICK};
                     CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
 
-                    mod.runUserTask(new CraftGenericTask(recipe));
+                    mod.runUserTask(new CraftGenericManuallyTask(new RecipeTarget(Items.STONE_PICKAXE, 1, recipe)));
                     /*
                     Item toEquip = Items.BUCKET;//Items.AIR;
                     Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);

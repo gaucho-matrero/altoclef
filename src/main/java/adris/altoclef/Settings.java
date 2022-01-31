@@ -72,6 +72,14 @@ public class Settings implements IFailableConfigFile {
     private float containerItemMoveDelay = 0.2f;
 
     /**
+     * If true, use Minecraft's crafting recipe book to place items into
+     * the crafting table (should be much faster as it's almost instant)
+     *
+     * If false, will place items in each slot manually (the original way)
+     */
+    private boolean useCraftingBookToCraft = true;
+
+    /**
      * If a dropped resource item is further than this from the player, don't pick it up.
      * <p>
      * -1 (or less than 0) to disable.
@@ -435,6 +443,10 @@ public class Settings implements IFailableConfigFile {
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
+    }
+
+    public boolean shouldUseCraftingBookToCraft() {
+        return useCraftingBookToCraft;
     }
 
     public int getFoodUnitsToCollect() {

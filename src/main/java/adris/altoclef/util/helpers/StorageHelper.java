@@ -4,10 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.*;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
@@ -19,6 +16,7 @@ import net.minecraft.client.gui.screen.option.GameOptionsScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.*;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -364,11 +362,9 @@ public class StorageHelper {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
             int need = 0;
-            if (target.getItem() != null) {
-                need = target.getItem().getTargetCount();
-                if (target.getItem().getMatches() != null) {
-                    need -= mod.getItemStorage().getItemCount(target.getItem());
-                }
+            if (target.getOutputItem() != null) {
+                need = target.getTargetCount();
+                need -= mod.getItemStorage().getItemCount(target.getOutputItem());
             }
             // need holds how many items we need to CRAFT
             // However, a crafting recipe can output more than 1 of an item.
@@ -505,4 +501,27 @@ public class StorageHelper {
         return results;
     }
 
+    public static void instantFillRecipeViaBook(AltoClef mod, CraftingRecipe recipe, Item output, boolean craftAll) {
+        /*
+        DefaultedList<Ingredient> ingredients = DefaultedList.ofSize(recipe.getSlotCount());
+        for (int recipeSlot = 0; recipeSlot < recipe.getSlotCount(); ++recipeSlot) {
+            ItemTarget recipeIngredient = recipe.getSlot(recipeSlot);
+            Ingredient newIngredient = Ingredient.ofItems(recipeIngredient.getMatches());
+            // Perform a cache so matching stacks is filled, quite important!
+            newIngredient.getMatchingStacks();
+            newIngredient.getMatchingItemIds();
+            ingredients.add(newIngredient);
+        }
+        // The id doesn't matter, as long as it's valid.
+        Identifier id = new Identifier("minecraft", "crafting_table");
+        ShapedRecipe recipeToSend =
+                new ShapedRecipe(id, "", recipe.getWidth(), recipe.getHeight(), ingredients, ItemStack.EMPTY);
+         */
+        Optional<Recipe> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(recipe, output);
+        if (recipeToSend.isPresent()) {
+            mod.getController().clickRecipe(MinecraftClient.getInstance().player.currentScreenHandler.syncId, recipeToSend.get(), craftAll);
+        } else {
+            Debug.logError("Could not find recipe stored in Minecraft!! Recipe: " + recipe + " with output " + output);
+        }
+    }
 }

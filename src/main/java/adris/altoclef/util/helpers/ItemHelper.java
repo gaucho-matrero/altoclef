@@ -217,8 +217,16 @@ public class ItemHelper {
         return getColorfulItems(color.getMapColor());
     }
 
+    public static Collection<ColorfulItems> getColorfulItems() {
+        return _colorMap.values();
+    }
+
     public static WoodItems getWoodItems(WoodType type) {
         return _woodMap.get(type);
+    }
+
+    public static Collection<WoodItems> getWoodItems() {
+        return _woodMap.values();
     }
 
     public static Optional<Item> getCookedFood(Item rawFood) {

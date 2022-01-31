@@ -4,10 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -50,7 +47,7 @@ public class CollectCoarseDirtTask extends ResourceTask {
             int target = _count;
             ItemTarget d = new ItemTarget(Items.DIRT, 1);
             ItemTarget g = new ItemTarget(Items.GRAVEL, 1);
-            return new CraftInInventoryTask(new ItemTarget(Items.COARSE_DIRT, target), CraftingRecipe.newShapedRecipe("coarse_dirt", new ItemTarget[]{d, g, g, d}, 4));
+            return new CraftInInventoryTask(new RecipeTarget(Items.COARSE_DIRT, target, CraftingRecipe.newShapedRecipe("coarse_dirt", new ItemTarget[]{d, g, g, d}, 4)));
         }
     }
     @Override
