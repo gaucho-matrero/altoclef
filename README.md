@@ -25,9 +25,13 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 ## Version hash
 
-The current sha256 hash of this release is *b8724f6df1cb813c828ee261cc723fce987986dc6731a1cc06ef38712ea54df9*
+The current sha256 hash of this release is:
 
-Last updated 1/31/2022. If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
+ ***b8724f6df1cb813c828ee261cc723fce987986dc6731a1cc06ef38712ea54df9***
+
+Last updated 1/31/2022. 
+
+If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
 
 ### How to check the hash yourself
 
