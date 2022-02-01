@@ -60,6 +60,8 @@ loadScripts(document, 'script');</script>
 <li><a href="adris/altoclef/commands/package-tree.html">adris.altoclef.commands</a>, </li>
 <li><a href="adris/altoclef/commandsystem/package-tree.html">adris.altoclef.commandsystem</a>, </li>
 <li><a href="adris/altoclef/control/package-tree.html">adris.altoclef.control</a>, </li>
+<li><a href="adris/altoclef/eventbus/package-tree.html">adris.altoclef.eventbus</a>, </li>
+<li><a href="adris/altoclef/eventbus/events/package-tree.html">adris.altoclef.eventbus.events</a>, </li>
 <li><a href="adris/altoclef/mixins/package-tree.html">adris.altoclef.mixins</a>, </li>
 <li><a href="adris/altoclef/tasks/package-tree.html">adris.altoclef.tasks</a>, </li>
 <li><a href="adris/altoclef/tasks/construction/package-tree.html">adris.altoclef.tasks.construction</a>, </li>
@@ -82,11 +84,11 @@ loadScripts(document, 'script');</script>
 <li><a href="adris/altoclef/ui/package-tree.html">adris.altoclef.ui</a>, </li>
 <li><a href="adris/altoclef/util/package-tree.html">adris.altoclef.util</a>, </li>
 <li><a href="adris/altoclef/util/baritone/package-tree.html">adris.altoclef.util.baritone</a>, </li>
-<li><a href="adris/altoclef/util/csharpisbetter/package-tree.html">adris.altoclef.util.csharpisbetter</a>, </li>
 <li><a href="adris/altoclef/util/helpers/package-tree.html">adris.altoclef.util.helpers</a>, </li>
 <li><a href="adris/altoclef/util/progresscheck/package-tree.html">adris.altoclef.util.progresscheck</a>, </li>
 <li><a href="adris/altoclef/util/serialization/package-tree.html">adris.altoclef.util.serialization</a>, </li>
-<li><a href="adris/altoclef/util/slots/package-tree.html">adris.altoclef.util.slots</a></li>
+<li><a href="adris/altoclef/util/slots/package-tree.html">adris.altoclef.util.slots</a>, </li>
+<li><a href="adris/altoclef/util/time/package-tree.html">adris.altoclef.util.time</a></li>
 </ul>
 </div>
 <section class="hierarchy">
@@ -105,8 +107,6 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/PlaceBlockSchematic.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">PlaceBlockSchematic</span></a></li>
 </ul>
 </li>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/Action.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">Action</span></a>&lt;T&gt;</li>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/ActionListener.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">ActionListener</span></a>&lt;T&gt;</li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/AltoClef.html" title="class in adris.altoclef"><span class="type-name-link">AltoClef</span></a> (implements net.fabricmc.api.ModInitializer)</li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/AltoClefCommands.html" title="class in adris.altoclef"><span class="type-name-link">AltoClefCommands</span></a></li>
 <li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/ArgBase.html" title="class in adris.altoclef.commandsystem"><span class="type-name-link">ArgBase</span></a>
@@ -116,28 +116,40 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/ArgParser.html" title="class in adris.altoclef.commandsystem"><span class="type-name-link">ArgParser</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/BaritoneHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">BaritoneHelper</span></a></li>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/BaseTimer.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">BaseTimer</span></a>
+<li class="circle">adris.altoclef.util.time.<a href="adris/altoclef/util/time/BaseTimer.html" title="class in adris.altoclef.util.time"><span class="type-name-link">BaseTimer</span></a>
 <ul>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/TimerGame.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">TimerGame</span></a></li>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/TimerReal.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">TimerReal</span></a></li>
+<li class="circle">adris.altoclef.util.time.<a href="adris/altoclef/util/time/TimerGame.html" title="class in adris.altoclef.util.time"><span class="type-name-link">TimerGame</span></a></li>
+<li class="circle">adris.altoclef.util.time.<a href="adris/altoclef/util/time/TimerReal.html" title="class in adris.altoclef.util.time"><span class="type-name-link">TimerReal</span></a></li>
 </ul>
 </li>
 <li class="circle">adris.altoclef.tasks.speedrun.<a href="adris/altoclef/tasks/speedrun/BeatMinecraftConfig.html" title="class in adris.altoclef.tasks.speedrun"><span class="type-name-link">BeatMinecraftConfig</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/BlockBreakingCancelEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">BlockBreakingCancelEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/BlockBreakingEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">BlockBreakingEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/BlockBrokenEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">BlockBrokenEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/BlockInteractEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">BlockInteractEvent</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/BlockModifiedByPlayerMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">BlockModifiedByPlayerMixin</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/BlockPlaceEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">BlockPlaceEvent</span></a></li>
+<li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/BlockRange.html" title="class in adris.altoclef.util"><span class="type-name-link">BlockRange</span></a></li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/BotBehaviour.html" title="class in adris.altoclef"><span class="type-name-link">BotBehaviour</span></a></li>
 <li class="circle">adris.altoclef.butler.<a href="adris/altoclef/butler/Butler.html" title="class in adris.altoclef.butler"><span class="type-name-link">Butler</span></a></li>
 <li class="circle">adris.altoclef.butler.<a href="adris/altoclef/butler/ButlerConfig.html" title="class in adris.altoclef.butler"><span class="type-name-link">ButlerConfig</span></a></li>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/CachedProjectile.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">CachedProjectile</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ChatInputMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ChatInputMixin</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ChatMessageEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ChatMessageEvent</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ChatReadMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ChatReadMixin</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ChunkLoadEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ChunkLoadEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ChunkUnloadEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ChunkUnloadEvent</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ClientBlockBreakMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ClientBlockBreakMixin</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ClientInteractWithBlockMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ClientInteractWithBlockMixin</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ClientOpenScreenMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ClientOpenScreenMixin</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ClientRenderEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ClientRenderEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ClientTickEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ClientTickEvent</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ClientTickMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ClientTickMixin</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/ClientUIMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">ClientUIMixin</span></a></li>
 <li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/Command.html" title="class in adris.altoclef.commandsystem"><span class="type-name-link">Command</span></a>
 <ul>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/CoordsCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">CoordsCommand</span></a></li>
+<li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/DepositCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">DepositCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/EquipCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">EquipCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/FollowCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">FollowCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/FoodCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">FoodCommand</span></a></li>
@@ -153,6 +165,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/PunkCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">PunkCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/ReloadSettingsCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">ReloadSettingsCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/SetGammaCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">SetGammaCommand</span></a></li>
+<li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/StashCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">StashCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/StatusCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">StatusCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/StopCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">StopCommand</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/TestCommand.html" title="class in adris.altoclef.commands"><span class="type-name-link">TestCommand</span></a></li>
@@ -162,11 +175,15 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.ui.<a href="adris/altoclef/ui/CommandStatusOverlay.html" title="class in adris.altoclef.ui"><span class="type-name-link">CommandStatusOverlay</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/ConfigHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">ConfigHelper</span></a></li>
 <li class="circle">adris.altoclef.trackers.storage.<a href="adris/altoclef/trackers/storage/ContainerCache.html" title="class in adris.altoclef.trackers.storage"><span class="type-name-link">ContainerCache</span></a></li>
+<li class="circle">adris.altoclef.tasks.container.<a href="adris/altoclef/tasks/container/ContainerStoredTracker.html" title="class in adris.altoclef.tasks.container"><span class="type-name-link">ContainerStoredTracker</span></a></li>
 <li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/CraftingRecipe.html" title="class in adris.altoclef.util"><span class="type-name-link">CraftingRecipe</span></a></li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/Debug.html" title="class in adris.altoclef"><span class="type-name-link">Debug</span></a></li>
 <li class="circle">adris.altoclef.util.progresscheck.<a href="adris/altoclef/util/progresscheck/DistanceProgressChecker.html" title="class in adris.altoclef.util.progresscheck"><span class="type-name-link">DistanceProgressChecker</span></a> (implements adris.altoclef.util.progresscheck.<a href="adris/altoclef/util/progresscheck/IProgressChecker.html" title="interface in adris.altoclef.util.progresscheck">IProgressChecker</a>&lt;T&gt;)</li>
+<li class="circle">adris.altoclef.tasks.speedrun.<a href="adris/altoclef/tasks/speedrun/DragonBreathTracker.html" title="class in adris.altoclef.tasks.speedrun"><span class="type-name-link">DragonBreathTracker</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/EntityHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">EntityHelper</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/EntryMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">EntryMixin</span></a></li>
+<li class="circle">adris.altoclef.eventbus.<a href="adris/altoclef/eventbus/EventBus.html" title="class in adris.altoclef.eventbus"><span class="type-name-link">EventBus</span></a></li>
+<li class="circle">adris.altoclef.eventbus.<a href="adris/altoclef/eventbus/EventBusTest.html" title="class in adris.altoclef.eventbus"><span class="type-name-link">EventBusTest</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/GameOverlayMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">GameOverlayMixin</span></a></li>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/GoalAnd.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">GoalAnd</span></a> (implements baritone.api.pathing.goals.Goal)</li>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/GoalBlockSide.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">GoalBlockSide</span></a> (implements baritone.api.pathing.goals.Goal)</li>
@@ -175,6 +192,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/GoalDodgeProjectiles.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">GoalDodgeProjectiles</span></a> (implements baritone.api.pathing.goals.Goal)</li>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/GoalFollowEntity.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">GoalFollowEntity</span></a> (implements baritone.api.pathing.goals.Goal)</li>
 <li class="circle">adris.altoclef.util.baritone.<a href="adris/altoclef/util/baritone/GoalRunAwayFromEntities.html" title="class in adris.altoclef.util.baritone"><span class="type-name-link">GoalRunAwayFromEntities</span></a> (implements baritone.api.pathing.goals.Goal)</li>
+<li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/GotoTarget.html" title="class in adris.altoclef.commandsystem"><span class="type-name-link">GotoTarget</span></a></li>
 <li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/InputControls.html" title="class in adris.altoclef.control"><span class="type-name-link">InputControls</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/InputHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">InputHelper</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/ItemHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">ItemHelper</span></a></li>
@@ -182,6 +200,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/ItemHelper.WoodItems.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">ItemHelper.WoodItems</span></a></li>
 <li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/ItemList.html" title="class in adris.altoclef.commandsystem"><span class="type-name-link">ItemList</span></a></li>
 <li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/ItemTarget.html" title="class in adris.altoclef.util"><span class="type-name-link">ItemTarget</span></a></li>
+<li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/JankCraftingRecipeMapping.html" title="class in adris.altoclef.util"><span class="type-name-link">JankCraftingRecipeMapping</span></a></li>
 <li class="circle">com.fasterxml.jackson.databind.JsonDeserializer&lt;T&gt; (implements com.fasterxml.jackson.databind.deser.NullValueProvider)
 <ul>
 <li class="circle">com.fasterxml.jackson.databind.deser.std.StdDeserializer&lt;T&gt; (implements java.io.<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
@@ -220,14 +239,15 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.ui.<a href="adris/altoclef/ui/MessageSender.html" title="class in adris.altoclef.ui"><span class="type-name-link">MessageSender</span></a></li>
 <li class="circle">adris.altoclef.trackers.<a href="adris/altoclef/trackers/MiscBlockTracker.html" title="class in adris.altoclef.trackers"><span class="type-name-link">MiscBlockTracker</span></a></li>
 <li class="circle">adris.altoclef.util.progresscheck.<a href="adris/altoclef/util/progresscheck/MovementProgressChecker.html" title="class in adris.altoclef.util.progresscheck"><span class="type-name-link">MovementProgressChecker</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/PlayerCollidedWithEntityEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">PlayerCollidedWithEntityEvent</span></a></li>
 <li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/PlayerCollidesWithEntityMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">PlayerCollidesWithEntityMixin</span></a></li>
 <li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/PlayerExtraController.html" title="class in adris.altoclef.control"><span class="type-name-link">PlayerExtraController</span></a></li>
-<li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/PlayerExtraController.BlockBrokenEvent.html" title="class in adris.altoclef.control"><span class="type-name-link">PlayerExtraController.BlockBrokenEvent</span></a></li>
-<li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/PlayerExtraController.BlockPlaceEvent.html" title="class in adris.altoclef.control"><span class="type-name-link">PlayerExtraController.BlockPlaceEvent</span></a></li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/Playground.html" title="class in adris.altoclef"><span class="type-name-link">Playground</span></a></li>
 <li class="circle">adris.altoclef.util.progresscheck.<a href="adris/altoclef/util/progresscheck/ProgressCheckerRetry.html" title="class in adris.altoclef.util.progresscheck"><span class="type-name-link">ProgressCheckerRetry</span></a>&lt;T&gt; (implements adris.altoclef.util.progresscheck.<a href="adris/altoclef/util/progresscheck/IProgressChecker.html" title="interface in adris.altoclef.util.progresscheck">IProgressChecker</a>&lt;T&gt;)</li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/ProjectileHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">ProjectileHelper</span></a></li>
 <li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/RecipeTarget.html" title="class in adris.altoclef.util"><span class="type-name-link">RecipeTarget</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/ScreenOpenEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">ScreenOpenEvent</span></a></li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/SendChatEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">SendChatEvent</span></a></li>
 <li class="circle">adris.altoclef.<a href="adris/altoclef/Settings.html" title="class in adris.altoclef"><span class="type-name-link">Settings</span></a> (implements adris.altoclef.util.serialization.<a href="adris/altoclef/util/serialization/IFailableConfigFile.html" title="interface in adris.altoclef.util.serialization">IFailableConfigFile</a>)</li>
 <li class="circle">adris.altoclef.trackers.<a href="adris/altoclef/trackers/SimpleChunkTracker.html" title="class in adris.altoclef.trackers"><span class="type-name-link">SimpleChunkTracker</span></a></li>
 <li class="circle">adris.altoclef.util.slots.<a href="adris/altoclef/util/slots/Slot.html" title="class in adris.altoclef.util.slots"><span class="type-name-link">Slot</span></a>
@@ -260,11 +280,13 @@ loadScripts(document, 'script');</script>
 </li>
 </ul>
 </li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/SlotClickChangedEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">SlotClickChangedEvent</span></a></li>
+<li class="circle">adris.altoclef.mixins.<a href="adris/altoclef/mixins/SlotClickMixin.html" title="class in adris.altoclef.mixins"><span class="type-name-link">SlotClickMixin</span></a></li>
 <li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/SlotHandler.html" title="class in adris.altoclef.control"><span class="type-name-link">SlotHandler</span></a></li>
 <li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/SmeltTarget.html" title="class in adris.altoclef.util"><span class="type-name-link">SmeltTarget</span></a></li>
-<li class="circle">adris.altoclef.<a href="adris/altoclef/StaticMixinHookups.html" title="class in adris.altoclef"><span class="type-name-link">StaticMixinHookups</span></a></li>
-<li class="circle">adris.altoclef.util.csharpisbetter.<a href="adris/altoclef/util/csharpisbetter/Stopwatch.html" title="class in adris.altoclef.util.csharpisbetter"><span class="type-name-link">Stopwatch</span></a></li>
+<li class="circle">adris.altoclef.util.time.<a href="adris/altoclef/util/time/Stopwatch.html" title="class in adris.altoclef.util.time"><span class="type-name-link">Stopwatch</span></a></li>
 <li class="circle">adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/StorageHelper.html" title="class in adris.altoclef.util.helpers"><span class="type-name-link">StorageHelper</span></a></li>
+<li class="circle">adris.altoclef.eventbus.<a href="adris/altoclef/eventbus/Subscription.html" title="class in adris.altoclef.eventbus"><span class="type-name-link">Subscription</span></a>&lt;T&gt;</li>
 <li class="circle">adris.altoclef.tasksystem.<a href="adris/altoclef/tasksystem/Task.html" title="class in adris.altoclef.tasksystem"><span class="type-name-link">Task</span></a>
 <ul>
 <li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/AbstractDoToClosestObjectTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">AbstractDoToClosestObjectTask</span></a>&lt;T&gt;
@@ -306,7 +328,8 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.tasks.construction.compound.<a href="adris/altoclef/tasks/construction/compound/ConstructNetherPortalBucketTask.html" title="class in adris.altoclef.tasks.construction.compound"><span class="type-name-link">ConstructNetherPortalBucketTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.construction.compound.<a href="adris/altoclef/tasks/construction/compound/ConstructNetherPortalObsidianTask.html" title="class in adris.altoclef.tasks.construction.compound"><span class="type-name-link">ConstructNetherPortalObsidianTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.construction.compound.<a href="adris/altoclef/tasks/construction/compound/ConstructNetherPortalSpeedrunTask.html" title="class in adris.altoclef.tasks.construction.compound"><span class="type-name-link">ConstructNetherPortalSpeedrunTask</span></a></li>
-<li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftGenericTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">CraftGenericTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftGenericManuallyTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">CraftGenericManuallyTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftGenericWithRecipeBooksTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">CraftGenericWithRecipeBooksTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.movement.<a href="adris/altoclef/tasks/movement/CustomBaritoneGoalTask.html" title="class in adris.altoclef.tasks.movement"><span class="type-name-link">CustomBaritoneGoalTask</span></a> (implements adris.altoclef.tasksystem.<a href="adris/altoclef/tasksystem/ITaskRequiresGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskRequiresGrounded</a>)
 <ul>
 <li class="circle">adris.altoclef.tasks.movement.<a href="adris/altoclef/tasks/movement/DodgeProjectilesTask.html" title="class in adris.altoclef.tasks.movement"><span class="type-name-link">DodgeProjectilesTask</span></a></li>
@@ -367,6 +390,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.tasks.construction.<a href="adris/altoclef/tasks/construction/PlaceSignTask.html" title="class in adris.altoclef.tasks.construction"><span class="type-name-link">PlaceSignTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.construction.<a href="adris/altoclef/tasks/construction/PutOutFireTask.html" title="class in adris.altoclef.tasks.construction"><span class="type-name-link">PutOutFireTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.misc.<a href="adris/altoclef/tasks/misc/RavageRuinedPortalsTask.html" title="class in adris.altoclef.tasks.misc"><span class="type-name-link">RavageRuinedPortalsTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.slot.<a href="adris/altoclef/tasks/slot/ReceiveOutputSlotTask.html" title="class in adris.altoclef.tasks.slot"><span class="type-name-link">ReceiveOutputSlotTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.stupid.<a href="adris/altoclef/tasks/stupid/ReplaceBlocksTask.html" title="class in adris.altoclef.tasks.stupid"><span class="type-name-link">ReplaceBlocksTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/ResourceTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">ResourceTask</span></a>
 <ul>
@@ -395,17 +419,14 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectMilkTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectMilkTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectNetherBricksTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectNetherBricksTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectObsidianTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectObsidianTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectPlanksTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectQuartzTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectQuartzTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectRedSandstoneTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectRedSandstoneTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectSandstoneTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectSandstoneTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectWheatSeedsTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectWheatSeedsTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectWheatTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectWheatTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectWoolTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectWoolTask</span></a></li>
-<li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftInInventoryTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">CraftInInventoryTask</span></a>
-<ul>
-<li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CollectPlanksTask</span></a></li>
-</ul>
-</li>
+<li class="circle">adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftInInventoryTask.html" title="class in adris.altoclef.tasks"><span class="type-name-link">CraftInInventoryTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.container.<a href="adris/altoclef/tasks/container/CraftInTableTask.html" title="class in adris.altoclef.tasks.container"><span class="type-name-link">CraftInTableTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/CraftWithMatchingMaterialsTask.html" title="class in adris.altoclef.tasks.resources"><span class="type-name-link">CraftWithMatchingMaterialsTask</span></a>
 <ul>
@@ -415,6 +436,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectFenceGateTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectFenceGateTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectFenceTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectFenceTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectSignTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectSignTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectWoodenButtonTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectWoodenButtonTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectWoodenDoorTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectWoodenDoorTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectWoodenPressurePlateTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectWoodenPressurePlateTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.resources.wood.<a href="adris/altoclef/tasks/resources/wood/CollectWoodenSlabTask.html" title="class in adris.altoclef.tasks.resources.wood"><span class="type-name-link">CollectWoodenSlabTask</span></a></li>
@@ -452,6 +474,7 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">adris.altoclef.tasks.misc.<a href="adris/altoclef/tasks/misc/SleepThroughNightTask.html" title="class in adris.altoclef.tasks.misc"><span class="type-name-link">SleepThroughNightTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.container.<a href="adris/altoclef/tasks/container/StoreInAnyContainerTask.html" title="class in adris.altoclef.tasks.container"><span class="type-name-link">StoreInAnyContainerTask</span></a></li>
+<li class="circle">adris.altoclef.tasks.container.<a href="adris/altoclef/tasks/container/StoreInStashTask.html" title="class in adris.altoclef.tasks.container"><span class="type-name-link">StoreInStashTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.stupid.<a href="adris/altoclef/tasks/stupid/TerminatorTask.html" title="class in adris.altoclef.tasks.stupid"><span class="type-name-link">TerminatorTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.slot.<a href="adris/altoclef/tasks/slot/ThrowCursorTask.html" title="class in adris.altoclef.tasks.slot"><span class="type-name-link">ThrowCursorTask</span></a></li>
 <li class="circle">adris.altoclef.tasks.movement.<a href="adris/altoclef/tasks/movement/ThrowEnderPearlSimpleProjectileTask.html" title="class in adris.altoclef.tasks.movement"><span class="type-name-link">ThrowEnderPearlSimpleProjectileTask</span></a></li>
@@ -475,6 +498,7 @@ loadScripts(document, 'script');</script>
 </li>
 </ul>
 </li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/TaskFinishedEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">TaskFinishedEvent</span></a></li>
 <li class="circle">adris.altoclef.tasksystem.<a href="adris/altoclef/tasksystem/TaskRunner.html" title="class in adris.altoclef.tasksystem"><span class="type-name-link">TaskRunner</span></a></li>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Throwable.html" title="class or interface in java.lang" class="external-link"><span class="type-name-link">Throwable</span></a> (implements java.io.<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
 <ul>
@@ -485,6 +509,7 @@ loadScripts(document, 'script');</script>
 </li>
 </ul>
 </li>
+<li class="circle">adris.altoclef.eventbus.events.<a href="adris/altoclef/eventbus/events/TitleScreenEntryEvent.html" title="class in adris.altoclef.eventbus.events"><span class="type-name-link">TitleScreenEntryEvent</span></a></li>
 <li class="circle">adris.altoclef.trackers.<a href="adris/altoclef/trackers/Tracker.html" title="class in adris.altoclef.trackers"><span class="type-name-link">Tracker</span></a>
 <ul>
 <li class="circle">adris.altoclef.trackers.<a href="adris/altoclef/trackers/BlockTracker.html" title="class in adris.altoclef.trackers"><span class="type-name-link">BlockTracker</span></a></li>
@@ -542,6 +567,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">adris.altoclef.trackers.storage.<a href="adris/altoclef/trackers/storage/ContainerType.html" title="enum class in adris.altoclef.trackers.storage"><span class="type-name-link">ContainerType</span></a></li>
 <li class="circle">adris.altoclef.tasks.movement.<a href="adris/altoclef/tasks/movement/DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.html" title="enum class in adris.altoclef.tasks.movement"><span class="type-name-link">DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR</span></a></li>
 <li class="circle">adris.altoclef.util.<a href="adris/altoclef/util/Dimension.html" title="enum class in adris.altoclef.util"><span class="type-name-link">Dimension</span></a></li>
+<li class="circle">adris.altoclef.commandsystem.<a href="adris/altoclef/commandsystem/GotoTarget.GotoTargetCoordType.html" title="enum class in adris.altoclef.commandsystem"><span class="type-name-link">GotoTarget.GotoTargetCoordType</span></a></li>
 <li class="circle">adris.altoclef.control.<a href="adris/altoclef/control/KillAura.Strategy.html" title="enum class in adris.altoclef.control"><span class="type-name-link">KillAura.Strategy</span></a></li>
 <li class="circle">adris.altoclef.commands.<a href="adris/altoclef/commands/LocateStructureCommand.Structure.html" title="enum class in adris.altoclef.commands"><span class="type-name-link">LocateStructureCommand.Structure</span></a></li>
 <li class="circle">adris.altoclef.ui.<a href="adris/altoclef/ui/MessagePriority.html" title="enum class in adris.altoclef.ui"><span class="type-name-link">MessagePriority</span></a></li>

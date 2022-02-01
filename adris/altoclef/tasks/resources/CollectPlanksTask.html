@@ -77,16 +77,14 @@ loadScripts(document, 'script');</script>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
 <div class="inheritance"><a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">adris.altoclef.tasksystem.Task</a>
 <div class="inheritance"><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">adris.altoclef.tasks.ResourceTask</a>
-<div class="inheritance"><a href="../CraftInInventoryTask.html" title="class in adris.altoclef.tasks">adris.altoclef.tasks.CraftInInventoryTask</a>
 <div class="inheritance">adris.altoclef.tasks.resources.CollectPlanksTask</div>
-</div>
 </div>
 </div>
 </div>
 <section class="description">
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">CollectPlanksTask</span>
-<span class="extends-implements">extends <a href="../CraftInInventoryTask.html" title="class in adris.altoclef.tasks">CraftInInventoryTask</a></span></div>
+<span class="extends-implements">extends <a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -135,18 +133,31 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></code></div>
-<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#collectRecipeSubTask(adris.altoclef.AltoClef)">collectRecipeSubTask</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#isEqualResource(adris.altoclef.tasks.ResourceTask)">isEqualResource</a></span>&#8203;(<a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a>&nbsp;other)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources">CollectPlanksTask</a></code></div>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#logsInNether()">logsInNether</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onResourceStart(adris.altoclef.AltoClef)">onResourceStart</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onResourceStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onResourceStop</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptTask)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onResourceTick(adris.altoclef.AltoClef)">onResourceTick</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#shouldAvoidPickingUp(adris.altoclef.AltoClef)">shouldAvoidPickingUp</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#toDebugStringName()">toDebugStringName</a></span>()</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </div>
-<div class="inherited-list">
-<h3 id="methods.inherited.from.class.adris.altoclef.tasks.CraftInInventoryTask">Methods inherited from class&nbsp;adris.altoclef.tasks.<a href="../CraftInInventoryTask.html" title="class in adris.altoclef.tasks">CraftInInventoryTask</a></h3>
-<code><a href="../CraftInInventoryTask.html#isCraftingEqual(adris.altoclef.tasks.CraftInInventoryTask)">isCraftingEqual</a>, <a href="../CraftInInventoryTask.html#isEqualResource(adris.altoclef.tasks.ResourceTask)">isEqualResource</a>, <a href="../CraftInInventoryTask.html#onResourceStart(adris.altoclef.AltoClef)">onResourceStart</a>, <a href="../CraftInInventoryTask.html#onResourceStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onResourceStop</a>, <a href="../CraftInInventoryTask.html#onResourceTick(adris.altoclef.AltoClef)">onResourceTick</a>, <a href="../CraftInInventoryTask.html#shouldAvoidPickingUp(adris.altoclef.AltoClef)">shouldAvoidPickingUp</a>, <a href="../CraftInInventoryTask.html#toCraftingDebugStringName()">toCraftingDebugStringName</a>, <a href="../CraftInInventoryTask.html#toDebugStringName()">toDebugStringName</a></code></div>
 <div class="inherited-list">
 <h3 id="methods.inherited.from.class.adris.altoclef.tasks.ResourceTask">Methods inherited from class&nbsp;adris.altoclef.tasks.<a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></h3>
 <code><a href="../ResourceTask.html#forceDimension(adris.altoclef.util.Dimension)">forceDimension</a>, <a href="../ResourceTask.html#getItemTargets()">getItemTargets</a>, <a href="../ResourceTask.html#getToCorrectDimensionTask(adris.altoclef.AltoClef)">getToCorrectDimensionTask</a>, <a href="../ResourceTask.html#isEqual(adris.altoclef.tasksystem.Task)">isEqual</a>, <a href="../ResourceTask.html#isFinished(adris.altoclef.AltoClef)">isFinished</a>, <a href="../ResourceTask.html#isInWrongDimension(adris.altoclef.AltoClef)">isInWrongDimension</a>, <a href="../ResourceTask.html#mineIfPresent(net.minecraft.block.Block%5B%5D)">mineIfPresent</a>, <a href="../ResourceTask.html#onStart(adris.altoclef.AltoClef)">onStart</a>, <a href="../ResourceTask.html#onStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onStop</a>, <a href="../ResourceTask.html#onTick(adris.altoclef.AltoClef)">onTick</a>, <a href="../ResourceTask.html#toDebugString()">toDebugString</a></code></div>
@@ -206,19 +217,70 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="logsInNether()">
-<h3>logsInNether</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources">CollectPlanksTask</a></span>&nbsp;<span class="element-name">logsInNether</span>()</div>
+<section class="detail" id="shouldAvoidPickingUp(adris.altoclef.AltoClef)">
+<h3>shouldAvoidPickingUp</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">shouldAvoidPickingUp</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#shouldAvoidPickingUp(adris.altoclef.AltoClef)">shouldAvoidPickingUp</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
+</dl>
 </section>
 </li>
 <li>
-<section class="detail" id="collectRecipeSubTask(adris.altoclef.AltoClef)">
-<h3>collectRecipeSubTask</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></span>&nbsp;<span class="element-name">collectRecipeSubTask</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
+<section class="detail" id="onResourceStart(adris.altoclef.AltoClef)">
+<h3>onResourceStart</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onResourceStart</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../CraftInInventoryTask.html#collectRecipeSubTask(adris.altoclef.AltoClef)">collectRecipeSubTask</a></code>&nbsp;in class&nbsp;<code><a href="../CraftInInventoryTask.html" title="class in adris.altoclef.tasks">CraftInInventoryTask</a></code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#onResourceStart(adris.altoclef.AltoClef)">onResourceStart</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onResourceTick(adris.altoclef.AltoClef)">
+<h3>onResourceTick</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></span>&nbsp;<span class="element-name">onResourceTick</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#onResourceTick(adris.altoclef.AltoClef)">onResourceTick</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onResourceStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">
+<h3>onResourceStop</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onResourceStop</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptTask)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#onResourceStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onResourceStop</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isEqualResource(adris.altoclef.tasks.ResourceTask)">
+<h3>isEqualResource</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isEqualResource</span>&#8203;<span class="parameters">(<a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a>&nbsp;other)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#isEqualResource(adris.altoclef.tasks.ResourceTask)">isEqualResource</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="toDebugStringName()">
+<h3>toDebugStringName</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">toDebugStringName</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../ResourceTask.html#toDebugStringName()">toDebugStringName</a></code>&nbsp;in class&nbsp;<code><a href="../ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="logsInNether()">
+<h3>logsInNether</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources">CollectPlanksTask</a></span>&nbsp;<span class="element-name">logsInNether</span>()</div>
 </section>
 </li>
 </ul>

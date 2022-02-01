@@ -92,7 +92,8 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(adris.altoclef.util.ItemTarget,adris.altoclef.util.CraftingRecipe)">RecipeTarget</a></span>&#8203;(<a href="ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;item,
+<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(net.minecraft.item.Item,int,adris.altoclef.util.CraftingRecipe)">RecipeTarget</a></span>&#8203;(net.minecraft.item.Item&nbsp;item,
+ int&nbsp;targetCount,
  <a href="CraftingRecipe.html" title="class in adris.altoclef.util">CraftingRecipe</a>&nbsp;recipe)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
@@ -112,18 +113,21 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#equals(java.lang.Object)">equals</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a></code></div>
-<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getItem()">getItem</a></span>()</code></div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>net.minecraft.item.Item</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getOutputItem()">getOutputItem</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="CraftingRecipe.html" title="class in adris.altoclef.util">CraftingRecipe</a></code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getRecipe()">getRecipe</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hashCode()">hashCode</a></span>()</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getTargetCount()">getTargetCount</a></span>()</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#toString()">toString</a></span>()</code></div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#hashCode()">hashCode</a></span>()</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#toString()">toString</a></span>()</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -142,9 +146,10 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(adris.altoclef.util.ItemTarget,adris.altoclef.util.CraftingRecipe)">
+<section class="detail" id="&lt;init&gt;(net.minecraft.item.Item,int,adris.altoclef.util.CraftingRecipe)">
 <h3>RecipeTarget</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RecipeTarget</span>&#8203;<span class="parameters">(<a href="ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;item,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RecipeTarget</span>&#8203;<span class="parameters">(net.minecraft.item.Item&nbsp;item,
+ int&nbsp;targetCount,
  <a href="CraftingRecipe.html" title="class in adris.altoclef.util">CraftingRecipe</a>&nbsp;recipe)</span></div>
 </section>
 </li>
@@ -163,9 +168,15 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="getItem()">
-<h3>getItem</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a></span>&nbsp;<span class="element-name">getItem</span>()</div>
+<section class="detail" id="getOutputItem()">
+<h3>getOutputItem</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">net.minecraft.item.Item</span>&nbsp;<span class="element-name">getOutputItem</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getTargetCount()">
+<h3>getTargetCount</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getTargetCount</span>()</div>
 </section>
 </li>
 <li>

@@ -97,10 +97,9 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(net.minecraft.util.math.BlockPos,java.lang.String,java.util.function.Function,java.util.function.Function)">StoreInContainerTask</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;targetContainer,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;uniqueId,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>,&#8203;<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&gt;&gt;&nbsp;getNextItemTargetToDump,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>,&#8203;<a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&gt;&nbsp;onFullContainer)</code></div>
+<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(net.minecraft.util.math.BlockPos,boolean,adris.altoclef.util.ItemTarget...)">StoreInContainerTask</a></span>&#8203;(net.minecraft.util.math.BlockPos&nbsp;targetContainer,
+ boolean&nbsp;getIfNotPresent,
+ <a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;toStore)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -129,6 +128,13 @@ loadScripts(document, 'script');</script>
 <div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onContainerOpenSubtask(adris.altoclef.AltoClef,adris.altoclef.trackers.storage.ContainerCache)">onContainerOpenSubtask</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../../trackers/storage/ContainerCache.html" title="class in adris.altoclef.trackers.storage">ContainerCache</a>&nbsp;containerCache)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onStart(adris.altoclef.AltoClef)">onStart</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onStop</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptTask)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#onTick(adris.altoclef.AltoClef)">onTick</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
@@ -140,7 +146,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="methods.inherited.from.class.adris.altoclef.tasks.container.AbstractDoToStorageContainerTask">Methods inherited from class&nbsp;adris.altoclef.tasks.container.<a href="AbstractDoToStorageContainerTask.html" title="class in adris.altoclef.tasks.container">AbstractDoToStorageContainerTask</a></h3>
-<code><a href="AbstractDoToStorageContainerTask.html#onSearchWander(adris.altoclef.AltoClef)">onSearchWander</a>, <a href="AbstractDoToStorageContainerTask.html#onStart(adris.altoclef.AltoClef)">onStart</a>, <a href="AbstractDoToStorageContainerTask.html#onStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onStop</a></code></div>
+<code><a href="AbstractDoToStorageContainerTask.html#onSearchWander(adris.altoclef.AltoClef)">onSearchWander</a></code></div>
 <div class="inherited-list">
 <h3 id="methods.inherited.from.class.adris.altoclef.tasksystem.Task">Methods inherited from class&nbsp;adris.altoclef.tasksystem.<a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></h3>
 <code><a href="../../tasksystem/Task.html#equals(java.lang.Object)">equals</a>, <a href="../../tasksystem/Task.html#interrupt(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">interrupt</a>, <a href="../../tasksystem/Task.html#isActive()">isActive</a>, <a href="../../tasksystem/Task.html#reset()">reset</a>, <a href="../../tasksystem/Task.html#setDebugState(java.lang.String)">setDebugState</a>, <a href="../../tasksystem/Task.html#stop(adris.altoclef.AltoClef)">stop</a>, <a href="../../tasksystem/Task.html#stop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">stop</a>, <a href="../../tasksystem/Task.html#stopped()">stopped</a>, <a href="../../tasksystem/Task.html#thisOrChildAreTimedOut()">thisOrChildAreTimedOut</a>, <a href="../../tasksystem/Task.html#thisOrChildSatisfies(java.util.function.Predicate)">thisOrChildSatisfies</a>, <a href="../../tasksystem/Task.html#tick(adris.altoclef.AltoClef,adris.altoclef.tasksystem.TaskChain)">tick</a>, <a href="../../tasksystem/Task.html#toString()">toString</a></code></div>
@@ -159,19 +165,11 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(net.minecraft.util.math.BlockPos,java.lang.String,java.util.function.Function,java.util.function.Function)">
+<section class="detail" id="&lt;init&gt;(net.minecraft.util.math.BlockPos,boolean,adris.altoclef.util.ItemTarget...)">
 <h3>StoreInContainerTask</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">StoreInContainerTask</span>&#8203;<span class="parameters">(net.minecraft.util.math.BlockPos&nbsp;targetContainer,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;uniqueId,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>,&#8203;<a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&gt;&gt;&nbsp;getNextItemTargetToDump,
- <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>,&#8203;<a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&gt;&nbsp;onFullContainer)</span></div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>targetContainer</code> - Container to open</dd>
-<dd><code>uniqueId</code> - Used for isEquals. Just make sure there are no duplicates.</dd>
-<dd><code>getNextItemTargetToDump</code> - Return the next item to dump into the container, return `Optional.empty()` to stop/finish dumping.</dd>
-<dd><code>onFullContainer</code> - What to do when the container is full/we can't dump any more items.</dd>
-</dl>
+ boolean&nbsp;getIfNotPresent,
+ <a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;toStore)</span></div>
 </section>
 </li>
 </ul>
@@ -193,12 +191,33 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="onStart(adris.altoclef.AltoClef)">
+<h3>onStart</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onStart</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="AbstractDoToStorageContainerTask.html#onStart(adris.altoclef.AltoClef)">onStart</a></code>&nbsp;in class&nbsp;<code><a href="AbstractDoToStorageContainerTask.html" title="class in adris.altoclef.tasks.container">AbstractDoToStorageContainerTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="onTick(adris.altoclef.AltoClef)">
 <h3>onTick</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></span>&nbsp;<span class="element-name">onTick</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="AbstractDoToStorageContainerTask.html#onTick(adris.altoclef.AltoClef)">onTick</a></code>&nbsp;in class&nbsp;<code><a href="AbstractDoToStorageContainerTask.html" title="class in adris.altoclef.tasks.container">AbstractDoToStorageContainerTask</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">
+<h3>onStop</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onStop</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptTask)</span></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="AbstractDoToStorageContainerTask.html#onStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onStop</a></code>&nbsp;in class&nbsp;<code><a href="AbstractDoToStorageContainerTask.html" title="class in adris.altoclef.tasks.container">AbstractDoToStorageContainerTask</a></code></dd>
 </dl>
 </section>
 </li>

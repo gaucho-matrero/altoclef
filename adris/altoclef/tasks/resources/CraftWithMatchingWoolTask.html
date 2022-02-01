@@ -16,7 +16,11 @@
 <script type="text/javascript" src="../../../../script-dir/jquery-ui.min.js"></script>
 </head>
 <body class="class-declaration-page">
-<script type="text/javascript">var pathtoroot = "../../../../";
+<script type="text/javascript">var evenRowColor = "even-row-color";
+var oddRowColor = "odd-row-color";
+var tableTab = "table-tab";
+var activeTableTab = "active-table-tab";
+var pathtoroot = "../../../../";
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -50,7 +54,7 @@ loadScripts(document, 'script');</script>
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
 <div class="nav-list-search"><label for="search">SEARCH:</label>
@@ -107,7 +111,9 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(adris.altoclef.util.ItemTarget,adris.altoclef.util.CraftingRecipe,boolean%5B%5D)">CraftWithMatchingWoolTask</a></span>&#8203;(<a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;target,
+<div class="col-constructor-name even-row-color"><code><span class="member-name-link"><a href="#%3Cinit%3E(adris.altoclef.util.ItemTarget,java.util.function.Function,java.util.function.Function,adris.altoclef.util.CraftingRecipe,boolean%5B%5D)">CraftWithMatchingWoolTask</a></span>&#8203;(<a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;target,
+ <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../util/helpers/ItemHelper.ColorfulItems.html" title="class in adris.altoclef.util.helpers">ItemHelper.ColorfulItems</a>,&#8203;net.minecraft.item.Item&gt;&nbsp;getMajorityMaterial,
+ <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../util/helpers/ItemHelper.ColorfulItems.html" title="class in adris.altoclef.util.helpers">ItemHelper.ColorfulItems</a>,&#8203;net.minecraft.item.Item&gt;&nbsp;getTargetItem,
  <a href="../../util/CraftingRecipe.html" title="class in adris.altoclef.util">CraftingRecipe</a>&nbsp;recipe,
  boolean[]&nbsp;sameMask)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
@@ -118,6 +124,19 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="method-summary" id="method.summary">
 <h2>Method Summary</h2>
+<div id="method-summary-table">
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div id="method-summary-table.tabpanel" role="tabpanel">
+<div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected net.minecraft.item.Item</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#getSpecificItemCorrespondingToMajorityResource(net.minecraft.item.Item)">getSpecificItemCorrespondingToMajorityResource</a></span>&#8203;(net.minecraft.item.Item&nbsp;majority)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+</div>
+</div>
+</div>
 <div class="inherited-list">
 <h3 id="methods.inherited.from.class.adris.altoclef.tasks.resources.CraftWithMatchingMaterialsTask">Methods inherited from class&nbsp;adris.altoclef.tasks.resources.<a href="CraftWithMatchingMaterialsTask.html" title="class in adris.altoclef.tasks.resources">CraftWithMatchingMaterialsTask</a></h3>
 <code><a href="CraftWithMatchingMaterialsTask.html#getAllSameResourcesTask(adris.altoclef.AltoClef)">getAllSameResourcesTask</a>, <a href="CraftWithMatchingMaterialsTask.html#getExpectedTotalCountOfSameItem(adris.altoclef.AltoClef,net.minecraft.item.Item)">getExpectedTotalCountOfSameItem</a>, <a href="CraftWithMatchingMaterialsTask.html#getSpecificSameResourceTask(adris.altoclef.AltoClef,net.minecraft.item.Item%5B%5D)">getSpecificSameResourceTask</a>, <a href="CraftWithMatchingMaterialsTask.html#onResourceStart(adris.altoclef.AltoClef)">onResourceStart</a>, <a href="CraftWithMatchingMaterialsTask.html#onResourceStop(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">onResourceStop</a>, <a href="CraftWithMatchingMaterialsTask.html#onResourceTick(adris.altoclef.AltoClef)">onResourceTick</a></code></div>
@@ -142,11 +161,31 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(adris.altoclef.util.ItemTarget,adris.altoclef.util.CraftingRecipe,boolean[])">
+<section class="detail" id="&lt;init&gt;(adris.altoclef.util.ItemTarget,java.util.function.Function,java.util.function.Function,adris.altoclef.util.CraftingRecipe,boolean[])">
 <h3>CraftWithMatchingWoolTask</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CraftWithMatchingWoolTask</span>&#8203;<span class="parameters">(<a href="../../util/ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>&nbsp;target,
+ <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../util/helpers/ItemHelper.ColorfulItems.html" title="class in adris.altoclef.util.helpers">ItemHelper.ColorfulItems</a>,&#8203;net.minecraft.item.Item&gt;&nbsp;getMajorityMaterial,
+ <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="../../util/helpers/ItemHelper.ColorfulItems.html" title="class in adris.altoclef.util.helpers">ItemHelper.ColorfulItems</a>,&#8203;net.minecraft.item.Item&gt;&nbsp;getTargetItem,
  <a href="../../util/CraftingRecipe.html" title="class in adris.altoclef.util">CraftingRecipe</a>&nbsp;recipe,
  boolean[]&nbsp;sameMask)</span></div>
+</section>
+</li>
+</ul>
+</section>
+</li>
+<!-- ============ METHOD DETAIL ========== -->
+<li>
+<section class="method-details" id="method.detail">
+<h2>Method Details</h2>
+<ul class="member-list">
+<li>
+<section class="detail" id="getSpecificItemCorrespondingToMajorityResource(net.minecraft.item.Item)">
+<h3>getSpecificItemCorrespondingToMajorityResource</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">net.minecraft.item.Item</span>&nbsp;<span class="element-name">getSpecificItemCorrespondingToMajorityResource</span>&#8203;<span class="parameters">(net.minecraft.item.Item&nbsp;majority)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="CraftWithMatchingMaterialsTask.html#getSpecificItemCorrespondingToMajorityResource(net.minecraft.item.Item)">getSpecificItemCorrespondingToMajorityResource</a></code>&nbsp;in class&nbsp;<code><a href="CraftWithMatchingMaterialsTask.html" title="class in adris.altoclef.tasks.resources">CraftWithMatchingMaterialsTask</a></code></dd>
+</dl>
 </section>
 </li>
 </ul>
