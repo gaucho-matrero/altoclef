@@ -262,6 +262,12 @@ public class Settings implements IFailableConfigFile {
     private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
     /**
+     * When fast traveling via the nether, walk to our destination if we somehow end up closer than this range in the overworld.
+     * We will normally travel well within this range (to within 100 blocks if not within a few), so keep this value ~decently~ large.
+     */
+    private int netherFastTravelWalkingRange = 600;
+
+    /**
      * If set, will run this command by default when no other commands are running.
      *
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
@@ -567,6 +573,10 @@ public class Settings implements IFailableConfigFile {
 
     public DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR getOverworldToNetherBehaviour() {
         return overworldToNetherBehaviour;
+    }
+
+    public int getNetherFastTravelWalkingRange() {
+        return netherFastTravelWalkingRange;
     }
 
     public BlockPos getHomeBasePosition() {

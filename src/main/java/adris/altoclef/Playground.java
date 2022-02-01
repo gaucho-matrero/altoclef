@@ -282,7 +282,7 @@ public class Playground {
                 mod.runUserTask(new TradeWithPiglinsTask(32, new ItemTarget(Items.ENDER_PEARL, 12)));
                 break;
             case "stronghold":
-                mod.runUserTask(new LocateStrongholdTask(12));
+                mod.runUserTask(new GoToStrongholdPortalTask(12));
                 break;
             case "terminate":
                 mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 900));
