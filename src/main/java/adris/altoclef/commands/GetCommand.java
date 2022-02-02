@@ -7,8 +7,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 
-import java.util.HashMap;
-
 public class GetCommand extends Command {
 
     public GetCommand() throws CommandException {
@@ -23,6 +21,11 @@ public class GetCommand extends Command {
 
     private void GetItems(AltoClef mod, ItemTarget... items) {
         Task targetTask;
+        if (items == null || items.length == 0) {
+            mod.log("You must specify at least one item!");
+            finish();
+            return;
+        }
         if (items.length == 1) {
             targetTask = TaskCatalogue.getItemTask(items[0]);
         } else {
