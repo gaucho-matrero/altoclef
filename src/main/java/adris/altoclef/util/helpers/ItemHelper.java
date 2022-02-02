@@ -360,6 +360,8 @@ public class ItemHelper {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean canStackTogether(ItemStack from, ItemStack to) {
+        if (to.isEmpty() && from.getCount() < from.getMaxCount())
+            return true;
         return to.getItem().equals(from.getItem()) && (from.getCount() + to.getCount() < to.getMaxCount());
     }
 

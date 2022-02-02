@@ -101,7 +101,7 @@ public class InventorySubTracker extends Tracker {
         for (Slot toCheckStackable : list.getOrDefault(item.getItem(), Collections.emptyList())) {
             ItemStack stackToAddTo = StorageHelper.getItemStackInSlot(toCheckStackable);
             // We must have SOME room left, then we decide whether we care about having ENOUGH
-            if (ItemHelper.canStackTogether(item, stackToAddTo)) {
+            if (!stackToAddTo.isEmpty() && ItemHelper.canStackTogether(item, stackToAddTo)) {
                 int roomLeft = stackToAddTo.getMaxCount() - stackToAddTo.getCount();
                 if (acceptPartial || roomLeft > item.getCount()) {
                     result.add(toCheckStackable);

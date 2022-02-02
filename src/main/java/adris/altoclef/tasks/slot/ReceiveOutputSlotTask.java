@@ -1,14 +1,16 @@
 package adris.altoclef.tasks.slot;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.Optional;
 
 public class ReceiveOutputSlotTask extends Task {
 
@@ -33,16 +35,30 @@ public class ReceiveOutputSlotTask extends Task {
         ItemStack inOutput = StorageHelper.getItemStackInSlot(_slot);
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
         if (!cursor.isEmpty() && cursor.getItem() != inOutput.getItem()) {
-            Debug.logMessage("ReceiveOutputSlot incompatible cursor stack, throwing.");
-            Debug.logMessage("This SHOULD not happen if this task is used correctly.");
+            setDebugState("Incompatible cursor stack, throwing");
             return new ThrowCursorTask();
         }
         int craftCount = inOutput.getCount() * getCraftMultipleCount(mod);
         int weWantToAddToInventory = _toTake - mod.getItemStorage().getItemCountInventoryOnly(inOutput.getItem());
         boolean takeAll = weWantToAddToInventory >= craftCount;
         if (takeAll && mod.getItemStorage().getSlotThatCanFitInPlayerInventory(inOutput, true).isPresent()) {
+            setDebugState("Quick moving output");
             return new ClickSlotTask(_slot, SlotActionType.QUICK_MOVE);
         }
+        // We might not be able to stack, in that case move our cursor item somewhere safely
+        if (!ItemHelper.canStackTogether(inOutput, cursor)) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, true);
+            if (moveTo.isEmpty()) {
+                moveTo = StorageHelper.getGarbageSlot(mod);
+            }
+            if (moveTo.isEmpty()) {
+                setDebugState("STUCK! Everything's protected.");
+                return null;
+            }
+            setDebugState("Can't stack so moving cursor back to inventory");
+            return new ClickSlotTask(moveTo.get());
+        }
+        setDebugState("Picking up output");
         return new ClickSlotTask(_slot);
     }
 

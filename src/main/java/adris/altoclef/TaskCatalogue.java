@@ -100,6 +100,7 @@ public class TaskCatalogue {
             mob("rabbit_foot", Items.RABBIT_FOOT, RabbitEntity.class);
             mob("rabbit_hide", Items.RABBIT_HIDE, RabbitEntity.class);
             mob("slime_ball", Items.SLIME_BALL, SlimeEntity.class);
+            mob("wither_skeleton_skull", Items.WITHER_SKELETON_SKULL, WitherSkeletonEntity.class).forceDimension(Dimension.NETHER);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
             mob("glow_ink_sac", Items.GLOW_INK_SAC, GlowSquidEntity.class); // Warning, this probably won't work.
             mob("string", Items.STRING, SpiderEntity.class); // Warning, this probably won't work.
@@ -417,7 +418,14 @@ public class TaskCatalogue {
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
-
+            
+            simple("honeycomb", Items.HONEYCOMB, CollectHoneycombTask::new);
+            {
+                String h = "honeycomb";
+                shapedRecipe2x2Block("honeycomb_block", Items.HONEYCOMB_BLOCK, h);
+                shapedRecipe2x2("candle", Items.CANDLE, 1, "string", o, h, o);
+                shapedRecipe3x3("beehive", Items.BEEHIVE, 1, p, p, p, h, h, h, p, p, p);
+            }
 
             // FURNITURE
             shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p).dontMineIfPresent();

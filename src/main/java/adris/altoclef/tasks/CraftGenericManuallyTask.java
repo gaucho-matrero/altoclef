@@ -104,7 +104,7 @@ public class CraftGenericManuallyTask extends Task {
 
         // Ensure our cursor is empty/can receive our item
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-        if (!cursor.isEmpty() && !ItemHelper.canStackTogether(StorageHelper.getItemStackInSlot(outputSlot), cursor)) {
+        if (!ItemHelper.canStackTogether(StorageHelper.getItemStackInSlot(outputSlot), cursor)) {
             Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
             if (toFit.isPresent()) {
                 return new ClickSlotTask(toFit.get());

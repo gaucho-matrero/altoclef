@@ -103,4 +103,8 @@ public class CraftInInventoryTask extends ResourceTask {
     protected boolean isCraftingEqual(CraftInInventoryTask other) {
         return true;
     }
+
+    public RecipeTarget getRecipeTarget() {
+        return _target;
+    }
 }

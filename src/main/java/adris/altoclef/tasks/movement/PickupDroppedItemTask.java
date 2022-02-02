@@ -11,9 +11,11 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
@@ -141,16 +143,21 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected Vec3d getPos(AltoClef mod, ItemEntity obj) {
+        if (!obj.isOnGround() && !obj.isTouchingWater()) {
+            // Assume we'll land down one or two blocks from here. We could do this more advanced but whatever.
+            BlockPos p = obj.getBlockPos();
+            if (!WorldHelper.isSolid(mod, p.down(3))) {
+                return obj.getPos().subtract(0,2,0);
+            }
+            return obj.getPos().subtract(0,1,0);
+        }
         return obj.getPos();
     }
 
     @Override
     protected Optional<ItemEntity> getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().itemDropped(_itemTargets)) return Optional.empty();
         return mod.getEntityTracker().getClosestItemDrop(
                 pos,
-                // Don't go for falling item drops, they slow down baritone.
-                entity -> entity.isOnGround() || entity.isTouchingWater(),
                 _itemTargets);
     }
 

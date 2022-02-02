@@ -182,19 +182,17 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
-            Optional<BlockPos> closestBlock = Optional.empty();
-            if (mod.getBlockTracker().anyFound(_blocks)) {
-                closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
-                    if (_blacklist.contains(check)) return false;
-                    return WorldHelper.canBreak(mod, check);
-                }, _blocks);
-            }
+            Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
+                if (_blacklist.contains(check)) return false;
+                return WorldHelper.canBreak(mod, check);
+            }, _blocks);
+
             Optional<ItemEntity> closestDrop = Optional.empty();
             if (mod.getEntityTracker().itemDropped(_targets)) {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, false);
+            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, true);
             double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
