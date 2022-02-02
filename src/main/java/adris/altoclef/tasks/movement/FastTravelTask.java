@@ -6,8 +6,8 @@ import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianT
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.item.Item;
@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings("ConstantConditions")
 public class FastTravelTask extends Task {
@@ -59,7 +60,11 @@ public class FastTravelTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        _goToOverworldTask = new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), Dimension.OVERWORLD, goodPos -> throw new NotImplementedException("Check for close enough"));
+        _goToOverworldTask = new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), Dimension.OVERWORLD, checkPos -> {
+            // Make sure the portal we enter is NOT close to our exit portal...
+            Optional<BlockPos> lastPortal = mod.getMiscBlockTracker().getLastUsedNetherPortal(Dimension.NETHER);
+            return lastPortal.isEmpty() || !WorldHelper.inRangeXZ(lastPortal.get(), checkPos, 3);
+        });
     }
 
     @Override
@@ -101,8 +106,14 @@ public class FastTravelTask extends Task {
                 return new DefaultGoToDimensionTask(Dimension.NETHER);
             }
             case NETHER -> {
-                // The moment we go back into the overworld, walk again.
-                _forceOverworldWalking = true;
+
+                if (!_forceOverworldWalking) {
+                    // After walking a bit, the moment we go back into the overworld, walk again.
+                    Optional<BlockPos> portalEntrance = mod.getMiscBlockTracker().getLastUsedNetherPortal(Dimension.NETHER);
+                    if (portalEntrance.isPresent() && !portalEntrance.get().isWithinDistance(mod.getPlayer().getPos(), 3)) {
+                        _forceOverworldWalking = true;
+                    }
+                }
 
                 // If we're going to the overworld, keep going.
                 if (_goToOverworldTask.isActive() && !_goToOverworldTask.isFinished(mod)) {
@@ -111,9 +122,9 @@ public class FastTravelTask extends Task {
                 }
 
                 // PICKUP DROPPED STUFF if we need it
-                if (mod.getItemStorage().getItemCount(Items.OBSIDIAN) < 10 && mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+                if (mod.getItemStorage().getItemCount(Items.OBSIDIAN) < 10) {
                     setDebugState("Making sure we can build our portal");
-                    return new PickupDroppedItemTask(Items.OBSIDIAN, 10, true);
+                    return TaskCatalogue.getItemTask(Items.OBSIDIAN, 10);
                 }
                 if (!canLightPortal && mod.getEntityTracker().itemDropped(Items.FLINT_AND_STEEL, Items.FIRE_CHARGE)) {
                     setDebugState("Making sure we can light our portal");
@@ -168,6 +179,7 @@ public class FastTravelTask extends Task {
 
     private int getOverworldThreshold(AltoClef mod) {
         int threshold;
+        //noinspection ReplaceNullCheck
         if (_threshold == null) {
             threshold = mod.getModSettings().getNetherFastTravelWalkingRange();
         } else {

@@ -6,6 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.Subscription;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
+import adris.altoclef.eventbus.events.GameOverlayEvent;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -17,11 +18,11 @@ import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -34,7 +35,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.NotImplementedException;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
@@ -62,6 +62,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
     private Subscription<ChatMessageEvent> _respawnPointSetMessageCheck;
+    private Subscription<GameOverlayEvent> _respawnFailureMessageCheck;
     private boolean _sleepAttemptMade;
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
@@ -114,16 +115,17 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 _spawnSet = true;
                 _inBedTimer.reset();
             }
+        });
+        _respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
             final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
             for (String checkMessage : NEUTRAL_MESSAGES) {
-                if (msg.contains(checkMessage)) {
+                if (evt.message.contains(checkMessage)) {
                     if (!_sleepAttemptMade) {
                         _bedInteractTimeout.reset();
                     }
                     _sleepAttemptMade = true;
                 }
             }
-            throw new NotImplementedException("Check for message type!!");
         });
     }
 
@@ -300,6 +302,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(BEDS);
         EventBus.unsubscribe(_respawnPointSetMessageCheck);
+        EventBus.unsubscribe(_respawnFailureMessageCheck);
     }
 
     @Override

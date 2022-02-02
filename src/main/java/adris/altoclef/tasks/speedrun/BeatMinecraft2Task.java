@@ -3,13 +3,12 @@ package adris.altoclef.tasks.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.container.DoStuffInContainerTask;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasks.container.DoStuffInContainerTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
-import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
@@ -21,11 +20,11 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -315,6 +314,17 @@ public class BeatMinecraft2Task extends Task {
             case OVERWORLD -> {
                 // If we found our end portal...
                 if (endPortalFound(mod, _endPortalCenterLocation)) {
+
+                    // Destroy silverfish spawner
+                    if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
+                        Optional<BlockPos> silverfish = mod.getBlockTracker().getNearestTracking(blockPos -> {
+                            return WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity;
+                        }, Blocks.SPAWNER);
+                        if (silverfish.isPresent()) {
+                            return new DestroyBlockTask(silverfish.get());
+                        }
+                    }
+
                     // Get remaining beds.
                     if (needsBeds(mod)) {
                         setDebugState("Collecting beds.");
@@ -352,15 +362,6 @@ public class BeatMinecraft2Task extends Task {
                         );
                     } else {
 
-                        // Destroy silverfish spawner
-                        if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
-                            Optional<BlockPos> silverfish = mod.getBlockTracker().getNearestTracking(blockPos -> {
-                                return WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity;
-                            }, Blocks.SPAWNER);
-                            if (silverfish.isPresent()) {
-                                return new DestroyBlockTask(silverfish.get());
-                            }
-                        }
                         // Open the portal! (we have enough eyes, do it)
                         setDebugState("Opening End Portal");
                         return new DoToClosestBlockTask(
