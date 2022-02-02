@@ -9,6 +9,7 @@ import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -23,6 +24,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     private final TimerGame _pickupRepeatTimer = new TimerGame(0.25);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
+    private boolean _doingChorusFruit = false;
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -84,6 +86,20 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             _wasPickingUp = false;
             _lastMLG = null;
         }
+        if (mod.getPlayer().hasStatusEffect(StatusEffects.LEVITATION) &&
+                !mod.getPlayer().getItemCooldownManager().isCoolingDown(Items.CHORUS_FRUIT) &&
+                mod.getPlayer().getActiveStatusEffects().get(StatusEffects.LEVITATION).getDuration() <= 70 &&
+                mod.getItemStorage().hasItemInventoryOnly(Items.CHORUS_FRUIT) &&
+                !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
+            _doingChorusFruit = true;
+            mod.getSlotHandler().forceEquipItem(Items.CHORUS_FRUIT);
+            mod.getInputControls().hold(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(true);
+        } else if (_doingChorusFruit) {
+            _doingChorusFruit = false;
+            mod.getInputControls().release(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+        }
         return Float.NEGATIVE_INFINITY;
     }
 
@@ -96,6 +112,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     public boolean isActive() {
         // We're always checking for mlg.
         return true;
+    }
+
+    public boolean isChorusFruiting() {
+        return _doingChorusFruit;
     }
 
     public boolean isFallingOhNo(AltoClef mod) {
