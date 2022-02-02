@@ -1,6 +1,8 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
+import adris.altoclef.tasks.construction.compound.ConstructIronGolemTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.CraftGenericManuallyTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceSignTask;
@@ -9,10 +11,15 @@ import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianT
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
+import adris.altoclef.tasks.misc.*;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
-import adris.altoclef.tasks.misc.EquipArmorTask;
-import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
-import adris.altoclef.tasks.misc.RavageRuinedPortalsTask;
+import adris.altoclef.tasks.construction.PlaceSignTask;
+import adris.altoclef.tasks.speedrun.*;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
+import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
@@ -183,10 +190,19 @@ public class Playground {
             case "ravage":
                 mod.runUserTask(new RavageRuinedPortalsTask());
                 break;
+            case "temples":
+                mod.runUserTask(new RavageDesertTemplesTask());
+                break;
+            case "outer":
+                mod.runUserTask(new GetToOuterEndIslandsTask());
+                break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
                 ItemTarget material = new ItemTarget("iron_ore", 4);
                 mod.runUserTask(new SmeltInFurnaceTask(new SmeltTarget(target, material)));
+                break;
+            case "iron":
+                mod.runUserTask(new ConstructIronGolemTask());
                 break;
             case "avoid":
                 // Test block break predicate

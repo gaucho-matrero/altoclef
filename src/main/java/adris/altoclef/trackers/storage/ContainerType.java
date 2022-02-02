@@ -64,6 +64,11 @@ public enum ContainerType {
         }
         return false;
     }
+    public static boolean screenHandlerMatchesAny() {
+        return screenHandlerMatches(CHEST) ||
+                screenHandlerMatches(SHULKER) ||
+                screenHandlerMatches(FURNACE);
+    }
 
     public static boolean slotTypeMatches(ContainerType type, Slot slot) {
         switch (type) {

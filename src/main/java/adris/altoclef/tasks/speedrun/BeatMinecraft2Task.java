@@ -9,6 +9,7 @@ import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.container.LootContainerTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasks.misc.LootDesertTempleTask;
 import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
@@ -16,7 +17,6 @@ import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -36,7 +36,10 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -53,13 +56,13 @@ public class BeatMinecraft2Task extends Task {
     static {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
     }
-
     private static final Block[] TRACK_BLOCKS = new Block[] {
             Blocks.END_PORTAL_FRAME,
             Blocks.END_PORTAL,
             Blocks.CRAFTING_TABLE, // For pearl trading + gold crafting
             Blocks.CHEST, // For ruined portals
-            Blocks.SPAWNER // For silverfish
+            Blocks.SPAWNER, // For silverfish,
+            Blocks.STONE_PRESSURE_PLATE // For desert temples
     };
 
     private static final Item[] COLLECT_EYE_ARMOR = new Item[] {
@@ -104,6 +107,18 @@ public class BeatMinecraft2Task extends Task {
 
     // For some reason, after death there's a frame where the game thinks there are NO items in the end.
     private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(2);
+
+    // We don't want curse of binding
+    private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
+        boolean hasBinding = false;
+        for (NbtElement elm : stack.getEnchantments()) {
+            NbtCompound comp = (NbtCompound) elm;
+            if (comp.getString("id").equals("minecraft:binding_curse")) {
+                return false;
+            }
+        }
+        return true;
+    };
 
     private Task _foodTask;
     private Task _gearTask;
@@ -205,7 +220,7 @@ public class BeatMinecraft2Task extends Task {
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
         if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
                 && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
-                        || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE) )) {
+                || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE) )) {
             setDebugState("Pick up crafting table while we're at it");
             return new MineAndCollectTask(Items.CRAFTING_TABLE, 1, new Block[]{Blocks.CRAFTING_TABLE}, MiningRequirement.HAND);
         }
@@ -444,6 +459,12 @@ public class BeatMinecraft2Task extends Task {
                 lootable.add(Items.FIRE_CHARGE);
             }
         }
+        if (!mod.getItemStorage().hasItemInventoryOnly(Items.BUCKET) && !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
+            lootable.add(Items.IRON_INGOT);
+        }
+        if (!StorageHelper.itemTargetsMetInventory(mod, COLLECT_EYE_GEAR_MIN)) {
+            lootable.add(Items.DIAMOND);
+        }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT)) {
             lootable.add(Items.FLINT);
         }
@@ -492,7 +513,7 @@ public class BeatMinecraft2Task extends Task {
             // If EVERY portal frame is loaded, consider updating our cached filled portal count.
             if (frameBlocks.stream().allMatch(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos))) {
                 _cachedFilledPortalFrames = frameBlocks.stream().reduce(0, (count, blockPos) ->
-                        count + (isEndPortalFrameFilled(mod, blockPos) ? 1 : 0),
+                                count + (isEndPortalFrameFilled(mod, blockPos) ? 1 : 0),
                         Integer::sum);
             }
             return _cachedFilledPortalFrames;
@@ -513,15 +534,11 @@ public class BeatMinecraft2Task extends Task {
         return false;
     }
 
-    boolean isChestNotOpened(AltoClef mod, BlockPos pos) {
-        return mod.getItemStorage().getContainerAtPosition(pos).isEmpty();
-    }
-
     private Optional<BlockPos> locateClosestUnopenedRuinedPortalChest(AltoClef mod) {
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             return Optional.empty();
         }
-        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && isChestNotOpened(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
+        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 
     private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
@@ -579,17 +596,26 @@ public class BeatMinecraft2Task extends Task {
                         return new EquipArmorTask(COLLECT_EYE_ARMOR);
                     }
                 }
+                if(shouldForce(mod, _lootTask)) {
+                    return _lootTask;
+                }
                 if (_config.searchRuinedPortals) {
                     // Check for ruined portals
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
                     if (chest.isPresent()) {
-                        setDebugState("Interacting with ruined portal chest");
-                        return new InteractWithBlockTask(chest.get());
+                        setDebugState("Looting ruined portal chest for goodies");
+                        _lootTask = new LootContainerTask(chest.get(), lootableItems(mod), _noCurseOfBinding);
+                        return _lootTask;
                     }
                 }
-                if(_lootTask != null && !_lootTask.isFinished(mod)) {
-                    setDebugState("Looting ruined portal chest for goodies");
-                    return _lootTask;
+                if (_config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
+                    // Check for desert temples
+                    BlockPos temple = WorldHelper.getADesertTemple(mod);
+                    if (temple != null) {
+                        setDebugState("Looting desert temple for goodies");
+                        _lootTask = new LootDesertTempleTask(temple, lootableItems(mod));
+                        return _lootTask;
+                    }
                 }
                 if (shouldForce(mod, _gearTask) && !StorageHelper.isArmorEquippedAll(mod, COLLECT_EYE_ARMOR)) {
                     setDebugState("Getting gear for Ender Eye journey");
@@ -610,16 +636,6 @@ public class BeatMinecraft2Task extends Task {
                                 return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cooked.get(), targetCount), new ItemTarget(raw, targetCount)));
                             }
                         }
-                    }
-                }
-
-                // Check for chests with items we need (ruined portal chests)
-                List<Item> wantedLoot = lootableItems(mod);
-                for (Item wanted : wantedLoot) {
-                    Optional<ContainerCache> closest = mod.getItemStorage().getClosestContainerWithItem(mod.getPlayer().getPos(), wanted);
-                    if (closest.isPresent()) {
-                        _lootTask = new LootContainerTask(closest.get().getBlockPos(), wanted);
-                        return _lootTask;
                     }
                 }
 
