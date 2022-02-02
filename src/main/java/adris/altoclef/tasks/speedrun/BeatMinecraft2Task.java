@@ -110,7 +110,7 @@ public class BeatMinecraft2Task extends Task {
     private Task _lootTask;
     private final Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
-    private final LocateStrongholdTask _locateStrongholdTask;
+    private final GoToStrongholdPortalTask _locateStrongholdTask;
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private boolean _collectingEyes;
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
@@ -121,14 +121,12 @@ public class BeatMinecraft2Task extends Task {
     private boolean _escapingDragonsBreath;
 
     public BeatMinecraft2Task() {
-        _locateStrongholdTask = new LocateStrongholdTask(_config.targetEyes);
+        _locateStrongholdTask = new GoToStrongholdPortalTask(_config.targetEyes);
         _buildMaterialsTask = new GetBuildingMaterialsTask(_config.buildMaterialCount);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
-        // Config jank
-        _locateStrongholdTask.setTargetEyes(_config.targetEyes);
 
         // Add a warning to make sure the user at least knows to change the settings.
         String settingsWarningTail = "in \".minecraft/altoclef_settings.json\". @gamer may break if you don't add this! (sorry!)";
