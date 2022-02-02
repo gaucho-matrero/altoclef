@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
+import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.util.*;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
@@ -30,13 +31,14 @@ import java.util.stream.Stream;
 @SuppressWarnings("ConstantConditions")
 public class StorageHelper {
 
-    public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.OFFHAND_SLOT)), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
+    public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
 
     public static void closeScreen() {
         if (MinecraftClient.getInstance().player == null)
             return;
         Screen screen = MinecraftClient.getInstance().currentScreen;
         if (
+                screen != null &&
                 !(screen instanceof GameMenuScreen) &&
                 !(screen instanceof GameOptionsScreen) &&
                 !(screen instanceof ChatScreen)) {
@@ -294,6 +296,19 @@ public class StorageHelper {
         return Arrays.stream(targetsToMeet).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
+    /**
+     * Same as {@code itemTargetsMetInventory} but it ignores the cursor slot.
+     */
+    public static boolean itemTargetsMetInventoryNoCursor(AltoClef mod, ItemTarget ...targetsToMeet) {
+        ItemStack cursorStack = getItemStackInCursorSlot();
+        return Arrays.stream(targetsToMeet).allMatch(target -> {
+            int count = mod.getItemStorage().getItemCountInventoryOnly(target.getMatches());
+            if (target.matches(cursorStack.getItem()))
+                count -= cursorStack.getCount();
+            return count >= target.getTargetCount();
+        });
+    }
+
     public static boolean isArmorEquipped(AltoClef mod, Item ...any) {
         for (Item item : any) {
             if (item instanceof ArmorItem armor) {
@@ -446,9 +461,16 @@ public class StorageHelper {
                 return Optional.of(slot);
             }
         }
-        // Consider Cursor slot only if we have our player inventory open
+        // Consider Cursor slot only if we have our player inventory open AND we're not crafting it...
         if (StorageHelper.isPlayerInventoryOpen() && withItem.matches(getItemStackInCursorSlot().getItem())) {
-            return Optional.of(new CursorSlot());
+            if (!mod.getUserTaskChain().getCurrentTask().thisOrChildSatisfies(task -> {
+                if (task instanceof CraftInInventoryTask invCraft) {
+                    return withItem.matches(invCraft.getRecipeTarget().getOutputItem());
+                }
+                return false;
+            })) {
+                return Optional.of(new CursorSlot());
+            }
         }
         return Optional.empty();
     }

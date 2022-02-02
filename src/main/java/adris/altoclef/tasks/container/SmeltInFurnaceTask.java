@@ -210,7 +210,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 setDebugState("Receiving Output");
                 // Ensure our cursor is empty/can receive our item
                 ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-                if (!cursor.isEmpty() && !ItemHelper.canStackTogether(output, cursor)) {
+                if (!ItemHelper.canStackTogether(output, cursor)) {
                     Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
                     if (toFit.isPresent()) {
                         return new ClickSlotTask(toFit.get());
