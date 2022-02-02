@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * A static class to solve dependency issues. Lets us send & receive events globally, decoupling our codebase.
+ * A static class to solve dependency issues. Lets us send and receive events globally, decoupling our codebase.
  *
  * Technically `ConfigHelper` does something like this, but here is a more general case.
  */
