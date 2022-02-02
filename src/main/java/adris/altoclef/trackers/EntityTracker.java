@@ -113,7 +113,6 @@ public class EntityTracker extends Tracker {
             return Optional.empty();
         }
         if (!itemDropped(targets)) {
-            Debug.logError("You forgot to check for whether item (example): " + targets[0].getMatches()[0].getTranslationKey() + " was dropped before finding its drop location.");
             return Optional.empty();
         }
 

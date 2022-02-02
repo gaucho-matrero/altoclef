@@ -18,7 +18,6 @@ import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
-import adris.altoclef.tasks.speedrun.FillStrongholdPortalTask;
 import adris.altoclef.tasks.speedrun.KillEnderDragonTask;
 import adris.altoclef.tasks.speedrun.KillEnderDragonWithBedsTask;
 import adris.altoclef.tasks.speedrun.WaitForDragonAndPearlTask;
@@ -312,9 +311,6 @@ public class Playground {
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());
-                break;
-            case "badtimetofail":
-                mod.runUserTask(new FillStrongholdPortalTask(false));
                 break;
             case "example":
                 mod.runUserTask(new ExampleTask2());

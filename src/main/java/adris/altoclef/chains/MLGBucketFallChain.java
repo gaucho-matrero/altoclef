@@ -104,7 +104,6 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         }
         if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
             // We're grounded.
-            //Debug.logMessage(mod.getPlayer().isSwimming() + ", " + mod.getPlayer().isSubmergedInWater() + ", " + mod.getPlayer().isOnGround() + ", " + mod.getPlayer().isClimbing());
             return false;
         }
         double ySpeed = mod.getPlayer().getVelocity().y;
