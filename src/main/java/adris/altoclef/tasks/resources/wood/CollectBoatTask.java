@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class CollectBoatTask extends CraftWithMatchingPlanksTask {
 
     public CollectBoatTask(Item[] targets, ItemTarget planks, int count) {
-        super(targets, createRecipe(planks), new boolean[]{true, false, true, true, true, true, false, false, false}, count);
+        super(targets, woodItems -> woodItems.boat, createRecipe(planks), new boolean[]{true, false, true, true, true, true, false, false, false}, count);
     }
 
     public CollectBoatTask(Item target, String plankCatalogueName, int count) {

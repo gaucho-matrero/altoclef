@@ -2,7 +2,7 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
@@ -10,12 +10,16 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 
+import java.util.function.Function;
+
 public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask {
 
     private final ItemTarget _visualTarget;
+    private final Function<ItemHelper.WoodItems, Item> _getTargetItem;
 
-    public CraftWithMatchingPlanksTask(Item[] validTargets, CraftingRecipe recipe, boolean[] sameMask, int count) {
+    public CraftWithMatchingPlanksTask(Item[] validTargets, Function<ItemHelper.WoodItems, Item> getTargetItem, CraftingRecipe recipe, boolean[] sameMask, int count) {
         super(new ItemTarget(validTargets, count), recipe, sameMask);
+        _getTargetItem = getTargetItem;
         _visualTarget = new ItemTarget(validTargets, count);
     }
 
@@ -32,11 +36,20 @@ public class CraftWithMatchingPlanksTask extends CraftWithMatchingMaterialsTask 
             Item log = ItemHelper.planksToLog(plankToGet);
             // Convert logs to planks
             if (mod.getItemStorage().getItemCount(log) >= 1) {
-                ItemTarget empty = null;
-                return new CraftInInventoryTask(new ItemTarget(plankToGet, 1), CraftingRecipe.newShapedRecipe("planks", new ItemTarget[]{new ItemTarget(log, 1), empty, empty, empty}, 4), false, true);
+                return TaskCatalogue.getItemTask(plankToGet, 1);//new CraftInInventoryTask(new ItemTarget(plankToGet, 1), CraftingRecipe.newShapedRecipe("planks", new ItemTarget[]{new ItemTarget(log, 1), empty, empty, empty}, 4), false, true);
             }
         }
         Debug.logError("CraftWithMatchingPlanks: Should never happen!");
+        return null;
+    }
+
+    @Override
+    protected Item getSpecificItemCorrespondingToMajorityResource(Item majority) {
+        for (ItemHelper.WoodItems woodItems : ItemHelper.getWoodItems()) {
+            if (woodItems.planks == majority) {
+                return _getTargetItem.apply(woodItems);
+            }
+        }
         return null;
     }
 

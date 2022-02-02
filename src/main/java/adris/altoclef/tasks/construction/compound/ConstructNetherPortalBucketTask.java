@@ -7,10 +7,11 @@ import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
+import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
@@ -142,6 +143,15 @@ public class ConstructNetherPortalBucketTask extends Task {
         if (bucketCount < 2) {
             setDebugState("Getting buckets");
             _progressChecker.reset();
+            // If we have lava/water, get the inverse. Otherwise we dropped a bucket, just get a bucket.
+            if (mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+            } else if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
+            }
+            if (mod.getEntityTracker().itemDropped(Items.WATER_BUCKET, Items.LAVA_BUCKET)) {
+                return new PickupDroppedItemTask(new ItemTarget(new Item[]{Items.WATER_BUCKET, Items.LAVA_BUCKET}, 1), true);
+            }
             return TaskCatalogue.getItemTask(Items.BUCKET, 2);
         }
 

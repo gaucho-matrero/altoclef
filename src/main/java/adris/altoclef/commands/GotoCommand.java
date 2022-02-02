@@ -1,14 +1,12 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.commandsystem.Arg;
-import adris.altoclef.commandsystem.ArgParser;
-import adris.altoclef.commandsystem.Command;
-import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.commandsystem.*;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.GetToXZTask;
-import adris.altoclef.util.Dimension;
+import adris.altoclef.tasks.movement.GetToYTask;
+import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -16,7 +14,6 @@ import net.minecraft.util.math.BlockPos;
  * why we need a better arg parsing system. Please.
  */
 public class GotoCommand extends Command {
-    private static final int EMPTY = Integer.MAX_VALUE;
 
     public GotoCommand() throws CommandException {
         // x z
@@ -25,67 +22,22 @@ public class GotoCommand extends Command {
         // (dimension)
         // (x z dimension)
         super("goto", "Tell bot to travel to a set of coordinates.",
-                new Arg(Integer.class, "x", EMPTY, 1, false),
-                new Arg(Integer.class, "y", EMPTY, 2, false),
-                new Arg(Integer.class, "z", EMPTY, 1, false),
-                new Arg(Dimension.class, "dimension", null, 3, false)
+                new Arg(GotoTarget.class, "[x y z dimension]/[x z dimension]/[y dimension]/[dimension]/[x y z]/[x z]/[y]")
         );
     }
 
-    private static Dimension getDimensionJank(ArgParser parser, int expectedIndex) throws CommandException {
-        // Massive duct tape, if only one arg parse it as a dimension manually.
-        if (parser.getArgUnits().length == expectedIndex + 1) {
-            ArgParser jank = new ArgParser(new Arg(Dimension.class, "dimension"));
-            jank.loadArgs(parser.getArgUnits()[expectedIndex], false);
-            return jank.get(Dimension.class);
-        }
-        return null;
+    public static Task getMovementTaskFor(GotoTarget target) {
+        return switch (target.getType()) {
+            case XYZ -> new GetToBlockTask(new BlockPos(target.getX(), target.getY(), target.getZ()), target.getDimension());
+            case XZ -> new GetToXZTask(target.getX(), target.getZ(), target.getDimension());
+            case Y -> new GetToYTask(target.getY(), target.getDimension());
+            case NONE -> new DefaultGoToDimensionTask(target.getDimension());
+        };
     }
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
-        int x = parser.get(Integer.class);
-        int y = parser.get(Integer.class);
-        // Turbo jank duct tape below, accounting for possibility of (x z dimension)
-        int z = EMPTY;
-        Dimension dimension = null;
-        try {
-            z = parser.get(Integer.class);
-        } catch (CommandException e) {
-            // z might just be the dimension.
-            if (parser.getArgUnits().length == 3) {
-                dimension = getDimensionJank(parser, 2);
-                if (dimension != null) {
-                    // it WORKED! Our argument order is now messed up.
-                    z = y;
-                    y = EMPTY;
-                } else {
-                    // We failed, z is not the dimension.
-                    throw e;
-                }
-            } else {
-                // We failed, too many arguments.
-                throw e;
-            }
-        }
-        if (dimension == null) {
-            dimension = parser.get(Dimension.class);
-        }
-        if(x == EMPTY && y == EMPTY && z == EMPTY) {
-            // Require dimension as the only argument
-            if (dimension == null) {
-                dimension = getDimensionJank(parser, 0);
-                if (dimension == null) {
-                    finish();
-                    return;
-                }
-            }
-            mod.runUserTask(new DefaultGoToDimensionTask(dimension), this::finish);
-        } else if (y != EMPTY) {
-            BlockPos target = new BlockPos(x, y, z);
-            mod.runUserTask(new GetToBlockTask(target, dimension), this::finish);
-        } else {
-            mod.runUserTask(new GetToXZTask(x, z, dimension), this::finish);
-        }
+        GotoTarget target = parser.get(GotoTarget.class);
+        mod.runUserTask(getMovementTaskFor(target), this::finish);
     }
 }

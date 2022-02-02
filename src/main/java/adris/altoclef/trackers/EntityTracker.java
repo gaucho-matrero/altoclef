@@ -1,6 +1,8 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.PlayerCollidedWithEntityEvent;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.ItemTarget;
@@ -48,9 +50,12 @@ public class EntityTracker extends Tracker {
 
     public EntityTracker(TrackerManager manager) {
         super(manager);
+
+        // Listen for player collisions
+        EventBus.subscribe(PlayerCollidedWithEntityEvent.class, evt -> registerPlayerCollision(evt.player, evt.other));
     }
 
-    public void registerPlayerCollision(PlayerEntity player, Entity entity) {
+    private void registerPlayerCollision(PlayerEntity player, Entity entity) {
         if (!_entitiesCollidingWithPlayerAccumulator.containsKey(player)) {
             _entitiesCollidingWithPlayerAccumulator.put(player, new ArrayList<>());
         }

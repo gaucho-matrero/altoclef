@@ -1,6 +1,7 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.StaticMixinHookups;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.PlayerCollidedWithEntityEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,7 +20,7 @@ public class PlayerCollidesWithEntityMixin {
     private void onCollideWithEntity(Entity self, PlayerEntity player) {
         // TODO: Less hard-coded manual means of enforcing client side access
         if (player instanceof ClientPlayerEntity) {
-            StaticMixinHookups.onPlayerCollidedWithEntity(player, self);
+            EventBus.publish(new PlayerCollidedWithEntityEvent(player, self));
         }
         // Perform the default action.
         // TODO: Figure out a cleaner way. First re-read the mixin intro documentation again.

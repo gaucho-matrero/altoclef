@@ -112,6 +112,9 @@ public class InventorySubTracker extends Tracker {
         if (MinecraftClient.getInstance().player != null) {
             ScreenHandler handler = MinecraftClient.getInstance().player.currentScreenHandler;
             for (Slot airSlot : list.getOrDefault(Items.AIR, Collections.emptyList())) {
+                // Ignore cursor slot
+                if (airSlot.equals(new CursorSlot()))
+                    continue;
                 int windowCheck = airSlot.getWindowSlot();
                 // Special case: Armor/shield, we wish to ignore these if our inventory is not open.
                 if (windowCheck < handler.slots.size() && handler.getSlot(windowCheck).canInsert(item)) {
@@ -173,6 +176,9 @@ public class InventorySubTracker extends Tracker {
         if (handler == null)
             return;
         for (Slot slot : Slot.getCurrentScreenSlots()) {
+            // Ignore cursor slot, that's handled separately.
+            if (slot.equals(new CursorSlot()))
+                continue;
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
             // Add separately if we're in a container vs player inventory.
 
@@ -180,22 +186,6 @@ public class InventorySubTracker extends Tracker {
                 registerItem(stack, slot, slot.isSlotInPlayerInventory());
             }
         }
-
-        /*
-        // Manually receive armor + offhand when not in player inventory
-        if (!(handler instanceof PlayerScreenHandler)) {
-            PlayerInventory inv = MinecraftClient.getInstance().player.getInventory();
-            if (inv != null) {
-                for (ItemStack stack : inv.offHand) {
-                    registerItem(stack, PlayerInventorySlot.OFFHAND_SLOT, true);
-                }
-                registerItem(inv.getArmorStack(3), PlayerInventorySlot.ARMOR_HELMET_SLOT, true);
-                registerItem(inv.getArmorStack(2), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT, true);
-                registerItem(inv.getArmorStack(1), PlayerInventorySlot.ARMOR_LEGGINGS_SLOT, true);
-                registerItem(inv.getArmorStack(0), PlayerInventorySlot.ARMOR_BOOTS_SLOT, true);
-            }
-        }
-         */
     }
 
     @Override

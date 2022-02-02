@@ -9,6 +9,7 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.RecipeTarget;
 import net.minecraft.item.Item;
 
 public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
@@ -120,7 +121,9 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
-            return _recipe.isBig() ? new CraftInTableTask(new ItemTarget(_target.getMatches(), toCraftTotal), samedRecipe) : new CraftInInventoryTask(_target, samedRecipe);
+            Item output = getSpecificItemCorrespondingToMajorityResource(majorityCraftItem);
+            RecipeTarget recipeTarget = new RecipeTarget(output, toCraftTotal, samedRecipe);
+            return _recipe.isBig() ? new CraftInTableTask(recipeTarget) : new CraftInInventoryTask(recipeTarget);
         }
         // Collect SAME resources first!!!
         return getAllSameResourcesTask(mod);
@@ -147,4 +150,6 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
         Debug.logError("Uh oh!!! getSpecificSameResourceTask should be implemented!!!! Now we're stuck.");
         return null;
     }
+
+    protected abstract Item getSpecificItemCorrespondingToMajorityResource(Item majority);
 }

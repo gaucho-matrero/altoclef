@@ -8,7 +8,7 @@ import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.EntityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;

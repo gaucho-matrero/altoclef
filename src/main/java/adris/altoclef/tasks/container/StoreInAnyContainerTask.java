@@ -18,9 +18,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -29,9 +27,8 @@ import java.util.stream.Stream;
  */
 public class StoreInAnyContainerTask extends Task {
 
-    private final String _uniqueId;
-    private final Function<AltoClef, Optional<ItemTarget>> _getNextItemTargetToDump;
-    private final Predicate<BlockPos> _acceptableContainer;
+    private final ItemTarget[] _toStore;
+    private final boolean _getIfNotPresent;
 
     private final HashSet<BlockPos> _dungeonChests = new HashSet<>();
     private final HashSet<BlockPos> _nonDungeonChests = new HashSet<>();
@@ -41,32 +38,45 @@ public class StoreInAnyContainerTask extends Task {
 
     private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);
 
-    public StoreInAnyContainerTask(String uniqueId, Function<AltoClef, Optional<ItemTarget>> getNextItemTargetToDump, Predicate<BlockPos> acceptableContainer) {
-        _uniqueId = uniqueId;
-        _getNextItemTargetToDump = getNextItemTargetToDump;
-        _acceptableContainer = acceptableContainer;
-    }
-    public StoreInAnyContainerTask(String uniqueId, Function<AltoClef, Optional<ItemTarget>> getNextItemTargetToDump) {
-        this(uniqueId, getNextItemTargetToDump, p -> true);
+    private final ContainerStoredTracker _storedItems = new ContainerStoredTracker(slot -> true);
+
+    public StoreInAnyContainerTask(boolean getIfNotPresent, ItemTarget ...toStore) {
+        _getIfNotPresent = getIfNotPresent;
+        _toStore = toStore;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBlockTracker().trackBlock(TO_SCAN);
+        _storedItems.startTracking();
         _dungeonChests.clear();
         _nonDungeonChests.clear();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        // Get more if we don't have & "get if not present" is true.
+        if (_getIfNotPresent) {
+            for (ItemTarget target : _toStore) {
+                int inventoryNeed = target.getTargetCount() - _storedItems.getStoredCount(target.getMatches());
+                if (inventoryNeed > mod.getItemStorage().getItemCount(target)) {
+                    return TaskCatalogue.getItemTask(new ItemTarget(target, inventoryNeed));
+                }
+            }
+        }
+
+        // ItemTargets we haven't stored yet
+        ItemTarget[] notStored = _storedItems.getUnstoredItemTargetsYouCanStore(mod, _toStore);
+
         Predicate<BlockPos> validContainer = containerPos -> {
 
             // If it's a chest and the block above can't be broken, we can't open this one.
             boolean isChest = WorldHelper.isChest(mod, containerPos);
             if (isChest && WorldHelper.isSolid(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up())) return false;
 
-            if (!_acceptableContainer.test(containerPos))
-                return false;
+            //if (!_acceptableContainer.test(containerPos))
+            //    return false;
 
             Optional<ContainerCache> data = mod.getItemStorage().getContainerAtPosition(containerPos);
 
@@ -110,7 +120,7 @@ public class StoreInAnyContainerTask extends Task {
                             _progressChecker.reset();
                         }
                         _currentChestTry = blockPos;
-                        return new StoreInContainerTask(blockPos, _uniqueId, _getNextItemTargetToDump, altoClef -> null);
+                        return new StoreInContainerTask(blockPos, _getIfNotPresent, notStored);
                     },
                     validContainer,
                     TO_SCAN);
@@ -136,24 +146,26 @@ public class StoreInAnyContainerTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _getNextItemTargetToDump.apply(mod).isEmpty();
+        // We've stored all items
+        return _storedItems.getUnstoredItemTargetsYouCanStore(mod, _toStore).length == 0;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        _storedItems.stopTracking();
         mod.getBlockTracker().stopTracking(TO_SCAN);
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof StoreInAnyContainerTask task) {
-            return Objects.equals(task._uniqueId, _uniqueId);
+            return task._getIfNotPresent == _getIfNotPresent && Arrays.equals(task._toStore, _toStore);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Storing in any container: " + _uniqueId;
+        return "Storing in any container: " + Arrays.toString(_toStore);
     }
 }

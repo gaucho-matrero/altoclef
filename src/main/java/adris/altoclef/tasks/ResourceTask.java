@@ -111,6 +111,15 @@ public abstract class ResourceTask extends Task {
         }
 
         // Check for chests and grab resources from them.
+        if (_currentContainer == null) {
+            List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
+            if (!containersWithItem.isEmpty()) {
+                ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), true))).get();
+                if (closest.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
+                    _currentContainer = closest;
+                }
+            }
+        }
         if (_currentContainer != null) {
             Optional<ContainerCache> container = mod.getItemStorage().getContainerAtPosition(_currentContainer.getBlockPos());
             if (container.isPresent()) {
@@ -123,14 +132,6 @@ public abstract class ResourceTask extends Task {
                 }
             } else {
                 _currentContainer = null;
-            }
-        }
-        List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
-        if (!containersWithItem.isEmpty()) {
-            ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), true))).get();
-            if (closest.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentContainer = closest;
-                return new PickupFromContainerTask(_currentContainer.getBlockPos(), _itemTargets);
             }
         }
 

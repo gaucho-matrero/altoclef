@@ -86,6 +86,10 @@ public class CraftingRecipe {
         return _slots.length;
     }
 
+    public ItemTarget[] getSlots() {
+        return _slots;
+    }
+
     public int getWidth() {
         return _width;
     }
@@ -108,8 +112,7 @@ public class CraftingRecipe {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof CraftingRecipe) {
-            CraftingRecipe other = (CraftingRecipe) o;
+        if (o instanceof CraftingRecipe other) {
             if (other._shapeless != _shapeless) return false;
             if (other._outputCount != _outputCount) return false;
             if (other._height != _height) return false;

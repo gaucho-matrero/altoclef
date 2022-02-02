@@ -6,6 +6,11 @@ import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.control.SlotHandler;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ClientRenderEvent;
+import adris.altoclef.eventbus.events.ClientTickEvent;
+import adris.altoclef.eventbus.events.SendChatEvent;
+import adris.altoclef.eventbus.events.TitleScreenEntryEvent;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -14,8 +19,6 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
@@ -29,8 +32,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
@@ -48,10 +49,6 @@ public class AltoClef implements ModInitializer {
     // Static access to altoclef
     private static final Queue<Consumer<AltoClef>> _postInitQueue = new ArrayDeque<>();
 
-    private final Action<String> _onGameMessage = new Action<>();
-    private final Action<String> _onGameOverlayMessage = new Action<>();
-    // I forget why this is here somebody help
-    private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
     private static CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
@@ -88,11 +85,10 @@ public class AltoClef implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Debug.jankModInstance = this;
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // As such, nothing will be loaded here but basic initialization.
-        StaticMixinHookups.hookupMod(this);
+        EventBus.subscribe(TitleScreenEntryEvent.class, evt -> onInitializeLoad());
     }
 
     public void onInitializeLoad() {
@@ -134,12 +130,6 @@ public class AltoClef implements ModInitializer {
 
         _butler = new Butler(this);
 
-        // Misc wiring
-        // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<>(value ->
-                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos)));
-
-
         initializeCommands();
 
         // Load settings
@@ -147,22 +137,42 @@ public class AltoClef implements ModInitializer {
             _settings = newSettings;
             // Baritone's `acceptableThrowawayItems` should match our own.
             List<Item> baritoneCanPlace = Arrays.stream(_settings.getThrowawayItems(this, true))
-                    .filter(item -> item != Items.SOUL_SAND) // Don't place soul sand, that messes us up.
+                    .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK) // Don't place soul sand or magma blocks, that messes us up.
                     .collect(Collectors.toList());
             getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
             // If we should run an idle command...
             if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
                 getUserTaskChain().signalNextTaskToBeIdleTask();
-                AltoClef.getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
+                getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
             }
         });
 
+        // Receive + cancel chat
+        EventBus.subscribe(SendChatEvent.class, evt -> {
+            String line = evt.message;
+            if (getCommandExecutor().isClientCommand(line)) {
+                evt.cancel();
+                getCommandExecutor().execute(line);
+            }
+        });
+
+        // Debug jank/hookup
+        Debug.jankModInstance = this;
+
+        // Tick with the client
+        EventBus.subscribe(ClientTickEvent.class, evt -> onClientTick());
+        // Render
+        EventBus.subscribe(ClientRenderEvent.class, evt -> onClientRenderOverlay(evt.stack));
+
+        // Playground
         Playground.IDLE_TEST_INIT_FUNCTION(this);
+
+        // External mod initialization
         runEnqueuedPostInits();
     }
 
     // Client tick
-    public void onClientTick() {
+    private void onClientTick() {
         runEnqueuedPostInits();
 
         _inputControls.onTickPre();
@@ -191,17 +201,8 @@ public class AltoClef implements ModInitializer {
         _inputControls.onTickPost();
     }
 
-    public void onClientRenderOverlay(MatrixStack matrixStack) {
+    private void onClientRenderOverlay(MatrixStack matrixStack) {
         _commandStatusOverlay.render(this, matrixStack);
-    }
-
-    public void onChunkLoad(WorldChunk chunk) {
-        _chunkTracker.onLoad(chunk.getPos());
-        _onChunkLoad.invoke(chunk);
-    }
-
-    public void onChunkUnload(ChunkPos chunkPos) {
-        _chunkTracker.onUnload(chunkPos);
     }
 
     /// GETTERS AND SETTERS
@@ -468,28 +469,6 @@ public class AltoClef implements ModInitializer {
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
         _butler.onLogWarning(message, priority);
-    }
-
-    /**
-     * Subscribe to detect when the game loads a chunk
-     * (should really be moved elsewhere)
-     */
-    public Action<WorldChunk> getOnChunkLoad() {
-        return _onChunkLoad;
-    }
-    /**
-     * Subscribe to detect when the game sends a message in chat. Only used for sleep task at the moment.
-     * (should really be moved elsewhere)
-     */
-    public Action<String> getOnGameMessage() {
-        return _onGameMessage;
-    }
-    /**
-     * Subscribe to detect when the game sends a message in the overlay (ex. You cannot sleep as there are monsters nearby). Only used for sleep task.
-     * (should really be moved elsewhere)
-     */
-    public Action<String> getOnGameOverlayMessage() {
-        return _onGameOverlayMessage;
     }
 
     private void runEnqueuedPostInits() {

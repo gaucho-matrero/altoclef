@@ -5,10 +5,8 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.effect.StatusEffects;
@@ -19,6 +17,7 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
     private final TimerGame _tryCollectWaterTimer = new TimerGame(4);

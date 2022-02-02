@@ -21,7 +21,7 @@ import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -69,6 +69,7 @@ public class BeatMinecraft2Task extends Task {
             Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS,
             Items.GOLDEN_BOOTS
     };
+    private static final Item[] COLLECT_EYE_ARMOR_END = ItemHelper.DIAMOND_ARMORS;
     private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(Items.DIAMOND_SWORD),
             toItemTargets(Items.DIAMOND_PICKAXE, 3),
@@ -130,6 +131,10 @@ public class BeatMinecraft2Task extends Task {
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();
 
+    // End specific dragon breath avoidance
+    private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
+    private boolean _escapingDragonsBreath;
+
     public BeatMinecraft2Task() {
         _locateStrongholdTask = new LocateStrongholdTask(_config.targetEyes);
         _buildMaterialsTask = new GetBuildingMaterialsTask(_config.buildMaterialCount);
@@ -156,6 +161,11 @@ public class BeatMinecraft2Task extends Task {
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
         // Allow walking on end portal
         mod.getBehaviour().allowWalkingOn(blockPos -> _enterindEndPortal && mod.getChunkTracker().isChunkLoaded(blockPos) && mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.END_PORTAL);
+
+        // Avoid dragon breath
+        mod.getBehaviour().avoidWalkingThrough(blockPos -> {
+            return WorldHelper.getCurrentDimension() == Dimension.END && !_escapingDragonsBreath && _dragonBreathTracker.isTouchingDragonBreath(blockPos);
+        });
 
         // Don't break the bed we placed near the end portal
         mod.getBehaviour().avoidBlockBreaking(blockPos -> {
@@ -220,6 +230,17 @@ public class BeatMinecraft2Task extends Task {
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
 
+            // Dragons breath avoidance
+            _dragonBreathTracker.updateBreath(mod);
+            for (BlockPos playerIn : WorldHelper.getBlocksTouchingPlayer(mod)) {
+                if (_dragonBreathTracker.isTouchingDragonBreath(playerIn)) {
+                    setDebugState("ESCAPE dragons breath");
+                    _escapingDragonsBreath = true;
+                    return _dragonBreathTracker.getRunAwayTask();
+                }
+            }
+            _escapingDragonsBreath = false;
+
             // If we find an ender portal, just GO to it!!!
             if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
@@ -245,7 +266,7 @@ public class BeatMinecraft2Task extends Task {
             if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET) && mod.getEntityTracker().itemDropped(Items.WATER_BUCKET))
                 return new PickupDroppedItemTask(Items.WATER_BUCKET, 1);
             // Grab armor
-            for (Item armorCheck : COLLECT_EYE_ARMOR) {
+            for (Item armorCheck : COLLECT_EYE_ARMOR_END) {
                 if (!StorageHelper.isArmorEquipped(mod, armorCheck)) {
                     if (mod.getItemStorage().hasItem(armorCheck)) {
                         return new EquipArmorTask(armorCheck);

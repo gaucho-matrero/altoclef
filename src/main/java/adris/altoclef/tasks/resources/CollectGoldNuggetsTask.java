@@ -6,10 +6,7 @@ import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -42,7 +39,7 @@ public class CollectGoldNuggetsTask extends ResourceTask {
                 int potentialNuggies = mod.getItemStorage().getItemCount(Items.GOLD_NUGGET) + mod.getItemStorage().getItemCount(Items.GOLD_INGOT) * 9;
                 if (potentialNuggies >= _count && mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
                     // Craft gold ingots to nuggets
-                    return new CraftInInventoryTask(new ItemTarget(Items.GOLD_NUGGET, _count), CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9));
+                    return new CraftInInventoryTask(new RecipeTarget(Items.GOLD_NUGGET, _count, CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9)));
                 }
                 // Get gold ingots
                 int nuggiesStillNeeded = _count - potentialNuggies;

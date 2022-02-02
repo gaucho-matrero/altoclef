@@ -3,13 +3,14 @@ package adris.altoclef.tasks.stupid;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.Subscription;
+import adris.altoclef.eventbus.events.BlockBrokenEvent;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.control.PlayerExtraController;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -32,33 +33,15 @@ public class ReplaceBlocksTask extends Task {
     private final BlockPos _from;
     private final BlockPos _to;
     private final Deque<BlockPos> _forceReplace = new ArrayDeque<>();
-    private final ActionListener<PlayerExtraController.BlockBrokenEvent> blockBrokenListener;
     private Task _collectMaterialsTask;
     private Task _replaceTask;
+    private Subscription<BlockBrokenEvent> _blockBrokenSubscription;
 
     public ReplaceBlocksTask(ItemTarget toReplace, BlockPos from, BlockPos to, Block... toFind) {
         _toFind = toFind;
         _toReplace = toReplace;
         _from = from;
         _to = to;
-
-        blockBrokenListener = new ActionListener<>(evt -> {
-            if (evt.player.equals(MinecraftClient.getInstance().player)) {
-                if (isWithinRange(evt.blockPos)) {
-                    boolean wasAReplacable = ArrayUtils.contains(_toFind, evt.blockState.getBlock());
-                    if (wasAReplacable) {
-                        Debug.logMessage("ADDED REPLACEABLE FORCE: " + evt.blockPos);
-                        _forceReplace.push(evt.blockPos);
-                    } else {
-                        Debug.logMessage("Destroyed a non replaceable block (delete this print if things are good lol)");
-                    }
-                } else {
-                    Debug.logMessage("Not within range (TODO: DELETE THIS PRINT)");
-                }
-            } else {
-                Debug.logMessage("IN-EQUAL PLAYER (delete this print if things are good lol)");
-            }
-        });
     }
 
     public ReplaceBlocksTask(ItemTarget toReplace, Block... toFind) {
@@ -75,8 +58,23 @@ public class ReplaceBlocksTask extends Task {
         mod.getBlockTracker().trackBlock(_toFind);
 
         //_forceReplace.clear();
-
-        mod.getControllerExtras().onBlockBroken.addListener(blockBrokenListener);
+        _blockBrokenSubscription = EventBus.subscribe(BlockBrokenEvent.class, evt -> {
+            if (evt.player.equals(MinecraftClient.getInstance().player)) {
+                if (isWithinRange(evt.blockPos)) {
+                    boolean wasAReplacable = ArrayUtils.contains(_toFind, evt.blockState.getBlock());
+                    if (wasAReplacable) {
+                        Debug.logMessage("ADDED REPLACEABLE FORCE: " + evt.blockPos);
+                        _forceReplace.push(evt.blockPos);
+                    } else {
+                        Debug.logMessage("Destroyed a non replaceable block (delete this print if things are good lol)");
+                    }
+                } else {
+                    Debug.logMessage("Not within range (TODO: DELETE THIS PRINT)");
+                }
+            } else {
+                Debug.logMessage("IN-EQUAL PLAYER (delete this print if things are good lol)");
+            }
+        });
     }
 
     @Override
@@ -130,7 +128,7 @@ public class ReplaceBlocksTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getControllerExtras().onBlockBroken.removeListener(blockBrokenListener);
+        EventBus.unsubscribe(_blockBrokenSubscription);
         mod.getBehaviour().pop();
     }
 

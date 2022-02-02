@@ -7,7 +7,7 @@ import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianT
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalIsPresent")
 public class LocateStrongholdTask extends Task {
 
     private static final int EYE_THROW_MINIMUM_Y_POSITION = 68;
@@ -356,6 +357,7 @@ public class LocateStrongholdTask extends Task {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
         Vec3d s1 = start1;
         Vec3d s2 = start2;

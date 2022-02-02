@@ -4,9 +4,12 @@ import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericTask;
 import adris.altoclef.tasks.construction.compound.ConstructIronGolemTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
+import adris.altoclef.tasks.CraftGenericManuallyTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
+import adris.altoclef.tasks.construction.PlaceSignTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
 import adris.altoclef.tasks.misc.*;
@@ -22,10 +25,16 @@ import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.CollectBlazeRodsTask;
 import adris.altoclef.tasks.resources.CollectFlintTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
+import adris.altoclef.tasks.speedrun.FillStrongholdPortalTask;
+import adris.altoclef.tasks.speedrun.KillEnderDragonTask;
+import adris.altoclef.tasks.speedrun.KillEnderDragonWithBedsTask;
+import adris.altoclef.tasks.speedrun.WaitForDragonAndPearlTask;
+import adris.altoclef.tasks.stupid.BeeMovieTask;
+import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
+import adris.altoclef.tasks.stupid.SCP173Task;
+import adris.altoclef.tasks.stupid.TerminatorTask;
+import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -41,7 +50,6 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -52,6 +60,7 @@ import java.util.Scanner;
  * but getting timed tests and testing worlds set up in Minecraft might be
  * challenging, so this is the temporary resting place for garbage test code for now.
  */
+@SuppressWarnings("EnhancedSwitchMigration")
 public class Playground {
 
     public static void IDLE_TEST_INIT_FUNCTION(AltoClef mod) {
@@ -228,7 +237,7 @@ public class Playground {
                     Item[] s = new Item[]{Items.STICK};
                     CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("test pickaxe", new Item[][]{c, c, c, null, s, null, null, s, null}, 1);
 
-                    mod.runUserTask(new CraftGenericTask(recipe));
+                    mod.runUserTask(new CraftGenericManuallyTask(new RecipeTarget(Items.STONE_PICKAXE, 1, recipe)));
                     /*
                     Item toEquip = Items.BUCKET;//Items.AIR;
                     Slot target = PlayerInventorySlot.getEquipSlot(EquipmentSlot.MAINHAND);
@@ -316,12 +325,7 @@ public class Playground {
                 mod.runUserTask(new KillEnderDragonTask());
                 break;
             case "chest":
-                mod.runUserTask(new StoreInAnyContainerTask("diamondstuff", altoClef -> {
-                    if (altoClef.getItemStorage().getItemCount(Items.DIAMOND) >= 3) {
-                        return Optional.of(new ItemTarget(Items.DIAMOND, 3));
-                    }
-                    return Optional.empty();
-                }));
+                mod.runUserTask(new StoreInAnyContainerTask(true, new ItemTarget(Items.DIAMOND, 3)));
                 break;
             case "173":
                 mod.runUserTask(new SCP173Task());
