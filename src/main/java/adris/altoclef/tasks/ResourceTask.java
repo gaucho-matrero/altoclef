@@ -94,7 +94,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
         // We have enough items COUNTING the cursor slot, we just need to move an item from our cursor.
         if (StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()))) {
-            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInOpenContainer(StorageHelper.getItemStackInCursorSlot(), true);
+            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), true);
             Optional<Slot> garbo = StorageHelper.getGarbageSlot(mod);
             if (toMove.isEmpty()) {
                 toMove = garbo;
