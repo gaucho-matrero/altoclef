@@ -1,7 +1,6 @@
 package adris.altoclef;
 
 import adris.altoclef.butler.WhisperChecker;
-import adris.altoclef.tasks.CraftGenericTask;
 import adris.altoclef.tasks.construction.compound.ConstructIronGolemTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.CraftGenericManuallyTask;
