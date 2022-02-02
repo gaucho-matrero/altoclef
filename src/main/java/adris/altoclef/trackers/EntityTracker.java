@@ -10,6 +10,7 @@ import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -213,7 +214,6 @@ public class EntityTracker extends Tracker {
             return Collections.emptyList();
         }
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            //noinspection unchecked
             return (List<T>) _entityMap.get(type);
         }
     }
@@ -339,7 +339,7 @@ public class EntityTracker extends Tracker {
                     Item droppedItem = ientity.getStack().getItem();
 
                     // Only cared about GROUNDED item entities
-                    if (ientity.isOnGround() || ientity.isTouchingWater()) {
+                    if (ientity.isOnGround() || ientity.isTouchingWater() || WorldHelper.isSolid(_mod, ientity.getBlockPos().down(2)) || WorldHelper.isSolid(_mod, ientity.getBlockPos().down(3))) {
                         if (!_itemDropLocations.containsKey(droppedItem)) {
                             _itemDropLocations.put(droppedItem, new ArrayList<>());
                         }
