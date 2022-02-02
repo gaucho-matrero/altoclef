@@ -81,12 +81,17 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../tasksystem/ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
 <dd><code><a href="resources/CarveThenCollectTask.html" title="class in adris.altoclef.tasks.resources">CarveThenCollectTask</a></code>, <code><a href="squashed/CataloguedResourceTask.html" title="class in adris.altoclef.tasks.squashed">CataloguedResourceTask</a></code>, <code><a href="resources/CollectAmethystBlockTask.html" title="class in adris.altoclef.tasks.resources">CollectAmethystBlockTask</a></code>, <code><a href="resources/CollectBlazeRodsTask.html" title="class in adris.altoclef.tasks.resources">CollectBlazeRodsTask</a></code>, <code><a href="resources/CollectBucketLiquidTask.html" title="class in adris.altoclef.tasks.resources">CollectBucketLiquidTask</a></code>, <code><a href="resources/CollectCoarseDirtTask.html" title="class in adris.altoclef.tasks.resources">CollectCoarseDirtTask</a></code>, <code><a href="resources/CollectCobbledDeepslateTask.html" title="class in adris.altoclef.tasks.resources">CollectCobbledDeepslateTask</a></code>, <code><a href="resources/CollectCobblestoneTask.html" title="class in adris.altoclef.tasks.resources">CollectCobblestoneTask</a></code>, <code><a href="resources/CollectCocoaBeansTask.html" title="class in adris.altoclef.tasks.resources">CollectCocoaBeansTask</a></code>, <code><a href="resources/CollectCropTask.html" title="class in adris.altoclef.tasks.resources">CollectCropTask</a></code>, <code><a href="resources/CollectDripstoneBlockTask.html" title="class in adris.altoclef.tasks.resources">CollectDripstoneBlockTask</a></code>, <code><a href="resources/CollectEggsTask.html" title="class in adris.altoclef.tasks.resources">CollectEggsTask</a></code>, <code><a href="resources/CollectFlintTask.html" title="class in adris.altoclef.tasks.resources">CollectFlintTask</a></code>, <code><a href="resources/CollectGoldIngotTask.html" title="class in adris.altoclef.tasks.resources">CollectGoldIngotTask</a></code>, <code><a href="resources/CollectGoldNuggetsTask.html" title="class in adris.altoclef.tasks.resources">CollectGoldNuggetsTask</a></code>, <code><a href="resources/CollectHayBlockTask.html" title="class in adris.altoclef.tasks.resources">CollectHayBlockTask</a></code>, <code><a href="resources/CollectMagmaCreamTask.html" title="class in adris.altoclef.tasks.resources">CollectMagmaCreamTask</a></code>, <code><a href="resources/CollectMilkTask.html" title="class in adris.altoclef.tasks.resources">CollectMilkTask</a></code>, <code><a href="resources/CollectNetherBricksTask.html" title="class in adris.altoclef.tasks.resources">CollectNetherBricksTask</a></code>, <code><a href="resources/CollectObsidianTask.html" title="class in adris.altoclef.tasks.resources">CollectObsidianTask</a></code>, <code><a href="resources/CollectPlanksTask.html" title="class in adris.altoclef.tasks.resources">CollectPlanksTask</a></code>, <code><a href="resources/CollectQuartzTask.html" title="class in adris.altoclef.tasks.resources">CollectQuartzTask</a></code>, <code><a href="resources/CollectRedSandstoneTask.html" title="class in adris.altoclef.tasks.resources">CollectRedSandstoneTask</a></code>, <code><a href="resources/CollectSandstoneTask.html" title="class in adris.altoclef.tasks.resources">CollectSandstoneTask</a></code>, <code><a href="resources/CollectWheatSeedsTask.html" title="class in adris.altoclef.tasks.resources">CollectWheatSeedsTask</a></code>, <code><a href="resources/CollectWheatTask.html" title="class in adris.altoclef.tasks.resources">CollectWheatTask</a></code>, <code><a href="resources/CollectWoolTask.html" title="class in adris.altoclef.tasks.resources">CollectWoolTask</a></code>, <code><a href="CraftInInventoryTask.html" title="class in adris.altoclef.tasks">CraftInInventoryTask</a></code>, <code><a href="container/CraftInTableTask.html" title="class in adris.altoclef.tasks.container">CraftInTableTask</a></code>, <code><a href="resources/CraftWithMatchingMaterialsTask.html" title="class in adris.altoclef.tasks.resources">CraftWithMatchingMaterialsTask</a></code>, <code><a href="resources/KillAndLootTask.html" title="class in adris.altoclef.tasks.resources">KillAndLootTask</a></code>, <code><a href="resources/MineAndCollectTask.html" title="class in adris.altoclef.tasks.resources">MineAndCollectTask</a></code>, <code><a href="container/SmeltInFurnaceTask.html" title="class in adris.altoclef.tasks.container">SmeltInFurnaceTask</a></code>, <code><a href="resources/TradeWithPiglinsTask.html" title="class in adris.altoclef.tasks.resources">TradeWithPiglinsTask</a></code>, <code><a href="container/UpgradeInSmithingTableTask.html" title="class in adris.altoclef.tasks.container">UpgradeInSmithingTableTask</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">ResourceTask</span>
-<span class="extends-implements">extends <a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></span></div>
+<span class="extends-implements">extends <a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>
+implements <a href="../tasksystem/ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></span></div>
 <div class="block">The parent for all "collect an item" tasks.
 
  If the target item is on the ground or in a chest, will grab from those sources first.</div>
@@ -184,12 +189,16 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code>protected abstract boolean</code></div>
 <div class="col-second even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code><span class="member-name-link"><a href="#shouldAvoidPickingUp(adris.altoclef.AltoClef)">shouldAvoidPickingUp</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod)</code></div>
 <div class="col-last even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#toDebugString()">toDebugString</a></span>()</code></div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptingCandidate)</code></div>
 <div class="col-last odd-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code>protected abstract <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code><span class="member-name-link"><a href="#toDebugStringName()">toDebugStringName</a></span>()</code></div>
-<div class="col-last even-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code>protected <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#toDebugString()">toDebugString</a></span>()</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code>protected abstract <a href="https://docs.oracle.com/en/java/javase/16/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3"><code><span class="member-name-link"><a href="#toDebugStringName()">toDebugStringName</a></span>()</code></div>
+<div class="col-last odd-row-color method-summary-table-tab2 method-summary-table method-summary-table-tab3">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -258,6 +267,20 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="../tasksystem/Task.html#isFinished(adris.altoclef.AltoClef)">isFinished</a></code>&nbsp;in class&nbsp;<code><a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">
+<h3>shouldForce</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">shouldForce</span>&#8203;<span class="parameters">(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../tasksystem/Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptingCandidate)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../tasksystem/ITaskCanForce.html#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce</a></code>&nbsp;in interface&nbsp;<code><a href="../tasksystem/ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></code></dd>
+<dd><code>interruptingCandidate</code> - This task will try to interrupt our current task.</dd>
+<dt>Returns:</dt>
+<dd>Whether the task should forcefully keep going, even when the parent decides it shouldn't</dd>
 </dl>
 </section>
 </li>

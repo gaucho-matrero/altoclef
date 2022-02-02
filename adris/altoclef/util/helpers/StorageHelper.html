@@ -227,13 +227,19 @@ loadScripts(document, 'script');</script>
 <div class="block">AVOID using this unless it's the end goal to keep an item in our inventory.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMet(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
- <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
-<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#itemTargetsMetInventoryNoCursor(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMetInventoryNoCursor</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targetsToMeet)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">
+<div class="block">Same as <code>itemTargetsMetInventory</code> but it ignores the cursor slot.</div>
+</div>
 <div class="col-first even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+<div class="col-second even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMet(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMet</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
  <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
 <div class="col-last even-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table"><code><span class="member-name-link"><a href="#miningRequirementMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.MiningRequirement)">miningRequirementMetInventory</a></span>&#8203;(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../MiningRequirement.html" title="enum class in adris.altoclef.util">MiningRequirement</a>&nbsp;requirement)</code></div>
+<div class="col-last odd-row-color method-summary-table-tab1 method-summary-table-tab4 method-summary-table">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -345,6 +351,14 @@ loadScripts(document, 'script');</script>
 <dt>Returns:</dt>
 <dd>whether EVERY item target in <code>targetsToMeet</code> is strictly in our inventory.</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="itemTargetsMetInventoryNoCursor(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">
+<h3>itemTargetsMetInventoryNoCursor</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">itemTargetsMetInventoryNoCursor</span>&#8203;<span class="parameters">(<a href="../../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="../ItemTarget.html" title="class in adris.altoclef.util">ItemTarget</a>...&nbsp;targetsToMeet)</span></div>
+<div class="block">Same as <code>itemTargetsMetInventory</code> but it ignores the cursor slot.</div>
 </section>
 </li>
 <li>

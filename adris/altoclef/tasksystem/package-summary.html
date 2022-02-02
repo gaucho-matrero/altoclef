@@ -62,12 +62,16 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Interface</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="ITaskOverridesGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskOverridesGrounded</a></div>
+<div class="col-first even-row-color"><a href="ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></div>
 <div class="col-last even-row-color">
+<div class="block">Lets a task declare that it's parent can NOT interrupt itself, and that this task MUST keep executing.</div>
+</div>
+<div class="col-first odd-row-color"><a href="ITaskOverridesGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskOverridesGrounded</a></div>
+<div class="col-last odd-row-color">
 <div class="block">If this is found on a task, it will interrupt tasks that require grounded.</div>
 </div>
-<div class="col-first odd-row-color"><a href="ITaskRequiresGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskRequiresGrounded</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="ITaskRequiresGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskRequiresGrounded</a></div>
+<div class="col-last even-row-color">
 <div class="block">Some tasks may mess up royally if we interrupt them while mid air.</div>
 </div>
 </div>

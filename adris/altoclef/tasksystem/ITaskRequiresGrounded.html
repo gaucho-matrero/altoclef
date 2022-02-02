@@ -16,7 +16,11 @@
 <script type="text/javascript" src="../../../script-dir/jquery-ui.min.js"></script>
 </head>
 <body class="class-declaration-page">
-<script type="text/javascript">var pathtoroot = "../../../";
+<script type="text/javascript">var evenRowColor = "even-row-color";
+var oddRowColor = "odd-row-color";
+var tableTab = "table-tab";
+var activeTableTab = "active-table-tab";
+var pathtoroot = "../../../";
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -44,13 +48,13 @@ loadScripts(document, 'script');</script>
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="sub-nav-list">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
 <div class="nav-list-search"><label for="search">SEARCH:</label>
@@ -72,14 +76,69 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="description">
 <dl class="notes">
+<dt>All Superinterfaces:</dt>
+<dd><code><a href="ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>All Known Implementing Classes:</dt>
 <dd><code><a href="../tasks/entity/AbstractDoToEntityTask.html" title="class in adris.altoclef.tasks.entity">AbstractDoToEntityTask</a></code>, <code><a href="../tasks/entity/AbstractKillEntityTask.html" title="class in adris.altoclef.tasks.entity">AbstractKillEntityTask</a></code>, <code><a href="../tasks/construction/ClearRegionTask.html" title="class in adris.altoclef.tasks.construction">ClearRegionTask</a></code>, <code><a href="../tasks/movement/CustomBaritoneGoalTask.html" title="class in adris.altoclef.tasks.movement">CustomBaritoneGoalTask</a></code>, <code><a href="../tasks/construction/DestroyBlockTask.html" title="class in adris.altoclef.tasks.construction">DestroyBlockTask</a></code>, <code><a href="../tasks/movement/DodgeProjectilesTask.html" title="class in adris.altoclef.tasks.movement">DodgeProjectilesTask</a></code>, <code><a href="../tasks/movement/EscapeFromLavaTask.html" title="class in adris.altoclef.tasks.movement">EscapeFromLavaTask</a></code>, <code><a href="../tasks/movement/GetToBlockTask.html" title="class in adris.altoclef.tasks.movement">GetToBlockTask</a></code>, <code><a href="../tasks/movement/GetToChunkTask.html" title="class in adris.altoclef.tasks.movement">GetToChunkTask</a></code>, <code><a href="../tasks/movement/GetToEntityTask.html" title="class in adris.altoclef.tasks.movement">GetToEntityTask</a></code>, <code><a href="../tasks/movement/GetToXZTask.html" title="class in adris.altoclef.tasks.movement">GetToXZTask</a></code>, <code><a href="../tasks/movement/GetToYTask.html" title="class in adris.altoclef.tasks.movement">GetToYTask</a></code>, <code><a href="../tasks/movement/GetWithinRangeOfBlockTask.html" title="class in adris.altoclef.tasks.movement">GetWithinRangeOfBlockTask</a></code>, <code><a href="../tasks/movement/GoInDirectionXZTask.html" title="class in adris.altoclef.tasks.movement">GoInDirectionXZTask</a></code>, <code><a href="../tasks/entity/KillEntityTask.html" title="class in adris.altoclef.tasks.entity">KillEntityTask</a></code>, <code><a href="../tasks/entity/KillPlayerTask.html" title="class in adris.altoclef.tasks.entity">KillPlayerTask</a></code>, <code><a href="../tasks/movement/PickupDroppedItemTask.html" title="class in adris.altoclef.tasks.movement">PickupDroppedItemTask</a></code>, <code><a href="../tasks/construction/PlaceBlockTask.html" title="class in adris.altoclef.tasks.construction">PlaceBlockTask</a></code>, <code><a href="../tasks/construction/PlaceStructureBlockTask.html" title="class in adris.altoclef.tasks.construction">PlaceStructureBlockTask</a></code>, <code><a href="../tasks/movement/RunAwayFromCreepersTask.html" title="class in adris.altoclef.tasks.movement">RunAwayFromCreepersTask</a></code>, <code><a href="../tasks/movement/RunAwayFromEntitiesTask.html" title="class in adris.altoclef.tasks.movement">RunAwayFromEntitiesTask</a></code>, <code><a href="../tasks/movement/RunAwayFromHostilesTask.html" title="class in adris.altoclef.tasks.movement">RunAwayFromHostilesTask</a></code>, <code><a href="../tasks/movement/RunAwayFromPositionTask.html" title="class in adris.altoclef.tasks.movement">RunAwayFromPositionTask</a></code>, <code><a href="../tasks/entity/ShearSheepTask.html" title="class in adris.altoclef.tasks.entity">ShearSheepTask</a></code>, <code><a href="../tasks/movement/TimeoutWanderTask.html" title="class in adris.altoclef.tasks.movement">TimeoutWanderTask</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">ITaskRequiresGrounded</span></div>
+<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">ITaskRequiresGrounded</span><span class="extends-implements">
+extends <a href="ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></span></div>
 <div class="block">Some tasks may mess up royally if we interrupt them while mid air.
  For instance, if we're doing some parkour and a baritone task is stopped,
  the player will fall to whatever is below them, perhaps their death.</div>
+</section>
+<section class="summary">
+<ul class="summary-list">
+<!-- ========== METHOD SUMMARY =========== -->
+<li>
+<section class="method-summary" id="method.summary">
+<h2>Method Summary</h2>
+<div id="method-summary-table">
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab5" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab5', 3)" class="table-tab">Default Methods</button></div>
+<div id="method-summary-table.tabpanel" role="tabpanel">
+<div class="summary-table three-column-summary" aria-labelledby="method-summary-table-tab0">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table-tab2 method-summary-table-tab5 method-summary-table"><code>default boolean</code></div>
+<div class="col-second even-row-color method-summary-table-tab2 method-summary-table-tab5 method-summary-table"><code><span class="member-name-link"><a href="#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce</a></span>&#8203;(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptingCandidate)</code></div>
+<div class="col-last even-row-color method-summary-table-tab2 method-summary-table-tab5 method-summary-table">&nbsp;</div>
+</div>
+</div>
+</div>
+</section>
+</li>
+</ul>
+</section>
+<section class="details">
+<ul class="details-list">
+<!-- ============ METHOD DETAIL ========== -->
+<li>
+<section class="method-details" id="method.detail">
+<h2>Method Details</h2>
+<ul class="member-list">
+<li>
+<section class="detail" id="shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">
+<h3>shouldForce</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">shouldForce</span>&#8203;<span class="parameters">(<a href="../AltoClef.html" title="class in adris.altoclef">AltoClef</a>&nbsp;mod,
+ <a href="Task.html" title="class in adris.altoclef.tasksystem">Task</a>&nbsp;interruptingCandidate)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="ITaskCanForce.html#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce</a></code>&nbsp;in interface&nbsp;<code><a href="ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></code></dd>
+<dd><code>interruptingCandidate</code> - This task will try to interrupt our current task.</dd>
+<dt>Returns:</dt>
+<dd>Whether the task should forcefully keep going, even when the parent decides it shouldn't</dd>
+</dl>
+</section>
+</li>
+</ul>
+</section>
+</li>
+</ul>
 </section>
 <!-- ========= END OF CLASS DATA ========= -->
 </main>

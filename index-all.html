@@ -2025,6 +2025,8 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/util/RecipeTarget.html#getRecipe()">getRecipe()</a></span> - Method in class adris.altoclef.util.<a href="adris/altoclef/util/RecipeTarget.html" title="class in adris.altoclef.util">RecipeTarget</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="member-name-link"><a href="adris/altoclef/tasks/CraftInInventoryTask.html#getRecipeTarget()">getRecipeTarget()</a></span> - Method in class adris.altoclef.tasks.<a href="adris/altoclef/tasks/CraftInInventoryTask.html" title="class in adris.altoclef.tasks">CraftInInventoryTask</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/tasks/container/CraftInTableTask.html#getRecipeTargets()">getRecipeTargets()</a></span> - Method in class adris.altoclef.tasks.container.<a href="adris/altoclef/tasks/container/CraftInTableTask.html" title="class in adris.altoclef.tasks.container">CraftInTableTask</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/Settings.html#getReservedBuildingBlockCount()">getReservedBuildingBlockCount()</a></span> - Method in class adris.altoclef.<a href="adris/altoclef/Settings.html" title="class in adris.altoclef">Settings</a></dt>
@@ -3072,6 +3074,10 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/tasks/AbstractDoToClosestObjectTask.html#isValid(adris.altoclef.AltoClef,T)">isValid(AltoClef, T)</a></span> - Method in class adris.altoclef.tasks.<a href="adris/altoclef/tasks/AbstractDoToClosestObjectTask.html" title="class in adris.altoclef.tasks">AbstractDoToClosestObjectTask</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="adris/altoclef/tasksystem/ITaskCanForce.html" title="interface in adris.altoclef.tasksystem"><span class="type-name-link">ITaskCanForce</span></a> - Interface in <a href="adris/altoclef/tasksystem/package-summary.html">adris.altoclef.tasksystem</a></dt>
+<dd>
+<div class="block">Lets a task declare that it's parent can NOT interrupt itself, and that this task MUST keep executing.</div>
+</dd>
 <dt><a href="adris/altoclef/tasksystem/ITaskOverridesGrounded.html" title="interface in adris.altoclef.tasksystem"><span class="type-name-link">ITaskOverridesGrounded</span></a> - Interface in <a href="adris/altoclef/tasksystem/package-summary.html">adris.altoclef.tasksystem</a></dt>
 <dd>
 <div class="block">If this is found on a task, it will interrupt tasks that require grounded.</div>
@@ -3143,6 +3149,10 @@ loadScripts(document, 'script');</script>
 <dt><span class="member-name-link"><a href="adris/altoclef/util/helpers/StorageHelper.html#itemTargetsMetInventory(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMetInventory(AltoClef, ItemTarget...)</a></span> - Static method in class adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/StorageHelper.html" title="class in adris.altoclef.util.helpers">StorageHelper</a></dt>
 <dd>
 <div class="block">AVOID using this unless it's the end goal to keep an item in our inventory.</div>
+</dd>
+<dt><span class="member-name-link"><a href="adris/altoclef/util/helpers/StorageHelper.html#itemTargetsMetInventoryNoCursor(adris.altoclef.AltoClef,adris.altoclef.util.ItemTarget...)">itemTargetsMetInventoryNoCursor(AltoClef, ItemTarget...)</a></span> - Static method in class adris.altoclef.util.helpers.<a href="adris/altoclef/util/helpers/StorageHelper.html" title="class in adris.altoclef.util.helpers">StorageHelper</a></dt>
+<dd>
+<div class="block">Same as <code>itemTargetsMetInventory</code> but it ignores the cursor slot.</div>
 </dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/tasks/resources/MineAndCollectTask.html#itemTargetToBlockList(adris.altoclef.util.ItemTarget%5B%5D)">itemTargetToBlockList(ItemTarget[])</a></span> - Static method in class adris.altoclef.tasks.resources.<a href="adris/altoclef/tasks/resources/MineAndCollectTask.html" title="class in adris.altoclef.tasks.resources">MineAndCollectTask</a></dt>
 <dd>&nbsp;</dd>
@@ -4864,6 +4874,12 @@ loadScripts(document, 'script');</script>
 <dt><span class="member-name-link"><a href="adris/altoclef/BotBehaviour.html#shouldExcludeFromForcefield(net.minecraft.entity.Entity)">shouldExcludeFromForcefield(Entity)</a></span> - Method in class adris.altoclef.<a href="adris/altoclef/BotBehaviour.html" title="class in adris.altoclef">BotBehaviour</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/Settings.html#shouldExtinguishSelfWithWater()">shouldExtinguishSelfWithWater()</a></span> - Method in class adris.altoclef.<a href="adris/altoclef/Settings.html" title="class in adris.altoclef">Settings</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="member-name-link"><a href="adris/altoclef/tasks/ResourceTask.html#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce(AltoClef, Task)</a></span> - Method in class adris.altoclef.tasks.<a href="adris/altoclef/tasks/ResourceTask.html" title="class in adris.altoclef.tasks">ResourceTask</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="member-name-link"><a href="adris/altoclef/tasksystem/ITaskCanForce.html#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce(AltoClef, Task)</a></span> - Method in interface adris.altoclef.tasksystem.<a href="adris/altoclef/tasksystem/ITaskCanForce.html" title="interface in adris.altoclef.tasksystem">ITaskCanForce</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="member-name-link"><a href="adris/altoclef/tasksystem/ITaskRequiresGrounded.html#shouldForce(adris.altoclef.AltoClef,adris.altoclef.tasksystem.Task)">shouldForce(AltoClef, Task)</a></span> - Method in interface adris.altoclef.tasksystem.<a href="adris/altoclef/tasksystem/ITaskRequiresGrounded.html" title="interface in adris.altoclef.tasksystem">ITaskRequiresGrounded</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="member-name-link"><a href="adris/altoclef/BotBehaviour.html#shouldForceFieldPlayers()">shouldForceFieldPlayers()</a></span> - Method in class adris.altoclef.<a href="adris/altoclef/BotBehaviour.html" title="class in adris.altoclef">BotBehaviour</a></dt>
 <dd>&nbsp;</dd>
