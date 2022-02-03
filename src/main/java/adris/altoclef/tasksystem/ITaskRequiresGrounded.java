@@ -1,7 +1,7 @@
 package adris.altoclef.tasksystem;
 
 import adris.altoclef.AltoClef;
-
+import adris.altoclef.util.helpers.EntityHelper;
 /**
  * Some tasks may mess up royally if we interrupt them while mid air.
  * For instance, if we're doing some parkour and a baritone task is stopped,
@@ -12,6 +12,6 @@ public interface ITaskRequiresGrounded extends ITaskCanForce {
     default boolean shouldForce(AltoClef mod, Task interruptingCandidate) {
         if (interruptingCandidate instanceof ITaskOverridesGrounded)
             return false;
-        return !(mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing());
+        return !(EntityHelper.isGrounded(mod));
     }
 }

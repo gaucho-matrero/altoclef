@@ -13,6 +13,7 @@ import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.Rotation;
@@ -190,7 +191,7 @@ public class GetToXZWithElytraTask extends Task {
             
         }
         //if we have landed, and the distance is under 12 or we don't have any fireworks
-        if (isOnGround(mod) && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
+        if (EntityHelper.isGrounded(mod) && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
             if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() == Items.ELYTRA) { //Unequip elytra
                 return new ClickSlotTask(new PlayerSlot(6)); //Click on the elytra in the armor slot
             } else if (!StorageHelper.getItemStackInCursorSlot().isEmpty()){ //Once it's in the cursor slot
@@ -207,9 +208,6 @@ public class GetToXZWithElytraTask extends Task {
          _oldCoordsY = mod.getPlayer().getPos().y; //save the old player y position
         return null;
     }
-    private boolean isOnGround(AltoClef mod) {
-        return mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
-    }   
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().disableDefence(false);
