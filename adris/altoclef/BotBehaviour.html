@@ -146,8 +146,15 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#forceUseTool(java.util.function.BiPredicate)" class="member-name-link">forceUseTool</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/BiPredicate.html" title="class or interface in java.util.function" class="external-link">BiPredicate</a>&lt;net.minecraft.block.BlockState,<wbr>net.minecraft.item.ItemStack&gt;&nbsp;pred)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isProtected(net.minecraft.item.Item)" class="member-name-link">isProtected</a><wbr>(net.minecraft.item.Item&nbsp;item)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.util.Pair&lt;<a href="util/slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.item.ItemStack&gt;&gt;&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getConversionSlots()" class="member-name-link">getConversionSlots</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isProtected(net.minecraft.item.Item)" class="member-name-link">isProtected</a><wbr>(net.minecraft.item.Item&nbsp;item)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#markSlotAsConversionSlot(adris.altoclef.util.slots.Slot,java.util.function.Predicate)" class="member-name-link">markSlotAsConversionSlot</a><wbr>(<a href="util/slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&nbsp;slot,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.item.ItemStack&gt;&nbsp;itemBelongsHere)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>adris.altoclef.BotBehaviour.State</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pop()" class="member-name-link">pop</a>()</code></div>
@@ -300,6 +307,19 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="addForceFieldExclusion(java.util.function.Predicate)">
 <h3>addForceFieldExclusion</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addForceFieldExclusion</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.entity.Entity&gt;&nbsp;pred)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="getConversionSlots()">
+<h3>getConversionSlots</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;net.minecraft.util.Pair&lt;<a href="util/slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.item.ItemStack&gt;&gt;&gt;</span>&nbsp;<span class="element-name">getConversionSlots</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="markSlotAsConversionSlot(adris.altoclef.util.slots.Slot,java.util.function.Predicate)">
+<h3>markSlotAsConversionSlot</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">markSlotAsConversionSlot</span><wbr><span class="parameters">(<a href="util/slots/Slot.html" title="class in adris.altoclef.util.slots">Slot</a>&nbsp;slot,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;net.minecraft.item.ItemStack&gt;&nbsp;itemBelongsHere)</span></div>
 </section>
 </li>
 <li>
