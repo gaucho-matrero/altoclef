@@ -8,7 +8,9 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -38,6 +40,14 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+        mod.getBehaviour().push();
+        // Our inventory slots are here for conversion
+        int recSlot = 0;
+        for (Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
+            ItemTarget valid = _target.getRecipe().getSlot(recSlot++);
+            mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> valid.matches(stack.getItem()));
+        }
+
         _fullCheckFailed = false;
         StorageHelper.closeScreen(); // Just to be safe I guess
     }
@@ -74,7 +84,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+        mod.getBehaviour().pop();
     }
 
     @Override

@@ -1,13 +1,22 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
+import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.item.ItemStack;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 public class CraftGenericWithRecipeBooksTask extends Task {
 
@@ -44,6 +53,30 @@ public class CraftGenericWithRecipeBooksTask extends Task {
             mod.getSlotHandler().registerSlotAction();
             StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
         }
+
+        // If a material is found in cursor, move it to the inventory.
+        ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
+        if (Arrays.stream(_target.getRecipe().getSlots()).anyMatch(target -> target.matches(cursor.getItem()))) {
+            setDebugState("CURSOR HAS MATERIAL! Moving out.");
+            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
+            if (toMoveTo.isPresent()) {
+                return new ClickSlotTask(toMoveTo.get());
+            } else {
+                // Worst case scenario, find a slot that fits.
+                for (int recSlot = 0; recSlot < _target.getRecipe().getSlotCount(); ++recSlot) {
+                    if (_target.getRecipe().getSlot(recSlot).matches(cursor.getItem())) {
+                        Slot toMoveToPotential = bigCrafting? CraftingTableSlot.getInputSlot(recSlot, _target.getRecipe().isBig()) : PlayerSlot.getCraftInputSlot(recSlot);
+                        ItemStack inRecipe = StorageHelper.getItemStackInSlot(toMoveToPotential);
+                        if (ItemHelper.canStackTogether(cursor, inRecipe)) {
+                            return new ClickSlotTask(toMoveToPotential);
+                        }
+                    }
+                }
+                // Worst worst case scenario just... hang on to it and let the inventory settle...
+            }
+        }
+
+
 
         setDebugState("Waiting for recipe book click...");
         return null;

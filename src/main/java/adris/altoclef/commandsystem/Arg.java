@@ -147,7 +147,7 @@ public class Arg<T> extends ArgBase {
         }
 
         if (isInstanceOf(vType, GotoTarget.class)) {
-            getConverted(vType, GotoTarget.parseRemainder(String.join(" ", unitPlusRemainder)));
+            return getConverted(vType, GotoTarget.parseRemainder(String.join(" ", unitPlusRemainder)));
         }
 
         // Now do String parsing.
@@ -202,7 +202,7 @@ public class Arg<T> extends ArgBase {
         return GetConverted(vType,  result.ToArray() );
         }
          */
-        throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+        throw new CommandException("Arguments are not programmed to parse the following type: " + vType + ". This is either not implemented intentionally or by accident somehow.");
     }
 
     @Override

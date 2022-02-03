@@ -68,7 +68,9 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     @Override
     public boolean shouldForce(AltoClef mod, Task interruptingCandidate) {
         // We have an important item target in our cursor.
-        return StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && !isFinished(mod);
+        return StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && !isFinished(mod)
+                // This _should_ be redundant, but it'll be a guard just to make 100% sure.
+                && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()));
     }
 
     @Override
@@ -94,11 +96,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
         // We have enough items COUNTING the cursor slot, we just need to move an item from our cursor.
         if (StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()))) {
-            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInOpenContainer(StorageHelper.getItemStackInCursorSlot(), true);
-            Optional<Slot> garbo = StorageHelper.getGarbageSlot(mod);
-            if (toMove.isEmpty()) {
-                toMove = garbo;
-            }
+            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), true).or(() -> StorageHelper.getGarbageSlot(mod));
             if (toMove.isEmpty()) {
                 setDebugState("STUCK! No slot can fit our item.");
                 return null;

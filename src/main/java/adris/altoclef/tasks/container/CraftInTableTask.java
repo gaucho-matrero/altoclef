@@ -131,6 +131,21 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         StorageHelper.closeScreen();
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
+        // Our crafting slots are here for conversion
+        for (RecipeTarget target : _targets) {
+            int recSlot = 0;
+            for (Slot slot : CraftingTableSlot.INPUT_SLOTS) {
+                ItemTarget valid = target.getRecipe().getSlot(recSlot++);
+                mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> {
+                    // We already have the item
+                    if (mod.getItemStorage().getItemCount(target.getOutputItem()) >= target.getTargetCount())
+                        return false;
+                    // We don't, consider ourselves crafting!
+                    return valid.matches(stack.getItem());
+                });
+            }
+        }
+
 
         // Reset our "finished" value in the collect recipe thing.
         _collectTask.reset();

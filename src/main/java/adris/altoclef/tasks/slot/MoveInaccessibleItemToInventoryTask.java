@@ -38,11 +38,11 @@ public class MoveInaccessibleItemToInventoryTask extends Task {
         if (slotToMove.isPresent()) {
             // Force cursor slot if we have one.
             if (_target.matches(StorageHelper.getItemStackInCursorSlot().getItem())) {
-                slotToMove = Optional.of(new CursorSlot());
+                slotToMove = Optional.of(CursorSlot.SLOT);
             }
             Slot toMove = slotToMove.get();
             ItemStack stack = StorageHelper.getItemStackInSlot(toMove);
-            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false);
+            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false).or(() -> StorageHelper.getGarbageSlot(mod));
             if (toMoveTo.isPresent()) {
                 setDebugState("Moving slot " + toMove + " to inventory");
                 // Pick up & move

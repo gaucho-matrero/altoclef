@@ -3,15 +3,11 @@ package adris.altoclef.tasks.movement;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EyeOfEnderEntity;
@@ -21,8 +17,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class LocateStrongholdCoordinatesTask extends Task {
@@ -34,16 +28,12 @@ public class LocateStrongholdCoordinatesTask extends Task {
 
     private static final int SECOND_EYE_THROW_DISTANCE = 30; // target distance between first throw and second throw
 
-    private static final int PORTAL_TARGET_HEIGHT = 48; // target height for educated portal
-
     private final int _targetEyes;
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection = null;
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection2 = null;
     private Entity _currentThrownEye = null;
     private Vec3d _strongholdEstimatePos = null;
     private final TimerGame _throwTimer = new TimerGame(5);
-
-    private final ConstructNetherPortalObsidianTask _constructTask = new ConstructNetherPortalObsidianTask();
 
     public LocateStrongholdCoordinatesTask(int targetEyes) {
         _targetEyes = targetEyes;
@@ -177,25 +167,17 @@ public class LocateStrongholdCoordinatesTask extends Task {
             return null;
         }
         return null;
-//        // Travel to stronghold + search around stronghold if necessary.
-//        LocateStrongholdCoordinatesTask.SearchStrongholdTask tryNewSearch = new LocateStrongholdCoordinatesTask.SearchStrongholdTask(_strongholdEstimatePos);
-//        if ((_searchTask == null || !_searchTask.equals(tryNewSearch)) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
-//            Debug.logMessage("New Stronghold search task");
-//            _searchTask = tryNewSearch;
-//        }
-//        setDebugState("Searching for stronghold+portal");
-//        return _searchTask;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
     }
 
-    public BlockPos getStrongholdCoordinates(){
+    public Optional<BlockPos> getStrongholdCoordinates(){
         if(_strongholdEstimatePos==null){
-            return null;
+            return Optional.empty();
         }
-        return new BlockPos(_strongholdEstimatePos);
+        return Optional.of(new BlockPos(_strongholdEstimatePos));
     }
 
     @Override
@@ -246,6 +228,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
         Vec3d s1 = start1;
         Vec3d s2 = start2;

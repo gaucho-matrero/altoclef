@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 /**
  * Helper functions for interpreting containers/slots/windows/inventory
  */
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({"ConstantConditions", "rawtypes"})
 public class StorageHelper {
 
     public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
@@ -58,15 +58,15 @@ public class StorageHelper {
         // Inventory slot when inventory is NOT open
         PlayerInventory inv = player.getInventory();
         if (inv != null) {
-            if (slot.equals(PlayerInventorySlot.OFFHAND_SLOT))
+            if (slot.equals(PlayerSlot.OFFHAND_SLOT))
                 return inv.offHand.stream().findFirst().orElse(ItemStack.EMPTY).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_HELMET_SLOT))
+            if (slot.equals(PlayerSlot.ARMOR_HELMET_SLOT))
                 return inv.getArmorStack(3).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT))
+            if (slot.equals(PlayerSlot.ARMOR_CHESTPLATE_SLOT))
                 return inv.getArmorStack(2).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_LEGGINGS_SLOT))
+            if (slot.equals(PlayerSlot.ARMOR_LEGGINGS_SLOT))
                 return inv.getArmorStack(1).copy();
-            if (slot.equals(PlayerInventorySlot.ARMOR_BOOTS_SLOT))
+            if (slot.equals(PlayerSlot.ARMOR_BOOTS_SLOT))
                 return inv.getArmorStack(0).copy();
         }
         try {
@@ -469,7 +469,7 @@ public class StorageHelper {
                 }
                 return false;
             })) {
-                return Optional.of(new CursorSlot());
+                return Optional.of(CursorSlot.SLOT);
             }
         }
         return Optional.empty();
@@ -534,21 +534,6 @@ public class StorageHelper {
     }
 
     public static void instantFillRecipeViaBook(AltoClef mod, CraftingRecipe recipe, Item output, boolean craftAll) {
-        /*
-        DefaultedList<Ingredient> ingredients = DefaultedList.ofSize(recipe.getSlotCount());
-        for (int recipeSlot = 0; recipeSlot < recipe.getSlotCount(); ++recipeSlot) {
-            ItemTarget recipeIngredient = recipe.getSlot(recipeSlot);
-            Ingredient newIngredient = Ingredient.ofItems(recipeIngredient.getMatches());
-            // Perform a cache so matching stacks is filled, quite important!
-            newIngredient.getMatchingStacks();
-            newIngredient.getMatchingItemIds();
-            ingredients.add(newIngredient);
-        }
-        // The id doesn't matter, as long as it's valid.
-        Identifier id = new Identifier("minecraft", "crafting_table");
-        ShapedRecipe recipeToSend =
-                new ShapedRecipe(id, "", recipe.getWidth(), recipe.getHeight(), ingredients, ItemStack.EMPTY);
-         */
         Optional<Recipe> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(recipe, output);
         if (recipeToSend.isPresent()) {
             mod.getController().clickRecipe(MinecraftClient.getInstance().player.currentScreenHandler.syncId, recipeToSend.get(), craftAll);

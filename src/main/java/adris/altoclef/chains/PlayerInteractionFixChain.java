@@ -4,10 +4,11 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
@@ -63,7 +64,7 @@ public class PlayerInteractionFixChain extends TaskChain {
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
                 Optional<Slot> bestToolSlot = StorageHelper.getBestToolSlot(mod, state);
-                Slot currentEquipped = PlayerInventorySlot.getEquipSlot();
+                Slot currentEquipped = PlayerSlot.getEquipSlot();
 
                 // if baritone is running, only accept tools OUTSIDE OF HOTBAR!
                 // Baritone will take care of tools inside the hotbar.
@@ -117,22 +118,18 @@ public class PlayerInteractionFixChain extends TaskChain {
         // If we have something in our hand for a period of time...
         if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
             Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
-            Optional<Slot> emptySlot = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false);
-            if (emptySlot.isEmpty()) {
-                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
-                if (garbage.isPresent()) {
-                    if (!Slot.isCursor(garbage.get())) {
-                        mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
-                    }
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
+            if (moveTo.isPresent()) {
+                mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+            } else {
+                // Try throwing away cursor slot if it's garbage
+                if (ItemHelper.canThrowAwayStack(mod, StorageHelper.getItemStackInCursorSlot())) {
                     mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                    Debug.logMessage("Cursor stack edge case: Full inventory. Attempted to drop.");
                 } else {
                     Debug.logMessage("Cursor stack edge case: Full inventory AND NO GARBAGE! We're stuck.");
                 }
-                return Float.NEGATIVE_INFINITY;
-            } else {
-                mod.getSlotHandler().clickSlot(emptySlot.get(), 0, SlotActionType.PICKUP);
             }
+            return Float.NEGATIVE_INFINITY;
         }
 
         if (shouldCloseOpenScreen(mod)) {

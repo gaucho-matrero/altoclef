@@ -47,10 +47,7 @@ public class ReceiveOutputSlotTask extends Task {
         }
         // We might not be able to stack, in that case move our cursor item somewhere safely
         if (!ItemHelper.canStackTogether(inOutput, cursor)) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, true);
-            if (moveTo.isEmpty()) {
-                moveTo = StorageHelper.getGarbageSlot(mod);
-            }
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, true).or(() -> StorageHelper.getGarbageSlot(mod));
             if (moveTo.isEmpty()) {
                 setDebugState("STUCK! Everything's protected.");
                 return null;

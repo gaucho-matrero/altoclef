@@ -27,11 +27,13 @@ import java.util.function.Predicate;
 /**
  * Access ALL forms of storage.
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class ItemStorageTracker extends Tracker {
 
     private final InventorySubTracker _inventory;
     private final ContainerSubTracker _containers;
 
+    /*
     private static Slot[] getCurrentConversionSlots() {
         // TODO: Anvil input, anything else...
         if (StorageHelper.isPlayerInventoryOpen()) {
@@ -42,7 +44,7 @@ public class ItemStorageTracker extends Tracker {
             return new Slot[] {FurnaceSlot.INPUT_SLOT_FUEL, FurnaceSlot.INPUT_SLOT_MATERIALS};
         }
         return new Slot[0];
-    }
+    }*/
 
     public ItemStorageTracker(AltoClef mod, TrackerManager manager, Consumer<ContainerSubTracker> containerTrackerConsumer) {
         super(manager);
@@ -56,10 +58,16 @@ public class ItemStorageTracker extends Tracker {
      * (ex. crafting table slots/furnace input, stuff the player is use )
      */
     public int getItemCount(Item ...items) {
-        int inConversionSlots = Arrays.stream(getCurrentConversionSlots()).mapToInt(slot -> {
-            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-            if (ArrayUtils.contains(items, stack.getItem())) {
-                return stack.getCount();
+        int inConversionSlots = _mod.getBehaviour().getConversionSlots().stream().mapToInt(pair -> {
+            Slot slot = pair.getLeft();
+            if (slot.isScreenOpen()) {
+                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                if (ArrayUtils.contains(items, stack.getItem())) {
+                    boolean satisfiesConversion = pair.getRight().test(stack);
+                    if (satisfiesConversion) {
+                        return stack.getCount();
+                    }
+                }
             }
             return 0;
         }).reduce(0, Integer::sum);
@@ -98,10 +106,18 @@ public class ItemStorageTracker extends Tracker {
      * (ex. crafting table slots/furnace input, stuff the player is use )
      */
     public boolean hasItem(Item ...items) {
-        return Arrays.stream(getCurrentConversionSlots()).anyMatch(slot -> {
-            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-            return ArrayUtils.contains(items, stack.getItem());
-        }) || _inventory.hasItem(true, items);
+        boolean hasInConversion = _mod.getBehaviour().getConversionSlots().stream().anyMatch(pair -> {
+            Slot slot = pair.getLeft();
+            if (slot.isScreenOpen()) {
+                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                if (ArrayUtils.contains(items, stack.getItem())) {
+                    boolean satisfiesConversion = pair.getRight().test(stack);
+                    return satisfiesConversion;
+                }
+            }
+            return false;
+        });
+        return hasInConversion || _inventory.hasItem(true, items);
     }
     public boolean hasItemAll(Item ...items) {
         return Arrays.stream(items).allMatch(this::hasItem);
@@ -195,6 +211,7 @@ public class ItemStorageTracker extends Tracker {
         return _inventory.getSlotsThatCanFit(true, true, stack, acceptPartial);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasEmptyInventorySlot() {
         return _inventory.hasEmptySlot(true);
     }

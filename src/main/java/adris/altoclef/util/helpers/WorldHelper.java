@@ -81,6 +81,9 @@ public interface WorldHelper {
     static boolean inRangeXZ(Vec3d from, Vec3d to, double range) {
         return distanceXZSquared(from, to) < range*range;
     }
+    static boolean inRangeXZ(BlockPos from, BlockPos to, double range) {
+        return inRangeXZ(toVec3d(from), toVec3d(to), range);
+    }
     static boolean inRangeXZ(Entity entity, Vec3d to, double range) {
         return inRangeXZ(entity.getPos(), to, range);
     }

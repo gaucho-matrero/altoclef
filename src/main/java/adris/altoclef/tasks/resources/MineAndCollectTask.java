@@ -10,12 +10,12 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorSlot;
-import adris.altoclef.util.slots.PlayerInventorySlot;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.ItemEntity;
@@ -134,17 +134,17 @@ public class MineAndCollectTask extends ResourceTask {
                 Item item = cursorStack.getItem();
                 if (item.isSuitableFor(mod.getWorld().getBlockState(_subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
-                    Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem();
+                    Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
                     if (item instanceof MiningToolItem) {
                         if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;
                             if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
                                 // We can equip a better pickaxe.
-                                mod.getSlotHandler().forceEquipSlot(new CursorSlot());
+                                mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                             }
                         } else {
                             // We're not equipped with a pickaxe...
-                            mod.getSlotHandler().forceEquipSlot(new CursorSlot());
+                            mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                         }
                     }
                 }
@@ -237,7 +237,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (obj instanceof ItemEntity itemEntity) {
                 _miningPos = null;
 
-                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).isEmpty()) {
+                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).or(() -> StorageHelper.getGarbageSlot(_mod)).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
 

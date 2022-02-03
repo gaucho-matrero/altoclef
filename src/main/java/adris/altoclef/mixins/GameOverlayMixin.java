@@ -1,5 +1,7 @@
 package adris.altoclef.mixins;
 
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.GameOverlayEvent;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +18,6 @@ public class GameOverlayMixin {
     )
     public void onSetOverlayMessage(Text message, boolean tinted, CallbackInfo ci) {
         String text = message.getString();
-        // TODO: Delete me if we don't need me...
+        EventBus.publish(new GameOverlayEvent(text));
     }
 }

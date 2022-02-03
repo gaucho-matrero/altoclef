@@ -141,7 +141,7 @@ public abstract class DoStuffInContainerTask extends Task {
 
         if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
             setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
-            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
+            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false).or(() -> StorageHelper.getGarbageSlot(mod));
             if (toMoveTo.isEmpty()) {
                 return new EnsureFreeInventorySlotTask();
             } else {

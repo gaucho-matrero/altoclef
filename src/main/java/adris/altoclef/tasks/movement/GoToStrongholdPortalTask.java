@@ -2,27 +2,22 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.List;
-
-//TODO
-// SPLIT INTO LocateStrongholdCoordinates and FastTravel Tasks
-//  - ADD DELIMITERS TO SEPERATE SECTIONS
-//  - FRAME SECTIONS
-//  - TEST FIND_STRONGHOLD
-//  - TEST FAST TRAVEL
 
 public class GoToStrongholdPortalTask extends Task {
 
-    private LocateStrongholdCoordinatesTask _locateCoordsTask;
-    private BlockPos _stronghold_coordinates;
+    private final LocateStrongholdCoordinatesTask _locateCoordsTask;
+    private BlockPos _strongholdCoordinates;
+    private final int _targetEyes;
 
     public GoToStrongholdPortalTask(int targetEyes){
-        _stronghold_coordinates = null;
+        _targetEyes = targetEyes;
+        _strongholdCoordinates = null;
         _locateCoordsTask = new LocateStrongholdCoordinatesTask(targetEyes);
     }
 
@@ -33,17 +28,38 @@ public class GoToStrongholdPortalTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_stronghold_coordinates==null){
-            _stronghold_coordinates = _locateCoordsTask.getStrongholdCoordinates();
-            return _locateCoordsTask;
-        } else {
-            return new FastTravelTask(_stronghold_coordinates, 300,true);
-        }
         /*
             If we don't know where stronghold is, find out where stronghold is.
             If we do know where stronghold is, fast travel there
             If there search it
          */
+        if (_strongholdCoordinates == null) {
+            _strongholdCoordinates = _locateCoordsTask.getStrongholdCoordinates().orElse(null);
+            if (_strongholdCoordinates == null) {
+                if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
+                    setDebugState("Picking up dropped eye");
+                    return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
+                }
+                setDebugState("Triangulating stronghold...");
+                return _locateCoordsTask;
+            }
+        }
+        // Search stone brick chunks, but while we're wandering, go to the nether
+        setDebugState("Searching for Stronghold...");
+        return new SearchChunkForBlockTask(Blocks.STONE_BRICKS) {
+            @Override
+            protected Task onTick(AltoClef mod) {
+                if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
+                    return getWanderTask(mod);
+                }
+                return super.onTick(mod);
+            }
+
+            @Override
+            protected Task getWanderTask(AltoClef mod) {
+                return new FastTravelTask(_strongholdCoordinates, 300,true);
+            }
+        };
     }
 
     @Override
@@ -59,33 +75,5 @@ public class GoToStrongholdPortalTask extends Task {
     @Override
     protected String toDebugString() {
         return "Locating Stronghold";
-    }
-
-    private static class SearchStrongholdTask extends SearchChunkForBlockTask {
-
-        private final GetToBlockTask _goTask;
-
-        public SearchStrongholdTask(Vec3d travelGoal) {
-            super(Blocks.STONE_BRICKS);
-            _goTask = new GetToBlockTask(new BlockPos(travelGoal));
-        }
-
-        @Override
-        protected boolean isEqual(Task other) {
-            if (other instanceof GoToStrongholdPortalTask.SearchStrongholdTask task) {
-                return task._goTask.equals(_goTask) && super.isEqual(other);
-            }
-            return false;
-        }
-
-        @Override
-        protected String toDebugString() {
-            return "Searching for/around stronghold";
-        }
-
-        @Override
-        protected Task getWanderTask(AltoClef mod) {
-            return _goTask;
-        }
     }
 }
