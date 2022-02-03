@@ -25,6 +25,13 @@ import net.minecraft.util.math.Vec3d;
 import java.util.List;
 
 public class GetToXZWithElytraTask extends Task {
+    private static final int CLOSE_ENOUGH_TO_WALK = 128;
+    private static final int MINIMAL_ELYTRA_DURABILITY = 35;
+    private static final int MINIMAL_FIREWORKS = 16;
+    private static final int FIREWORKS_GOAL = 32;
+
+    private static final int LOOK_DISTANCE = 6;
+    private static final int LAND_TARGET_DISTANCE = 12;
 
     private final int _x, _z;
     private boolean _isMovingElytra = false;
@@ -58,7 +65,7 @@ public class GetToXZWithElytraTask extends Task {
             _fx = 0;
             _fz = 0;
             mod.getBehaviour().disableDefence(false); //Enable mob defence
-            if (dist < 128) { //We are near our goal
+            if (dist < CLOSE_ENOUGH_TO_WALK) { //We are near our goal
                 setDebugState("Walking to goal");
                 return new GetToXZTask(_x, _z); //Get to our goal
             }
@@ -76,7 +83,7 @@ public class GetToXZWithElytraTask extends Task {
             }
             int durabilityLeft = RepairToolTask.getDurabilityOfRepairableItem(mod, new ItemTarget(Items.ELYTRA)); //Get the elytra durability
 
-            if (durabilityLeft < 35 && durabilityLeft != -1) { //If we need to repair it before flying
+            if (durabilityLeft < MINIMAL_ELYTRA_DURABILITY && durabilityLeft != -1) { //If we need to repair it before flying
                 if (RepairToolTask.needRepair(mod, new ItemTarget(Items.ELYTRA))) {
                     _repairElytra = true;
                     return null;
@@ -86,10 +93,10 @@ public class GetToXZWithElytraTask extends Task {
             }
 
             //Get some fireworks if doesn't have many
-            if ((mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < 16 || _isCollectingFireWork) && mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < 32) {
+            if ((mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < MINIMAL_FIREWORKS || _isCollectingFireWork) && mod.getItemStorage().getItemCount(Items.FIREWORK_ROCKET) < FIREWORKS_GOAL) {
                 _isCollectingFireWork = true;
                 setDebugState("Getting some fireworks");
-                return TaskCatalogue.getItemTask(Items.FIREWORK_ROCKET, 32);
+                return TaskCatalogue.getItemTask(Items.FIREWORK_ROCKET, FIREWORKS_GOAL);
             }
             _isCollectingFireWork = false;
             
@@ -140,7 +147,7 @@ public class GetToXZWithElytraTask extends Task {
         
         setDebugState("Going to "+_x+" "+_z);
 
-        if (durabilityLeft < 35) { //If the durability is below 35, we need to get on the ground safely before the elytra break
+        if (durabilityLeft < MINIMAL_ELYTRA_DURABILITY) { //If the durability is below 35, we need to get on the ground safely before the elytra break
             if ((mod.getPlayer().getPos().distanceTo(new Vec3d(_fx, mod.getPlayer().getPos().y, _fz)) > 30) || _fx == 0 || _fz == 0) { //if we need to set the "land point"
                _fx = (int)mod.getPlayer().getPos().x; //Set a landing point where we are
                _fz = (int)mod.getPlayer().getPos().z;
@@ -179,14 +186,14 @@ public class GetToXZWithElytraTask extends Task {
             }
         }
 
-        if (dist > 6) { //if the distance is upper than 6
+        if (dist > LOOK_DISTANCE) { //if the distance is upper than the look distance
             if (!LookHelper.isLookingAt(mod, new Rotation(yaw, pitch))) {
                 LookHelper.lookAt(mod, new Rotation(yaw, pitch)); //Look at the target
             }
             
         }
-        //if we have landed, and the distance is under 12 or we don't have any fireworks
-        if (EntityHelper.isGrounded(mod) && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
+        //if we have landed, and the distance is under the LAND_TARGET_DISTANCE or we don't have any fireworks
+        if (EntityHelper.isGrounded(mod) && (dist < LAND_TARGET_DISTANCE || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
             if (StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT).getItem() == Items.ELYTRA) { //Unequip elytra
                 return new ClickSlotTask(PlayerSlot.ARMOR_CHESTPLATE_SLOT); //Click on the elytra in the armor slot
             } else if (!StorageHelper.getItemStackInCursorSlot().isEmpty()){ //Once it's in the cursor slot
