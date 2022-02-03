@@ -27,7 +27,6 @@ import java.util.List;
 public class GetToXZWithElytraTask extends Task {
 
     private final int _x, _z;
-    private boolean _isFinished;
     private boolean _isMovingElytra = false;
     private boolean _isCollectingFireWork = false;
     private boolean _isFlyRunning = false;
@@ -59,10 +58,6 @@ public class GetToXZWithElytraTask extends Task {
             _fx = 0;
             _fz = 0;
             mod.getBehaviour().disableDefence(false); //Enable mob defence
-            if ((int)dist == 0) { //We are where we need to go !
-                _isFinished = true; //End the task
-                return null;
-            }
             if (dist < 128) { //We are near our goal
                 setDebugState("Walking to goal");
                 return new GetToXZTask(_x, _z); //Get to our goal
@@ -220,7 +215,7 @@ public class GetToXZWithElytraTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _isFinished;
+        return mod.getPlayer().getPos().distanceTo(new Vec3d(_x, mod.getPlayer().getPos().y, _z)) < 2  && !_isFlyRunning;
     }
     @Override
     protected String toDebugString() {

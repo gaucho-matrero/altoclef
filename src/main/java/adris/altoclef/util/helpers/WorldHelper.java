@@ -163,7 +163,7 @@ public interface WorldHelper {
     static int getGroundHeight(AltoClef mod, int x, int z) {
         for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
             BlockPos check = new BlockPos(x, y, z);
-            if (isAir(mod, check)) return y;
+            if (!isAir(mod, check)) return y;
         }
         return -1;
     }
