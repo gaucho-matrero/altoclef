@@ -31,7 +31,7 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
     private static final double XZ_RADIUS = 30;
     private static final double XZ_RADIUS_TOO_FAR = 38;
     // How high to pillar
-    private static final int HEIGHT = 38;
+    private static final int HEIGHT = 42; //Increase height because this too low
 
     private static final int CLOSE_ENOUGH_DISTANCE = 15;
 
