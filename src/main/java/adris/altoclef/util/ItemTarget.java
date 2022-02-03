@@ -94,8 +94,11 @@ public class ItemTarget {
     }
 
     public boolean matches(Item item) {
+        if(_itemMatches==null)
+            return true; //_itemMatches could be null. Hopefully this is allowed
         for (Item match : _itemMatches) {
-            if (match == null) continue;
+            if (match == null)
+                continue;
             if (match.equals(item)) return true;
         }
         return false;
