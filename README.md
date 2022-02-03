@@ -27,7 +27,7 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 The current sha256 hash of this release is:
 
- ***b8724f6df1cb813c828ee261cc723fce987986dc6731a1cc06ef38712ea54df9***
+ ***847d2080db670943aacd8a4705c4e4eca46def0f9ec566dc3d55e13da6b3b693***
 
 Last updated 1/31/2022. 
 
