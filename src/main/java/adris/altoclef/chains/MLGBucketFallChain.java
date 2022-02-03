@@ -120,7 +120,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     }
 
     public boolean isFallingOhNo(AltoClef mod) {
-        if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().disableDefence()) {
+        if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().isDefenseDisabled()) {
             return false;
         }
         if (EntityHelper.isGrounded(mod)) {

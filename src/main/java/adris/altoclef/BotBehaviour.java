@@ -141,12 +141,12 @@ public class BotBehaviour {
         current().applyState();
     }
 
-    //Way of disabling MLG and MobDefense from a task
-    public boolean disableDefence() {
-        return current().disableDefence; //get value with mod.getBehaviour().disableDefence()
+    //Way of disabling MLG and defense from a task
+    public boolean isDefenseDisabled() { //Get the value
+        return current().disableDefence;
     }
 
-    public void disableDefence(boolean value) { //and set value with mod.getBehaviour().disableDefence(true|false)
+    public void defence(boolean value) { //And set the value
         current().disableDefence = value;
         current().applyState();
     }
