@@ -19,7 +19,7 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
 
     public CollectBedTask(Item[] beds, ItemTarget wool, int count) {
         // Top 3 are wool, must be the same.
-        super(new ItemTarget(beds, count), createBedRecipe(wool), new boolean[]{true, true, true, false, false, false, false, false, false});
+        super(new ItemTarget(beds, count), colorfulItems -> colorfulItems.wool, colorfulItems -> colorfulItems.bed, createBedRecipe(wool), new boolean[]{true, true, true, false, false, false, false, false, false});
         _visualBedTarget = new ItemTarget(beds, count);
     }
 

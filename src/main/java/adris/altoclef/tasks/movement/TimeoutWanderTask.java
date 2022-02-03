@@ -103,6 +103,9 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
             setDebugState("Getting unstuck from block.");
+            // Stop other tasks, we are JUST shimmying
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+            mod.getClientBaritone().getExploreProcess().onLostControl();
             return _unstuckTask;
         }
 

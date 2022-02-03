@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.control.KillAura;
+import adris.altoclef.util.BlockRange;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.serialization.IFailableConfigFile;
@@ -69,6 +70,14 @@ public class Settings implements IFailableConfigFile {
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
     private float containerItemMoveDelay = 0.2f;
+
+    /**
+     * If true, use Minecraft's crafting recipe book to place items into
+     * the crafting table (should be much faster as it's almost instant)
+     *
+     * If false, will place items in each slot manually (the original way)
+     */
+    private boolean useCraftingBookToCraft = true;
 
     /**
      * If a dropped resource item is further than this from the player, don't pick it up.
@@ -262,6 +271,12 @@ public class Settings implements IFailableConfigFile {
     private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
     /**
+     * When fast traveling via the nether, walk to our destination if we somehow end up closer than this range in the overworld.
+     * We will normally travel well within this range (to within 100 blocks if not within a few), so keep this value ~decently~ large.
+     */
+    private int netherFastTravelWalkingRange = 600;
+
+    /**
      * If set, will run this command by default when no other commands are running.
      *
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
@@ -388,7 +403,7 @@ public class Settings implements IFailableConfigFile {
      *      },
      * ],
      */
-    private List<ProtectionRange> areasToProtect = Collections.emptyList();
+    private List<BlockRange> areasToProtect = Collections.emptyList();
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +449,10 @@ public class Settings implements IFailableConfigFile {
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
+    }
+
+    public boolean shouldUseCraftingBookToCraft() {
+        return useCraftingBookToCraft;
     }
 
     public int getFoodUnitsToCollect() {
@@ -559,14 +578,18 @@ public class Settings implements IFailableConfigFile {
     }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
-        for (ProtectionRange protection : areasToProtect) {
-            if (protection.includes(pos)) return true;
+        for (BlockRange protection : areasToProtect) {
+            if (protection.contains(pos)) return true;
         }
         return false;
     }
 
     public DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR getOverworldToNetherBehaviour() {
         return overworldToNetherBehaviour;
+    }
+
+    public int getNetherFastTravelWalkingRange() {
+        return netherFastTravelWalkingRange;
     }
 
     public BlockPos getHomeBasePosition() {
@@ -585,20 +608,5 @@ public class Settings implements IFailableConfigFile {
 
     public static void load(Consumer<Settings> onReload) {
         ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
-    }
-
-    private static class ProtectionRange {
-        public BlockPos start;
-        public BlockPos end;
-
-        public boolean includes(BlockPos pos) {
-            return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
-                    start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
-                    start.getY() <= pos.getY() && pos.getY() <= end.getY());
-        }
-
-        public String toString() {
-            return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
-        }
     }
 }

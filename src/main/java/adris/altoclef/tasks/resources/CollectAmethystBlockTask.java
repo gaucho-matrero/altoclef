@@ -4,10 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -45,7 +42,7 @@ public class CollectAmethystBlockTask extends ResourceTask {
         if (mod.getItemStorage().getItemCount(Items.AMETHYST_SHARD) >= 4) {
             int target = mod.getItemStorage().getItemCount(Items.AMETHYST_BLOCK) + 1;
             ItemTarget s = new ItemTarget(Items.AMETHYST_SHARD, 1);
-            return new CraftInInventoryTask(new ItemTarget(Items.AMETHYST_BLOCK, target), CraftingRecipe.newShapedRecipe("amethyst_block", new ItemTarget[]{s, s, s, s}, 1));
+            return new CraftInInventoryTask(new RecipeTarget(Items.AMETHYST_BLOCK, target, CraftingRecipe.newShapedRecipe("amethyst_block", new ItemTarget[]{s, s, s, s}, 1)));
         }
         return new MineAndCollectTask(new ItemTarget(new Item[]{Items.AMETHYST_BLOCK, Items.AMETHYST_SHARD}), new Block[]{Blocks.AMETHYST_BLOCK, Blocks.AMETHYST_CLUSTER}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);
     }

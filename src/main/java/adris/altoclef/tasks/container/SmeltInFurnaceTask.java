@@ -4,6 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask.DoSmeltInFurnaceTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask.FurnaceCache;
 import adris.altoclef.tasks.resources.CollectFuelTask;
 import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.Task;
@@ -74,6 +76,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
         if (_targets.length != 1) {
             Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
         }
+        mod.getBehaviour().push();
+        mod.getBehaviour().markSlotAsConversionSlot(FurnaceSlot.INPUT_SLOT_MATERIALS, stack -> {
+            // Eventually do multiple targets
+            return _targets[0].getMaterial().matches(stack.getItem());
+        });
+        mod.getBehaviour().markSlotAsConversionSlot(FurnaceSlot.INPUT_SLOT_FUEL, stack -> ItemHelper.isFuel(stack.getItem()));
     }
 
     @Override
@@ -109,23 +117,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
         return _targets;
     }
 
+    @SuppressWarnings("ConditionCoveredByFurtherCondition")
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask {
-
-        /**
-         * TODO:
-         *
-         * - Settings `supportedFuels` and `limitFuelsToSupportedFuels` boolean (default is true)
-         *
-         * - Keep track of last "container"
-         * - Keep track of last "burn percentage"
-         * - Consider total fuel, total materials, total output and how much we need in our INVENTORY specifically
-         *      - Fuel selection depends on `limitFuelsToSupportedFuels` / `supportedFuels`
-         *      - How much fuel we NEED depends on `_ignoreMaterials`. If that's set to true, assume 0 until we have
-         *      a cached furnace (in which case use the cached furnace. I guess you can probably just set the "required left" buffer to zero)
-         * - If not enough fuel, get it I suppose.
-         * - If not enough materials, get them.
-         * - For now just smelt one at a time.
-         */
 
         private final SmeltTarget _target;
         private boolean _ignoreMaterials;
@@ -225,8 +218,8 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 setDebugState("Receiving Output");
                 // Ensure our cursor is empty/can receive our item
                 ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-                if (!cursor.isEmpty() && !ItemHelper.canStackTogether(output, cursor)) {
-                    Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
+                if (!ItemHelper.canStackTogether(output, cursor)) {
+                    Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
                     if (toFit.isPresent()) {
                         return new ClickSlotTask(toFit.get());
                     } else {
@@ -305,15 +298,15 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
             // We got stone
             if (mod.getItemStorage().getItemCount(Items.COBBLESTONE) > 8) {
-                double cost = 300 - (50 * (double) mod.getItemStorage().getItemCount(Items.COBBLESTONE) / 8);
-                return Math.max(cost, 60);
+                double cost = 100 - (90 * (double) mod.getItemStorage().getItemCount(Items.COBBLESTONE) / 8);
+                return Math.max(cost, 10);
             }
             // We got pick
             if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
-                return 200;
+                return 50;
             }
             // We gotta make pick and mine stone
-            return 400;
+            return 100;
         }
 
         @Override

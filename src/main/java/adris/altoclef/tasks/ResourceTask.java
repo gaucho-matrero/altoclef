@@ -5,7 +5,9 @@ import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
+import adris.altoclef.tasksystem.ITaskCanForce;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
@@ -14,6 +16,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
@@ -30,7 +33,7 @@ import java.util.Optional;
  *
  * If the target item is on the ground or in a chest, will grab from those sources first.
  */
-public abstract class ResourceTask extends Task {
+public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     protected final ItemTarget[] _itemTargets;
 
@@ -59,7 +62,15 @@ public abstract class ResourceTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return StorageHelper.itemTargetsMetInventory(mod, _itemTargets);
+        return StorageHelper.itemTargetsMetInventoryNoCursor(mod, _itemTargets);
+    }
+
+    @Override
+    public boolean shouldForce(AltoClef mod, Task interruptingCandidate) {
+        // We have an important item target in our cursor.
+        return StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && !isFinished(mod)
+                // This _should_ be redundant, but it'll be a guard just to make 100% sure.
+                && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()));
     }
 
     @Override
@@ -81,6 +92,17 @@ public abstract class ResourceTask extends Task {
                 setDebugState("Moving from SPECIAL inventory slot");
                 return new MoveInaccessibleItemToInventoryTask(target);
             }
+        }
+
+        // We have enough items COUNTING the cursor slot, we just need to move an item from our cursor.
+        if (StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()))) {
+            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), true).or(() -> StorageHelper.getGarbageSlot(mod));
+            if (toMove.isEmpty()) {
+                setDebugState("STUCK! No slot can fit our item.");
+                return null;
+            }
+            setDebugState("Moving from cursor");
+            return new ClickSlotTask(toMove.get());
         }
 
         if (!shouldAvoidPickingUp(mod)) {
@@ -111,6 +133,15 @@ public abstract class ResourceTask extends Task {
         }
 
         // Check for chests and grab resources from them.
+        if (_currentContainer == null) {
+            List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
+            if (!containersWithItem.isEmpty()) {
+                ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), true))).get();
+                if (closest.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
+                    _currentContainer = closest;
+                }
+            }
+        }
         if (_currentContainer != null) {
             Optional<ContainerCache> container = mod.getItemStorage().getContainerAtPosition(_currentContainer.getBlockPos());
             if (container.isPresent()) {
@@ -123,14 +154,6 @@ public abstract class ResourceTask extends Task {
                 }
             } else {
                 _currentContainer = null;
-            }
-        }
-        List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
-        if (!containersWithItem.isEmpty()) {
-            ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos(), true))).get();
-            if (closest.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceChestLocateRange())) {
-                _currentContainer = closest;
-                return new PickupFromContainerTask(_currentContainer.getBlockPos(), _itemTargets);
             }
         }
 

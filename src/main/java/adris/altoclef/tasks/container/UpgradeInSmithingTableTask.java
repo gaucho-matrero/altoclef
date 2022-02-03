@@ -8,7 +8,7 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
@@ -44,7 +44,9 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-
+        mod.getBehaviour().push();
+        mod.getBehaviour().markSlotAsConversionSlot(SmithingTableSlot.INPUT_SLOT_TOOL, stack -> _tool.matches(stack.getItem()));
+        mod.getBehaviour().markSlotAsConversionSlot(SmithingTableSlot.INPUT_SLOT_MATERIALS, stack -> _material.matches(stack.getItem()));
     }
 
     private int getItemsInSlot(AltoClef mod, Slot slot, ItemTarget match) {
@@ -99,7 +101,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-
+        mod.getBehaviour().push();
     }
 
     @Override

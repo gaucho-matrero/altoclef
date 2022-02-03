@@ -5,12 +5,11 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -18,12 +17,14 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
     private final TimerGame _tryCollectWaterTimer = new TimerGame(4);
     private final TimerGame _pickupRepeatTimer = new TimerGame(0.25);
     private MLGBucketTask _lastMLG = null;
     private boolean _wasPickingUp = false;
+    private boolean _doingChorusFruit = false;
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -85,6 +86,20 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             _wasPickingUp = false;
             _lastMLG = null;
         }
+        if (mod.getPlayer().hasStatusEffect(StatusEffects.LEVITATION) &&
+                !mod.getPlayer().getItemCooldownManager().isCoolingDown(Items.CHORUS_FRUIT) &&
+                mod.getPlayer().getActiveStatusEffects().get(StatusEffects.LEVITATION).getDuration() <= 70 &&
+                mod.getItemStorage().hasItemInventoryOnly(Items.CHORUS_FRUIT) &&
+                !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
+            _doingChorusFruit = true;
+            mod.getSlotHandler().forceEquipItem(Items.CHORUS_FRUIT);
+            mod.getInputControls().hold(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(true);
+        } else if (_doingChorusFruit) {
+            _doingChorusFruit = false;
+            mod.getInputControls().release(Input.CLICK_RIGHT);
+            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+        }
         return Float.NEGATIVE_INFINITY;
     }
 
@@ -99,13 +114,16 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         return true;
     }
 
+    public boolean isChorusFruiting() {
+        return _doingChorusFruit;
+    }
+
     public boolean isFallingOhNo(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().disableDefence()) {
             return false;
         }
         if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
             // We're grounded.
-            //Debug.logMessage(mod.getPlayer().isSwimming() + ", " + mod.getPlayer().isSubmergedInWater() + ", " + mod.getPlayer().isOnGround() + ", " + mod.getPlayer().isClimbing());
             return false;
         }
         double ySpeed = mod.getPlayer().getVelocity().y;

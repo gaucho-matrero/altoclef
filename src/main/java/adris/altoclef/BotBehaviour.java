@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.util.slots.Slot;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
@@ -8,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
@@ -88,6 +90,15 @@ public class BotBehaviour {
         // current.applyState();
     }
 
+    public List<Pair<Slot, Predicate<ItemStack>>> getConversionSlots() {
+        return current().conversionSlots;
+    }
+
+    public void markSlotAsConversionSlot(Slot slot, Predicate<ItemStack> itemBelongsHere) {
+        current().conversionSlots.add(new Pair<>(slot, itemBelongsHere));
+        // apply not needed
+    }
+
     public void avoidBlockBreaking(BlockPos pos) {
         current().blocksToAvoidBreaking.add(pos);
         current().applyState();
@@ -107,6 +118,12 @@ public class BotBehaviour {
         current().allowWalking.add(pred);
         current().applyState();
     }
+
+    public void avoidWalkingThrough(Predicate<BlockPos> pred) {
+        current().avoidWalkingThrough.add(pred);
+        current().applyState();
+    }
+
 
     public void forceUseTool(BiPredicate<BlockState, ItemStack> pred) {
         current().forceUseTools.add(pred);
@@ -170,7 +187,7 @@ public class BotBehaviour {
     }
 
     public void setPreferredStairs(boolean allow) {
-        current().preferredStairs = allow;
+        //current().preferredStairs = allow;
         current().applyState();
     }
 
@@ -249,7 +266,7 @@ public class BotBehaviour {
         public boolean mineScanDroppedItems;
         public boolean swimThroughLava;
         public boolean allowDiagonalAscend;
-        public boolean preferredStairs;
+        //public boolean preferredStairs;
         public double blockPlacePenalty;
         public double blockBreakAdditionalPenalty;
 
@@ -258,14 +275,15 @@ public class BotBehaviour {
         public boolean forceFieldPlayers;
         public boolean disableDefence;
         public List<Predicate<Entity>> avoidDodgingProjectile = new ArrayList<>();
-
         public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();
+        public List<Pair<Slot, Predicate<ItemStack>>> conversionSlots = new ArrayList<>();
 
         // Extra Baritone Settings
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
+        public List<Predicate<BlockPos>> avoidWalkingThrough = new ArrayList<>();
         public List<BiPredicate<BlockState, ItemStack>> forceUseTools = new ArrayList<>();
         public List<BiFunction<Double, BlockPos, Double>> globalHeuristics = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
@@ -296,6 +314,7 @@ public class BotBehaviour {
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
                 avoidDodgingProjectile.addAll(toCopy.avoidDodgingProjectile);
                 excludeFromForceField.addAll(toCopy.excludeFromForceField);
+                conversionSlots.addAll(toCopy.conversionSlots);
                 forceFieldPlayers = toCopy.forceFieldPlayers;
                 escapeLava = toCopy.escapeLava;
             }
@@ -330,6 +349,7 @@ public class BotBehaviour {
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
                     synchronized (settings.getPropertiesMutex()) {
                         allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
+                        avoidWalkingThrough = new ArrayList<>(settings.getForceAvoidWalkThroughPredicates());
                         forceUseTools = new ArrayList<>(settings.getForceUseToolPredicates());
                     }
                 }
@@ -373,6 +393,8 @@ public class BotBehaviour {
                     synchronized (sa.getPropertiesMutex()) {
                         sa.getForceWalkOnPredicates().clear();
                         sa.getForceWalkOnPredicates().addAll(allowWalking);
+                        sa.getForceAvoidWalkThroughPredicates().clear();
+                        sa.getForceAvoidWalkThroughPredicates().addAll(avoidWalkingThrough);
                         sa.getForceUseToolPredicates().clear();
                         sa.getForceUseToolPredicates().addAll(forceUseTools);
                     }

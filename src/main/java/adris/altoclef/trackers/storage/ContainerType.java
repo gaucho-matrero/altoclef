@@ -9,7 +9,7 @@ import net.minecraft.screen.*;
 import org.apache.commons.lang3.NotImplementedException;
 
 public enum ContainerType {
-    CHEST, ENDER_CHEST, SHULKER, FURNACE, BREWING, MISC;
+    CHEST, ENDER_CHEST, SHULKER, FURNACE, BREWING, MISC, EMPTY;
 
     public static ContainerType getFromBlock(Block block) {
         if (block instanceof ChestBlock) {
@@ -27,7 +27,10 @@ public enum ContainerType {
         if (block instanceof BrewingStandBlock) {
             return BREWING;
         }
-        return MISC;
+        if (block instanceof BarrelBlock || block instanceof DispenserBlock || block instanceof HopperBlock) {
+            return MISC;
+        }
+        return EMPTY;
     }
 
     public static boolean screenHandlerMatches(ContainerType type, ScreenHandler handler) {
@@ -45,7 +48,10 @@ public enum ContainerType {
                 return handler instanceof BrewingStandScreenHandler;
             }
             case MISC -> {
-                return true;
+                return handler instanceof Generic3x3ContainerScreenHandler || handler instanceof GenericContainerScreenHandler;
+            }
+            case EMPTY -> {
+                return false;
             }
             default -> throw new NotImplementedException("Missed this chest type: " + type);
         }
@@ -58,6 +64,11 @@ public enum ContainerType {
         }
         return false;
     }
+    public static boolean screenHandlerMatchesAny() {
+        return screenHandlerMatches(CHEST) ||
+                screenHandlerMatches(SHULKER) ||
+                screenHandlerMatches(FURNACE);
+    }
 
     public static boolean slotTypeMatches(ContainerType type, Slot slot) {
         switch (type) {
@@ -67,9 +78,7 @@ public enum ContainerType {
             case FURNACE -> {
                 return slot instanceof FurnaceSlot;
             }
-            case BREWING -> {
-                throw new NotImplementedException("Brewing slots not implemented yet.");
-            }
+            case BREWING -> throw new NotImplementedException("Brewing slots not implemented yet.");
             case MISC -> {
                 return true;
             }

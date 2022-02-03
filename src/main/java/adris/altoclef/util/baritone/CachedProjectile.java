@@ -1,6 +1,6 @@
 package adris.altoclef.util.baritone;
 
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.util.math.Vec3d;
 
 import java.lang.reflect.Type;

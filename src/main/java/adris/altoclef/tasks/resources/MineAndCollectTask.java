@@ -10,12 +10,12 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorSlot;
-import adris.altoclef.util.slots.PlayerInventorySlot;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.ItemEntity;
@@ -134,17 +134,17 @@ public class MineAndCollectTask extends ResourceTask {
                 Item item = cursorStack.getItem();
                 if (item.isSuitableFor(mod.getWorld().getBlockState(_subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
-                    Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem();
+                    Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
                     if (item instanceof MiningToolItem) {
                         if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;
                             if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
                                 // We can equip a better pickaxe.
-                                mod.getSlotHandler().forceEquipSlot(new CursorSlot());
+                                mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                             }
                         } else {
                             // We're not equipped with a pickaxe...
-                            mod.getSlotHandler().forceEquipSlot(new CursorSlot());
+                            mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                         }
                     }
                 }
@@ -182,19 +182,17 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
-            Optional<BlockPos> closestBlock = Optional.empty();
-            if (mod.getBlockTracker().anyFound(_blocks)) {
-                closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
-                    if (_blacklist.contains(check)) return false;
-                    return WorldHelper.canBreak(mod, check);
-                }, _blocks);
-            }
+            Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
+                if (_blacklist.contains(check)) return false;
+                return WorldHelper.canBreak(mod, check);
+            }, _blocks);
+
             Optional<ItemEntity> closestDrop = Optional.empty();
             if (mod.getEntityTracker().itemDropped(_targets)) {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, false);
+            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, true);
             double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
@@ -239,7 +237,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (obj instanceof ItemEntity itemEntity) {
                 _miningPos = null;
 
-                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).isEmpty()) {
+                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).or(() -> StorageHelper.getGarbageSlot(_mod)).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
 

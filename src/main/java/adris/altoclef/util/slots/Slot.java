@@ -44,6 +44,7 @@ public abstract class Slot {
         }
     }
 
+    /*
     private static Slot getFromCurrentScreenAbstract(int slot, boolean inventory) {
         switch (getCurrentType()) {
             case PLAYER:
@@ -60,29 +61,16 @@ public abstract class Slot {
                 Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
                 return null;
         }
-    }
+    }*/
 
+    public boolean isScreenOpen() {
+        return SlotScreenMapping.isScreenOpen(getClass());
+    }
     public static Slot getFromCurrentScreen(int windowSlot) {
-        return getFromCurrentScreenAbstract(windowSlot, false);
+        return SlotScreenMapping.getFromScreen(windowSlot, false);//getFromCurrentScreenAbstract(windowSlot, false);
     }
     public static Slot getFromCurrentScreenInventory(int inventorySlot) {
-        return getFromCurrentScreenAbstract(inventorySlot, true);
-    }
-
-    private static ContainerType getCurrentType() {
-        Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (screen instanceof FurnaceScreen || screen instanceof SmithingScreen) {
-            return ContainerType.FURNACE_OR_SMITH;
-        }
-        if (screen instanceof GenericContainerScreen) {
-            GenericContainerScreenHandler handler = ((GenericContainerScreen) screen).getScreenHandler();
-            boolean big = (handler.getRows() == 6);
-            return big ? ContainerType.CHEST_LARGE : ContainerType.CHEST_SMALL;
-        }
-        if (screen instanceof CraftingScreen) {
-            return ContainerType.CRAFTING_TABLE;
-        }
-        return ContainerType.PLAYER;
+        return SlotScreenMapping.getFromScreen(inventorySlot, true);//getFromCurrentScreenAbstract(windowSlot, true);
     }
 
     public static boolean isCursor(Slot slot) {
@@ -93,7 +81,7 @@ public abstract class Slot {
         return () -> new Iterator<>() {
             final ClientPlayerEntity player = MinecraftClient.getInstance().player;
             final ScreenHandler handler = player != null? player.currentScreenHandler : null;
-            int i = 0;
+            int i = -1;
             final int MAX = handler != null? handler.slots.size() : 0;
             @Override
             public boolean hasNext() {
@@ -102,6 +90,10 @@ public abstract class Slot {
 
             @Override
             public Slot next() {
+                if (i == -1) {
+                    ++i;
+                    return CursorSlot.SLOT;
+                }
                 return Slot.getFromCurrentScreen(i++);
             }
         };

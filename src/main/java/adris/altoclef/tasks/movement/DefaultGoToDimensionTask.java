@@ -98,10 +98,10 @@ public class DefaultGoToDimensionTask extends Task {
             return new EnterNetherPortalTask(Dimension.NETHER);
         }
 
-        BlockPos closest = mod.getMiscBlockTracker().getLastNetherPortal(Dimension.NETHER);
-        if (closest != null) {
+        Optional<BlockPos> closest = mod.getMiscBlockTracker().getLastUsedNetherPortal(Dimension.NETHER);
+        if (closest.isPresent()) {
             setDebugState("Going to last nether portal pos");
-            return new GetToBlockTask(closest);
+            return new GetToBlockTask(closest.get());
         }
 
         setDebugState("Constructing nether portal with obsidian");

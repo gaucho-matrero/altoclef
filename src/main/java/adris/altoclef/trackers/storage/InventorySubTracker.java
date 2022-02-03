@@ -70,7 +70,7 @@ public class InventorySubTracker extends Tracker {
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
         for (Item item : items) {
             if (playerInventory && cursorStack.getItem().equals(item))
-                result.add(new CursorSlot());
+                result.add(CursorSlot.SLOT);
             if (playerInventory)
                 result.addAll(_itemToSlotPlayer.getOrDefault(item, Collections.emptyList()));
             if (containerInventory)
@@ -101,7 +101,7 @@ public class InventorySubTracker extends Tracker {
         for (Slot toCheckStackable : list.getOrDefault(item.getItem(), Collections.emptyList())) {
             ItemStack stackToAddTo = StorageHelper.getItemStackInSlot(toCheckStackable);
             // We must have SOME room left, then we decide whether we care about having ENOUGH
-            if (ItemHelper.canStackTogether(item, stackToAddTo)) {
+            if (!stackToAddTo.isEmpty() && ItemHelper.canStackTogether(item, stackToAddTo)) {
                 int roomLeft = stackToAddTo.getMaxCount() - stackToAddTo.getCount();
                 if (acceptPartial || roomLeft > item.getCount()) {
                     result.add(toCheckStackable);
@@ -112,6 +112,9 @@ public class InventorySubTracker extends Tracker {
         if (MinecraftClient.getInstance().player != null) {
             ScreenHandler handler = MinecraftClient.getInstance().player.currentScreenHandler;
             for (Slot airSlot : list.getOrDefault(Items.AIR, Collections.emptyList())) {
+                // Ignore cursor slot
+                if (airSlot.equals(CursorSlot.SLOT))
+                    continue;
                 int windowCheck = airSlot.getWindowSlot();
                 // Special case: Armor/shield, we wish to ignore these if our inventory is not open.
                 if (windowCheck < handler.slots.size() && handler.getSlot(windowCheck).canInsert(item)) {
@@ -173,6 +176,9 @@ public class InventorySubTracker extends Tracker {
         if (handler == null)
             return;
         for (Slot slot : Slot.getCurrentScreenSlots()) {
+            // Ignore cursor slot, that's handled separately.
+            if (slot.equals(CursorSlot.SLOT))
+                continue;
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
             // Add separately if we're in a container vs player inventory.
 
@@ -180,22 +186,6 @@ public class InventorySubTracker extends Tracker {
                 registerItem(stack, slot, slot.isSlotInPlayerInventory());
             }
         }
-
-        /*
-        // Manually receive armor + offhand when not in player inventory
-        if (!(handler instanceof PlayerScreenHandler)) {
-            PlayerInventory inv = MinecraftClient.getInstance().player.getInventory();
-            if (inv != null) {
-                for (ItemStack stack : inv.offHand) {
-                    registerItem(stack, PlayerInventorySlot.OFFHAND_SLOT, true);
-                }
-                registerItem(inv.getArmorStack(3), PlayerInventorySlot.ARMOR_HELMET_SLOT, true);
-                registerItem(inv.getArmorStack(2), PlayerInventorySlot.ARMOR_CHESTPLATE_SLOT, true);
-                registerItem(inv.getArmorStack(1), PlayerInventorySlot.ARMOR_LEGGINGS_SLOT, true);
-                registerItem(inv.getArmorStack(0), PlayerInventorySlot.ARMOR_BOOTS_SLOT, true);
-            }
-        }
-         */
     }
 
     @Override

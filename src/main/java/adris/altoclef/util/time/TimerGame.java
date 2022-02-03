@@ -1,4 +1,4 @@
-package adris.altoclef.util.csharpisbetter;
+package adris.altoclef.util.time;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;

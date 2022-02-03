@@ -2,26 +2,25 @@ package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.CraftGenericTask;
+import adris.altoclef.tasks.CraftGenericManuallyTask;
+import adris.altoclef.tasks.CraftGenericWithRecipeBooksTask;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
+import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,24 +42,20 @@ public class CraftInTableTask extends ResourceTask {
         _craftTask = new DoCraftInTableTask(_targets);
     }
 
-    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
-        super(target);
-        _targets = new RecipeTarget[]{new RecipeTarget(target, recipe)};
+    public CraftInTableTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
+        super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
+        _targets = new RecipeTarget[]{target};
         _craftTask = new DoCraftInTableTask(_targets, collect, ignoreUncataloguedSlots);
     }
 
-    public CraftInTableTask(ItemTarget target, CraftingRecipe recipe) {
-        this(target, recipe, true, false);
-    }
-
-    public CraftInTableTask(Item item, int count, CraftingRecipe recipe) {
-        this(new ItemTarget(item, count), recipe);
+    public CraftInTableTask(RecipeTarget target) {
+        this(target, true, false);
     }
 
     private static ItemTarget[] extractItemTargets(RecipeTarget[] recipeTargets) {
         List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
         for (RecipeTarget target : recipeTargets) {
-            result.add(target.getItem());
+            result.add(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
         }
         return result.toArray(ItemTarget[]::new);
     }
@@ -136,6 +131,21 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         StorageHelper.closeScreen();
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
+        // Our crafting slots are here for conversion
+        for (RecipeTarget target : _targets) {
+            int recSlot = 0;
+            for (Slot slot : CraftingTableSlot.INPUT_SLOTS) {
+                ItemTarget valid = target.getRecipe().getSlot(recSlot++);
+                mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> {
+                    // We already have the item
+                    if (mod.getItemStorage().getItemCount(target.getOutputItem()) >= target.getTargetCount())
+                        return false;
+                    // We don't, consider ourselves crafting!
+                    return valid.matches(stack.getItem());
+                });
+            }
+        }
+
 
         // Reset our "finished" value in the collect recipe thing.
         _collectTask.reset();
@@ -164,8 +174,15 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         //
 
         // Grab from output FIRST
-        if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_targets).anyMatch(target -> target.getItem().matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
-            return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+        if (StorageHelper.isPlayerInventoryOpen()) {
+            if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
+                Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
+                for (RecipeTarget target : _targets) {
+                    if (target.getOutputItem() == outputItem) {
+                        return new ReceiveOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                    }
+                }
+            }
         }
 
         if (_collect) {
@@ -229,13 +246,17 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         }
 
         for (RecipeTarget target : _targets) {
-            if (StorageHelper.itemTargetsMet(mod, target.getItem()))
+            if (mod.getItemStorage().getItemCount(target.getOutputItem()) >= target.getTargetCount())
                 continue;
             // No need to free, handled automatically I believe.
             setDebugState("Crafting");
-            return new CraftGenericTask(target.getRecipe());
+
+            return mod.getModSettings().shouldUseCraftingBookToCraft()
+                    ? new CraftGenericWithRecipeBooksTask(target)
+                    : new CraftGenericManuallyTask(target);
         }
 
+        setDebugState("DONE? Shouldn't be here");
         return null;
     }
 
@@ -249,10 +270,10 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         // TODO: If we have an axe, lower the cost.
         if (mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap
-            return 15*5;
+            return 10;
         }
         // TODO: If cached and the closest log is really far away, strike the price UP
-        return 300*2;
+        return 100;
     }
 
     private Item[] getMaterialsArray() {

@@ -1,6 +1,9 @@
 package adris.altoclef.trackers.storage;
 
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.BlockInteractEvent;
+import adris.altoclef.eventbus.events.ScreenOpenEvent;
 import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.Dimension;
@@ -35,9 +38,24 @@ public class ContainerSubTracker extends Tracker {
         for (Dimension dimension : Dimension.values()) {
             _containerCaches.put(dimension, new HashMap<>());
         }
+
+        // Listen for when we interact with a block
+        EventBus.subscribe(BlockInteractEvent.class, evt -> {
+            BlockPos blockPos = evt.hitResult.getBlockPos();
+            BlockState bs = evt.world.getBlockState(blockPos);
+            onBlockInteract(blockPos, bs.getBlock());
+        });
+        EventBus.subscribe(ScreenOpenEvent.class, evt -> {
+            if (evt.preOpen) {
+                onScreenOpenFirstTick(evt.screen);
+            } else {
+                if (evt.screen == null)
+                    onScreenClose();
+            }
+        });
     }
 
-    public void onBlockInteract(BlockPos pos, Block block) {
+    private void onBlockInteract(BlockPos pos, Block block) {
         if (block instanceof AbstractFurnaceBlock ||
             block instanceof ChestBlock ||
             block.equals(Blocks.ENDER_CHEST) ||
@@ -48,7 +66,7 @@ public class ContainerSubTracker extends Tracker {
             _lastBlockInteraction = block;
         }
     }
-    public void onScreenOpenFirstTick(final Screen screen) {
+    private void onScreenOpenFirstTick(final Screen screen) {
         _containerOpen = screen instanceof FurnaceScreen
                 || screen instanceof GenericContainerScreen
                 || screen instanceof SmokerScreen
@@ -56,7 +74,7 @@ public class ContainerSubTracker extends Tracker {
                 || screen instanceof HopperScreen
                 || screen instanceof ShulkerBoxScreen;
     }
-    public void onScreenClose() {
+    private void onScreenClose() {
         _containerOpen = false;
         _lastBlockPosInteraction = null;
         _lastBlockInteraction = null;
@@ -113,6 +131,9 @@ public class ContainerSubTracker extends Tracker {
         BlockPos pos = cache.getBlockPos();
         if (WorldHelper.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
             ContainerType actualType = ContainerType.getFromBlock(_mod.getWorld().getBlockState(pos).getBlock());
+            if (actualType == ContainerType.EMPTY) {
+                return false;
+            }
             return actualType == cache.getContainerType();
         }
         return true;
@@ -159,8 +180,16 @@ public class ContainerSubTracker extends Tracker {
 
     public Optional<ContainerCache> getClosestTo(Vec3d pos, Predicate<ContainerCache> accept) {
         double bestDist = Double.POSITIVE_INFINITY;
+        Dimension dim = WorldHelper.getCurrentDimension();
+
+        List<BlockPos> toRemove = new ArrayList<>();
+
         ContainerCache bestCache = null;
-        for (ContainerCache cache : _containerCaches.get(WorldHelper.getCurrentDimension()).values()) {
+        for (ContainerCache cache : _containerCaches.get(dim).values()) {
+            if (!isContainerCacheValid(dim, cache)) {
+                toRemove.add(cache.getBlockPos());
+                continue;
+            }
             double dist = cache.getBlockPos().getSquaredDistance(pos, true);
             if (dist < bestDist) {
                 if (accept.test(cache)) {
@@ -168,6 +197,10 @@ public class ContainerSubTracker extends Tracker {
                     bestCache = cache;
                 }
             }
+        }
+        // Clear anything invalid
+        for (BlockPos remove : toRemove) {
+            _containerCaches.get(dim).remove(remove);
         }
         return Optional.ofNullable(bestCache);
     }

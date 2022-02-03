@@ -7,7 +7,7 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.PlaceBlockSchematic;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;

@@ -217,8 +217,16 @@ public class ItemHelper {
         return getColorfulItems(color.getMapColor());
     }
 
+    public static Collection<ColorfulItems> getColorfulItems() {
+        return _colorMap.values();
+    }
+
     public static WoodItems getWoodItems(WoodType type) {
         return _woodMap.get(type);
+    }
+
+    public static Collection<WoodItems> getWoodItems() {
+        return _woodMap.values();
     }
 
     public static Optional<Item> getCookedFood(Item rawFood) {
@@ -352,6 +360,8 @@ public class ItemHelper {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean canStackTogether(ItemStack from, ItemStack to) {
+        if (to.isEmpty() && from.getCount() <= from.getMaxCount())
+            return true;
         return to.getItem().equals(from.getItem()) && (from.getCount() + to.getCount() < to.getMaxCount());
     }
 

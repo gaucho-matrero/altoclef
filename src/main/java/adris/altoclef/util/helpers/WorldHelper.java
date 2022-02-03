@@ -81,6 +81,9 @@ public interface WorldHelper {
     static boolean inRangeXZ(Vec3d from, Vec3d to, double range) {
         return distanceXZSquared(from, to) < range*range;
     }
+    static boolean inRangeXZ(BlockPos from, BlockPos to, double range) {
+        return inRangeXZ(toVec3d(from), toVec3d(to), range);
+    }
     static boolean inRangeXZ(Entity entity, Vec3d to, double range) {
         return inRangeXZ(entity.getPos(), to, range);
     }
@@ -163,6 +166,21 @@ public interface WorldHelper {
             if (isSolid(mod, check)) return y;
         }
         return -1;
+    }
+
+    static BlockPos getADesertTemple(AltoClef mod) {
+        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
+            if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
+                    mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
+                    mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
+                return pos;
+            }
+        }
+        return null;
+    }
+
+    static boolean isUnopenedChest(AltoClef mod, BlockPos pos) {
+        return mod.getItemStorage().getContainerAtPosition(pos).isEmpty();
     }
 
     static int getGroundHeight(AltoClef mod, int x, int z, Block... groundBlocks) {
@@ -349,6 +367,10 @@ public interface WorldHelper {
     }
     static boolean isChest(Block b) {
         return b instanceof ChestBlock || b instanceof EnderChestBlock;
+    }
+
+    static boolean isBlock(AltoClef mod, BlockPos pos, Block block) {
+        return mod.getWorld().getBlockState(pos).getBlock() == block;
     }
 
     static boolean canSleep() {

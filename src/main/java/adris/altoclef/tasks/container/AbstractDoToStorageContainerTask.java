@@ -31,6 +31,7 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
 
         // No container found
         if (containerTarget.isEmpty()) {
+            setDebugState("Wandering");
             _currentContainerType = null;
             return onSearchWander(mod);
         }
@@ -39,10 +40,6 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
 
         // We're open
         if (_currentContainerType != null && ContainerType.screenHandlerMatches(_currentContainerType)) {
-            // Previously we checked for the block we interacted with to keep things consistent
-            // But (I think?) that lead to a potential bug with `onContainerOpenSubtask` not being triggered.
-            // So we're throwing caution to the wind here temporarily.
-            // In the future to check for this maybe do a raycast?
 
             // Optional<BlockPos> lastInteracted = mod.getItemStorage().getLastBlockPosInteraction();
             //if (lastInteracted.isPresent() && lastInteracted.get().equals(targetPos)) {
