@@ -15,7 +15,7 @@ import net.minecraft.item.Items;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.ExperienceOrbEntity;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.Rotation;
 import net.minecraft.entity.Entity;
