@@ -123,7 +123,6 @@ public class GetToXZWithElytraTask extends Task {
             _fireWorkTimer.forceElapse();
         }
         _isFlyRunning = true; //We will now try to fly, we don't need to check the code before this for now.
-
         mod.getBehaviour().disableDefence(true); //Disable MobDefence and MLG, because it get interupted by that
         
         //Get the elytra's durability
@@ -229,18 +228,11 @@ public class GetToXZWithElytraTask extends Task {
     protected String toDebugString() {
         return "Moving using Elytra";
     }
-    private int getGroundHeight(AltoClef mod, int x, int z) {
-        for (int y = WorldHelper.WORLD_CEILING_Y; y >= WorldHelper.WORLD_FLOOR_Y; --y) {
-            BlockPos check = new BlockPos(x, y, z);
-            if (!WorldHelper.isAir(mod, check)) return y;
-        }
-        return -1;
-    }
     private int getGroundHeightWithRadius(AltoClef mod, int x, int z) {
         int topY = 0;
         for (int x2 = 5; x2 >= -5; --x2) {
             for (int z2 = 5; z2 >= -5; --z2) {
-                int tmpy = getGroundHeight(mod,x+x2,z+z2);
+                int tmpy = WorldHelper.getGroundHeight(mod,x+x2,z+z2);
                 if (tmpy > topY) {
                     topY = tmpy;
                 }
