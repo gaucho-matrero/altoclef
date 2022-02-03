@@ -99,6 +99,7 @@ public class TaskCatalogue {
             mob("rabbit_foot", Items.RABBIT_FOOT, RabbitEntity.class);
             mob("rabbit_hide", Items.RABBIT_HIDE, RabbitEntity.class);
             mob("slime_ball", Items.SLIME_BALL, SlimeEntity.class);
+            mob("wither_skeleton_skull", Items.WITHER_SKELETON_SKULL, WitherSkeletonEntity.class).forceDimension(Dimension.NETHER);
             mob("ink_sac", Items.INK_SAC, SquidEntity.class); // Warning, this probably won't work.
             mob("glow_ink_sac", Items.GLOW_INK_SAC, GlowSquidEntity.class); // Warning, this probably won't work.
             mob("string", Items.STRING, SpiderEntity.class); // Warning, this probably won't work.
@@ -416,16 +417,23 @@ public class TaskCatalogue {
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
-
+            
+            simple("honeycomb", Items.HONEYCOMB, CollectHoneycombTask::new);
+            {
+                String h = "honeycomb";
+                shapedRecipe2x2Block("honeycomb_block", Items.HONEYCOMB_BLOCK, h);
+                shapedRecipe2x2("candle", Items.CANDLE, 1, "string", o, h, o);
+                shapedRecipe3x3("beehive", Items.BEEHIVE, 1, p, p, p, h, h, h, p, p, p);
+            }
 
             // FURNITURE
             shapedRecipe2x2("crafting_table", Items.CRAFTING_TABLE, 1, p, p, p, p).dontMineIfPresent();
             shapedRecipe3x3("smithing_table", Items.SMITHING_TABLE, 1, "iron_ingot", "iron_ingot", o, p, p, o, p, p, o);
             shapedRecipe3x3("grindstone", Items.GRINDSTONE, 1, s, "stone_slab", s, p, o, p, o, o, o);
-            simple("wooden_pressure_plate", ItemHelper.WOOD_SIGN, CollectWoodenPressurePlateTask::new);
+            simple("wooden_pressure_plate", ItemHelper.WOOD_PRESSURE_PLATE, CollectWoodenPressurePlateTask::new);
             woodTasks("pressure_plate", woodItems -> woodItems.pressurePlate, (woodItems, count) -> new CollectWoodenPressurePlateTask(woodItems.pressurePlate, woodItems.prefix + "_planks", count));
-            shapedRecipe2x2("wooden_button", ItemHelper.WOOD_BUTTON, 1, p, o, o, o);
-            woodTasks("button", woodItems -> woodItems.button, (woodItems, count) -> new CraftInInventoryTask(new ItemTarget(woodItems.button, 1), CraftingRecipe.newShapedRecipe(woodItems.prefix + "_button", new ItemTarget[]{new ItemTarget(woodItems.planks, 1), null, null, null}, 1)));
+            simple("wooden_button", ItemHelper.WOOD_BUTTON, CollectWoodenButtonTask::new);
+            woodTasks("button", woodItems -> woodItems.button, (woodItems, count) -> new CraftInInventoryTask(new RecipeTarget(woodItems.button, 1, CraftingRecipe.newShapedRecipe(woodItems.prefix + "_button", new ItemTarget[]{new ItemTarget(woodItems.planks, 1), null, null, null}, 1))));
             shapedRecipe2x2("stone_pressure_plate", Items.STONE_PRESSURE_PLATE, 1, o, o, "stone", "stone");
             shapedRecipe2x2("stone_button", Items.STONE_BUTTON, 1, "stone", o, o, o);
             shapedRecipe2x2("polished_blackstone_pressure_plate", Items.POLISHED_BLACKSTONE_PRESSURE_PLATE, 1, o, o, "polished_blackstone", "polished_blackstone");
@@ -727,18 +735,14 @@ public class TaskCatalogue {
         return shear(name, new Block[]{toShear}, targets);
     }
 
-    private static CataloguedResource shapedRecipe2x2(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3) {
+    private static CataloguedResource shapedRecipe2x2(String name, Item match, int outputCount, String s0, String s1, String s2, String s3) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[]{t(s0), t(s1), t(s2), t(s3)}, outputCount);
-        return put(name, matches, count -> new CraftInInventoryTask(new ItemTarget(matches, count), recipe));
+        return put(name, new Item[]{match}, count -> new CraftInInventoryTask(new RecipeTarget(match, count, recipe)));
     }
 
-    private static CataloguedResource shapedRecipe3x3(String name, Item[] matches, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
+    private static CataloguedResource shapedRecipe3x3(String name, Item match, int outputCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
         CraftingRecipe recipe = CraftingRecipe.newShapedRecipe(name, new ItemTarget[]{t(s0), t(s1), t(s2), t(s3), t(s4), t(s5), t(s6), t(s7), t(s8)}, outputCount);
-        return put(name, matches, count -> new CraftInTableTask(new ItemTarget(matches, count), recipe));
-    }
-
-    private static CataloguedResource shapedRecipe2x2(String name, Item match, int craftCount, String s0, String s1, String s2, String s3) {
-        return shapedRecipe2x2(name, new Item[]{match}, craftCount, s0, s1, s2, s3);
+        return put(name, new Item[]{match}, count -> new CraftInTableTask(new RecipeTarget(match, count, recipe)));
     }
 
     private static CataloguedResource shapedRecipe2x2Block(String name, Item match, String material) {
@@ -747,10 +751,6 @@ public class TaskCatalogue {
 
     private static CataloguedResource shapedRecipe2x2Block(String name, Item match, int outputCount, String material) {
         return shapedRecipe2x2(name, match, outputCount, material, material, material, material);
-    }
-
-    private static CataloguedResource shapedRecipe3x3(String name, Item match, int craftCount, String s0, String s1, String s2, String s3, String s4, String s5, String s6, String s7, String s8) {
-        return shapedRecipe3x3(name, new Item[]{match}, craftCount, s0, s1, s2, s3, s4, s5, s6, s7, s8);
     }
 
     private static CataloguedResource shapedRecipe3x3Block(String name, Item match, String material) {

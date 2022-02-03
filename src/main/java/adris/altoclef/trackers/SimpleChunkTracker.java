@@ -2,6 +2,9 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChunkLoadEvent;
+import adris.altoclef.eventbus.events.ChunkUnloadEvent;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -25,14 +28,18 @@ public class SimpleChunkTracker {
 
     public SimpleChunkTracker(AltoClef mod) {
         _mod = mod;
+
+        // When chunks load...
+        EventBus.subscribe(ChunkLoadEvent.class, evt -> onLoad(evt.chunk.getPos()));
+        EventBus.subscribe(ChunkUnloadEvent.class, evt -> onUnload(evt.chunkPos));
     }
 
-    public void onLoad(ChunkPos pos) {
+    private void onLoad(ChunkPos pos) {
         //Debug.logInternal("LOADED: " + pos);
         _loaded.add(pos);
     }
 
-    public void onUnload(ChunkPos pos) {
+    private void onUnload(ChunkPos pos) {
         //Debug.logInternal("unloaded: " + pos);
         _loaded.remove(pos);
     }

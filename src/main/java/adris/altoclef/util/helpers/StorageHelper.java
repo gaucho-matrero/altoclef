@@ -4,10 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.util.*;
 import adris.altoclef.util.slots.*;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
@@ -19,6 +17,7 @@ import net.minecraft.client.gui.screen.option.GameOptionsScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.*;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -29,15 +28,17 @@ import java.util.stream.Stream;
 /**
  * Helper functions for interpreting containers/slots/windows/inventory
  */
+@SuppressWarnings("ConstantConditions")
 public class StorageHelper {
 
-    public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.OFFHAND_SLOT)), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
+    public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
 
     public static void closeScreen() {
         if (MinecraftClient.getInstance().player == null)
             return;
         Screen screen = MinecraftClient.getInstance().currentScreen;
         if (
+                screen != null &&
                 !(screen instanceof GameMenuScreen) &&
                 !(screen instanceof GameOptionsScreen) &&
                 !(screen instanceof ChatScreen)) {
@@ -295,6 +296,19 @@ public class StorageHelper {
         return Arrays.stream(targetsToMeet).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
+    /**
+     * Same as {@code itemTargetsMetInventory} but it ignores the cursor slot.
+     */
+    public static boolean itemTargetsMetInventoryNoCursor(AltoClef mod, ItemTarget ...targetsToMeet) {
+        ItemStack cursorStack = getItemStackInCursorSlot();
+        return Arrays.stream(targetsToMeet).allMatch(target -> {
+            int count = mod.getItemStorage().getItemCountInventoryOnly(target.getMatches());
+            if (target.matches(cursorStack.getItem()))
+                count -= cursorStack.getCount();
+            return count >= target.getTargetCount();
+        });
+    }
+
     public static boolean isArmorEquipped(AltoClef mod, Item ...any) {
         for (Item item : any) {
             if (item instanceof ArmorItem armor) {
@@ -363,11 +377,9 @@ public class StorageHelper {
         for (RecipeTarget target : targets) {
             CraftingRecipe recipe = target.getRecipe();
             int need = 0;
-            if (target.getItem() != null) {
-                need = target.getItem().getTargetCount();
-                if (target.getItem().getMatches() != null) {
-                    need -= mod.getItemStorage().getItemCount(target.getItem());
-                }
+            if (target.getOutputItem() != null) {
+                need = target.getTargetCount();
+                need -= mod.getItemStorage().getItemCount(target.getOutputItem());
             }
             // need holds how many items we need to CRAFT
             // However, a crafting recipe can output more than 1 of an item.
@@ -449,9 +461,16 @@ public class StorageHelper {
                 return Optional.of(slot);
             }
         }
-        // Consider Cursor slot only if we have our player inventory open
+        // Consider Cursor slot only if we have our player inventory open AND we're not crafting it...
         if (StorageHelper.isPlayerInventoryOpen() && withItem.matches(getItemStackInCursorSlot().getItem())) {
-            return Optional.of(new CursorSlot());
+            if (!mod.getUserTaskChain().getCurrentTask().thisOrChildSatisfies(task -> {
+                if (task instanceof CraftInInventoryTask invCraft) {
+                    return withItem.matches(invCraft.getRecipeTarget().getOutputItem());
+                }
+                return false;
+            })) {
+                return Optional.of(new CursorSlot());
+            }
         }
         return Optional.empty();
     }
@@ -466,6 +485,16 @@ public class StorageHelper {
             }
         }
         return ItemStack.EMPTY;
+    }
+
+    public static int getBrewingStandFuel() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof BrewingStandScreenHandler stand)
+            return getBrewingStandFuel(stand);
+        return -1;
+    }
+
+    public static int getBrewingStandFuel(BrewingStandScreenHandler handler) {
+        return handler.getFuel();
     }
 
     public static double getFurnaceFuel(AbstractFurnaceScreenHandler handler) {
@@ -486,4 +515,45 @@ public class StorageHelper {
         return -1;
     }
 
+    public static ItemTarget[] getAllInventoryItemsAsTargets(Predicate<Slot> accept) {
+        HashMap<Item, Integer> counts = new HashMap<>();
+        for (Slot slot : Slot.getCurrentScreenSlots()) {
+            if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
+                ItemStack stack = getItemStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
+                }
+            }
+        }
+        ItemTarget[] results = new ItemTarget[counts.size()];
+        int i = 0;
+        for (Item item : counts.keySet()) {
+            results[i++] = new ItemTarget(item, counts.get(item));
+        }
+        return results;
+    }
+
+    public static void instantFillRecipeViaBook(AltoClef mod, CraftingRecipe recipe, Item output, boolean craftAll) {
+        /*
+        DefaultedList<Ingredient> ingredients = DefaultedList.ofSize(recipe.getSlotCount());
+        for (int recipeSlot = 0; recipeSlot < recipe.getSlotCount(); ++recipeSlot) {
+            ItemTarget recipeIngredient = recipe.getSlot(recipeSlot);
+            Ingredient newIngredient = Ingredient.ofItems(recipeIngredient.getMatches());
+            // Perform a cache so matching stacks is filled, quite important!
+            newIngredient.getMatchingStacks();
+            newIngredient.getMatchingItemIds();
+            ingredients.add(newIngredient);
+        }
+        // The id doesn't matter, as long as it's valid.
+        Identifier id = new Identifier("minecraft", "crafting_table");
+        ShapedRecipe recipeToSend =
+                new ShapedRecipe(id, "", recipe.getWidth(), recipe.getHeight(), ingredients, ItemStack.EMPTY);
+         */
+        Optional<Recipe> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(recipe, output);
+        if (recipeToSend.isPresent()) {
+            mod.getController().clickRecipe(MinecraftClient.getInstance().player.currentScreenHandler.syncId, recipeToSend.get(), craftAll);
+        } else {
+            Debug.logError("Could not find recipe stored in Minecraft!! Recipe: " + recipe + " with output " + output);
+        }
+    }
 }

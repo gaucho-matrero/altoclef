@@ -44,7 +44,7 @@ public class CollectGoldIngotTask extends ResourceTask {
                 CraftingRecipe recipe = CraftingRecipe.newShapedRecipe("gold_ingot", new ItemTarget[]{
                         n, n, n, n, n, n, n, n, n
                 }, 1);
-                return new CraftInTableTask(Items.GOLD_INGOT, _count, recipe);
+                return new CraftInTableTask(new RecipeTarget(Items.GOLD_INGOT, _count, recipe));
             }
             // Mine nuggets
             return new MineAndCollectTask(new ItemTarget(Items.GOLD_NUGGET, _count * 9), new Block[]{Blocks.NETHER_GOLD_ORE}, MiningRequirement.WOOD);

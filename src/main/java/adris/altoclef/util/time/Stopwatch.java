@@ -1,4 +1,4 @@
-package adris.altoclef.util.csharpisbetter;
+package adris.altoclef.util.time;
 
 public class Stopwatch {
 

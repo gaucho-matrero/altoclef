@@ -2,36 +2,33 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
-import net.minecraft.screen.slot.SlotActionType;
-
-import java.util.Arrays;
+import net.minecraft.item.Item;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
  */
 public class CraftInInventoryTask extends ResourceTask {
 
-    private final CraftingRecipe _recipe;
+    private final RecipeTarget _target;
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
     private boolean _fullCheckFailed = false;
 
-    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe, boolean collect, boolean ignoreUncataloguedSlots) {
-        super(target);
-        _recipe = recipe;
+    public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
+        super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
+        _target = target;
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
     }
 
-    public CraftInInventoryTask(ItemTarget target, CraftingRecipe recipe) {
-        this(target, recipe, true, false);
+    public CraftInInventoryTask(RecipeTarget target) {
+        this(target, true, false);
     }
 
     @Override
@@ -49,13 +46,19 @@ public class CraftInInventoryTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
         // Grab from output FIRST
         if (StorageHelper.isPlayerInventoryOpen()) {
-            if (StorageHelper.getItemStackInCursorSlot().isEmpty() && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem()))) {
-                return new ClickSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, 0, SlotActionType.PICKUP);
+            if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
+                Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
+                for (ItemTarget target : _itemTargets) {
+                    if (target.matches(outputItem)) {
+                        return new ReceiveOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                    }
+                }
             }
         }
 
         ItemTarget toGet = _itemTargets[0];
-        if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, new RecipeTarget(toGet, _recipe))) {
+        Item toGetItem = toGet.getMatches()[0];
+        if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, _target)) {
             // Collect recipe materials
             setDebugState("Collecting materials");
             return collectRecipeSubTask(mod);
@@ -64,8 +67,9 @@ public class CraftInInventoryTask extends ResourceTask {
         // No need to free inventory, output gets picked up.
 
         setDebugState("Crafting in inventory... for " + toGet);
-        return new CraftGenericTask(_recipe);
-        //craftInstant(mod, _recipe);
+        return mod.getModSettings().shouldUseCraftingBookToCraft()
+                ? new CraftGenericWithRecipeBooksTask(_target)
+                : new CraftGenericManuallyTask(_target);
     }
 
     @Override
@@ -76,7 +80,7 @@ public class CraftInInventoryTask extends ResourceTask {
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CraftInInventoryTask task) {
-            if (!task._recipe.equals(_recipe)) return false;
+            if (!task._target.equals(_target)) return false;
             return isCraftingEqual(task);
         }
         return false;
@@ -84,12 +88,12 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return toCraftingDebugStringName() + " " + _recipe;
+        return toCraftingDebugStringName() + " " + _target;
     }
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
-        return new CollectRecipeCataloguedResourcesTask(_ignoreUncataloguedSlots, new RecipeTarget(_itemTargets[0], _recipe));
+        return new CollectRecipeCataloguedResourcesTask(_ignoreUncataloguedSlots, _target);
     }
 
     protected String toCraftingDebugStringName() {
@@ -98,5 +102,9 @@ public class CraftInInventoryTask extends ResourceTask {
 
     protected boolean isCraftingEqual(CraftInInventoryTask other) {
         return true;
+    }
+
+    public RecipeTarget getRecipeTarget() {
+        return _target;
     }
 }

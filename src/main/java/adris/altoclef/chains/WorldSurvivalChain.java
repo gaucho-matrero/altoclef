@@ -7,7 +7,7 @@ import adris.altoclef.tasks.construction.PutOutFireTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.utils.Rotation;

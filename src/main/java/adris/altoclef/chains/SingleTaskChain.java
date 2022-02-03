@@ -5,7 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.csharpisbetter.Stopwatch;
+import adris.altoclef.util.time.Stopwatch;
 
 public abstract class SingleTaskChain extends TaskChain {
 

@@ -1,7 +1,7 @@
 package adris.altoclef.control;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StlHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.SkeletonEntity;

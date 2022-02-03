@@ -9,7 +9,7 @@ import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -26,7 +26,6 @@ import java.util.Optional;
 /**
  * Interacts with a container, obtaining and placing one if none were found nearby.
  */
-@SuppressWarnings("ConstantConditions")
 public abstract class DoStuffInContainerTask extends Task {
 
     private final ItemTarget _containerTarget;
@@ -129,29 +128,27 @@ public abstract class DoStuffInContainerTask extends Task {
 
         // This is insanely cursed.
         // TODO: Finish committing to optionals, this is ugly.
-        _cachedContainerPosition = nearest.orElse(null);
+        _cachedContainerPosition = nearest.get();
 
         // Walk to it and open it
-        setDebugState("Walking to container... " + nearest);
 
         // Wait for food
         if (mod.getFoodChain().isTryingToEat()) {
+            setDebugState("Waiting for eating...");
             return null;
         }
+        setDebugState("Walking to container... " + nearest.get().toShortString());
 
-        if (nearest.isPresent()) {
-            if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
-                setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
-                Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
-                if (toMoveTo.isEmpty()) {
-                    return new EnsureFreeInventorySlotTask();
-                } else {
-                    return new ClickSlotTask(toMoveTo.get());
-                }
+        if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
+            setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
+            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
+            if (toMoveTo.isEmpty()) {
+                return new EnsureFreeInventorySlotTask();
+            } else {
+                return new ClickSlotTask(toMoveTo.get());
             }
-            return _openTableTask;
         }
-        return null;
+        return _openTableTask;
         //return new GetToBlockTask(nearest, true);
     }
 

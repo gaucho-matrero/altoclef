@@ -109,6 +109,12 @@ public class BotBehaviour {
         current().applyState();
     }
 
+    public void avoidWalkingThrough(Predicate<BlockPos> pred) {
+        current().avoidWalkingThrough.add(pred);
+        current().applyState();
+    }
+
+
     public void forceUseTool(BiPredicate<BlockState, ItemStack> pred) {
         current().forceUseTools.add(pred);
         current().applyState();
@@ -161,7 +167,7 @@ public class BotBehaviour {
     }
 
     public void setPreferredStairs(boolean allow) {
-        current().preferredStairs = allow;
+        //current().preferredStairs = allow;
         current().applyState();
     }
 
@@ -240,7 +246,7 @@ public class BotBehaviour {
         public boolean mineScanDroppedItems;
         public boolean swimThroughLava;
         public boolean allowDiagonalAscend;
-        public boolean preferredStairs;
+        //public boolean preferredStairs;
         public double blockPlacePenalty;
         public double blockBreakAdditionalPenalty;
 
@@ -256,6 +262,7 @@ public class BotBehaviour {
         public List<Predicate<BlockPos>> toAvoidBreaking = new ArrayList<>();
         public List<Predicate<BlockPos>> toAvoidPlacing = new ArrayList<>();
         public List<Predicate<BlockPos>> allowWalking = new ArrayList<>();
+        public List<Predicate<BlockPos>> avoidWalkingThrough = new ArrayList<>();
         public List<BiPredicate<BlockState, ItemStack>> forceUseTools = new ArrayList<>();
         public List<BiFunction<Double, BlockPos, Double>> globalHeuristics = new ArrayList<>();
         public boolean _allowWalkThroughFlowingWater = false;
@@ -320,6 +327,7 @@ public class BotBehaviour {
                     protectedItems = new ArrayList<>(settings.getProtectedItems());
                     synchronized (settings.getPropertiesMutex()) {
                         allowWalking = new ArrayList<>(settings.getForceWalkOnPredicates());
+                        avoidWalkingThrough = new ArrayList<>(settings.getForceAvoidWalkThroughPredicates());
                         forceUseTools = new ArrayList<>(settings.getForceUseToolPredicates());
                     }
                 }
@@ -363,6 +371,8 @@ public class BotBehaviour {
                     synchronized (sa.getPropertiesMutex()) {
                         sa.getForceWalkOnPredicates().clear();
                         sa.getForceWalkOnPredicates().addAll(allowWalking);
+                        sa.getForceAvoidWalkThroughPredicates().clear();
+                        sa.getForceAvoidWalkThroughPredicates().addAll(avoidWalkingThrough);
                         sa.getForceUseToolPredicates().clear();
                         sa.getForceUseToolPredicates().addAll(forceUseTools);
                     }

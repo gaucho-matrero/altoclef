@@ -94,7 +94,7 @@ public abstract class Slot {
         return () -> new Iterator<>() {
             final ClientPlayerEntity player = MinecraftClient.getInstance().player;
             final ScreenHandler handler = player != null? player.currentScreenHandler : null;
-            int i = 0;
+            int i = -1;
             final int MAX = handler != null? handler.slots.size() : 0;
             @Override
             public boolean hasNext() {
@@ -103,6 +103,10 @@ public abstract class Slot {
 
             @Override
             public Slot next() {
+                if (i == -1) {
+                    ++i;
+                    return new CursorSlot();
+                }
                 return Slot.getFromCurrentScreen(i++);
             }
         };

@@ -2,17 +2,17 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.Stopwatch;
+import adris.altoclef.util.time.Stopwatch;
 
 // A task chain that runs a user defined task at the same priority.
 // This basically replaces our old Task Runner.
 @SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
 
-    public final Action<String> onTaskFinish = new Action<>();
     private final Stopwatch _taskStopwatch = new Stopwatch();
     private Runnable _currentOnFinish = null;
 
@@ -100,6 +100,7 @@ public class UserTaskChain extends SingleTaskChain {
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
         double seconds = _taskStopwatch.time();
+        Task oldTask = _mainTask;
         _mainTask = null;
         if (_currentOnFinish != null) {
             //noinspection unchecked
@@ -110,7 +111,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (actuallyDone) {
             if (!_runningIdleTask) {
                 Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
-                onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
+                EventBus.publish(new TaskFinishedEvent(seconds, oldTask));
             }
             if (shouldIdle) {
                 AltoClef.getCommandExecutor().executeWithPrefix(mod.getModSettings().getIdleCommand());

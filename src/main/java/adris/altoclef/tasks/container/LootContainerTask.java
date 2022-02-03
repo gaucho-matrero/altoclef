@@ -13,28 +13,37 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 
 public class LootContainerTask extends Task {
-    private Task _pickupTask;
-    private boolean _wasProtected = true;
-
+    private boolean _weDoneHere = false;
+    private final Predicate<ItemStack> _check;
     public final BlockPos chest;
-    public final Item target;
+    public final List<Item> targets = new ArrayList<>();
 
-    public LootContainerTask(BlockPos chestPos, Item item) {
+    public LootContainerTask(BlockPos chestPos, List<Item> items) {
         chest = chestPos;
-        target = item;
+        targets.addAll(items);
+        _check = x -> true;
+    }
+
+    public LootContainerTask(BlockPos chestPos, List<Item> items, Predicate<ItemStack> pred) {
+        chest = chestPos;
+        targets.addAll(items);
+        _check = pred;
     }
 
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        if (!mod.getBehaviour().isProtected(target)) {
-            mod.getBehaviour().addProtectedItems(target);
-            _wasProtected = false;
+        for (Item item : targets) {
+            if (!mod.getBehaviour().isProtected(item)) {
+                mod.getBehaviour().addProtectedItems(item);
+            }
         }
     }
 
@@ -57,34 +66,38 @@ public class LootContainerTask extends Task {
         }
         Optional<Slot> optimal = getAMatchingSlot(mod);
         if (optimal.isEmpty()) {
+            _weDoneHere = true;
             return null;
         }
-        setDebugState("Looting a container for all of their " + target.toString());
+        setDebugState("Looting items: " + targets);
         return new ClickSlotTask(optimal.get());
     }
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        if (!_wasProtected) {
-            mod.getBehaviour().removeProtectedItems(target);
-        }
+        StorageHelper.closeScreen();
         mod.getBehaviour().pop();
     }
 
     @Override
     protected boolean isEqual(Task other) {
-        return other instanceof LootContainerTask && target == ((LootContainerTask) other).target;
+        return other instanceof LootContainerTask && targets == ((LootContainerTask) other).targets;
     }
 
     private Optional<Slot> getAMatchingSlot(AltoClef mod) {
-        List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(target);
-        if (slots.isEmpty()) return Optional.empty();
-        else return Optional.ofNullable(slots.get(0));
+        for (Item item : targets) {
+            List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(item);
+            if (!slots.isEmpty()) for (Slot slot : slots) {
+                if (_check.test(StorageHelper.getItemStackInSlot(slot))) return Optional.of(slot);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return getAMatchingSlot(mod).isEmpty();
+        return _weDoneHere || (ContainerType.screenHandlerMatchesAny() &&
+                getAMatchingSlot(mod).isEmpty());
     }
 
     @Override

@@ -44,6 +44,7 @@ public class FoodChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
 
         if (!AltoClef.inGame()) {
+            stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -87,15 +88,14 @@ public class FoodChain extends SingleTaskChain {
             _requestFillup = false;
         }
 
-        if (hasFood && (needsToEat(mod) || _requestFillup) && _cachedPerfectFood.isPresent()) {
+        if (hasFood && (needsToEat(mod) || _requestFillup) && _cachedPerfectFood.isPresent() && !mod.getMLGBucketChain().isChorusFruiting()) {
             Item toUse = _cachedPerfectFood.get();
             // Make sure we're not facing a container
             if (!LookHelper.tryAvoidingInteractable(mod)) {
                 return Float.NEGATIVE_INFINITY;
             }
-
             startEat(mod, toUse);
-        } else if (_isTryingToEat) {
+        } else {
             stopEat(mod);
         }
 
@@ -192,12 +192,7 @@ public class FoodChain extends SingleTaskChain {
 
     @Override
     protected void onStop(AltoClef mod) {
-        if (_isTryingToEat) {
-            mod.getInputControls().release(Input.CLICK_RIGHT);
-            _isTryingToEat = false;
-            _requestFillup = false;
-            mod.getExtraBaritoneSettings().setInteractionPaused(false);
-        }
+        stopEat(mod);
         super.onStop(mod);
     }
 

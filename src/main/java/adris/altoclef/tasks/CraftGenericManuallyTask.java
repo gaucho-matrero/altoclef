@@ -1,13 +1,13 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
+import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
@@ -15,7 +15,6 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
 
@@ -24,12 +23,12 @@ import java.util.Optional;
  *
  * Not useful for custom tasks.
  */
-public class CraftGenericTask extends Task {
+public class CraftGenericManuallyTask extends Task {
 
-    private final CraftingRecipe _recipe;
+    private final RecipeTarget _target;
 
-    public CraftGenericTask(CraftingRecipe recipe) {
-        _recipe = recipe;
+    public CraftGenericManuallyTask(RecipeTarget target) {
+        _target = target;
     }
 
     @Override
@@ -49,13 +48,21 @@ public class CraftGenericTask extends Task {
             // Just to be safe
         }
 
+        Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
+
+        // Example:
+        // We need 9 sticks
+        // plank recipe results in 4 sticks
+        // this means 3 planks per slot
+        int requiredPerSlot = (int)Math.ceil((double) _target.getTargetCount() / _target.getRecipe().outputCount());
+
         // For each slot in table
-        for (int craftSlot = 0; craftSlot < _recipe.getSlotCount(); ++craftSlot) {
-            ItemTarget toFill = _recipe.getSlot(craftSlot);
+        for (int craftSlot = 0; craftSlot < _target.getRecipe().getSlotCount(); ++craftSlot) {
+            ItemTarget toFill = _target.getRecipe().getSlot(craftSlot);
             Slot currentCraftSlot;
             if (bigCrafting) {
                 // Craft in table
-                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, _recipe.isBig());
+                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, _target.getRecipe().isBig());
             } else {
                 // Craft in window
                 currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
@@ -64,22 +71,40 @@ public class CraftGenericTask extends Task {
             if (toFill == null || toFill.isEmpty()) {
                 if (present.getItem() != Items.AIR) {
                     // Move this item OUT if it should be empty
-                    Debug.logMessage("Found invalid slot in our crafting table. Clicking it and letting alto clef take care of the rest.");
+                    setDebugState("Found INVALID slot");
                     return new ClickSlotTask(currentCraftSlot);
                 }
             } else {
-                boolean isSatisfied = toFill.matches(present.getItem());
+                boolean correctItem = toFill.matches(present.getItem());
+                boolean isSatisfied = correctItem && present.getCount() >= requiredPerSlot;
                 if (!isSatisfied) {
-                    return new MoveItemToSlotFromInventoryTask(new ItemTarget(toFill, 1), currentCraftSlot);
+                    // We have items that satisfy, but we CAN NOT fill in the current slot!
+                    // In that case, just grab from the output.
+                    if (!mod.getItemStorage().hasItemInventoryOnly(present.getItem())) {
+                        if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
+                            setDebugState("NO MORE to fit: grabbing from output.");
+                            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
+                        } else {
+                            // Move on to the NEXT slot, we can't fill this one anymore.
+                            continue;
+                        }
+                    }
+
+                    setDebugState("Moving item to slot...");
+                    return new MoveItemToSlotFromInventoryTask(new ItemTarget(toFill, requiredPerSlot), currentCraftSlot);
+                }
+                // We could be OVER satisfied
+                boolean oversatisfies = present.getCount() > requiredPerSlot;
+                if (oversatisfies) {
+                    setDebugState("OVER SATISFIED slot! Right clicking slot to extract half and spread it out more.");
+                    return new ClickSlotTask(currentCraftSlot, 1);
                 }
             }
         }
 
-        Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-
         // Ensure our cursor is empty/can receive our item
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-        if (!cursor.isEmpty() && !ItemHelper.canStackTogether(StorageHelper.getItemStackInSlot(outputSlot), cursor)) {
+        if (!ItemHelper.canStackTogether(StorageHelper.getItemStackInSlot(outputSlot), cursor)) {
             Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
             if (toFit.isPresent()) {
                 return new ClickSlotTask(toFit.get());
@@ -90,7 +115,7 @@ public class CraftGenericTask extends Task {
         }
 
         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
-            return new ClickSlotTask(outputSlot, 0, SlotActionType.PICKUP);
+            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
         } else {
             // Wait
             return null;
@@ -104,14 +129,14 @@ public class CraftGenericTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof CraftGenericTask) {
-            return ((CraftGenericTask) other)._recipe.equals(_recipe);
+        if (other instanceof CraftGenericManuallyTask task) {
+            return task._target.equals(_target);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Crafting " + _recipe.toString();
+        return "Crafting: " + _target;
     }
 }

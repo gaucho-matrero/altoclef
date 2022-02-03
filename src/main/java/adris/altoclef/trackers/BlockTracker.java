@@ -2,12 +2,12 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.trackers.BlockTracker.BlockTrackerConfig;
-import adris.altoclef.trackers.BlockTracker.PosCache;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.BlockPlaceEvent;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.BaritoneHelper;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.helpers.StlHelper;
@@ -76,6 +76,9 @@ public class BlockTracker extends Tracker {
         // First time, track immediately
         _timer.forceElapse();
         _forceElapseTimer.forceElapse();
+
+        // Listen for block placement
+        EventBus.subscribe(BlockPlaceEvent.class, evt -> addBlock(evt.blockState.getBlock(), evt.blockPos));
     }
 
     @Override
@@ -101,11 +104,6 @@ public class BlockTracker extends Tracker {
     @Override
     protected void reset() {
         // Tasks will handle de-tracking blocks.
-        /*
-        synchronized (_trackingBlocks) {
-            _trackingBlocks.clear();
-        }
-         */
         for (PosCache cache : _caches.values()) {
             cache.clear();
         }
@@ -166,8 +164,6 @@ public class BlockTracker extends Tracker {
 
     /**
      * Manually add a block at a position.
-     * @param block
-     * @param pos
      */
     public void addBlock(Block block, BlockPos pos) {
         if (blockIsValid(pos, block)) {
