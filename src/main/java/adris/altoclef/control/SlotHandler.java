@@ -3,11 +3,11 @@ package adris.altoclef.control;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CursorSlot;
-import adris.altoclef.util.slots.PlayerInventorySlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -86,13 +86,13 @@ public class SlotHandler {
     public boolean forceEquipItem(Item toEquip) {
 
         // Already equipped
-        if (StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot()).getItem() == toEquip) return true;
+        if (StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem() == toEquip) return true;
 
         // Always equip to the second slot. First + last is occupied by baritone.
         _mod.getPlayer().getInventory().selectedSlot = 1;
 
         // If our item is in our cursor, simply move it to the hotbar.
-        boolean inCursor = StorageHelper.getItemStackInSlot(new CursorSlot()).getItem() == toEquip;
+        boolean inCursor = StorageHelper.getItemStackInSlot(CursorSlot.SLOT).getItem() == toEquip;
 
         List<Slot> itemSlots = _mod.getItemStorage().getSlotsWithItemScreen(toEquip);
         if (itemSlots.size() != 0) {
@@ -145,8 +145,8 @@ public class SlotHandler {
      * @return Whether we successfully de-equipped, or if we didn't have the item equipped at all.
      */
     public boolean forceDeequip(Predicate<ItemStack> isBad) {
-        ItemStack equip = StorageHelper.getItemStackInSlot(PlayerInventorySlot.getEquipSlot());
-        ItemStack cursor = StorageHelper.getItemStackInSlot(new CursorSlot());
+        ItemStack equip = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
+        ItemStack cursor = StorageHelper.getItemStackInSlot(CursorSlot.SLOT);
         if (isBad.test(cursor)) {
             // Throw away cursor slot OR move
             Optional<Slot> fittableSlots = _mod.getItemStorage().getSlotThatCanFitInPlayerInventory(equip, false);
@@ -171,18 +171,18 @@ public class SlotHandler {
             }
         } else if (isBad.test(equip)) {
             // Pick up the item
-            clickSlotForce(PlayerInventorySlot.getEquipSlot(), 0, SlotActionType.PICKUP);
+            clickSlotForce(PlayerSlot.getEquipSlot(), 0, SlotActionType.PICKUP);
             return false;
         } else if (equip.isEmpty() && !cursor.isEmpty()) {
             // cursor is good and equip is empty, so finish filling it in.
-            clickSlotForce(PlayerInventorySlot.getEquipSlot(), 0, SlotActionType.PICKUP);
+            clickSlotForce(PlayerSlot.getEquipSlot(), 0, SlotActionType.PICKUP);
             return true;
         }
         // We're already de-equipped
         return true;
     }
     public void forceEquipSlot(Slot slot) {
-        Slot target = PlayerInventorySlot.getEquipSlot();
+        Slot target = PlayerSlot.getEquipSlot();
         clickSlotForce(slot, target.getInventorySlot(), SlotActionType.SWAP);
     }
 
@@ -197,7 +197,7 @@ public class SlotHandler {
             return false; //don't equip the item for now
         }
 
-        Slot target = PlayerInventorySlot.getEquipSlot();
+        Slot target = PlayerSlot.getEquipSlot();
         // Already equipped
         if (toEquip.matches(StorageHelper.getItemStackInSlot(target).getItem())) return true;
 

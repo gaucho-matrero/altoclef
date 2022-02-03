@@ -76,6 +76,12 @@ public class SmeltInFurnaceTask extends ResourceTask {
         if (_targets.length != 1) {
             Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
         }
+        mod.getBehaviour().push();
+        mod.getBehaviour().markSlotAsConversionSlot(FurnaceSlot.INPUT_SLOT_MATERIALS, stack -> {
+            // Eventually do multiple targets
+            return _targets[0].getMaterial().matches(stack.getItem());
+        });
+        mod.getBehaviour().markSlotAsConversionSlot(FurnaceSlot.INPUT_SLOT_FUEL, stack -> ItemHelper.isFuel(stack.getItem()));
     }
 
     @Override
@@ -213,7 +219,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 // Ensure our cursor is empty/can receive our item
                 ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
                 if (!ItemHelper.canStackTogether(output, cursor)) {
-                    Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
+                    Optional<Slot> toFit = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
                     if (toFit.isPresent()) {
                         return new ClickSlotTask(toFit.get());
                     } else {

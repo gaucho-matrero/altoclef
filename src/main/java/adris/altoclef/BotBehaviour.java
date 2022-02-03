@@ -1,6 +1,6 @@
 package adris.altoclef;
 
-import adris.altoclef.BotBehaviour.State;
+import adris.altoclef.util.slots.Slot;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
@@ -87,6 +88,15 @@ public class BotBehaviour {
         current().excludeFromForceField.add(pred);
         // Not needed, as excludeFromForceField isn't applied anywhere else.
         // current.applyState();
+    }
+
+    public List<Pair<Slot, Predicate<ItemStack>>> getConversionSlots() {
+        return current().conversionSlots;
+    }
+
+    public void markSlotAsConversionSlot(Slot slot, Predicate<ItemStack> itemBelongsHere) {
+        current().conversionSlots.add(new Pair<>(slot, itemBelongsHere));
+        // apply not needed
     }
 
     public void avoidBlockBreaking(BlockPos pos) {
@@ -254,8 +264,8 @@ public class BotBehaviour {
         public boolean exclusivelyMineLogs;
         public boolean forceFieldPlayers;
         public List<Predicate<Entity>> avoidDodgingProjectile = new ArrayList<>();
-
         public List<Predicate<Entity>> excludeFromForceField = new ArrayList<>();
+        public List<Pair<Slot, Predicate<ItemStack>>> conversionSlots = new ArrayList<>();
 
         // Extra Baritone Settings
         public HashSet<BlockPos> blocksToAvoidBreaking = new HashSet<>();
@@ -293,6 +303,7 @@ public class BotBehaviour {
                 exclusivelyMineLogs = toCopy.exclusivelyMineLogs;
                 avoidDodgingProjectile.addAll(toCopy.avoidDodgingProjectile);
                 excludeFromForceField.addAll(toCopy.excludeFromForceField);
+                conversionSlots.addAll(toCopy.conversionSlots);
                 forceFieldPlayers = toCopy.forceFieldPlayers;
                 escapeLava = toCopy.escapeLava;
             }

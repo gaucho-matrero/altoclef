@@ -1,7 +1,6 @@
 package adris.altoclef.util.slots;
 
 import adris.altoclef.Debug;
-import adris.altoclef.util.slots.Slot.ContainerType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
@@ -45,6 +44,7 @@ public abstract class Slot {
         }
     }
 
+    /*
     private static Slot getFromCurrentScreenAbstract(int slot, boolean inventory) {
         switch (getCurrentType()) {
             case PLAYER:
@@ -61,29 +61,16 @@ public abstract class Slot {
                 Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
                 return null;
         }
-    }
+    }*/
 
+    public boolean isScreenOpen() {
+        return SlotScreenMapping.isScreenOpen(getClass());
+    }
     public static Slot getFromCurrentScreen(int windowSlot) {
-        return getFromCurrentScreenAbstract(windowSlot, false);
+        return SlotScreenMapping.getFromScreen(windowSlot, false);//getFromCurrentScreenAbstract(windowSlot, false);
     }
     public static Slot getFromCurrentScreenInventory(int inventorySlot) {
-        return getFromCurrentScreenAbstract(inventorySlot, true);
-    }
-
-    private static ContainerType getCurrentType() {
-        Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (screen instanceof FurnaceScreen || screen instanceof SmithingScreen) {
-            return ContainerType.FURNACE_OR_SMITH;
-        }
-        if (screen instanceof GenericContainerScreen) {
-            GenericContainerScreenHandler handler = ((GenericContainerScreen) screen).getScreenHandler();
-            boolean big = (handler.getRows() == 6);
-            return big ? ContainerType.CHEST_LARGE : ContainerType.CHEST_SMALL;
-        }
-        if (screen instanceof CraftingScreen) {
-            return ContainerType.CRAFTING_TABLE;
-        }
-        return ContainerType.PLAYER;
+        return SlotScreenMapping.getFromScreen(inventorySlot, true);//getFromCurrentScreenAbstract(windowSlot, true);
     }
 
     public static boolean isCursor(Slot slot) {
@@ -105,7 +92,7 @@ public abstract class Slot {
             public Slot next() {
                 if (i == -1) {
                     ++i;
-                    return new CursorSlot();
+                    return CursorSlot.SLOT;
                 }
                 return Slot.getFromCurrentScreen(i++);
             }
