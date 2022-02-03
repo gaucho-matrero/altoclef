@@ -68,7 +68,7 @@ public class GetToXZWithElytraTask extends Task {
                 return new GetToXZTask(_x, _z); //Get to our goal
             }
             //If we don't have elytra, walk to our goal
-            if (!mod.getItemStorage().hasItem(Items.ELYTRA) && !_isMovingElytra && StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) {
+            if (!mod.getItemStorage().hasItem(Items.ELYTRA) && !_isMovingElytra && StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT).getItem() != Items.ELYTRA) {
                 setDebugState("Walking to goal, since we don't have an elytra");
                 return new GetToXZTask(_x, _z);
             }
@@ -100,10 +100,10 @@ public class GetToXZWithElytraTask extends Task {
             
             //Equip elytra, if didn't equipped,
             setDebugState("Equipping elytra");
-            if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() != Items.ELYTRA) { 
+            if (StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT).getItem() != Items.ELYTRA) { 
                 //EquipArmorTask(Items.ELYTRA) was crashing the game because of "class net.minecraft.item.ElytraItem cannot be cast to class net.minecraft.item.ArmorItem"
                 _isMovingElytra = true;
-                return new MoveItemToSlotFromInventoryTask(new ItemTarget(Items.ELYTRA, 1), new PlayerSlot(6));//So we move it manually
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(Items.ELYTRA, 1), PlayerSlot.ARMOR_CHESTPLATE_SLOT);//So we move it manually
             }
             _isMovingElytra = false;
 
@@ -127,7 +127,7 @@ public class GetToXZWithElytraTask extends Task {
         mod.getBehaviour().disableDefence(true); //Disable MobDefence and MLG, because it get interupted by that
         
         //Get the elytra's durability
-        ItemStack elytraItem = StorageHelper.getItemStackInSlot(new PlayerSlot(6));
+        ItemStack elytraItem = StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT);
         int durabilityLeft = elytraItem.getMaxDamage()-elytraItem.getDamage();
         
         float yaw = LookHelper.getLookRotation(mod,new Vec3d(_x, 1, _z)).getYaw(); //The players's direction
@@ -192,8 +192,8 @@ public class GetToXZWithElytraTask extends Task {
         }
         //if we have landed, and the distance is under 12 or we don't have any fireworks
         if (EntityHelper.isGrounded(mod) && (dist < 12 || !mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET))) {
-            if (StorageHelper.getItemStackInSlot(new PlayerSlot(6)).getItem() == Items.ELYTRA) { //Unequip elytra
-                return new ClickSlotTask(new PlayerSlot(6)); //Click on the elytra in the armor slot
+            if (StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT).getItem() == Items.ELYTRA) { //Unequip elytra
+                return new ClickSlotTask(PlayerSlot.ARMOR_CHESTPLATE_SLOT); //Click on the elytra in the armor slot
             } else if (!StorageHelper.getItemStackInCursorSlot().isEmpty()){ //Once it's in the cursor slot
                 List<Slot> airslot = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, Items.AIR); //Click on a empty inv slot
                 if (airslot.isEmpty()) {
