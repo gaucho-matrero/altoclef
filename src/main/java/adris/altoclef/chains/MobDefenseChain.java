@@ -392,10 +392,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
-                double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-                double verticalDistance = delta.y;
+                double horizontalDistanceSq = delta.x * delta.x + delta.z * delta.z;
+                double verticalDistance = Math.abs(delta.y);
 
-                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
+                if (horizontalDistanceSq < ARROW_KEEP_DISTANCE_HORIZONTAL*ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
                     return true;
             }
         } catch (ConcurrentModificationException e) {
