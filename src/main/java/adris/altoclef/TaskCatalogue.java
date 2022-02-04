@@ -638,7 +638,7 @@ public class TaskCatalogue {
     // This is here so that we can use strings for item targets (optionally) and stuff like that.
     public static Item[] getItemMatches(String name) {
         if (!_nameToItemMatches.containsKey(name)) {
-            return null;
+            return new Item[0];
         }
         return _nameToItemMatches.get(name);
     }
