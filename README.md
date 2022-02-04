@@ -41,7 +41,7 @@ If you hash the jar file and do not get this value, please message James Green o
 
 2. Open a command prompt window and navigate to the directory of your extracted files.
 
-3. type in **certutil -hashfile altoclef-1.0-SNAPSHOT.jar sha256**
+3. type in **certutil -hashfile altoclef-4.0-SNAPSHOT.jar sha256**
 
 4. Compare that value to the one above. If they are the same, you have correctly downloaded the proper version of altoclef
 
