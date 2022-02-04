@@ -29,7 +29,7 @@ The current sha256 hash of this release is:
 
  ***ddd7725c998f0c5575ffb1032f88f201a0a32ff6dd9417ee9ed81eafee30652b***
 
-Last updated 1/31/2022. 
+Last updated 02/04/2022. 
 
 If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
 
