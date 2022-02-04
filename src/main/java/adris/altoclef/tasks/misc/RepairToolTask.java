@@ -33,8 +33,8 @@ import java.util.Arrays;
 public class RepairToolTask extends Task {
 
     private final ItemTarget[] _toRepair;
+
     private boolean _finished;
-    private ItemTarget[] shouldRepair;
     private final TimerGame _throwTimer = new TimerGame(0.5);
 
     public RepairToolTask(ItemTarget... toRepair) {
@@ -75,27 +75,27 @@ public class RepairToolTask extends Task {
     protected Task onTick(AltoClef mod) {
         //We start this task by filtering out every item type that we can't repair :
         //All items without mending or with no damage
-        shouldRepair = Arrays.stream(_toRepair).filter(target -> needRepair(mod, target)).toArray(ItemTarget[]::new);
+        ItemTarget[] shouldRepair = Arrays.stream(_toRepair).filter(target -> needRepair(mod, target)).toArray(ItemTarget[]::new);
         
         //After that, we get the first item type to repair on the list
-        Optional<ItemTarget> ItemTargetOPTRepair = Arrays.stream(shouldRepair).findFirst();
-        
-        if (ItemTargetOPTRepair.isPresent()) { //If the list is not empty
-            ItemTarget ItemTargetRepair = ItemTargetOPTRepair.get(); //We get the (real) first item on the list
-            
-            List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, ItemTargetRepair.getMatches()); //And we get a list of every slot with that item
-            
+        Optional<ItemTarget> itemTargetOPTRepair = Arrays.stream(shouldRepair).findFirst();
+
+        if (itemTargetOPTRepair.isPresent()) { //If the list is not empty
+            ItemTarget itemTargetRepair = itemTargetOPTRepair.get(); //We get the (real) first item on the list
+
+            List<Slot> slotRepairs = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, itemTargetRepair.getMatches()); //And we get a list of every slot with that item
+
             Optional<Slot> slotRepairTarget = Optional.empty();
-            for (int i = 0; i < slotRepair.size(); ++i) { //For every item slot that is on our list
-                if (slotRepairTarget.isEmpty() & StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) { //if we can repair it
-                    if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) { //and it have mending
-                        slotRepairTarget = Optional.of(slotRepair.get(i)); //Replace the placeholder slot with the slot we found
+            for (Slot couldRepair : slotRepairs) {
+                if (slotRepairTarget.isEmpty() && StorageHelper.getItemStackInSlot(couldRepair).getDamage() != 0) { //if we can repair it
+                    if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(couldRepair)).containsKey(Enchantments.MENDING)) { //and it have mending
+                        slotRepairTarget = Optional.of(couldRepair); //Replace the placeholder slot with the slot we found
                     }
                 }
             }
             if (slotRepairTarget.isPresent()) { //If we found our slot, we can now repair the item !
                 final Slot ItemToEquip = slotRepairTarget.get();
-                setDebugState("Repairing "+StorageHelper.getItemStackInSlot(ItemToEquip).getName().getString());
+                setDebugState("Repairing " +  StorageHelper.getItemStackInSlot(ItemToEquip).getName().getString());
                 if (!_throwTimer.elapsed()){ //If we just used a experience bottle, get the item in our hand to repair
                     mod.getSlotHandler().forceEquipSlot(ItemToEquip);
                     return null;
@@ -103,14 +103,16 @@ public class RepairToolTask extends Task {
                 //Get the nearest experience orb
                 boolean isExpPresent = mod.getEntityTracker().entityFound(ExperienceOrbEntity.class);
                 if (isExpPresent) { //if there is one
+                    setDebugState("Collecting EXP Orbs");
                     return new DoToClosestEntityTask(entity -> { //Get to the entity
                         if (entity.isInRange(mod.getPlayer(), 3)) { //and if the orb is near the player
                             mod.getSlotHandler().forceEquipSlot(ItemToEquip); //get the item in our hand to repair the item
-                        };
+                        }
                         return new GetToEntityTask(entity, 0);
                     }, ExperienceOrbEntity.class);
                 }
                 if (mod.getItemStorage().hasItem(Items.EXPERIENCE_BOTTLE)) { //if we have some experience bottle
+                    setDebugState("Throwing EXP Bottles for EXP");
                     if (_throwTimer.elapsed()) { //the timer for throwing a experience bottle
                         if (!LookHelper.isLookingAt(mod, new Rotation(0, 90))) {
                             LookHelper.lookAt(mod, new Rotation(0, 90)); //Look at our feet
@@ -122,11 +124,11 @@ public class RepairToolTask extends Task {
                     return null;
                 }
 
-                return new DoToClosestEntityTask(entity -> { //Find zombies
-                    return new KillEntityTask(entity); //And kill them for XP
-                }, ZombieEntity.class);
+                setDebugState("Killing Zombies for EXP");
+                return new DoToClosestEntityTask(KillEntityTask::new, ZombieEntity.class);
             }
         } //If there is no items in the list of itemtype to repair, it means there is nothing to repair :)
+        setDebugState("Done");
         _finished = true;
         return null;
     }
@@ -138,24 +140,23 @@ public class RepairToolTask extends Task {
     //Check if a type of item can be repaired.
     public static boolean needRepair(AltoClef mod, ItemTarget target) {
         List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
-        boolean FoundSomethingToRepair = false;
-        for (int i = 0; i < slotRepair.size(); ++i) {
-            if (!FoundSomethingToRepair & StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) {
-                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) {
-                    FoundSomethingToRepair = true;
+        for (Slot couldRepair : slotRepair) {
+            if (StorageHelper.getItemStackInSlot(couldRepair).getDamage() != 0) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(couldRepair)).containsKey(Enchantments.MENDING)) {
+                    return true;
                 }
             }
         }
-        return FoundSomethingToRepair;
+        return false;
     }
     //Will get the durability of an item in accordance of the ItemTarget.
     //Return the durability of one of the item, or -1 if all targeted items is repaired or doesn't have the targeted item
     public static int getDurabilityOfRepairableItem(AltoClef mod, ItemTarget target) {
-        List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
-        for (int i = 0; i < slotRepair.size(); ++i) {
-            if (StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) {
-                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) {
-                    return StorageHelper.getItemStackInSlot(slotRepair.get(i)).getMaxDamage()-StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage();
+        List<Slot> slotRepairs = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
+        for (Slot couldRepair : slotRepairs) {
+            if (StorageHelper.getItemStackInSlot(couldRepair).getDamage() != 0) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(couldRepair)).containsKey(Enchantments.MENDING)) {
+                    return StorageHelper.getItemStackInSlot(couldRepair).getMaxDamage() - StorageHelper.getItemStackInSlot(couldRepair).getDamage();
                 }
             }
         }
@@ -176,7 +177,7 @@ public class RepairToolTask extends Task {
 
     @Override
     protected String toDebugString() {
-        return "Repairing an item";
+        return "Repairing: " + Arrays.toString(_toRepair);
     }
 
 }
