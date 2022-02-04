@@ -20,7 +20,6 @@ import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import java.util.List;
 
@@ -60,6 +59,8 @@ public class GetToXZWithElytraTask extends Task {
         _jumpTimer.reset();
         _fireWorkTimer.reset();
         _messageProgessTimer.reset();
+        // We disable/enable mob defense intermittently
+        mod.getBehaviour().push();
     }
 
     @Override
@@ -68,7 +69,7 @@ public class GetToXZWithElytraTask extends Task {
         if (!_isFlyRunning) { //If we are already flying, jump that code section
             _fx = 0;
             _fz = 0;
-            mod.getBehaviour().defence(false); //Enable mob defence
+            mod.getBehaviour().disableDefence(false); //Enable mob defence
             if (dist < CLOSE_ENOUGH_TO_WALK) { //We are near our goal
                 setDebugState("Walking to goal");
                 return new GetToXZTask(_x, _z); //Get to our goal
@@ -130,7 +131,7 @@ public class GetToXZWithElytraTask extends Task {
             _fireWorkTimer.forceElapse();
         }
         _isFlyRunning = true; //We will now try to fly, we don't need to check the code before this for now.
-        mod.getBehaviour().defence(true); //Disable MobDefence and MLG, because it get interupted by that
+        mod.getBehaviour().disableDefence(true); //Disable MobDefence and MLG, because it get interupted by that
         
         //Get the elytra's durability
         ItemStack elytraItem = StorageHelper.getItemStackInSlot(PlayerSlot.ARMOR_CHESTPLATE_SLOT);
@@ -216,17 +217,20 @@ public class GetToXZWithElytraTask extends Task {
     }
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBehaviour().defence(false);
+        mod.getBehaviour().pop();
     }
 
     @Override
     protected boolean isEqual(Task other) {
-        return other instanceof GetToXZWithElytraTask;
+        if (other instanceof GetToXZWithElytraTask task) {
+            return task._x == _x && task._z == _z;
+        }
+        return false;
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getPlayer().getPos().distanceTo(new Vec3d(_x, mod.getPlayer().getPos().y, _z)) < 2  && !_isFlyRunning;
+        return WorldHelper.inRangeXZ(mod.getPlayer(), new Vec3d(_x, mod.getPlayer().getY(), _z), 2) && !_isFlyRunning;
     }
     @Override
     protected String toDebugString() {

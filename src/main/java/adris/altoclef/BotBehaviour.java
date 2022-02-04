@@ -142,11 +142,11 @@ public class BotBehaviour {
     }
 
     //Way of disabling MLG and defense from a task
-    public boolean isDefenseDisabled() { //Get the value
+    public boolean isDefenseDisabled() {
         return current().disableDefence;
     }
 
-    public void defence(boolean value) { //And set the value
+    public void disableDefence(boolean value) {
         current().disableDefence = value;
         current().applyState();
     }
@@ -317,6 +317,7 @@ public class BotBehaviour {
                 conversionSlots.addAll(toCopy.conversionSlots);
                 forceFieldPlayers = toCopy.forceFieldPlayers;
                 escapeLava = toCopy.escapeLava;
+                disableDefence = toCopy.disableDefence;
             }
         }
 
