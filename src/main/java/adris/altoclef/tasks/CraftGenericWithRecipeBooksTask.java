@@ -48,12 +48,6 @@ public class CraftGenericWithRecipeBooksTask extends Task {
             return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
         }
 
-        // Request to fill in a recipe. Just piggy back off of the slot delay system.
-        if (mod.getSlotHandler().canDoSlotAction()) {
-            mod.getSlotHandler().registerSlotAction();
-            StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
-        }
-
         // If a material is found in cursor, move it to the inventory.
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
         if (Arrays.stream(_target.getRecipe().getSlots()).anyMatch(target -> target.matches(cursor.getItem()))) {
@@ -76,6 +70,11 @@ public class CraftGenericWithRecipeBooksTask extends Task {
             }
         }
 
+        // Request to fill in a recipe. Just piggy back off of the slot delay system.
+        if (mod.getSlotHandler().canDoSlotAction()) {
+            mod.getSlotHandler().registerSlotAction();
+            StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
+        }
 
 
         setDebugState("Waiting for recipe book click...");
