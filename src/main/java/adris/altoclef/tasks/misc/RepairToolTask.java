@@ -5,6 +5,8 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasks.entity.KillEntityTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.movement.GetToEntityTask;
+import adris.altoclef.tasks.entity.DoToClosestEntityTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -19,6 +21,8 @@ import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.Rotation;
 import net.minecraft.entity.Entity;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.item.ItemStack;
@@ -28,8 +32,9 @@ import java.util.Arrays;
 
 public class RepairToolTask extends Task {
 
-    private ItemTarget[] _toRepair;
+    private final ItemTarget[] _toRepair;
     private boolean _finished;
+    private ItemTarget[] shouldRepair;
     private final TimerGame _throwTimer = new TimerGame(0.5);
 
     public RepairToolTask(ItemTarget... toRepair) {
@@ -64,51 +69,46 @@ public class RepairToolTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _throwTimer.reset();
-        _toRepair = Arrays.stream(_toRepair).filter(target -> needRepair(mod, target)).toArray(ItemTarget[]::new); //Filter out items type we can't repair
-        Optional<ItemTarget> ItemTargetOPTRepair = Arrays.stream(_toRepair).findFirst(); //Get the first element in our list
-        if (!ItemTargetOPTRepair.isPresent()) {
-            Debug.logWarning("There is nothing to repair");
-        }
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
         //We start this task by filtering out every item type that we can't repair :
         //All items without mending or with no damage
-        _toRepair = Arrays.stream(_toRepair).filter(target -> needRepair(mod, target)).toArray(ItemTarget[]::new);
+        shouldRepair = Arrays.stream(_toRepair).filter(target -> needRepair(mod, target)).toArray(ItemTarget[]::new);
         
         //After that, we get the first item type to repair on the list
-        Optional<ItemTarget> ItemTargetOPTRepair = Arrays.stream(_toRepair).findFirst();
+        Optional<ItemTarget> ItemTargetOPTRepair = Arrays.stream(shouldRepair).findFirst();
         
         if (ItemTargetOPTRepair.isPresent()) { //If the list is not empty
             ItemTarget ItemTargetRepair = ItemTargetOPTRepair.get(); //We get the (real) first item on the list
             
             List<Slot> SlotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, ItemTargetRepair.getMatches()); //And we get a list of every slot with that item
             
-            Slot SlotRepairTarget = new PlayerSlot(-1); //Placeholder slot, will never get used if not replaced
-            boolean FoundSomethingToRepair = false; //Will be set if we find the slot with the item to repair
+            Optional<Slot> SlotRepairTarget = Optional.empty();
             for (int i = 0; i < SlotRepair.size(); ++i) { //For every item slot that is on our list
-                if (!FoundSomethingToRepair & StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) { //if we can repair it
-                    if (haveMending(mod,StorageHelper.getItemStackInSlot(SlotRepair.get(i)))) { //and it have mending
-                        SlotRepairTarget = SlotRepair.get(i); //Replace the placeholder slot with the slot we found
-                        FoundSomethingToRepair = true;
+                if (SlotRepairTarget.isEmpty() & StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) { //if we can repair it
+                    if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) { //and it have mending
+                        SlotRepairTarget = Optional.of(SlotRepair.get(i)); //Replace the placeholder slot with the slot we found
                     }
                 }
             }
-            if (FoundSomethingToRepair) { //If we found our slot, we can now repair the item !
-                setDebugState("Repairing "+StorageHelper.getItemStackInSlot(SlotRepairTarget).getName().getString());
+            if (SlotRepairTarget.isPresent()) { //If we found our slot, we can now repair the item !
+                final Slot ItemToEquip = SlotRepairTarget.get();
+                setDebugState("Repairing "+StorageHelper.getItemStackInSlot(ItemToEquip).getName().getString());
                 if (!_throwTimer.elapsed()){ //If we just used a experience bottle, get the item in our hand to repair
-                    mod.getSlotHandler().forceEquipSlot(SlotRepairTarget);
+                    mod.getSlotHandler().forceEquipSlot(ItemToEquip);
                     return null;
                 }
                 //Get the nearest experience orb
-                Optional<Entity> expentityOPT = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), ExperienceOrbEntity.class);
-                if (expentityOPT.isPresent()) { //if there is one
-                    Entity expentity = expentityOPT.get(); //get it
-                    if (expentity.getBlockPos().isWithinDistance(mod.getPlayer().getPos(), 3)) { //and if the orb is near the player
-                        mod.getSlotHandler().forceEquipSlot(SlotRepairTarget); //get the item in our hand to repair the item
-                    };
-                    return new GetToBlockTask(expentity.getBlockPos()); //go to the orb too
+                boolean isExpPresent = mod.getEntityTracker().entityFound(ExperienceOrbEntity.class);
+                if (isExpPresent) { //if there is one
+                    return new DoToClosestEntityTask(entity -> { //Get to the entity
+                        if (entity.isInRange(mod.getPlayer(), 3)) { //and if the orb is near the player
+                            mod.getSlotHandler().forceEquipSlot(ItemToEquip); //get the item in our hand to repair the item
+                        };
+                        return new GetToEntityTask(entity, 0);
+                    }, ExperienceOrbEntity.class);
                 }
                 if (mod.getItemStorage().hasItem(Items.EXPERIENCE_BOTTLE)) { //if we have some experience bottle
                     if (_throwTimer.elapsed()) { //the timer for throwing a experience bottle
@@ -121,13 +121,10 @@ public class RepairToolTask extends Task {
                     }
                     return null;
                 }
-                
-                //So we don't have any experience bottle, we will kill some zombies to get XP
-                Optional<Entity> entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), ZombieEntity.class); //Find a zombie
-                if (entity.isPresent()) {
-                    return new KillEntityTask(entity.get()); //And kill it
-                }
-                return new TimeoutWanderTask(); //If there is no zombie, wander
+
+                return new DoToClosestEntityTask(entity -> { //Find zombies
+                    return new KillEntityTask(entity); //And kill them for XP
+                }, ZombieEntity.class);
             }
         } //If there is no items in the list of itemtype to repair, it means there is nothing to repair :)
         _finished = true;
@@ -144,7 +141,7 @@ public class RepairToolTask extends Task {
         boolean FoundSomethingToRepair = false;
         for (int i = 0; i < SlotRepair.size(); ++i) {
             if (!FoundSomethingToRepair & StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) {
-                if (haveMending(mod,StorageHelper.getItemStackInSlot(SlotRepair.get(i)))) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) {
                     FoundSomethingToRepair = true;
                 }
             }
@@ -157,24 +154,12 @@ public class RepairToolTask extends Task {
         List<Slot> SlotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
         for (int i = 0; i < SlotRepair.size(); ++i) {
             if (StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) {
-                if (haveMending(mod,StorageHelper.getItemStackInSlot(SlotRepair.get(i)))) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) {
                     return StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getMaxDamage()-StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage();
                 }
             }
         }
         return -1;
-    }
-
-    //Test if the itemstack have mending on it
-    public static boolean haveMending(AltoClef mod, ItemStack target) {
-        boolean canRepair = false;
-        for (NbtElement elm : target.getEnchantments()) {
-            NbtCompound comp = (NbtCompound) elm;
-            if (comp.getString("id").equals("minecraft:mending")) {
-                canRepair = true;
-            }
-        }
-        return canRepair;
     }
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
