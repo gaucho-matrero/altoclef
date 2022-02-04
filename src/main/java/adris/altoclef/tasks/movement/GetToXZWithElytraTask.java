@@ -25,13 +25,17 @@ import net.minecraft.util.math.Vec3d;
 import java.util.List;
 
 public class GetToXZWithElytraTask extends Task {
-    private static final int CLOSE_ENOUGH_TO_WALK = 128;
-    private static final int MINIMAL_ELYTRA_DURABILITY = 35;
-    private static final int MINIMAL_FIREWORKS = 16;
-    private static final int FIREWORKS_GOAL = 32;
+    private static final int CLOSE_ENOUGH_TO_WALK = 128; //If the distance to the goal is less than this, it will walk
+    private static final int MINIMAL_ELYTRA_DURABILITY = 35; //Will land if the durability left is under that
+    private static final int MINIMAL_FIREWORKS = 16; //Minimal number of fireworks before starting flying
+    private static final int FIREWORKS_GOAL = 32; //Number of fireworks to get if needed
+    private static final int FLY_LEVEL = 325; //319 is the world's height limit in 1.18
 
-    private static final int LOOK_DISTANCE = 6;
-    private static final int LAND_TARGET_DISTANCE = 12;
+    private static final int LOOK_DISTANCE = 6; //If the target's distance is lower than this value,
+    //The bot will not try to look at the target while flying
+
+
+    private static final int LAND_TARGET_DISTANCE = 12; //Will not use fireworks when the target's distance is lower than that
 
     private final int _x, _z;
     private boolean _isMovingElytra = false;
@@ -135,7 +139,7 @@ public class GetToXZWithElytraTask extends Task {
         float yaw = LookHelper.getLookRotation(mod,new Vec3d(_x, 1, _z)).getYaw(); //The players's direction
         float pitch; //Players's pitch, will be set later
 
-        if (mod.getPlayer().getPos().y > WorldHelper.WORLD_CEILING_Y) { //When flying higher than the world's height limit
+        if (mod.getPlayer().getPos().y > FLY_LEVEL-2) { //When flying higher than our flylevel
             if (_oldCoordsY > mod.getPlayer().getPos().y && _fireWorkTimer.elapsed()) {
                 pitch = (float)10; //Look a bit down, when flying down
             } else {
@@ -164,8 +168,8 @@ public class GetToXZWithElytraTask extends Task {
                 mod.getInputControls().tryPress(Input.JUMP);
                 _jumpTimer.reset();
             }
-            //If we can use firework rocket, if we have one, and are under y=WorldHelper.WORLD_CEILING_Y+8
-            if (_fireWorkTimer.elapsed() && mod.getPlayer().getPos().y < WorldHelper.WORLD_CEILING_Y+8 && mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET)) {
+            //If we can use firework rocket, if we have one, and are under the flylevel
+            if (_fireWorkTimer.elapsed() && mod.getPlayer().getPos().y < FLY_LEVEL && mod.getItemStorage().hasItem(Items.FIREWORK_ROCKET)) {
                 if (mod.getSlotHandler().forceEquipItem(Items.FIREWORK_ROCKET)) {//try to equip the item
                     mod.getInputControls().tryPress(Input.CLICK_RIGHT); //and use it
                     _fireWorkTimer.reset();
