@@ -83,18 +83,18 @@ public class RepairToolTask extends Task {
         if (ItemTargetOPTRepair.isPresent()) { //If the list is not empty
             ItemTarget ItemTargetRepair = ItemTargetOPTRepair.get(); //We get the (real) first item on the list
             
-            List<Slot> SlotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, ItemTargetRepair.getMatches()); //And we get a list of every slot with that item
+            List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, ItemTargetRepair.getMatches()); //And we get a list of every slot with that item
             
-            Optional<Slot> SlotRepairTarget = Optional.empty();
-            for (int i = 0; i < SlotRepair.size(); ++i) { //For every item slot that is on our list
-                if (SlotRepairTarget.isEmpty() & StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) { //if we can repair it
-                    if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) { //and it have mending
-                        SlotRepairTarget = Optional.of(SlotRepair.get(i)); //Replace the placeholder slot with the slot we found
+            Optional<Slot> slotRepairTarget = Optional.empty();
+            for (int i = 0; i < slotRepair.size(); ++i) { //For every item slot that is on our list
+                if (slotRepairTarget.isEmpty() & StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) { //if we can repair it
+                    if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) { //and it have mending
+                        slotRepairTarget = Optional.of(slotRepair.get(i)); //Replace the placeholder slot with the slot we found
                     }
                 }
             }
-            if (SlotRepairTarget.isPresent()) { //If we found our slot, we can now repair the item !
-                final Slot ItemToEquip = SlotRepairTarget.get();
+            if (slotRepairTarget.isPresent()) { //If we found our slot, we can now repair the item !
+                final Slot ItemToEquip = slotRepairTarget.get();
                 setDebugState("Repairing "+StorageHelper.getItemStackInSlot(ItemToEquip).getName().getString());
                 if (!_throwTimer.elapsed()){ //If we just used a experience bottle, get the item in our hand to repair
                     mod.getSlotHandler().forceEquipSlot(ItemToEquip);
@@ -137,11 +137,11 @@ public class RepairToolTask extends Task {
     }
     //Check if a type of item can be repaired.
     public static boolean needRepair(AltoClef mod, ItemTarget target) {
-        List<Slot> SlotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
+        List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
         boolean FoundSomethingToRepair = false;
-        for (int i = 0; i < SlotRepair.size(); ++i) {
-            if (!FoundSomethingToRepair & StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) {
-                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) {
+        for (int i = 0; i < slotRepair.size(); ++i) {
+            if (!FoundSomethingToRepair & StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) {
                     FoundSomethingToRepair = true;
                 }
             }
@@ -151,11 +151,11 @@ public class RepairToolTask extends Task {
     //Will get the durability of an item in accordance of the ItemTarget.
     //Return the durability of one of the item, or -1 if all targeted items is repaired or doesn't have the targeted item
     public static int getDurabilityOfRepairableItem(AltoClef mod, ItemTarget target) {
-        List<Slot> SlotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
-        for (int i = 0; i < SlotRepair.size(); ++i) {
-            if (StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage() != 0) {
-                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(SlotRepair.get(i))).containsKey(Enchantments.MENDING)) {
-                    return StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getMaxDamage()-StorageHelper.getItemStackInSlot(SlotRepair.get(i)).getDamage();
+        List<Slot> slotRepair = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
+        for (int i = 0; i < slotRepair.size(); ++i) {
+            if (StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage() != 0) {
+                if (EnchantmentHelper.get(StorageHelper.getItemStackInSlot(slotRepair.get(i))).containsKey(Enchantments.MENDING)) {
+                    return StorageHelper.getItemStackInSlot(slotRepair.get(i)).getMaxDamage()-StorageHelper.getItemStackInSlot(slotRepair.get(i)).getDamage();
                 }
             }
         }
