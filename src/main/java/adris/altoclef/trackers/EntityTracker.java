@@ -201,7 +201,7 @@ public class EntityTracker extends Tracker {
         ensureUpdated();
         for (Class type : types) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                for (Entity entity : _entityMap.get(type)) {
+                for (Entity entity : _entityMap.getOrDefault(type, Collections.emptyList())) {
                     if (shouldAccept.test(entity))
                         return true;
                 }
