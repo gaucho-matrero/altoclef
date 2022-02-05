@@ -33,9 +33,6 @@ public class ItemTarget {
     public ItemTarget(String catalogueName, int targetCount) {
         _catalogueName = catalogueName;
         _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
-        if (_itemMatches.length == 0) {
-            Debug.logError("Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!");
-        }
         _targetCount = targetCount;
     }
 

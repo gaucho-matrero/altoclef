@@ -145,6 +145,9 @@ public class AltoClef implements ModInitializer {
                 getUserTaskChain().signalNextTaskToBeIdleTask();
                 getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
             }
+            // Don't break blocks or place blocks where we are explicitly protected.
+            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
         });
 
         // Receive + cancel chat
@@ -222,10 +225,6 @@ public class AltoClef implements ModInitializer {
         // Really avoid mobs if we're in danger.
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 2.0;
         getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
-
-        // Don't break blocks or place blocks where we are explicitly protected.
-        getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
-        getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
 
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
@@ -414,7 +413,6 @@ public class AltoClef implements ModInitializer {
     /**
      * Run a user task
      */
-    @SuppressWarnings("rawtypes")
     public void runUserTask(Task task, Runnable onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }

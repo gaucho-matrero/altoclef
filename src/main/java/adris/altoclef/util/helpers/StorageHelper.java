@@ -160,6 +160,9 @@ public class StorageHelper {
         final List<Slot> throwawayBlockItems = new ArrayList<>();
         int totalBlockThrowaways = 0;
         for (Slot slot : mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod))) {
+            // Our cursor slot is NOT a garbage slot
+            if (Slot.isCursor(slot))
+                continue;
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
             if (!ItemHelper.canThrowAwayStack(mod, stack))
                 continue;

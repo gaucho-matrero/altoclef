@@ -68,7 +68,7 @@ Has some schematic support, command macros and a few utility features. Will even
 
 ### Versions
 
-This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
+This is a **fabric only** mod, currently only available for **Minecraft 1.18**.
 
 For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect is untested and not affiliated with altoclef, use at your own risk!)
 

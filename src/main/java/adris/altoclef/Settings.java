@@ -52,6 +52,14 @@ public class Settings implements IFailableConfigFile {
     private boolean showTaskChains = true;
 
     /**
+     * If true, all warning logs will be disabled.
+     *
+     * NOT RECOMMENDED, as it will make debugging more difficult.
+     * But if you know what you're doing, go nuts.
+     */
+    private boolean hideAllWarningLogs = false;
+
+    /**
      * The prefix for commands (ex. @gamer )
      */
     private String commandPrefix = "@";
@@ -422,6 +430,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+
+    public boolean shouldHideAllWarningLogs() {
+        return hideAllWarningLogs;
     }
 
     public String getCommandPrefix() {
