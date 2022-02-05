@@ -34,14 +34,25 @@ public class ReceiveOutputSlotTask extends Task {
     protected Task onTick(AltoClef mod) {
         ItemStack inOutput = StorageHelper.getItemStackInSlot(_slot);
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-        if (!cursor.isEmpty() && cursor.getItem() != inOutput.getItem()) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
+        if (!cursor.isEmpty() && !ItemHelper.canStackTogether(inOutput, cursor)) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
             if (moveTo.isPresent()) {
                 setDebugState("Moving cursor stack back");
                 return new ClickSlotTask(moveTo.get());
             }
-            setDebugState("Incompatible cursor stack, throwing");
-            return new ThrowCursorTask();
+            if (ItemHelper.canThrowAwayStack(mod, cursor)) {
+                setDebugState("Incompatible cursor stack, throwing");
+                return new ThrowCursorTask();
+            } else {
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                if (garbage.isPresent()) {
+                    setDebugState("Picking up garbage");
+                    return new ClickSlotTask(garbage.get());
+                } else {
+                    setDebugState("STUCK! Everything's protected.");
+                    return null;
+                }
+            }
         }
         int craftCount = inOutput.getCount() * getCraftMultipleCount(mod);
         int weWantToAddToInventory = _toTake - mod.getItemStorage().getItemCountInventoryOnly(inOutput.getItem());
@@ -49,16 +60,6 @@ public class ReceiveOutputSlotTask extends Task {
         if (takeAll && mod.getItemStorage().getSlotThatCanFitInPlayerInventory(inOutput, true).isPresent()) {
             setDebugState("Quick moving output");
             return new ClickSlotTask(_slot, SlotActionType.QUICK_MOVE);
-        }
-        // We might not be able to stack, in that case move our cursor item somewhere safely
-        if (!ItemHelper.canStackTogether(inOutput, cursor)) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, true).or(() -> StorageHelper.getGarbageSlot(mod));
-            if (moveTo.isEmpty()) {
-                setDebugState("STUCK! Everything's protected.");
-                return null;
-            }
-            setDebugState("Can't stack so moving cursor back to inventory");
-            return new ClickSlotTask(moveTo.get());
         }
         setDebugState("Picking up output");
         return new ClickSlotTask(_slot);
