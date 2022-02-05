@@ -181,7 +181,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                 BlockPos lavaPos = findLavaLake(mod, mod.getPlayer().getBlockPos());
                 if (lavaPos != null) {
                     // We have a lava lake, set our portal origin!
-                    BlockPos foundPortalRegion = getPortalableRegion(lavaPos, mod.getPlayer().getBlockPos(), new Vec3i(-1, 0, 0), PORTALABLE_REGION_SIZE, 20);
+                    BlockPos foundPortalRegion = getPortalableRegion(mod, lavaPos, mod.getPlayer().getBlockPos(), new Vec3i(-1, 0, 0), PORTALABLE_REGION_SIZE, 20);
                     if (foundPortalRegion == null) {
                         Debug.logWarning("Failed to find portalable region nearby. Consider increasing the search timeout range");
                     } else {
@@ -314,7 +314,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     }
 
     // Get a region that a portal can fit into
-    private BlockPos getPortalableRegion(BlockPos lava, BlockPos playerPos, Vec3i sizeOffset, Vec3i sizeAllocation, int timeoutRange) {
+    private BlockPos getPortalableRegion(AltoClef mod, BlockPos lava, BlockPos playerPos, Vec3i sizeOffset, Vec3i sizeAllocation, int timeoutRange) {
         Vec3i[] directions = new Vec3i[]{new Vec3i(1, 0, 0), new Vec3i(-1, 0, 0), new Vec3i(0, 0, 1), new Vec3i(0, 0, -1)};
 
         double minDistanceToPlayer = Double.POSITIVE_INFINITY;
@@ -328,9 +328,10 @@ public class ConstructNetherPortalBucketTask extends Task {
                 Vec3i offset = new Vec3i(direction.getX() * offs, direction.getY() * offs, direction.getZ() * offs);
 
                 boolean found = true;
+                boolean solidFound = false;
                 // check for collision with lava in box
-                moveAlongLine:
                 // We have an extra buffer to make sure we never break a block NEXT to lava.
+                moveAlongLine:
                 for (int dx = -1; dx < sizeAllocation.getX() + 1; ++dx) {
                     for (int dz = -1; dz < sizeAllocation.getZ() + 1; ++dz) {
                         for (int dy = -1; dy < sizeAllocation.getY(); ++dy) {
@@ -341,8 +342,16 @@ public class ConstructNetherPortalBucketTask extends Task {
                                 found = false;
                                 break moveAlongLine;
                             }
+                            // Also check for at least 1 solid block for us to place on...
+                            if (dy <= 1 && !solidFound && WorldHelper.isSolid(mod, toCheck)) {
+                                solidFound = true;
+                            }
                         }
                     }
+                }
+                // Check for solid ground at least somewhere
+                if (!solidFound) {
+                    break;
                 }
 
                 if (found) {
