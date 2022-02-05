@@ -27,9 +27,9 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 The current sha256 hash of this release is:
 
- ***ddd7725c998f0c5575ffb1032f88f201a0a32ff6dd9417ee9ed81eafee30652b***
+ ***3c2f032fd7517ddde90c28aabd69ba692fb9d905bca9b89ecd2a048213873e62***
 
-Last updated 02/04/2022. 
+Last updated 02/04/2022. Git Commit: 795e886
 
 If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
 
@@ -41,7 +41,7 @@ If you hash the jar file and do not get this value, please message James Green o
 
 2. Open a command prompt window and navigate to the directory of your extracted files.
 
-3. type in **certutil -hashfile altoclef-1.0-SNAPSHOT.jar sha256**
+3. type in **certutil -hashfile altoclef-4.0-SNAPSHOT.jar sha256**
 
 4. Compare that value to the one above. If they are the same, you have correctly downloaded the proper version of altoclef
 
@@ -51,9 +51,9 @@ If you hash the jar file and do not get this value, please message James Green o
 
 ### Nightly Release (Recommended) (has the latest bug fixes)
 
-Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-1.0-SNAPSHOT.jar`.
+Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-4.0-SNAPSHOT.jar`.
 
-If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-4.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
 
 ### Long Term Release
 
