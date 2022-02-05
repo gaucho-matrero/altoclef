@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.AreaEffectCloudEntity;
@@ -32,6 +33,24 @@ public class DragonBreathTracker {
     }
 
     private class RunAwayFromDragonsBreathTask extends CustomBaritoneGoalTask {
+
+        @Override
+        protected void onStart(AltoClef mod) {
+            super.onStart(mod);
+            mod.getBehaviour().push();
+            // Encourage placing of all blocks!
+            mod.getBehaviour().setBlockPlacePenalty(0);
+            mod.getBehaviour().setBlockBreakAdditionalPenalty(10); // Normally 2
+
+            // do NOT ever wander
+            _checker = new MovementProgressChecker(999999);
+        }
+
+        @Override
+        protected void onStop(AltoClef mod, Task interruptTask) {
+            super.onStop(mod, interruptTask);
+            mod.getBehaviour().pop();
+        }
 
         @Override
         protected Goal newGoal(AltoClef mod) {

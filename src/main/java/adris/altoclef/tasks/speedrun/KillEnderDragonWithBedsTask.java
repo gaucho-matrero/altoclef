@@ -20,8 +20,6 @@ import net.minecraft.util.math.Vec3d;
 
 public class KillEnderDragonWithBedsTask extends Task {
 
-    private static final double DRAGON_HEAD_CLOSE_TO_BED_RANGE = 6.1;
-
     private final Task _whenNotPerchingTask;
 
     private BlockPos _endPortalTop;
@@ -141,7 +139,7 @@ public class KillEnderDragonWithBedsTask extends Task {
                 Vec3d headPos = dragon.head.getBoundingBox().getCenter(); // dragon.head.getPos();
                 double dist = headPos.distanceTo(WorldHelper.toVec3d(bedHead));
                 Debug.logMessage("Dist: " + dist);
-                if (dist < DRAGON_HEAD_CLOSE_TO_BED_RANGE) {
+                if (dist < BeatMinecraft2Task.getConfig().dragonHeadCloseEnoughClickBedRange) {
                     // Interact with the bed.
                     return new InteractWithBlockTask(bedTargetPosition);
                 }
@@ -157,6 +155,11 @@ public class KillEnderDragonWithBedsTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
 
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return super.isFinished(mod);
     }
 
     @Override

@@ -55,6 +55,9 @@ public class BeatMinecraft2Task extends Task {
     static {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
     }
+    public static BeatMinecraftConfig getConfig() {
+        return _config;
+    }
     private static final Block[] TRACK_BLOCKS = new Block[] {
             Blocks.END_PORTAL_FRAME,
             Blocks.END_PORTAL,
@@ -129,6 +132,7 @@ public class BeatMinecraft2Task extends Task {
     private boolean _collectingEyes;
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();
+    private final Task _killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
 
     // End specific dragon breath avoidance
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
@@ -273,9 +277,9 @@ public class BeatMinecraft2Task extends Task {
                     }
                 }
             }
-            if (mod.getItemStorage().hasItem(ItemHelper.BED)) {
+            if (mod.getItemStorage().hasItem(ItemHelper.BED) || (_killDragonBedStratsTask.isActive() && !_killDragonBedStratsTask.isFinished(mod))) {
                 setDebugState("Bed strats");
-                return new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
+                return _killDragonBedStratsTask;
             }
             setDebugState("No beds, regular strats.");
             return new KillEnderDragonTask();

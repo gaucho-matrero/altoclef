@@ -9,6 +9,7 @@ import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.movement.ThrowEnderPearlSimpleProjectileTask;
 import adris.altoclef.tasks.resources.GetBuildingMaterialsTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.entity.Entity;
@@ -35,7 +36,7 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     private static final int CLOSE_ENOUGH_DISTANCE = 15;
 
-    private static final double DRAGON_FIREBALL_TOO_CLOSE_RANGE = 10;
+    private static final double DRAGON_FIREBALL_TOO_CLOSE_RANGE = 40;
 
     private Task _heightPillarTask;
     private Task _throwPearlTask;
@@ -85,13 +86,13 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
         int minHeight = _targetToPearl.getY() + HEIGHT - 3;
 
         int deltaY = minHeight - mod.getPlayer().getBlockPos().getY();
-        if (StorageHelper.getBuildingMaterialCount(mod) < Math.min(deltaY - 10, HEIGHT - 5) || (_buildingMaterialsTask != null && _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod))) {
+        if (StorageHelper.getBuildingMaterialCount(mod) < Math.min(deltaY - 10, HEIGHT - 5) || _buildingMaterialsTask.isActive() && !_buildingMaterialsTask.isFinished(mod)) {
             setDebugState("Collecting building materials...");
             return _buildingMaterialsTask;
         }
 
         // Our trigger to throw is that the dragon starts perching. We can be an arbitrary distance and we'll still do it lol
-        if (_dragonIsPerching) {
+        if (_dragonIsPerching && LookHelper.cleanLineOfSight(mod.getPlayer(), _targetToPearl.up(), 300)) {
             Debug.logMessage("THROWING PEARL!!");
             return _throwPearlTask;
         }
@@ -106,7 +107,7 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
             // If a fireball is too close, run UP
             Optional<Entity> dragonFireball = mod.getEntityTracker().getClosestEntity(DragonFireballEntity.class);
-            if (dragonFireball.isPresent() && dragonFireball.get().isInRange(mod.getPlayer(), DRAGON_FIREBALL_TOO_CLOSE_RANGE)) {
+            if (dragonFireball.isPresent() && dragonFireball.get().isInRange(mod.getPlayer(), DRAGON_FIREBALL_TOO_CLOSE_RANGE) && LookHelper.cleanLineOfSight(mod.getPlayer(), dragonFireball.get().getPos(), DRAGON_FIREBALL_TOO_CLOSE_RANGE)) {
                 _pillarUpFurther = new GetToYTask(mod.getPlayer().getBlockY() + 5);
                 Debug.logMessage("HOLDUP");
                 return _pillarUpFurther;
