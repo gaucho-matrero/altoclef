@@ -27,9 +27,9 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 The current sha256 hash of this release is:
 
- ***d7c1d95bcbff55d4333027933d4cbbb2903d5efc5fdbe74930ae1d9f3b299097***
+ ***3c2f032fd7517ddde90c28aabd69ba692fb9d905bca9b89ecd2a048213873e62***
 
-Last updated 02/04/2022. 
+Last updated 02/04/2022. Git Commit: 795e886
 
 If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
 
@@ -53,7 +53,7 @@ If you hash the jar file and do not get this value, please message James Green o
 
 Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-1.0-SNAPSHOT.jar`.
 
-If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-1.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
+If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-4.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
 
 ### Long Term Release
 
@@ -68,7 +68,7 @@ Has some schematic support, command macros and a few utility features. Will even
 
 ### Versions
 
-This is a **fabric only** mod, currently only available for **Minecraft 1.17**.
+This is a **fabric only** mod, currently only available for **Minecraft 1.18**.
 
 For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect is untested and not affiliated with altoclef, use at your own risk!)
 
