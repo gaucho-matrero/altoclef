@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+import adris.altoclef.util.helpers.WorldHelper;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.minecraft.util.math.BlockPos;
 
@@ -8,16 +9,23 @@ import java.util.Objects;
 public class BlockRange {
     public BlockPos start;
     public BlockPos end;
+    public Dimension dimension = Dimension.OVERWORLD;
 
     // For deserialization
     private BlockRange() {}
 
-    public BlockRange(BlockPos start, BlockPos end) {
+    public BlockRange(BlockPos start, BlockPos end, Dimension dimension) {
         this.start = start;
         this.end = end;
+        this.dimension = dimension;
     }
 
     public boolean contains(BlockPos pos) {
+        return contains(pos, WorldHelper.getCurrentDimension());
+    }
+    public boolean contains(BlockPos pos, Dimension dimension) {
+        if (this.dimension != dimension)
+            return false;
         return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
                 start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
                 start.getY() <= pos.getY() && pos.getY() <= end.getY());
@@ -30,7 +38,7 @@ public class BlockRange {
     }
 
     public String toString() {
-        return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
+        return "[" + start.toShortString() + " -> " + end.toShortString() + ", (" + dimension + ")]";
     }
 
     @Override
