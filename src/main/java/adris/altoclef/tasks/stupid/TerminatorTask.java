@@ -5,6 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.entity.KillPlayerTask;
@@ -14,6 +15,7 @@ import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -22,6 +24,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -47,19 +50,13 @@ public class TerminatorTask extends Task {
     private static final int MIN_BUILDING_BLOCKS = 10;
     private static final int PREFERRED_BUILDING_BLOCKS = 60;
 
-    private final Task _prepareEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget(Items.DIAMOND_CHESTPLATE, 1),
-            new ItemTarget(Items.DIAMOND_LEGGINGS, 1),
-            new ItemTarget(Items.DIAMOND_HELMET, 1),
-            new ItemTarget(Items.DIAMOND_BOOTS, 1),
-            new ItemTarget(Items.DIAMOND_PICKAXE, 1),
-            new ItemTarget(Items.DIAMOND_SHOVEL, 1),
-            new ItemTarget(Items.DIAMOND_SWORD, 1)
-    );
+    private static Item[] GEAR_TO_COLLECT = new Item[]{
+            Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_SWORD, Items.WATER_BUCKET
+    };
     private final Task _prepareDiamondMiningEquipmentTask = TaskCatalogue.getSquashedItemTask(
-            new ItemTarget(Items.IRON_PICKAXE, 3)
+            new ItemTarget(Items.IRON_PICKAXE, 3), new ItemTarget(Items.IRON_SWORD, 1)
     );
-    private final Task _foodTask = new CollectFoodTask(100);
+    private final Task _foodTask = new CollectFoodTask(80);
     private final TimerGame _runAwayExtraTime = new TimerGame(10);
     private final Predicate<PlayerEntity> _canTerminate;
     private final ScanChunksInRadius _scanTask;
@@ -68,6 +65,8 @@ public class TerminatorTask extends Task {
     private Vec3d _closestPlayerLastObservePos;
     private Task _runAwayTask;
     private String _currentVisibleTarget;
+
+    private Task _armorTask;
 
     public TerminatorTask(BlockPos center, double scanRadius, Predicate<PlayerEntity> canTerminate) {
         _canTerminate = canTerminate;
@@ -153,11 +152,6 @@ public class TerminatorTask extends Task {
                 return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
             }
 
-            // Get water to MLG if we are pushed off
-            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
-            }
-
             // Get some food so we can last a little longer.
             if ((mod.getPlayer().getHungerManager().getFoodLevel() < (20 - 3 * 2) || mod.getPlayer().getHealth() < 10) && StorageHelper.calculateInventoryFoodScore(mod) <= 0) {
                 return _foodTask;
@@ -183,30 +177,50 @@ public class TerminatorTask extends Task {
 
         // Get stacked first
         // Equip diamond armor asap
-        boolean hasDiamondArmor = mod.getItemStorage().hasItemAll(ItemHelper.DIAMOND_ARMORS);
-        if (hasDiamondArmor && !StorageHelper.isArmorEquippedAll(mod, ItemHelper.DIAMOND_ARMORS)) {
-            return new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
+        if (_armorTask != null && _armorTask.isActive() && !_armorTask.isFinished(mod)) {
+            setDebugState("Collecting Diamond Armor");
+            return _armorTask;
         }
-        // Get diamond armor + gear first
-        if (!hasDiamondArmor || !mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE) || !mod.getItemStorage().hasItem(Items.DIAMOND_SWORD)) {
-            if (mod.getItemStorage().getItemCount(Items.IRON_PICKAXE) <= 1 || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
+
+        // Get iron pickaxes first
+        if (!mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE) && mod.getItemStorage().getItemCount(Items.DIAMOND) < 3) {
+            if (!mod.getItemStorage().hasItem(Items.IRON_PICKAXE) || (_prepareDiamondMiningEquipmentTask.isActive() && !_prepareDiamondMiningEquipmentTask.isFinished(mod))) {
                 setDebugState("Getting iron pickaxes to mine diamonds");
                 return _prepareDiamondMiningEquipmentTask;
             }
-            setDebugState("Getting gear");
-            return _prepareEquipmentTask;
-        }
-
-        // Get some food while we're at it.
-        if (_foodTask.isActive() && !_foodTask.isFinished(mod)) {
-            setDebugState("Collecting food");
-            return _foodTask;
         }
 
         // Collect food
-        if (StorageHelper.calculateInventoryFoodScore(mod) <= 0) {
+        if (StorageHelper.calculateInventoryFoodScore(mod) <= 0 || (_foodTask.isActive() && !_foodTask.isFinished(mod))) {
+            setDebugState("Collecting food");
             return _foodTask;
         }
+        // Raw food
+        for (Item raw : ItemHelper.RAW_FOODS) {
+            if (mod.getItemStorage().hasItem(raw)) {
+                Optional<Item> cooked = ItemHelper.getCookedFood(raw);
+                if (cooked.isPresent()) {
+                    int targetCount = mod.getItemStorage().getItemCount(cooked.get()) + mod.getItemStorage().getItemCount(raw);
+                    setDebugState("Smelting raw food: " + ItemHelper.stripItemName(raw));
+                    return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cooked.get(), targetCount), new ItemTarget(raw, targetCount)));
+                }
+            }
+        }
+
+        // If we're not all equip, do equip
+        if (!StorageHelper.isArmorEquippedAll(mod, ItemHelper.DIAMOND_ARMORS)) {
+            _armorTask = new EquipArmorTask(ItemHelper.DIAMOND_ARMORS);
+            return _armorTask;
+        }
+
+        // Get gear one by one...
+        for (Item gear : GEAR_TO_COLLECT) {
+            if (!mod.getItemStorage().hasItem(gear)) {
+                setDebugState("Collecting gear");
+                return TaskCatalogue.getItemTask(gear, 1);
+            }
+        }
+
 
         setDebugState("Scanning for players...");
         _currentVisibleTarget = null;
