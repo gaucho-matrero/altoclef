@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
@@ -7,6 +8,9 @@ import java.util.Objects;
 public class BlockRange {
     public BlockPos start;
     public BlockPos end;
+
+    // For deserialization
+    private BlockRange() {}
 
     public BlockRange(BlockPos start, BlockPos end) {
         this.start = start;
@@ -19,6 +23,7 @@ public class BlockRange {
                 start.getY() <= pos.getY() && pos.getY() <= end.getY());
     }
 
+    @JsonIgnore
     public BlockPos getCenter() {
         BlockPos sum = start.add(end);
         return new BlockPos(sum.getX() / 2, sum.getY() / 2, sum.getZ() / 2);

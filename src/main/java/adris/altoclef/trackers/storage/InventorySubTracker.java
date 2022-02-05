@@ -99,6 +99,9 @@ public class InventorySubTracker extends Tracker {
         List<Slot> result = new ArrayList<>();
         // First add fillable slots
         for (Slot toCheckStackable : list.getOrDefault(item.getItem(), Collections.emptyList())) {
+            // Ignore cursor slot.
+            if (Slot.isCursor(toCheckStackable))
+                continue;
             ItemStack stackToAddTo = StorageHelper.getItemStackInSlot(toCheckStackable);
             // We must have SOME room left, then we decide whether we care about having ENOUGH
             if (!stackToAddTo.isEmpty() && ItemHelper.canStackTogether(item, stackToAddTo)) {

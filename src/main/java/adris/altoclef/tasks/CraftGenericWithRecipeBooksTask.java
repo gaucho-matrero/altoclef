@@ -43,15 +43,10 @@ public class CraftGenericWithRecipeBooksTask extends Task {
         }
 
         Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-        if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
+        ItemStack output = StorageHelper.getItemStackInSlot(outputSlot);
+        if (_target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(_target.getOutputItem()) < _target.getTargetCount()) {
             setDebugState("Getting output");
             return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
-        }
-
-        // Request to fill in a recipe. Just piggy back off of the slot delay system.
-        if (mod.getSlotHandler().canDoSlotAction()) {
-            mod.getSlotHandler().registerSlotAction();
-            StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
         }
 
         // If a material is found in cursor, move it to the inventory.
@@ -76,6 +71,11 @@ public class CraftGenericWithRecipeBooksTask extends Task {
             }
         }
 
+        // Request to fill in a recipe. Just piggy back off of the slot delay system.
+        if (mod.getSlotHandler().canDoSlotAction()) {
+            mod.getSlotHandler().registerSlotAction();
+            StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
+        }
 
 
         setDebugState("Waiting for recipe book click...");

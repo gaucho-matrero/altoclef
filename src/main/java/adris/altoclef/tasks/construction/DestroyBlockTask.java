@@ -44,6 +44,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         _tryToMineTimer.forceElapse();
         _wanderTask.resetWander();
         StorageHelper.closeScreen();
+
+        mod.getBehaviour().push();
+        // Avoid placing on top, to prevent our annoying "run away" bug
+        mod.getBehaviour().avoidBlockPlacing(pos -> _pos.up().equals(pos));
     }
 
     @Override
@@ -117,6 +121,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     protected void onStop(AltoClef mod, Task interruptTask) {
         if (!AltoClef.inGame())
             return;
+        mod.getBehaviour().pop();
         mod.getClientBaritone().getBuilderProcess().onLostControl();
         mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         // Do not keep breaking.
