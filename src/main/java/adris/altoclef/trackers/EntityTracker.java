@@ -197,14 +197,20 @@ public class EntityTracker extends Tracker {
         });
     }
 
-    public boolean entityFound(Class... types) {
+    public boolean entityFound(Predicate<Entity> shouldAccept, Class... types) {
         ensureUpdated();
         for (Class type : types) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                if (_entityMap.containsKey(type)) return true;
+                for (Entity entity : _entityMap.get(type)) {
+                    if (shouldAccept.test(entity))
+                        return true;
+                }
             }
         }
         return false;
+    }
+    public boolean entityFound(Class ...types) {
+        return entityFound(check -> true, types);
     }
 
     public <T extends Entity> List<T> getTrackedEntities(Class<T> type) {
@@ -213,6 +219,7 @@ public class EntityTracker extends Tracker {
             return Collections.emptyList();
         }
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            //noinspection unchecked
             return (List<T>) _entityMap.get(type);
         }
     }
