@@ -43,7 +43,8 @@ public class CraftGenericWithRecipeBooksTask extends Task {
         }
 
         Slot outputSlot = bigCrafting ? CraftingTableSlot.OUTPUT_SLOT : PlayerSlot.CRAFT_OUTPUT_SLOT;
-        if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
+        ItemStack output = StorageHelper.getItemStackInSlot(outputSlot);
+        if (_target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(_target.getOutputItem()) < _target.getTargetCount()) {
             setDebugState("Getting output");
             return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
         }

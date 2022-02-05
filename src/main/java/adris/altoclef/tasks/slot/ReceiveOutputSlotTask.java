@@ -35,6 +35,11 @@ public class ReceiveOutputSlotTask extends Task {
         ItemStack inOutput = StorageHelper.getItemStackInSlot(_slot);
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
         if (!cursor.isEmpty() && cursor.getItem() != inOutput.getItem()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
+            if (moveTo.isPresent()) {
+                setDebugState("Moving cursor stack back");
+                return new ClickSlotTask(moveTo.get());
+            }
             setDebugState("Incompatible cursor stack, throwing");
             return new ThrowCursorTask();
         }
