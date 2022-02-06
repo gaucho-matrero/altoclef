@@ -32,8 +32,13 @@ jobs:
         path: ./build/libs
         
     - name: Hash Artifacts 
-      run: for u in $(ls ./build/libs); do; echo "$(sha256sum ./build/libs/$u)" >> hashes.sha256; done
+      run: |
+        for u in $(ls) 
+        do
+        echo "$(sha256sum $u)" >> hashes.sha256
+        done
       shell: bash
+      working-directory: ./build/libs
   
     - name: Upload Hashes
       uses: actions/upload-artifact@v2
