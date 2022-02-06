@@ -15,4 +15,5 @@ public class BeatMinecraftConfig {
     public boolean alwaysCookRawFood = true;
     public int minBuildMaterialCount = 5;
     public int buildMaterialCount = 40;
+    public double dragonHeadCloseEnoughClickBedRange = 5.3;
 }
