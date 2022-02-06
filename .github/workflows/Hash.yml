@@ -17,8 +17,8 @@ jobs:
    steps:
     
     - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+      with:
+        ref: ${{ github.event.workflow_run.head_branch }}
     - name: Hash the artifacts file
       uses: Amadevus/pwsh-script@v2.0.1
       with:
