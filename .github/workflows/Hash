@@ -1,0 +1,33 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+     branches: [ main ]
+  pull_request:
+     branches: [ main ]
+    
+jobs:   
+  build:
+   runs-on: windows-2019
+   
+   steps:
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2.1.0
+      with:
+        # Artifact name
+        name: Artifacts
+        # Destination path
+        path: ./build/libs
+    - name: Hash the artifacts file
+      uses: Amadevus/pwsh-script@v2.0.1
+      with:
+          # PowerShell script to execute in Actions-hydrated context
+          script: certutil -hashfile Artifacts.zip sha256 > hash.md
+    - name: Archive Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Hash
+        path: ./hash.md
