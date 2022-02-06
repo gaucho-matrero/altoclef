@@ -33,6 +33,7 @@ jobs:
         
     - name: Hash Artifacts 
       run: for u in $(ls ./build/libs); do; echo "$(sha256sum ./build/libs/$u)" >> hashes.sha256; done
+      shell: bash
   
     - name: Upload Hashes
       uses: actions/upload-artifact@v2
