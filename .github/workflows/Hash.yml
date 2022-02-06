@@ -30,6 +30,10 @@ jobs:
       with:
         name: Artifacts
         path: ./build/libs
+  hash:
+   runs-on: windows-2019
+
+   steps:
     - name: Hash the artifacts file
       uses: Amadevus/pwsh-script@v2.0.1
       with:
