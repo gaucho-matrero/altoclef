@@ -77,7 +77,7 @@ public class CollectPlanksTask extends ResourceTask {
         blocksTomine.add(new ItemTarget(_logs));
         // Ignore planks if we're told to.
         if (!mod.getBehaviour().exclusivelyMineLogs()) {
-            // TODO: Add planks back in, but with a heuristic check (so we don't go for abandoned mineshafts)
+            // TODO: Add planks back in, but limit the distance so it doesn't go for a mineshaft.
             //blocksTomine.add(new ItemTarget(ItemUtil.PLANKS));
         }
 

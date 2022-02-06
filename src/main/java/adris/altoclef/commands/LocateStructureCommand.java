@@ -11,7 +11,7 @@ import adris.altoclef.tasks.movement.LocateDesertTempleTask;
 public class LocateStructureCommand extends Command {
 
     public LocateStructureCommand() throws CommandException {
-        super("locate_structure", "Locate a world generated structure.", new Arg(Structure.class, "structure"));
+        super("locate_structure", "Locate a world generated structure (only strongholds and desert temples supported right now).", new Arg<Structure>(Structure.class, "structure"));
     }
 
     @Override

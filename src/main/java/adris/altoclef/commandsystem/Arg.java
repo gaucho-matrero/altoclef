@@ -70,7 +70,6 @@ public class Arg<T> extends ArgBase {
         return "[" + _name + "]";
     }
 
-    @SuppressWarnings("unchecked")
     private <V> boolean isInstanceOf(Class<V> vType, Class<?> t) {
         return vType == t || vType.isAssignableFrom(t);
     }

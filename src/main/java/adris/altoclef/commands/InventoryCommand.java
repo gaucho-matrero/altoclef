@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class InventoryCommand extends Command {
     public InventoryCommand() throws CommandException {
-        super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg(String.class, "item", null, 1));
+        super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg<String>(String.class, "item", null, 1));
     }
 
     @Override

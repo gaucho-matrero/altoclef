@@ -9,7 +9,7 @@ import adris.altoclef.tasks.movement.FollowPlayerTask;
 
 public class FollowCommand extends Command {
     public FollowCommand() throws CommandException {
-        super("follow", "Follows you or someone else", new Arg(String.class, "username", null, 0));
+        super("follow", "Follows you or someone else", new Arg<String>(String.class, "username", null, 0));
     }
 
     @Override

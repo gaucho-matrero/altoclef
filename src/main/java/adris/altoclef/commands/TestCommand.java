@@ -10,7 +10,7 @@ import adris.altoclef.commandsystem.CommandException;
 public class TestCommand extends Command {
 
     public TestCommand() throws CommandException {
-        super("test", "Generic command for testing", new Arg(String.class, "extra", "", 0));
+        super("test", "Generic command for testing", new Arg<String>(String.class, "extra", "", 0));
     }
 
     @Override

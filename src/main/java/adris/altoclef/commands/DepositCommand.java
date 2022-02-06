@@ -13,7 +13,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class DepositCommand extends Command {
     public DepositCommand() throws CommandException {
-        super("deposit", "Deposit ALL of our items", new Arg(ItemList.class, "items (empty for ALL non gear items)", null, 0, false));
+        super("deposit", "Deposit ALL of our items", new Arg<ItemList>(ItemList.class, "items (empty for ALL non gear items)", null, 0, false));
     }
 
     public static ItemTarget[] getAllNonEquippedOrToolItemsAsTarget(AltoClef mod) {

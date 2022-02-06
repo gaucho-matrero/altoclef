@@ -12,13 +12,13 @@ public class StashCommand extends Command {
     public StashCommand() throws CommandException {
         // stash <stash_x> <stash_y> <stash_z> <stash_radius> [item list]
         super("stash", "Store an item in a chest/container stash. Will deposit ALL non-equipped items if item list is empty.",
-                new Arg(Integer.class, "x_start"),
-                new Arg(Integer.class, "y_start"),
-                new Arg(Integer.class, "z_start"),
-                new Arg(Integer.class, "x_end"),
-                new Arg(Integer.class, "y_end"),
-                new Arg(Integer.class, "z_end"),
-                new Arg(ItemList.class, "items (empty for ALL)", null, 6, false));
+                new Arg<Integer>(Integer.class, "x_start"),
+                new Arg<Integer>(Integer.class, "y_start"),
+                new Arg<Integer>(Integer.class, "z_start"),
+                new Arg<Integer>(Integer.class, "x_end"),
+                new Arg<Integer>(Integer.class, "y_end"),
+                new Arg<Integer>(Integer.class, "z_end"),
+                new Arg<ItemList>(ItemList.class, "items (empty for ALL)", null, 6, false));
     }
 
     @Override

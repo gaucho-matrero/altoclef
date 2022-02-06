@@ -9,7 +9,7 @@ import adris.altoclef.tasks.entity.KillPlayerTask;
 
 public class PunkCommand extends Command {
     public PunkCommand() throws CommandException {
-        super("punk", "Punk 'em", new Arg(String.class, "playerName"));
+        super("punk", "Punk 'em till they're dead", new Arg<String>(String.class, "playerName"));
     }
 
     @Override

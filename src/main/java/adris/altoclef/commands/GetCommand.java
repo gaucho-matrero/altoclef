@@ -11,7 +11,7 @@ public class GetCommand extends Command {
 
     public GetCommand() throws CommandException {
         super("get", "Get an item/resource",
-                new Arg(ItemList.class, "items"));
+                new Arg<ItemList>(ItemList.class, "items"));
     }
 
     private static void OnResourceDoesNotExist(AltoClef mod, String resource) {

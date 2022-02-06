@@ -21,8 +21,8 @@ public class GotoCommand extends Command {
         // x y z dimension
         // (dimension)
         // (x z dimension)
-        super("goto", "Tell bot to travel to a set of coordinates.",
-                new Arg(GotoTarget.class, "[x y z dimension]/[x z dimension]/[y dimension]/[dimension]/[x y z]/[x z]/[y]")
+        super("goto", "Tell bot to travel to a set of coordinates or a dimension.",
+                new Arg<GotoTarget>(GotoTarget.class, "[x y z dimension]/[x z dimension]/[y dimension]/[dimension]/[x y z]/[x z]/[y]")
         );
     }
 
