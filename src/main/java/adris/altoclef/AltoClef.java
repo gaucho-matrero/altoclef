@@ -146,8 +146,8 @@ public class AltoClef implements ModInitializer {
                 getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
             }
             // Don't break blocks or place blocks where we are explicitly protected.
-            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
-            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitlyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitlyProtected(blockPos));
         });
 
         // Receive + cancel chat

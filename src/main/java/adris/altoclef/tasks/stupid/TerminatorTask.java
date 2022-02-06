@@ -297,7 +297,7 @@ public class TerminatorTask extends Task {
 
         @Override
         protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {
-            // Prioritise the chunk we last saw a player in.
+            // Prioritize the chunk we last saw a player in.
             if (_closestPlayerLastPos != null) {
                 double lowestScore = Double.POSITIVE_INFINITY;
                 ChunkPos bestChunk = null;

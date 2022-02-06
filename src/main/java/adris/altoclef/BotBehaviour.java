@@ -243,7 +243,7 @@ public class BotBehaviour {
 
     private State current() {
         if (_states.isEmpty()) {
-            Debug.logError("STATE EMPTY, UNEMPTIED!");
+            Debug.logError("STATE EMPTY, RE-PUSHED!");
             push();
         }
         return _states.peek();
@@ -365,7 +365,7 @@ public class BotBehaviour {
             s.blockPlacementPenalty.value = blockPlacePenalty;
             s.blockBreakAdditionalPenalty.value = blockBreakAdditionalPenalty;
 
-            // We need an alternrative method to handle this, this method makes navigation much less reliable.
+            // We need an alternative method to handle this, this method makes navigation much less reliable.
             //s.allowDownward.value = preferredStairs;
 
             // Kinda jank but it works.

@@ -61,8 +61,8 @@ public class ReplaceBlocksTask extends Task {
         _blockBrokenSubscription = EventBus.subscribe(BlockBrokenEvent.class, evt -> {
             if (evt.player.equals(MinecraftClient.getInstance().player)) {
                 if (isWithinRange(evt.blockPos)) {
-                    boolean wasAReplacable = ArrayUtils.contains(_toFind, evt.blockState.getBlock());
-                    if (wasAReplacable) {
+                    boolean wasAReplaceable = ArrayUtils.contains(_toFind, evt.blockState.getBlock());
+                    if (wasAReplaceable) {
                         Debug.logMessage("ADDED REPLACEABLE FORCE: " + evt.blockPos);
                         _forceReplace.push(evt.blockPos);
                     } else {

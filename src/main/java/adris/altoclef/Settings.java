@@ -96,7 +96,7 @@ public class Settings implements IFailableConfigFile {
 
 
     /**
-     * minumum amount of food to have in the inventory.
+     * minimum amount of food to have in the inventory.
      * if we have less food than this value the bot will go pickup some more.
      */
     private int minimumFoodAllowed = 0;
@@ -118,7 +118,7 @@ public class Settings implements IFailableConfigFile {
      * Set this to 0 to disable chest pickups.
      * <p>
      * Don't set this too high, as the bot will prioritize chests even if the resource
-     * is easily accesible now.
+     * is easily accessible now.
      */
     private float resourceChestLocateRange = 500;
 
@@ -206,7 +206,7 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * If any hostile mob is "close" to our bot for this long,
-     * consider it a nuissance and defeat it if we have enough gear.
+     * consider it a nuisance and defeat it if we have enough gear.
      *
      * Skeletons + Witches get a much larger range.
      *
@@ -589,7 +589,7 @@ public class Settings implements IFailableConfigFile {
         return supportedFuels.toArray(Item[]::new);
     }
 
-    public boolean isPositionExplicitelyProtected(BlockPos pos) {
+    public boolean isPositionExplicitlyProtected(BlockPos pos) {
         for (BlockRange protection : areasToProtect) {
             if (protection.contains(pos)) return true;
         }

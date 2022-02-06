@@ -33,7 +33,7 @@ public class WhisperChecker {
         Map<String, String> values = new HashMap<>();
         if (m.matches()) {
             for (int i = 0; i < m.groupCount(); ++i) {
-                // parts is sorted, so the order should lign up.
+                // parts is sorted, so the order should line up.
                 if (i >= parts.size()) {
                     Debug.logError("Invalid whisper format parsing: " + whisperFormat + " for message: " + message);
                     break;

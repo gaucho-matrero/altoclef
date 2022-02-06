@@ -45,6 +45,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.chunk.EmptyChunk;
+// TODO: Clean up unused imports or reimplement them
 
 import java.io.*;
 import java.util.List;
@@ -215,11 +216,11 @@ public class Playground {
                 mod.runUserTask(new EnterNetherPortalTask(new ConstructNetherPortalObsidianTask(), WorldHelper.getCurrentDimension() == Dimension.OVERWORLD? Dimension.NETHER : Dimension.OVERWORLD));
                 break;
             case "kill":
-                List<ZombieEntity> zombs = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
-                if (zombs.size() == 0) {
-                    Debug.logWarning("No zombs found.");
+                List<ZombieEntity> zombies = mod.getEntityTracker().getTrackedEntities(ZombieEntity.class);
+                if (zombies.size() == 0) {
+                    Debug.logWarning("No zombies found.");
                 } else {
-                    LivingEntity entity = zombs.get(0);
+                    LivingEntity entity = zombies.get(0);
                     mod.runUserTask(new KillEntityTask(entity));
                 }
                 break;

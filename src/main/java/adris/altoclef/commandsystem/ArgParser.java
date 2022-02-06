@@ -56,6 +56,7 @@ public class ArgParser {
         if (last_kword.length() != 0) {
             result.add(last_kword.trim());
         }
+        // TODO: Simplify the logic here.
         return result;
     }
 

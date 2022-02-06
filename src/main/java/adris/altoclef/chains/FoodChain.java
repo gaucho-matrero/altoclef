@@ -151,7 +151,7 @@ public class FoodChain extends SingleTaskChain {
             // We can't eat.
             return false;
         } else {
-            // Eat if we're desparate/need to heal ASAP
+            // Eat if we're desperate/need to heal ASAP
             if (player.isOnFire() || player.hasStatusEffect(StatusEffects.WITHER) || health < _config.alwaysEatWhenWitherOrFireAndHealthBelow) {
                 return true;
             } else if (foodLevel > _config.alwaysEatWhenBelowHunger) {

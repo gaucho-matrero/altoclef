@@ -85,7 +85,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
-        // mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // mod.getClientBaritoneSettings().avoidance.value = isVulnerable(mod);
         // Doing you a favor by disabling avoidance
 
 
@@ -110,9 +110,9 @@ public class MobDefenseChain extends SingleTaskChain {
         doForceField(mod);
 
 
-        // Tell baritone to avoid mobs if we're vulnurable.
+        // Tell baritone to avoid mobs if we're vulnerable.
         // Costly.
-        //mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        //mod.getClientBaritoneSettings().avoidance.value = isVulnerable(mod);
 
         // Run away if a weird mob is close by.
         Optional<Entity> universallyDangerous = getUniversallyDangerousMob(mod);
@@ -434,7 +434,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private boolean isInDanger(AltoClef mod) {
 
-        if (isVulnurable(mod)) {
+        if (isVulnerable(mod)) {
             // If hostile mobs are nearby...
             try {
                 ClientPlayerEntity player = mod.getPlayer();
@@ -454,7 +454,7 @@ public class MobDefenseChain extends SingleTaskChain {
         return false;
     }
 
-    private boolean isVulnurable(AltoClef mod) {
+    private boolean isVulnerable(AltoClef mod) {
         int armor = mod.getPlayer().getArmor();
         float health = mod.getPlayer().getHealth();
         if (armor <= 15 && health < 3) return true;
