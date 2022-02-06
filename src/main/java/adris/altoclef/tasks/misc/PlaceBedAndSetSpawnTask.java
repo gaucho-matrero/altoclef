@@ -23,6 +23,7 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.time.TimerGame;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -294,6 +295,16 @@ public class PlaceBedAndSetSpawnTask extends Task {
             _progressChecker.reset();
             return _wanderTask;
         }
+
+        // Scoot backwards if we're trying to place and fail
+        if (thisOrChildSatisfies(task -> {
+            if (task instanceof InteractWithBlockTask intr)
+                return intr.getClickStatus() == InteractWithBlockTask.ClickResponse.CLICK_ATTEMPTED;
+            return false;
+        })) {
+            mod.getInputControls().tryPress(Input.MOVE_BACK);
+        }
+
         return new InteractWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 

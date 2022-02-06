@@ -42,6 +42,8 @@ public class InteractWithBlockTask extends Task {
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
     private final int reachDistance = 0;
 
+    private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
+
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
         _direction = direction;
@@ -133,6 +135,8 @@ public class InteractWithBlockTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        _cachedClickStatus = ClickResponse.CANT_REACH;
+
         // Get our use item first
         if (!ItemTarget.nullOrEmpty(_toUse) && !StorageHelper.itemTargetsMet(mod, _toUse)) {
             _moveChecker.reset();
@@ -155,7 +159,8 @@ public class InteractWithBlockTask extends Task {
         Goal moveGoal = createGoalForInteract(_target, reachDistance, _direction, _interactOffset, _walkInto);
         ICustomGoalProcess proc = mod.getClientBaritone().getCustomGoalProcess();
 
-        switch (rightClick(mod)) {
+        _cachedClickStatus = rightClick(mod);
+        switch (_cachedClickStatus) {
             case CANT_REACH -> {
                 setDebugState("Getting to our goal");
                 // Get to our goal then
@@ -219,6 +224,10 @@ public class InteractWithBlockTask extends Task {
         return "Interact using " + _toUse + " at " + _target + " dir " + _direction;
     }
 
+    public ClickResponse getClickStatus() {
+        return _cachedClickStatus;
+    }
+
     private ClickResponse rightClick(AltoClef mod) {
 
         // Don't interact if baritone can't interact.
@@ -256,7 +265,7 @@ public class InteractWithBlockTask extends Task {
         return LookHelper.getReach(_target, _direction);
     }
 
-    private enum ClickResponse {
+    public enum ClickResponse {
         CANT_REACH,
         WAIT_FOR_CLICK,
         CLICK_ATTEMPTED
