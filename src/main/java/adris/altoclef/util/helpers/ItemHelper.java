@@ -104,11 +104,42 @@ public class ItemHelper {
             put(Items.JUNGLE_LOG, Items.JUNGLE_PLANKS);
             put(Items.SPRUCE_LOG, Items.SPRUCE_PLANKS);
             put(Items.WARPED_STEM, Items.WARPED_PLANKS);
-            List<Item> logsToReverse = new ArrayList<>(keySet());
-            // Other way around
-            for (Item log : logsToReverse) {
-                put(get(log), log);
-            }
+            put(Items.STRIPPED_ACACIA_LOG, Items.ACACIA_PLANKS);
+            put(Items.STRIPPED_BIRCH_LOG, Items.BIRCH_PLANKS);
+            put(Items.STRIPPED_CRIMSON_STEM, Items.CRIMSON_PLANKS);
+            put(Items.STRIPPED_DARK_OAK_LOG, Items.DARK_OAK_PLANKS);
+            put(Items.STRIPPED_OAK_LOG, Items.OAK_PLANKS);
+            put(Items.STRIPPED_JUNGLE_LOG, Items.JUNGLE_PLANKS);
+            put(Items.STRIPPED_SPRUCE_LOG, Items.SPRUCE_PLANKS);
+            put(Items.STRIPPED_WARPED_STEM, Items.WARPED_PLANKS);
+            put(Items.ACACIA_WOOD, Items.ACACIA_PLANKS);
+            put(Items.BIRCH_WOOD, Items.BIRCH_PLANKS);
+            put(Items.CRIMSON_HYPHAE, Items.CRIMSON_PLANKS);
+            put(Items.DARK_OAK_WOOD, Items.DARK_OAK_PLANKS);
+            put(Items.OAK_WOOD, Items.OAK_PLANKS);
+            put(Items.JUNGLE_WOOD, Items.JUNGLE_PLANKS);
+            put(Items.SPRUCE_WOOD, Items.SPRUCE_PLANKS);
+            put(Items.WARPED_HYPHAE, Items.WARPED_PLANKS);
+            put(Items.STRIPPED_ACACIA_WOOD, Items.ACACIA_PLANKS);
+            put(Items.STRIPPED_BIRCH_WOOD, Items.BIRCH_PLANKS);
+            put(Items.STRIPPED_CRIMSON_HYPHAE, Items.CRIMSON_PLANKS);
+            put(Items.STRIPPED_DARK_OAK_WOOD, Items.DARK_OAK_PLANKS);
+            put(Items.STRIPPED_OAK_WOOD, Items.OAK_PLANKS);
+            put(Items.STRIPPED_JUNGLE_WOOD, Items.JUNGLE_PLANKS);
+            put(Items.STRIPPED_SPRUCE_WOOD, Items.SPRUCE_PLANKS);
+            put(Items.STRIPPED_WARPED_HYPHAE, Items.WARPED_PLANKS);
+        }
+    };
+    private static final Map<Item, Item> _planksToLogs = new HashMap<>() {
+        {
+            put(Items.ACACIA_PLANKS, Items.ACACIA_LOG);
+            put(Items.BIRCH_PLANKS, Items.BIRCH_LOG);
+            put(Items.CRIMSON_PLANKS, Items.CRIMSON_STEM);
+            put(Items.DARK_OAK_PLANKS, Items.DARK_OAK_LOG);
+            put(Items.OAK_PLANKS, Items.OAK_LOG);
+            put(Items.JUNGLE_PLANKS, Items.JUNGLE_LOG);
+            put(Items.SPRUCE_PLANKS, Items.SPRUCE_LOG);
+            put(Items.WARPED_PLANKS, Items.WARPED_STEM);
         }
     };
     // This is kinda jank ngl
@@ -168,7 +199,6 @@ public class ItemHelper {
     public static final Item[] RAW_FOODS = _cookableFoodMap.keySet().toArray(Item[]::new);
 
     /* Logs:
-
         ACACIA
         BIRCH
         CRIMSON
@@ -199,14 +229,11 @@ public class ItemHelper {
      */
 
     public static Item logToPlanks(Item logItem) {
-        if (_logToPlanks.containsKey(logItem)) {
-            return _logToPlanks.get(logItem);
-        }
-        return null;
+        return _logToPlanks.getOrDefault(logItem, null);
     }
 
     public static Item planksToLog(Item plankItem) {
-        return logToPlanks(plankItem);
+        return _planksToLogs.getOrDefault(plankItem, null);
     }
 
     public static ColorfulItems getColorfulItems(MapColor color) {

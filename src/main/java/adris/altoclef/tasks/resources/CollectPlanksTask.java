@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
@@ -59,6 +60,9 @@ public class CollectPlanksTask extends ResourceTask {
                 int count = mod.getItemStorage().getItemCount(logCheck);
                 if (count > 0) {
                     Item plankCheck = ItemHelper.logToPlanks(logCheck);
+                    if (plankCheck == null) {
+                        Debug.logError("Invalid/Un-convertable log: " + logCheck + " (failed to find corresponding plank)");
+                    }
                     int plankCount = mod.getItemStorage().getItemCount(plankCheck);
                     int otherPlankCount = totalInventoryPlankCount - plankCount;
                     int targetTotalPlanks = Math.min(count*4 + plankCount, _targetCount - otherPlankCount);
