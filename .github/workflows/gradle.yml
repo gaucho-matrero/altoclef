@@ -1,5 +1,5 @@
 # This workflow will build a Java project with Gradle
-# For more information check: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+# For more information check https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
 name: Java CI with Gradle
 
