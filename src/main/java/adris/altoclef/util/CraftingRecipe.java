@@ -60,12 +60,6 @@ public class CraftingRecipe {
         return result;
     }
 
-    private static ItemTarget[] createSlots(ItemTarget[] slots) {
-        ItemTarget[] result = new ItemTarget[slots.length];
-        System.arraycopy(slots, 0, result, 0, slots.length);
-        return result;
-    }
-
     private static ItemTarget[] createSlots(Item[][] slots) {
         ItemTarget[] result = new ItemTarget[slots.length];
         for (int i = 0; i < slots.length; ++i) {

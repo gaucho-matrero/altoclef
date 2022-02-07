@@ -8,25 +8,17 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public class CollectObsidianTask extends ResourceTask {
-
-    private final TimerGame _placeWaterTimeout = new TimerGame(6);
-    private final MovementProgressChecker _lavaTimeout = new MovementProgressChecker();
-    private final Set<BlockPos> _lavaBlacklist = new HashSet<>();
     private final int _count;
     private Task _forceCompleteTask = null;
     private BlockPos _lavaWaitCurrentPos;

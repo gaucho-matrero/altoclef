@@ -61,9 +61,6 @@ public class WhisperChecker {
     }
 
     public MessageResult receiveMessage(AltoClef mod, String ourUsername, String msg) {
-        String foundMiddlePart = "";
-        int index = -1;
-
         boolean duplicate = (msg.equals(_lastMessage));
         if (duplicate && !_repeatTimer.elapsed()) {
             _repeatTimer.reset();

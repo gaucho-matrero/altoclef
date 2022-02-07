@@ -13,7 +13,6 @@ public class GoalAnd implements Goal {
 
     public boolean isInGoal(int x, int y, int z) {
         Goal[] var4 = this.goals;
-        int var5 = var4.length;
 
         for (Goal goal : var4) {
             if (!goal.isInGoal(x, y, z)) {

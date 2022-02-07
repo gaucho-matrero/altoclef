@@ -42,11 +42,6 @@ public class BlockTracker extends Tracker {
         ConfigHelper.loadConfig("configs/block_tracker.json", BlockTrackerConfig::new, BlockTrackerConfig.class, newConfig -> _config = newConfig);
     }
 
-    // This should be moved to an instance variable
-    // but if set to true, block scanning will happen
-    // asynchronously to spread out the expensive cost of scanning.
-    private static final boolean ASYNC_SCANNING = true;
-
     private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
 
     //private final PosCache _cache = new PosCache(100, 64*1.5);

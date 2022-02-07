@@ -112,7 +112,6 @@ public class BeatMinecraft2Task extends Task {
 
     // We don't want curse of binding
     private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
-        boolean hasBinding = false;
         for (NbtElement elm : stack.getEnchantments()) {
             NbtCompound comp = (NbtCompound) elm;
             if (comp.getString("id").equals("minecraft:binding_curse")) {
@@ -717,7 +716,6 @@ public class BeatMinecraft2Task extends Task {
             if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS)) {
                 return new EquipArmorTask(Items.GOLDEN_BOOTS);
             }
-            int goldBuffer = 32;
             return new TradeWithPiglinsTask(32, Items.ENDER_PEARL, count);
         } else {
             if (mod.getEntityTracker().entityFound(EndermanEntity.class) || mod.getEntityTracker().itemDropped(Items.ENDER_PEARL)) {

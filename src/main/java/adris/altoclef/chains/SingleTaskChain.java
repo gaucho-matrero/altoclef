@@ -5,11 +5,9 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.time.Stopwatch;
 
 public abstract class SingleTaskChain extends TaskChain {
 
-    private final Stopwatch _taskStopwatch = new Stopwatch();
     protected Task _mainTask = null;
     private boolean _interrupted = false;
 

@@ -49,7 +49,7 @@ public class UserTaskChain extends SingleTaskChain {
     protected void onTick(AltoClef mod) {
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return;
+        if (!AltoClef.inGame()) return;
 
         super.onTick(mod);
     }

@@ -214,7 +214,6 @@ public class Arg<T> extends ArgBase {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <V> V getDefault(Class<V> vType) {
         return getConverted(vType, Default);

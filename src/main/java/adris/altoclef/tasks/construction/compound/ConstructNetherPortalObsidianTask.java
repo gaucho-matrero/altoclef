@@ -56,7 +56,6 @@ public class ConstructNetherPortalObsidianTask extends Task {
     };
 
     private static final Vec3i PORTALABLE_REGION_SIZE = new Vec3i(3, 6, 6);
-    private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 0, 2);
 
     private final TimerGame _areaSearchTimer = new TimerGame(5);
 

@@ -85,7 +85,6 @@ public class EntityHelper {
                 k = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - k;
                 double f = damageAmount * (double)j;
-                double g = damageAmount;
                 damageAmount = Math.max(f / 25.0F, 0.0F);
             }
 

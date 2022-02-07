@@ -5,8 +5,6 @@ import adris.altoclef.Debug;
 
 public abstract class Command {
 
-    private AltoClef _mod;
-
     private final ArgParser parser;
 
     private final String _name;
@@ -22,7 +20,6 @@ public abstract class Command {
 
     public void run(AltoClef mod, String line, Runnable onFinish) throws CommandException {
         _onFinish = onFinish;
-        _mod = mod;
         parser.loadArgs(line, true);
         call(mod, parser);
     }

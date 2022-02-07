@@ -7,19 +7,14 @@ import adris.altoclef.util.helpers.ProjectileHelper;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GoalDodgeProjectiles implements Goal {
-
-    private static final double Y_SCALE = 0.3f;
 
     private final AltoClef _mod;
 
     private final double _distanceHorizontal;
     private final double _distanceVertical;
-
-    private final List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
 
     public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
         _mod = mod;

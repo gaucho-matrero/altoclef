@@ -17,8 +17,6 @@ public class CollectEggsTask extends ResourceTask {
 
     private final DoToClosestEntityTask _waitNearChickens;
 
-    private AltoClef _mod;
-
     public CollectEggsTask(int targetCount) {
         super(Items.EGG, targetCount);
         _count = targetCount;
@@ -32,7 +30,6 @@ public class CollectEggsTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        _mod = mod;
     }
 
     @Override

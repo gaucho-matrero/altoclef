@@ -95,6 +95,7 @@ public class ProjectileHelper {
         return entity.getPos().subtract(0, 0.1, 0);
     }
 
+    /* Unused code, might be useful.
     // Unable to figure out how to extract multiple roots, this is too complicated for engineering major like me.
     @SuppressWarnings("UnnecessaryLocalVariable")
     @Deprecated
@@ -133,6 +134,6 @@ public class ProjectileHelper {
 
         // THERE SHOULD BE UP TO 3!!! This will only find one and that can be completely wrong.
         return Math.pow(outerPreCubeLeft, 1.0 / 3.0) + Math.pow(outerPreCubeRight, 1.0 / 3.0) + p;
-    }
+    }*/
 
 }

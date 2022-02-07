@@ -62,7 +62,6 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
             p.nextToken();
             while (p.getCurrentToken() != JsonToken.END_OBJECT) {
                 if (p.getCurrentToken() == JsonToken.FIELD_NAME) {
-                    String fName = p.getCurrentName();
                     p.nextToken();
                     if (!isUnitTokenValid(p.currentToken())) {
                         throw new JsonParseException(p, "Invalid token for " + getTypeName() + ". Got: " + p.getCurrentToken());

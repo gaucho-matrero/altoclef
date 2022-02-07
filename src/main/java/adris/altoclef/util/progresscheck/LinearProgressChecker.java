@@ -11,8 +11,6 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
     private final TimerGame _timer;
 
     private double _lastProgress;
-    private double _currentProgress;
-
     private boolean _first;
 
     private boolean _failed;
@@ -25,7 +23,6 @@ public class LinearProgressChecker implements IProgressChecker<Double> {
 
     @Override
     public void setProgress(Double progress) {
-        _currentProgress = progress;
         if (_first) {
             _lastProgress = progress;
             _first = false;

@@ -37,7 +37,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -49,7 +48,6 @@ import java.util.List;
  */
 public class KillEnderDragonTask extends Task {
 
-    private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
     // Don't accidentally anger endermen lol
     private final TimerGame _lookDownTimer = new TimerGame(0.5);
     private final Task _collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100), new Block[]{Blocks.END_STONE}, MiningRequirement.WOOD);
@@ -201,7 +199,6 @@ public class KillEnderDragonTask extends Task {
 
     private class PunkEnderDragonTask extends Task {
 
-        private final HashMap<BlockPos, Double> _breathCostMap = new HashMap<>();
         private final TimerGame _hitHoldTimer = new TimerGame(0.1);
         private final TimerGame _hitResetTimer = new TimerGame(0.4);
         private final TimerGame _randomWanderChangeTimeout = new TimerGame(20);

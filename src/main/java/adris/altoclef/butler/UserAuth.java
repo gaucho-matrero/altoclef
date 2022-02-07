@@ -6,13 +6,10 @@ import adris.altoclef.util.helpers.ConfigHelper;
 public class UserAuth {
     private static final String BLACKLIST_PATH = "altoclef_butler_blacklist.txt";
     private static final String WHITELIST_PATH = "altoclef_butler_whitelist.txt";
-    private final AltoClef _mod;
     private UserListFile _blacklist;
     private UserListFile _whitelist;
 
     public UserAuth(AltoClef mod) {
-        _mod = mod;
-
         ConfigHelper.ensureCommentedListFileExists(BLACKLIST_PATH, """
                 Add butler blacklisted players here.
                 Make sure useButlerBlacklist is set to true in the settings file.

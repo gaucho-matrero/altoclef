@@ -6,7 +6,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.resources.TradeWithPiglinsTask.PerformTradeWithPiglin;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.time.TimerGame;
@@ -27,7 +26,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
     // TODO: Settings? Custom parameter?
     private static final boolean AVOID_HOGLINS = true;
     private static final double HOGLIN_AVOID_TRADE_RADIUS = 64;
-    // If we're too far away from a trading piglin, we risk deloading them and losing the trade.
+    // TODO: If we're too far away from a trading piglin, we risk deloading them and losing the trade.
     private static final double TRADING_PIGLIN_TOO_FAR_AWAY = 64 + 8;
     private final int _goldBuffer;
     private final Task _tradeTask = new PerformTradeWithPiglin();

@@ -4,7 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.*;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 
 public class GetCommand extends Command {
@@ -12,11 +11,6 @@ public class GetCommand extends Command {
     public GetCommand() throws CommandException {
         super("get", "Get an item/resource",
                 new Arg<ItemList>(ItemList.class, "items"));
-    }
-
-    private static void OnResourceDoesNotExist(AltoClef mod, String resource) {
-        mod.log("\"" + resource + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);
-        mod.log("Use @list to get a list of available resources.", MessagePriority.OPTIONAL);
     }
 
     private void GetItems(AltoClef mod, ItemTarget... items) {

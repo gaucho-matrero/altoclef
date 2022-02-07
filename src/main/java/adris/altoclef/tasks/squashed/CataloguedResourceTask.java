@@ -5,7 +5,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
-import adris.altoclef.tasks.squashed.CataloguedResourceTask.TaskSquasher;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;

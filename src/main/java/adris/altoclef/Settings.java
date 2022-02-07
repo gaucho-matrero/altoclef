@@ -418,16 +418,6 @@ public class Settings implements IFailableConfigFile {
     ////////** END SETTINGS w/ COMMENTS **////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-    private static boolean idArrayContainsItem(Item item, int[] ids) {
-        int id = Item.getRawId(item);
-        for (int check : ids) {
-            if (check == id) return true;
-        }
-        return false;
-    }
-
     public boolean shouldShowTaskChain() {
         return showTaskChains;
     }

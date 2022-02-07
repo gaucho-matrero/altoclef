@@ -10,7 +10,6 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -20,8 +19,6 @@ public class CraftInInventoryTask extends ResourceTask {
     private final RecipeTarget _target;
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
-    private boolean _fullCheckFailed = false;
-
     public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
         super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
         _target = target;
@@ -48,7 +45,6 @@ public class CraftInInventoryTask extends ResourceTask {
             mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> valid.matches(stack.getItem()));
         }
 
-        _fullCheckFailed = false;
         StorageHelper.closeScreen(); // Just to be safe I guess
     }
 
@@ -67,7 +63,6 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         ItemTarget toGet = _itemTargets[0];
-        Item toGetItem = toGet.getMatches()[0];
         if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, _target)) {
             // Collect recipe materials
             setDebugState("Collecting materials");

@@ -6,7 +6,6 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     private final IProgressChecker<Double> _distanceChecker;
     private Vec3d _start;
-    private Vec3d _prevPos;
     private final boolean _reduceDistance;
 
     public DistanceProgressChecker(IProgressChecker<Double> distanceChecker, boolean reduceDistance) {
@@ -35,7 +34,6 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
         double delta = position.distanceTo(_start);
         // If we want to reduce distance, penalize distance.
         if (_reduceDistance) delta *= -1;
-        _prevPos = position;
         _distanceChecker.setProgress(delta);
     }
 

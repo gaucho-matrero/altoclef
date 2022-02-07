@@ -55,7 +55,6 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
-            List<Entity> result;
             Stream<Entity> stream = mod.getEntityTracker().getHostiles().stream();
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 if (!_includeSkeletons) {
