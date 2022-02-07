@@ -2,6 +2,7 @@ package adris.altoclef.commandsystem;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import baritone.api.BaritoneAPI;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,6 +58,15 @@ public class CommandExecutor {
     public void execute(String line, Runnable onFinish, Consumer<CommandException> getException) {
         if (!isClientCommand(line)) return;
         line = line.substring(getCommandPrefix().length());
+        // Executes baritone commands within
+        BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("stop");
+        String baritonePrefix = BaritoneAPI.getSettings().prefix.defaultValue;
+        if (line.startsWith(baritonePrefix)) {
+            _mod.getPlayer().sendChatMessage("Running Baritone command with prefix (" + baritonePrefix + ")");
+            line = line.substring(baritonePrefix.length());
+            BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute(line);
+            return;
+        }
         // Run commands separated by ;
         String[] parts = line.split(";");
         Command[] commands = new Command[parts.length];
