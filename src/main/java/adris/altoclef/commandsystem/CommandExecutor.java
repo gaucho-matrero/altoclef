@@ -3,6 +3,7 @@ package adris.altoclef.commandsystem;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import baritone.api.BaritoneAPI;
+import baritone.api.IBaritone;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,16 +56,28 @@ public class CommandExecutor {
         }
     }
 
+    public boolean baritoneIsActive() {
+        IBaritone b = _mod.getClientBaritone();
+        if(b.getBuilderProcess().isActive() || b.getBuilderProcess().isPaused()) return true;
+        if(b.getCustomGoalProcess().isActive()) return true;
+        if(b.getExploreProcess().isActive()) return true;
+        if(b.getFarmProcess().isActive()) return true;
+        if(b.getFollowProcess().isActive()) return true;
+        if(b.getGetToBlockProcess().isActive()) return true;
+        if(b.getMineProcess().isActive()) return true;
+        return false;
+    }
+
     public void execute(String line, Runnable onFinish, Consumer<CommandException> getException) {
         if (!isClientCommand(line)) return;
         line = line.substring(getCommandPrefix().length());
         // Executes baritone commands within
-        BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute("stop");
+        if(baritoneIsActive()) _mod.getClientBaritone().getCommandManager().execute("stop");
         String baritonePrefix = BaritoneAPI.getSettings().prefix.defaultValue;
         if (line.startsWith(baritonePrefix)) {
             _mod.getPlayer().sendChatMessage("Running Baritone command with prefix (" + baritonePrefix + ")");
             line = line.substring(baritonePrefix.length());
-            BaritoneAPI.getProvider().getPrimaryBaritone().getCommandManager().execute(line);
+            _mod.getClientBaritone().getCommandManager().execute(line);
             return;
         }
         // Run commands separated by ;
