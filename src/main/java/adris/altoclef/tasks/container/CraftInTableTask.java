@@ -194,7 +194,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             if (!_collectTask.isFinished(mod)) {
 
                 if (!StorageHelper.hasRecipeMaterialsOrTarget(mod, _targets)) {
-                    setDebugState("craft does NOT have RECIPE MATERIALS: " + Arrays.toString(_targets));
+                    setDebugState("Getting recipe materials: " + Arrays.toString(_targets));
                     return _collectTask;
                 }
             }
