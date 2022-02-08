@@ -5,6 +5,8 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +32,12 @@ public class ItemTarget {
         _infinite = false;
         if (items.length > 1) {
             Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
-            Debug.logMessage("Called from " + new Throwable().getStackTrace());
+            // Print the stack trace to help with debugging
+            CharArrayWriter cw = new CharArrayWriter();
+            PrintWriter w = new PrintWriter(cw);
+            e.printStackTrace(w);
+            w.close();
+            Debug.logMessage(cw.toString());
         }
     }
 
