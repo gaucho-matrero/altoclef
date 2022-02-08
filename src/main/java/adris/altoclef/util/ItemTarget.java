@@ -28,12 +28,22 @@ public class ItemTarget {
         _itemMatches = items;
         _targetCount = targetCount;
         _infinite = false;
+        if (items.length > 1) {
+            Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
+        }
     }
 
     public ItemTarget(String catalogueName, int targetCount) {
         _catalogueName = catalogueName;
         _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
         _targetCount = targetCount;
+    }
+
+    public ItemTarget(Item[] items, int targetCount, String catalogueName) {
+        _itemMatches = items;
+        _catalogueName = catalogueName;
+        _targetCount = targetCount;
+        _infinite = false;
     }
 
     public ItemTarget(String catalogueName) {
@@ -146,7 +156,6 @@ public class ItemTarget {
         } else if (isCatalogueItem()) {
             result.append(_catalogueName);
         } else {
-            result.append("[");
             int counter = 0;
             for (Item item : _itemMatches) {
                 if (item == null) {
@@ -158,10 +167,13 @@ public class ItemTarget {
                     result.append(",");
                 }
             }
-            result.append("]");
+            if (_itemMatches.length > 1) {
+                result.insert(0, "(");
+                result.append(")");
+            }
         }
         if (!_infinite && !isEmpty()) {
-            result.append(" x ").append(_targetCount);
+            result.append(" x").append(_targetCount);
         } else if (_infinite) {
             result.append(" x infinity");
         }
