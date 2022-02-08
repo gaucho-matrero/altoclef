@@ -20,7 +20,6 @@ public class CraftInInventoryTask extends ResourceTask {
     private final RecipeTarget _target;
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
-    private boolean _fullCheckFailed = false;
 
     public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
         super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
@@ -48,7 +47,6 @@ public class CraftInInventoryTask extends ResourceTask {
             mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> valid.matches(stack.getItem()));
         }
 
-        _fullCheckFailed = false;
         StorageHelper.closeScreen(); // Just to be safe I guess
     }
 
@@ -97,17 +95,25 @@ public class CraftInInventoryTask extends ResourceTask {
     }
 
     @Override
+    protected String toDebugString() {
+        // Prevent redundancy
+        // eg Craft 2x2 CraftingRecipe{craft planks} for *acacia_planks x4*: [*acacia_planks x4*]
+        // given that the RecipeTarget already contains the goal of what to get
+        return toDebugStringName(); 
+    }
+
+    @Override
     protected String toDebugStringName() {
         return toCraftingDebugStringName() + " " + _target;
+    }
+
+    protected String toCraftingDebugStringName() {
+        return "Craft 2x2";
     }
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)
     protected Task collectRecipeSubTask(AltoClef mod) {
         return new CollectRecipeCataloguedResourcesTask(_ignoreUncataloguedSlots, _target);
-    }
-
-    protected String toCraftingDebugStringName() {
-        return "Craft 2x2 Task";
     }
 
     protected boolean isCraftingEqual(CraftInInventoryTask other) {

@@ -19,8 +19,14 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
 
     public CollectBedTask(Item[] beds, ItemTarget wool, int count) {
         // Top 3 are wool, must be the same.
-        super(new ItemTarget(beds, count), colorfulItems -> colorfulItems.wool, colorfulItems -> colorfulItems.bed, createBedRecipe(wool), new boolean[]{true, true, true, false, false, false, false, false, false});
-        _visualBedTarget = new ItemTarget(beds, count);
+        super(
+            new ItemTarget(beds, count, "any bed"),
+            colorfulItems -> colorfulItems.wool,
+            colorfulItems -> colorfulItems.bed,
+            createBedRecipe(wool),
+            new boolean[]{true, true, true, false, false, false, false, false, false}
+        );
+        _visualBedTarget = new ItemTarget(beds, count, "any bed");
     }
 
     public CollectBedTask(Item bed, String woolCatalogueName, int count) {
@@ -59,7 +65,7 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         // Break beds from the world if possible, that would be pretty fast.
         if (mod.getBlockTracker().anyFound(BEDS)) {
             // Failure + blacklisting is encapsulated within THIS task
-            return new MineAndCollectTask(new ItemTarget(ItemHelper.BED, 1), BEDS, MiningRequirement.HAND);
+            return new MineAndCollectTask(new ItemTarget(ItemHelper.BED, 1, "any bed"), BEDS, MiningRequirement.HAND);
         }
         return super.onResourceTick(mod);
     }
