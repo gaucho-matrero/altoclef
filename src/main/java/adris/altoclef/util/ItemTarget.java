@@ -35,7 +35,7 @@ public class ItemTarget {
             // Print the stack trace to help with debugging
             CharArrayWriter cw = new CharArrayWriter();
             PrintWriter w = new PrintWriter(cw);
-            e.printStackTrace(w);
+            new Throwable().printStackTrace(w);
             w.close();
             Debug.logMessage(cw.toString());
         }
