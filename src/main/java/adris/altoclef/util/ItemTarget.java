@@ -60,6 +60,10 @@ public class ItemTarget {
         this(items, 1);
     }
 
+    public ItemTarget(Item[] items, String catalogueName) {
+        this(items, 1, catalogueName);
+    }
+
     public ItemTarget(Item item) {
         this(item, 1);
     }
