@@ -714,7 +714,7 @@ public class TaskCatalogue {
     private static CataloguedResource mine(String name, MiningRequirement requirement, Block[] toMine, Item... targets) {
         return put(
             name, targets, count -> new MineAndCollectTask(
-                targets.length > 1 ? new ItemTarget(targets, count, "any" + name) : new ItemTarget(targets, count),
+                targets.length > 1 ? new ItemTarget(targets, count, "any " + name) : new ItemTarget(targets, count),
                 toMine,
                 requirement
             )

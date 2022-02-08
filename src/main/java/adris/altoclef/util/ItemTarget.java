@@ -30,6 +30,7 @@ public class ItemTarget {
         _infinite = false;
         if (items.length > 1) {
             Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
+            Debug.logMessage("Called from " + new Throwable().getStackTrace());
         }
     }
 

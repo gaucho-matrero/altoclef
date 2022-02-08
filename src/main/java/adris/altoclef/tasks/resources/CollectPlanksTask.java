@@ -101,7 +101,7 @@ public class CollectPlanksTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Crafting " + _targetCount + " planks " + Arrays.toString(_planks);
+        return "Crafting " + _targetCount + " plank(s)";
     }
 
     public CollectPlanksTask logsInNether() {
