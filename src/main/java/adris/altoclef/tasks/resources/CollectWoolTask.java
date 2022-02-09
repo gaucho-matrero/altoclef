@@ -24,7 +24,7 @@ public class CollectWoolTask extends ResourceTask {
     private final Item[] _wools;
 
     public CollectWoolTask(DyeColor[] colors, int count) {
-        super(new ItemTarget(ItemHelper.WOOL, count));
+        super(new ItemTarget(ItemHelper.WOOL, count, "any wool"));
         _colors = new HashSet<>(Arrays.asList(colors));
         _count = count;
         _wools = getWoolColorItems(colors);
@@ -66,7 +66,7 @@ public class CollectWoolTask extends ResourceTask {
         // If we find a wool block, break it.
         Block[] woolBlocks = ItemHelper.itemsToBlocks(_wools);
         if (mod.getBlockTracker().anyFound(woolBlocks)) {
-            return new MineAndCollectTask(new ItemTarget(_wools), woolBlocks, MiningRequirement.HAND);
+            return new MineAndCollectTask(new ItemTarget(_wools, "any wool"), woolBlocks, MiningRequirement.HAND);
         }
 
         // If we have shears, right click nearest sheep
@@ -89,7 +89,7 @@ public class CollectWoolTask extends ResourceTask {
                 return _colors.contains(sheep.getColor()) && !sheep.isSheared();
             }
             return false;
-        }, new ItemTarget(_wools, _count));
+        }, new ItemTarget(_wools, _count, "any wool"));
     }
 
     @Override

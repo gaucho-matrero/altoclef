@@ -201,7 +201,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     @Override
     protected String toDebugString() {
         StringBuilder result = new StringBuilder();
-        result.append(toDebugStringName()).append(": [");
+        result.append(toDebugStringName()).append(" for ");
         int c = 0;
         for (ItemTarget target : _itemTargets) {
             result.append(target != null? target.toString() : "(null)");
@@ -209,7 +209,9 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 result.append(", ");
             }
         }
-        result.append("]");
+        if (_itemTargets.length > 1) {
+            result.insert(0, "[").append("]");
+        }
         return result.toString();
     }
 
