@@ -92,6 +92,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected String toDebugString() {
-        return "Running " + _getTargetTask().toDebugStringName() + " on " + Arrays.toString(_targetEntities);
+        return "Running " + _getTargetTask.apply(_targetEntities[0]).toDebugStringName() +
+                " on " + Arrays.toString(_targetEntities);
     }
 }
