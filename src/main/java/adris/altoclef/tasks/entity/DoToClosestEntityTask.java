@@ -95,7 +95,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
         return "Running a task on " + (
             _targetEntities.length > 1 ?
             _targetEntities.length + " entities" :
-            _targetEntities[0].getDisplayName().getString()
+            _targetEntities[0].getSimpleName()
         );
     }
 }
