@@ -48,16 +48,13 @@ public class CommandStatusOverlay {
                 dy += fontHeight + 2;
             }
             // Draw the item chain
-            StringBuilder itemChain = new StringBuilder();
+            List<String> itemChain = new ArrayList<>();
             for (Task task : tasks) {
                 if (!task.getItemName().isBlank()) {
-                    itemChain.append(task.getItemName());
-                    if (itemChain.length() > 0) {
-                        itemChain.append(" ← ");
-                    }
+                    itemChain.add(task.getItemName());
                 }
             }
-            renderer.draw(stack, itemChain.toString(), dx, dy, color);
+            renderer.draw(stack, String.join(" ← ", itemChain), dx, dy, color);
             dy += fontHeight + 2;
             // Draw the tasks list
             if (tasks.size() > maxLines) {
