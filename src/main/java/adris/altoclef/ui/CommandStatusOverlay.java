@@ -44,8 +44,7 @@ public class CommandStatusOverlay {
             if (mod.getModSettings().shouldShowTimer()) {
                 _lastTime = Instant.now().toEpochMilli(); // keep the last time for the timer reset
                 String _realTime = DATE_TIME_FORMATTER.format(Instant.now().minusMillis(_timeRunning)); // Format the running time to string
-                renderer.draw(stack, "<" + _realTime + ">", dx, dy, color); // Draw the timer before drawing tasks list
-                dx += 8; // Do the same thing to list the tasks
+                renderer.draw(stack, _realTime, dx, dy, color); // Draw the timer before drawing tasks list
                 dy += fontHeight + 2;
             }
             // Draw the item chain
@@ -58,6 +57,8 @@ public class CommandStatusOverlay {
                     itemChain.append(task.getItemName());
                 }
             }
+            renderer.draw(stack, itemChain.toString(), dx, dy, color);
+            dy += fontHeight + 2;
             // Draw the tasks list
             if (tasks.size() > maxLines) {
                 for (int i = 0; i < tasks.size(); ++i) {
