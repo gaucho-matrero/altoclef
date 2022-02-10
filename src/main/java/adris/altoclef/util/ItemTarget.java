@@ -5,8 +5,6 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 
-import java.io.CharArrayWriter;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

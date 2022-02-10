@@ -67,6 +67,6 @@ public class KillAndLootTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Kill and loot " + _toKill.toGenericString();
+        return "Kill and loot " + _toKill.getDisplayName().getString();
     }
 }

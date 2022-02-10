@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.ShearSheepTask;
 import adris.altoclef.tasksystem.Task;
@@ -25,6 +26,7 @@ public class CollectWoolTask extends ResourceTask {
 
     public CollectWoolTask(DyeColor[] colors, int count) {
         super(new ItemTarget(ItemHelper.WOOL, count, "any wool"));
+        Debug.logMessage("count of wool " + count);
         _colors = new HashSet<>(Arrays.asList(colors));
         _count = count;
         _wools = getWoolColorItems(colors);
