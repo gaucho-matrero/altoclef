@@ -107,6 +107,8 @@ public class ItemTarget {
             _infinite = true;
             return BASICALLY_INFINITY;
         }
+        // Workaround for when the ItemTarget is initialized as infinite (properly)
+        // but then another ItemTarget is created by copying the target count, not the infinite flag.
         return _targetCount;
     }
 
