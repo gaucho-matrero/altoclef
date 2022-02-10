@@ -50,11 +50,11 @@ public class CommandStatusOverlay {
             // Draw the item chain
             StringBuilder itemChain = new StringBuilder();
             for (Task task : tasks) {
-                if (itemChain.length() > 0) {
-                    itemChain.append(" <- ");
-                }
                 if (!task.getItemName().isBlank()) {
                     itemChain.append(task.getItemName());
+                    if (itemChain.length() > 0) {
+                        itemChain.append(" ← ");
+                    }
                 }
             }
             renderer.draw(stack, itemChain.toString(), dx, dy, color);
