@@ -2,6 +2,7 @@ package adris.altoclef.ui;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -52,12 +53,7 @@ public class CommandStatusOverlay {
                 // Eliminate as many tasks without targets as needed to fit the max lines
                 List<Task> tasksToDisplay = new ArrayList<>(tasks);
                 for (int i = 0; i < tasks.size(); i++) {
-                    boolean hasTarget = true;
-                    try {
-                        hasTarget = tasks.get(i).getTarget() != null;
-                    } catch (Exception e) {
-                        hasTarget = false;
-                    }
+                    boolean hasTarget = ResourceTask.class.isAssignableFrom(tasksToDisplay.get(i).getClass());
                     if (!hasTarget) {
                         tasksToDisplay.remove(i);
                         i--;
