@@ -48,12 +48,34 @@ public class CommandStatusOverlay {
                 dy += fontHeight + 2;
             }
             if (tasks.size() > maxLines) {
-                for (int i = 0; i < tasks.size(); ++i) {
-                    // Skip over the next tasks
-                    if (i == 0 || i > tasks.size() - maxLines) {
+                // Preserve the first task and as many tasks from the end as needed to fit the max lines
+                // Eliminate as many tasks without targets as needed to fit the max lines
+                List<Task> tasksToDisplay = new ArrayList<>(tasks);
+                for (int i = 0; i < tasks.size(); i++) {
+                    boolean hasTarget = true;
+                    try {
+                        hasTarget = tasks.get(i).getTarget() != null;
+                    } catch (Exception e) {
+                        hasTarget = false;
+                    }
+                    if (!hasTarget) {
+                        tasksToDisplay.remove(i);
+                        i--;
+                        break;
+                    }
+                    if (tasksToDisplay.size() == maxLines) {
+                        break;
+                    }
+                }
+                // If that doesn't work, just eliminate as many as needed to fit the max lines
+                // Now render the tasks
+                // eg [1, 2, 3, 4, 5] with maxLines = 3 would be rendered as [1, ..., 5]
+                for (int i = 0; i < tasksToDisplay.size(); i++) {
+                    Task task = tasksToDisplay.get(i);
+                    if (i == 0 || i > tasksToDisplay.size() - maxLines) {
                         renderer.draw(stack, tasks.get(i).toString(), dx, dy, color);
                     } else if (i == 1) {
-                        renderer.draw(stack, " ... ", dx, dy, color);
+                        renderer.draw(stack, "...", dx, dy, color);
                     } else {
                         continue;
                     }
