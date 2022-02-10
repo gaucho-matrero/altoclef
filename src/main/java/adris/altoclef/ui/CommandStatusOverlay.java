@@ -8,6 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.time.Instant;
@@ -51,7 +52,7 @@ public class CommandStatusOverlay {
             if (tasks.size() > maxLines) {
                 // Preserve the first task and as many tasks from the end as needed to fit the max lines
                 // Eliminate as many tasks without targets as needed to fit the max lines
-                List<Task> tasksToDisplay = new List<>(tasks);
+                List<Task> tasksToDisplay = new ArrayList<>(tasks);
                 for (int i = 0; i < tasks.size(); i++) {
                     boolean hasTarget = ResourceTask.class.isAssignableFrom(tasksToDisplay.get(i).getClass());
                     if (!hasTarget) {
