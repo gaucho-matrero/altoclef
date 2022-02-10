@@ -29,7 +29,6 @@ public class ItemTarget {
     public ItemTarget(Item[] items, int targetCount) {
         _itemMatches = items;
         _targetCount = targetCount;
-        _infinite = false;
         if (items.length > 1) {
             Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
         }
@@ -45,7 +44,6 @@ public class ItemTarget {
         _itemMatches = items;
         _catalogueName = catalogueName;
         _targetCount = targetCount;
-        _infinite = false;
     }
 
     public ItemTarget(String catalogueName) {
@@ -76,6 +74,10 @@ public class ItemTarget {
         _catalogueName = toCopy._catalogueName;
         _targetCount = newCount;
         _infinite = toCopy._infinite;
+    }
+
+    public ItemTarget(ItemTarget toCopy) {
+        this(toCopy, toCopy._targetCount);
     }
 
     public ItemTarget infinite() {
