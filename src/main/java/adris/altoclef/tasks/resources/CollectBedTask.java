@@ -80,6 +80,6 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Crafting bed: " + _visualBedTarget;
+        return "Collecting a bed";
     }
 }

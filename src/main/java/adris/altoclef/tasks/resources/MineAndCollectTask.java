@@ -194,7 +194,8 @@ public class MineAndCollectTask extends ResourceTask {
 
             double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, true);
             double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
-
+            // TODO: If the drops are close nearby, and picking them up would be faster, do that.
+            
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
                 return closestDrop.map(Object.class::cast);

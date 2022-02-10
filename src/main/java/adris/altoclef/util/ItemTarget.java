@@ -185,7 +185,7 @@ public class ItemTarget {
         if (!_infinite && !isEmpty() && _targetCount > 1) {
             result.append(" x").append(_targetCount);
         } else if (_infinite) {
-            result.append(" (infinite)");
+            result.append(" (attempt infinite)");
         }
 
         return result.toString();

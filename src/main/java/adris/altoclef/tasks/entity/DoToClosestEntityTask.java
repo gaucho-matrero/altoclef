@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("ALL")
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
 
-    private final Class[] _targetEntities;
+    private final Entity[] _targetEntities;
 
     private final Supplier<Vec3d> _getOriginPos;
 
@@ -26,22 +26,22 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     private final Predicate<Entity> _shouldInteractWith;
 
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Class... entities) {
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Entity... entities) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _shouldInteractWith = shouldInteractWith;
         _targetEntities = entities;
     }
 
-    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Class... entities) {
+    public DoToClosestEntityTask(Supplier<Vec3d> getOriginSupplier, Function<Entity, Task> getTargetTask, Entity... entities) {
         this(getOriginSupplier, getTargetTask, entity -> true, entities);
     }
 
-    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Class... entities) {
+    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Predicate<Entity> shouldInteractWith, Entity... entities) {
         this(null, getTargetTask, shouldInteractWith, entities);
     }
 
-    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Class... entities) {
+    public DoToClosestEntityTask(Function<Entity, Task> getTargetTask, Entity... entities) {
         this(null, getTargetTask, entity -> true, entities);
     }
 
@@ -95,7 +95,7 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
         return "Running a task on " + (
             _targetEntities.length > 1 ?
             _targetEntities.length + " entities" :
-            _targetEntities[0].getSimpleName()
+            _targetEntities[0].getType().getTranslationKey()
         );
     }
 }
