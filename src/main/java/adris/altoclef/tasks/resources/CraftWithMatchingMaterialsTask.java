@@ -136,7 +136,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
 
     // Virtual
     protected Task getAllSameResourcesTask(AltoClef mod) {
-        ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget, 999999);
+        ItemTarget infinityVersion = new ItemTarget(_sameResourceTarget).infinite();
         return TaskCatalogue.getItemTask(infinityVersion);
     }
 
