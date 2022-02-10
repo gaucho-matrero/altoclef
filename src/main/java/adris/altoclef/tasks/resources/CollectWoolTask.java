@@ -26,7 +26,6 @@ public class CollectWoolTask extends ResourceTask {
 
     public CollectWoolTask(DyeColor[] colors, int count) {
         super(new ItemTarget(ItemHelper.WOOL, count, "any wool"));
-        Debug.logMessage("count of wool " + count);
         _colors = new HashSet<>(Arrays.asList(colors));
         _count = count;
         _wools = getWoolColorItems(colors);
@@ -106,7 +105,7 @@ public class CollectWoolTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collect " + _count + " wool.";
+        return "Collect wool";
     }
 
 }

@@ -103,6 +103,10 @@ public class ItemTarget {
         if (_infinite) {
             return BASICALLY_INFINITY;
         }
+        if (_targetCount == BASICALLY_INFINITY) {
+            _infinite = true;
+            return BASICALLY_INFINITY;
+        }
         return _targetCount;
     }
 
