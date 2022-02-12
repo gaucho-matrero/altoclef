@@ -10,7 +10,7 @@ if [ "$JV" != 17 ]; then
 		curl -s "https://get.sdkman.io" | bash
 		source ~/.sdkman/bin/sdkman-init.sh
 		sdk version
-		sdk install java 17.0.1-open
+		sdk install java 17.0.2-open
 		;;
 	use)
 		echo "must source ~/.sdkman/bin/sdkman-init.sh"
