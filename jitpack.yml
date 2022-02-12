@@ -1,10 +1,10 @@
 jdk:
-  - openjdk16
+  - openjdk17
 
 before_install:
-  - ./ensure-jitpack-java-17 install
+  - bash ensure-jitpack-java-17 install
 
 install:
-  - if ! ./ensure-java-17 use; then source ~/.sdkman/bin/sdkman-init.sh; fi
+  - if ! bash ensure-jitpack-java-17 use; then source ~/.sdkman/bin/sdkman-init.sh; fi
   - java -version
   - ./gradlew publishToMavenLocal
