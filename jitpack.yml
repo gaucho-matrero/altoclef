@@ -1,0 +1,10 @@
+jdk:
+  - openjdk17
+before_install:
+  - echo "Before Install"
+  - bash ensure-java-17 install
+install:
+  - echo "Install"
+  - if ! bash ensure-java-17 use; then source ~/.sdkman/bin/sdkman-init.sh; fi
+  - java -version
+  - mvn install
