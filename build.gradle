@@ -1,7 +1,5 @@
-apply plugin: 'maven-publish'
-group = 'com.github.DarkReaper231'
-
 plugins {
+    id 'maven-publish'
     id "fabric-loom" version "0.10-SNAPSHOT"
     id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
@@ -11,6 +9,7 @@ targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
+group = 'com.github.DarkReaper231'
 
 repositories {
     mavenCentral()
