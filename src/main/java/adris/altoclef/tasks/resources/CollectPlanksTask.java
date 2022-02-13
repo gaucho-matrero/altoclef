@@ -20,7 +20,7 @@ public class CollectPlanksTask extends ResourceTask {
     private boolean _logsInNether;
 
     public CollectPlanksTask(Item[] planks, Item[] logs, int count, boolean logsInNether) {
-        super(new ItemTarget(planks, count, "any planks"));
+        super(planks.length > 1 ? new ItemTarget(planks, count, "any planks") : new ItemTarget(planks, count));
         _planks = planks;
         _logs = logs;
         _targetCount = count;
