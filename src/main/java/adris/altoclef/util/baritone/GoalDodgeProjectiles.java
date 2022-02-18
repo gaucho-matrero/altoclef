@@ -2,6 +2,7 @@ package adris.altoclef.util.baritone;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.util.math.Vec3d;

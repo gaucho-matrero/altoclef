@@ -1,13 +1,9 @@
 package adris.altoclef.commandsystem;
 
-import java.util.HashMap;
-
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public class Arg<T> extends ArgBase {
     public T Default;
     private final Class<T> _tType;
     private boolean _isArray = false;
-    private HashMap<String, T> _enumValues = null;
     private String _name = "";
     private boolean _showDefault;
 
@@ -19,16 +15,11 @@ public class Arg<T> extends ArgBase {
 
         _showDefault = true;
         _hasDefault = false;
-        // If enum, take action.
-        if (_tType.isEnum()) {
-            _enumValues = new HashMap<String, T>();
-            for (T v : _tType.getEnumConstants()) {
-                _enumValues.put(v.toString().toLowerCase(), v);
-            }
-        } else {
+        // If enum, we're good
+        if (!_tType.isEnum()) {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class)) {
-                throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class, ItemList.class, GotoTarget.class)) {
+                throw new CommandException("Arguments are not programmed to parse the following type: " + _tType +". This is either not implemented intentionally or by accident somehow.");
             }
         }
     }
@@ -53,7 +44,7 @@ public class Arg<T> extends ArgBase {
     }
 
     private boolean isEnum() {
-        return _enumValues != null;
+        return _tType.isEnum();
     }
 
     // Horrendous chain syntax that I'm only using here.
@@ -100,21 +91,24 @@ public class Arg<T> extends ArgBase {
             throw new CommandException("Failed to parse the following argument into type " + type + ": " + value + ".");
     }
 
+    public static Object parseEnum(String unit, Class type) throws CommandException{
+        unit = unit.toLowerCase().trim();
+        StringBuilder res = new StringBuilder();
+        for (Object v : type.getEnumConstants()) {
+            if (v.toString().toLowerCase().equals(unit)) {
+                return v;
+            }
+            res.append(type);
+            res.append("|");
+        }
+        res.delete(res.length() - 1, res.length()); // Remove the last "|"
+        throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
+    }
 
     private <V> V parseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {
         // If enum, check from our cached enum dictionary.
         if (isEnum()) {
-            unit = unit.toLowerCase();
-            if (!_enumValues.containsKey(unit)) {
-                StringBuilder res = new StringBuilder();
-                for (String type : _enumValues.keySet()) {
-                    res.append(type);
-                    res.append("|");
-                }
-                res.delete(res.length() - 1, res.length()); // Remove the last "|"
-                throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
-            }
-            return getConverted(vType, _enumValues.get(unit));
+            return getConverted(vType, parseEnum(unit, vType));
         }
 
         // Do number parsing.
@@ -145,6 +139,15 @@ public class Arg<T> extends ArgBase {
             } catch (NumberFormatException e) {
                 parseErrorCheck(false, unit, "long");
             }
+        }
+
+        // Some custom types
+        if (isInstanceOf(vType, ItemList.class)) {
+            return getConverted(vType, ItemList.parseRemainder(String.join(" ", unitPlusRemainder)));
+        }
+
+        if (isInstanceOf(vType, GotoTarget.class)) {
+            return getConverted(vType, GotoTarget.parseRemainder(String.join(" ", unitPlusRemainder)));
         }
 
         // Now do String parsing.
@@ -199,7 +202,7 @@ public class Arg<T> extends ArgBase {
         return GetConverted(vType,  result.ToArray() );
         }
          */
-        throw new CommandException("Arguments are not programmed to parse the following type: {typeof(T)}. This is either not implemented intentionally or by accident somehow.");
+        throw new CommandException("Arguments are not programmed to parse the following type: " + vType + ". This is either not implemented intentionally or by accident somehow.");
     }
 
     @Override
@@ -216,5 +219,12 @@ public class Arg<T> extends ArgBase {
     @Override
     public <V> V getDefault(Class<V> vType) {
         return getConverted(vType, Default);
+    }
+
+    @Override
+    public boolean isArbitrarilyLong() {
+        // Some arguments don't fit into individual "units".
+        // I should _really_ rewrite this system...
+        return isInstanceOf(_tType, ItemList.class) || isInstanceOf(_tType, GotoTarget.class);
     }
 }

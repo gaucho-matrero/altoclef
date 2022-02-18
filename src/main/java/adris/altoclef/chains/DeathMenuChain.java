@@ -4,8 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.csharpisbetter.TimerGame;
-import adris.altoclef.util.csharpisbetter.TimerReal;
+import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.util.time.TimerReal;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -21,6 +21,8 @@ public class DeathMenuChain extends TaskChain {
     private final TimerGame _reconnectTimer = new TimerGame(1);
     private int _deathCount = 0;
     private Class _prevScreen = null;
+
+    private final TimerGame _waitOnDeathScreenBeforeRespawnTimer = new TimerGame(2);
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
@@ -65,15 +67,14 @@ public class DeathMenuChain extends TaskChain {
         } else {
             _deathRetryTimer.reset();
         }
+        // Keep track of the last server we were on so we can re-connect.
+        if (AltoClef.inGame()) {
+            _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
+        }
 
-        if (screen != null && screen.getClass() != _prevScreen) {
-
-            // Keep track of the last server we were on so we can re-connect.
-            if (AltoClef.inGame()) {
-                _prevServerEntry = MinecraftClient.getInstance().getCurrentServerEntry();
-            }
-
-            if (screen instanceof DeathScreen) {
+        if (screen instanceof DeathScreen) {
+            if (_waitOnDeathScreenBeforeRespawnTimer.elapsed()) {
+                _waitOnDeathScreenBeforeRespawnTimer.reset();
                 if (shouldAutoRespawn(mod)) {
                     _deathCount++;
                     Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
@@ -84,7 +85,10 @@ public class DeathMenuChain extends TaskChain {
                     // Cancel if we die and are not auto-respawning.
                     mod.cancelUserTask();
                 }
-            } else if (screen instanceof DisconnectedScreen) {
+            }
+        } else {
+            _waitOnDeathScreenBeforeRespawnTimer.reset();
+            if (screen instanceof DisconnectedScreen) {
                 if (shouldAutoReconnect(mod)) {
                     Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");
                     _reconnecting = true;
@@ -106,8 +110,9 @@ public class DeathMenuChain extends TaskChain {
                     //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
                 }
             }
-            _prevScreen = screen.getClass();
         }
+        if (screen != null)
+            _prevScreen = screen.getClass();
         return Float.NEGATIVE_INFINITY;
     }
 

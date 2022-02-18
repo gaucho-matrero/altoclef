@@ -8,11 +8,10 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import baritone.Baritone;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalTwoBlocks;
@@ -31,7 +30,6 @@ import java.util.Optional;
  */
 public class InteractWithBlockTask extends Task {
 
-    public final Action TimedOut = new Action();
     private final ItemTarget _toUse;
     private final Direction _direction;
     private final BlockPos _target;
@@ -43,6 +41,8 @@ public class InteractWithBlockTask extends Task {
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
     private final int reachDistance = 0;
+
+    private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
 
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
@@ -135,8 +135,10 @@ public class InteractWithBlockTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
 
+        _cachedClickStatus = ClickResponse.CANT_REACH;
+
         // Get our use item first
-        if (!ItemTarget.nullOrEmpty(_toUse) && !mod.getInventoryTracker().targetsMet(_toUse)) {
+        if (!ItemTarget.nullOrEmpty(_toUse) && !StorageHelper.itemTargetsMet(mod, _toUse)) {
             _moveChecker.reset();
             _clickTimer.reset();
             return TaskCatalogue.getItemTask(_toUse);
@@ -151,15 +153,16 @@ public class InteractWithBlockTask extends Task {
         if (!_moveChecker.check(mod)) {
             Debug.logMessage("Failed, blacklisting and wandering.");
             mod.getBlockTracker().requestBlockUnreachable(_target);
-            TimedOut.invoke();
             return _wanderTask;
         }
 
         Goal moveGoal = createGoalForInteract(_target, reachDistance, _direction, _interactOffset, _walkInto);
         ICustomGoalProcess proc = mod.getClientBaritone().getCustomGoalProcess();
 
-        switch (rightClick(mod)) {
+        _cachedClickStatus = rightClick(mod);
+        switch (_cachedClickStatus) {
             case CANT_REACH -> {
+                setDebugState("Getting to our goal");
                 // Get to our goal then
                 if (!proc.isActive()) {
                     proc.setGoalAndPath(moveGoal);
@@ -167,19 +170,20 @@ public class InteractWithBlockTask extends Task {
                 _clickTimer.reset();
             }
             case WAIT_FOR_CLICK -> {
+                setDebugState("Waiting for click");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
                 _clickTimer.reset();
             }
             case CLICK_ATTEMPTED -> {
+                Debug.logInternal("(InteractWithBlockTask: Click attempted!)");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
                 if (_clickTimer.elapsed()) {
                     // We tried clicking but failed.
                     _clickTimer.reset();
-                    TimedOut.invoke();
                     mod.getBlockTracker().requestBlockUnreachable(_target);
                     return _wanderTask;
                 }
@@ -220,18 +224,26 @@ public class InteractWithBlockTask extends Task {
         return "Interact using " + _toUse + " at " + _target + " dir " + _direction;
     }
 
+    public ClickResponse getClickStatus() {
+        return _cachedClickStatus;
+    }
+
     private ClickResponse rightClick(AltoClef mod) {
 
         // Don't interact if baritone can't interact.
-        if (Baritone.getAltoClefSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
+        if (mod.getExtraBaritoneSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
+
+        // We can't interact while a screen is open.
+        if (!StorageHelper.isPlayerInventoryOpen()) {
+            StorageHelper.closeScreen();
+        }
 
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
-            //Debug.logMessage("Reachable: UPDATE");
-            mod.getClientBaritone().getLookBehavior().updateTarget(reachable.get(), true);
+            LookHelper.lookAt(mod, reachable.get());
             if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
                 if (_toUse != null) {
-                    mod.getSlotHandler().forceEquipItem(_toUse);
+                    mod.getSlotHandler().forceEquipItem(_toUse, false);
                 } else {
                     mod.getSlotHandler().forceDeequipRightClickableItem();
                 }
@@ -253,7 +265,7 @@ public class InteractWithBlockTask extends Task {
         return LookHelper.getReach(_target, _direction);
     }
 
-    private enum ClickResponse {
+    public enum ClickResponse {
         CANT_REACH,
         WAIT_FOR_CLICK,
         CLICK_ATTEMPTED

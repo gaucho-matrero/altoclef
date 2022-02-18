@@ -1,8 +1,16 @@
 # Development Guide
 
-## To use Alto Clef as a library and quick start making custom commands, check out the [Example Repo Here](https://github.com/gaucho-matrero/altoclef-example)
+
+## [Javadocs](https://gaucho-matrero.github.io/altoclef/)
+
 
 ## Get it Running (IDE)
+
+### James Green's setup guide!
+
+[![James Green's Intellij Setup video on YouTube](https://img.youtube.com/vi/zZ1upxZ43Sg/0.jpg)](https://www.youtube.com/watch?v=zZ1upxZ43Sg)
+
+### Text tutorial
 
 Clone project and import. I'd suggest using JetBrain's IntelliJ to import the project. Make sure you're using jdk 16 in your Project & Gradle Settings!
 1) Open Intellij
@@ -21,12 +29,6 @@ If the gradle tab doesn't exist, try `View > Tool Windows > Gradle`
 3) `sudo / doas chmod +x gradlew`
 4) `./gradlew build` or `./gradlew runClient`
 
-
-## Rough Video Guides/Overviews
-[Rough AltoClef Tutorial VOD](https://youtu.be/giBjHDZ7HvY)
-
-[More Recent AltoClef Task Programming VOD](https://youtu.be/uROEqwyzn3o)
-
 ## Modifying Baritone (dev mode)
 
 Alto Clef uses a custom fork of baritone that gives you more control over how baritone works.
@@ -41,3 +43,16 @@ If you wish to make edits to that fork you can do so locally if you follow these
    In this duplicate, paste `-Paltoclef.development` into the Arguments text field.)
 5) When you build and pass `-Paltoclef.development`, Alto Clef should now use the jar file inside 
    of your custom `baritone` fork instead of pulling from online. This lets you rapidly test local changes to baritone.
+  
+  
+
+
+## Task Development Guides
+
+### Task Programming Tutorial Stream
+[![More Recent AltoClef Task Programming VOD](https://img.youtube.com/vi/uROEqwyzn3o/0.jpg)](https://www.youtube.com/watch?v=uROEqwyzn3o)
+
+### Old (Post Stream) Tutorial VOD
+[![Rough AltoClef Tutorial VOD](https://img.youtube.com/vi/giBjHDZ7HvY/0.jpg)](https://www.youtube.com/watch?v=giBjHDZ7HvY)
+
+

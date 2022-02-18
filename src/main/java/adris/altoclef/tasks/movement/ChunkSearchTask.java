@@ -2,8 +2,10 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.Subscription;
+import adris.altoclef.eventbus.events.ChunkLoadEvent;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -22,7 +24,7 @@ import java.util.Set;
  * - Search a nether fortress for blaze spawners
  * - Search a stronghold for the portal
  */
-public abstract class ChunkSearchTask extends Task {
+abstract class ChunkSearchTask extends Task {
 
     private final BlockPos _startPoint;
     private final Object _searchMutex = new Object();
@@ -32,9 +34,10 @@ public abstract class ChunkSearchTask extends Task {
     private final Set<ChunkPos> _searchedAlready = new HashSet<>();
     private final ArrayList<ChunkPos> _searchLater = new ArrayList<>();
     private final ArrayList<ChunkPos> _justLoaded = new ArrayList<>();
-    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<WorldChunk>(this::onChunkLoad);
     private boolean _first = true;
     private boolean _finished = false;
+
+    private Subscription<ChunkLoadEvent> _onChunkLoad;
 
     public ChunkSearchTask(BlockPos startPoint) {
         _startPoint = startPoint;
@@ -65,7 +68,15 @@ public abstract class ChunkSearchTask extends Task {
             }
         }
 
-        mod.getOnChunkLoad().addListener(chunkLoadEvent);
+        _onChunkLoad = EventBus.subscribe(ChunkLoadEvent.class, evt -> {
+            WorldChunk chunk = evt.chunk;
+            if (chunk == null) return;
+            synchronized (_searchMutex) {
+                if (!_searchedAlready.contains(chunk.getPos())) {
+                    _justLoaded.add(chunk.getPos());
+                }
+            }
+        });
     }
 
     @Override
@@ -121,7 +132,7 @@ public abstract class ChunkSearchTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getOnChunkLoad().removeListener(chunkLoadEvent);
+        EventBus.unsubscribe(_onChunkLoad);
     }
 
     @Override
@@ -177,15 +188,6 @@ public abstract class ChunkSearchTask extends Task {
             return true;
         }
         return false;
-    }
-
-    private void onChunkLoad(WorldChunk chunk) {
-        if (chunk == null) return;
-        synchronized (_searchMutex) {
-            if (!_searchedAlready.contains(chunk.getPos())) {
-                _justLoaded.add(chunk.getPos());
-            }
-        }
     }
 
     protected abstract boolean isChunkPartOfSearchSpace(AltoClef mod, ChunkPos pos);

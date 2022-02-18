@@ -3,9 +3,6 @@ package adris.altoclef.commandsystem;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 
-import java.util.function.Consumer;
-
-/// This structure was copied from a C# project. Fuck java. All my homies hate java.
 public abstract class Command {
 
     private AltoClef _mod;
@@ -15,7 +12,7 @@ public abstract class Command {
     private final String _name;
     private final String _description;
 
-    private Consumer _onFinish = null;
+    private Runnable _onFinish = null;
 
     public Command(String name, String description, ArgBase... args) {
         _name = name;
@@ -23,7 +20,7 @@ public abstract class Command {
         parser = new ArgParser(args);
     }
 
-    public void run(AltoClef mod, String line, Consumer onFinish) throws CommandException {
+    public void run(AltoClef mod, String line, Runnable onFinish) throws CommandException {
         _onFinish = onFinish;
         _mod = mod;
         parser.loadArgs(line, true);
@@ -33,8 +30,7 @@ public abstract class Command {
     protected void finish() {
         if (_onFinish != null)
             //noinspection unchecked
-            _onFinish.accept(null);
-        _onFinish = null;
+            _onFinish.run();
     }
 
     public String getHelpRepresentation() {

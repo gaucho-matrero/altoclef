@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.WorldHelper;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +33,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     }
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_dimension != null && mod.getCurrentDimension() != _dimension) {
+        if (_dimension != null && WorldHelper.getCurrentDimension() != _dimension) {
             return new DefaultGoToDimensionTask(_dimension);
         }
         return super.onTick(mod);
@@ -66,7 +67,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return super.isFinished(mod) && (_dimension == null || _dimension == mod.getCurrentDimension());
+        return super.isFinished(mod) && (_dimension == null || _dimension == WorldHelper.getCurrentDimension());
     }
 
     @Override
@@ -82,7 +83,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     protected void onWander(AltoClef mod) {
-        mod.getBlockTracker().unreachable(_position);
+        mod.getBlockTracker().requestBlockUnreachable(_position);
         super.onWander(mod);
     }
 }

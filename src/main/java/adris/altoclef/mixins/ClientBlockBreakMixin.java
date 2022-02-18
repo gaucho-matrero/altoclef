@@ -1,6 +1,8 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.StaticMixinHookups;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.BlockBreakingCancelEvent;
+import adris.altoclef.eventbus.events.BlockBreakingEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ClientPlayerInteractionManager.class)
 public final class ClientBlockBreakMixin {
 
+    // for SOME REASON baritone triggers a block cancel breaking every other frame, so we have a 2 frame requirement for that?
+    private static int _breakCancelFrames;
+
     @Inject(
             method = "updateBlockBreakingProgress",
             at = @At("HEAD")
@@ -21,7 +26,8 @@ public final class ClientBlockBreakMixin {
     private void onBreakUpdate(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> ci) {
         ClientBlockBreakAccessor breakAccessor = (ClientBlockBreakAccessor)(MinecraftClient.getInstance().interactionManager);
         if (breakAccessor != null) {
-            StaticMixinHookups.onBlockBreaking(pos, breakAccessor.getCurrentBreakingProgress());
+            _breakCancelFrames = 2;
+            EventBus.publish(new BlockBreakingEvent(pos, breakAccessor.getCurrentBreakingProgress()));
         }
     }
 
@@ -30,6 +36,8 @@ public final class ClientBlockBreakMixin {
             at = @At("HEAD")
     )
     private void cancelBlockBreaking(CallbackInfo ci) {
-        StaticMixinHookups.onBlockCancelBreaking();
+        if (_breakCancelFrames-- == 0) {
+            EventBus.publish(new BlockBreakingCancelEvent());
+        }
     }
 }

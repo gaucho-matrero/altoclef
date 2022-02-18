@@ -2,6 +2,10 @@ package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChunkLoadEvent;
+import adris.altoclef.eventbus.events.ChunkUnloadEvent;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.EmptyChunk;
@@ -24,14 +28,18 @@ public class SimpleChunkTracker {
 
     public SimpleChunkTracker(AltoClef mod) {
         _mod = mod;
+
+        // When chunks load...
+        EventBus.subscribe(ChunkLoadEvent.class, evt -> onLoad(evt.chunk.getPos()));
+        EventBus.subscribe(ChunkUnloadEvent.class, evt -> onUnload(evt.chunkPos));
     }
 
-    public void onLoad(ChunkPos pos) {
+    private void onLoad(ChunkPos pos) {
         //Debug.logInternal("LOADED: " + pos);
         _loaded.add(pos);
     }
 
-    public void onUnload(ChunkPos pos) {
+    private void onUnload(ChunkPos pos) {
         //Debug.logInternal("unloaded: " + pos);
         _loaded.remove(pos);
     }
@@ -66,7 +74,7 @@ public class SimpleChunkTracker {
         if (!isChunkLoaded(chunk)) return false;
         //Debug.logInternal("SCANNED CHUNK " + chunk.toString());
         for (int xx = chunk.getStartX(); xx <= chunk.getEndX(); ++xx) {
-            for (int yy = 0; yy <= 255; ++yy) {
+            for (int yy = WorldHelper.WORLD_FLOOR_Y; yy <= WorldHelper.WORLD_CEILING_Y; ++yy) {
                 for (int zz = chunk.getStartZ(); zz <= chunk.getEndZ(); ++zz) {
                     if (onBlockStop.test(new BlockPos(xx, yy, zz))) return true;
                 }
@@ -74,16 +82,15 @@ public class SimpleChunkTracker {
         }
         return false;
     }
-
-    public void reset(AltoClef mod) {
-        Debug.logInternal("CHUNKS RESET");
-        _loaded.clear();
-    }
-
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {
         scanChunk(chunk, (block) -> {
             onBlock.accept(block);
             return false;
         });
+    }
+
+    public void reset(AltoClef mod) {
+        Debug.logInternal("CHUNKS RESET");
+        _loaded.clear();
     }
 }

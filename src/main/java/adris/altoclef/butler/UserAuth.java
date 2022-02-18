@@ -1,6 +1,7 @@
 package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.util.helpers.ConfigHelper;
 
 public class UserAuth {
     private static final String BLACKLIST_PATH = "altoclef_butler_blacklist.txt";
@@ -12,28 +13,26 @@ public class UserAuth {
     public UserAuth(AltoClef mod) {
         _mod = mod;
 
-        UserListFile.ensureExists(BLACKLIST_PATH, "Add butler blacklisted players here.\n"
-                + "Make sure useButlerBlacklist is set to true in the settings file.\n"
-                + "Anything after a pound sign (#) will be ignored.");
-        UserListFile.ensureExists(WHITELIST_PATH, "Add butler whitelisted players here.\n"
-                + "Make sure useButlerWhitelist is set to true in the settings file.\n"
-                + "Anything after a pound sign (#) will be ignored.");
+        ConfigHelper.ensureCommentedListFileExists(BLACKLIST_PATH, """
+                Add butler blacklisted players here.
+                Make sure useButlerBlacklist is set to true in the settings file.
+                Anything after a pound sign (#) will be ignored.""");
+        ConfigHelper.ensureCommentedListFileExists(WHITELIST_PATH, """
+                Add butler whitelisted players here.
+                Make sure useButlerWhitelist is set to true in the settings file.
+                Anything after a pound sign (#) will be ignored.""");
 
-        reloadLists();
-    }
-
-    public void reloadLists() {
-        _blacklist = UserListFile.load(BLACKLIST_PATH);
-        _whitelist = UserListFile.load(WHITELIST_PATH);
+        UserListFile.load(BLACKLIST_PATH, newList -> _blacklist = newList);
+        UserListFile.load(WHITELIST_PATH, newList -> _whitelist = newList);
     }
 
     public boolean isUserAuthorized(String username) {
 
         // Blacklist gets first priority.
-        if (_mod.getModSettings().isUseButlerBlacklist() && _blacklist.containsUser(username)) {
+        if (ButlerConfig.getInstance().useButlerBlacklist && _blacklist.containsUser(username)) {
             return false;
         }
-        if (_mod.getModSettings().isUseButlerWhitelist()) {
+        if (ButlerConfig.getInstance().useButlerWhitelist) {
             return _whitelist.containsUser(username);
         }
 

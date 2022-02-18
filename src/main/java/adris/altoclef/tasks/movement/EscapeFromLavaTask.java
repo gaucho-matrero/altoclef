@@ -2,8 +2,11 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
+import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementHelper;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
@@ -22,11 +25,29 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         mod.getBehaviour().allowSwimThroughLava(true);
+        // Encourage placing of all blocks!
+        mod.getBehaviour().setBlockPlacePenalty(0);
+        mod.getBehaviour().setBlockBreakAdditionalPenalty(20); // Normally 2
+
+        // do NOT ever wander
+        _checker = new MovementProgressChecker(999999);
+    }
+
+    @Override
+    protected Task onTick(AltoClef mod) {
+        // Sprint through lava + jump, it's faster
+        if (mod.getPlayer().isInLava() || mod.getWorld().getBlockState(mod.getPlayer().getBlockPos().down()).getBlock() == Blocks.LAVA) {
+            mod.getInputControls().hold(Input.JUMP);
+            mod.getInputControls().hold(Input.SPRINT);
+        }
+        return super.onTick(mod);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
+        mod.getInputControls().release(Input.JUMP);
+        mod.getInputControls().release(Input.SPRINT);
     }
 
     @Override
@@ -40,6 +61,11 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     }
 
     @Override
+    public boolean isFinished(AltoClef mod) {
+        return !mod.getPlayer().isInLava() && !mod.getPlayer().isOnFire();
+    }
+
+    @Override
     protected String toDebugString() {
         return "Escaping lava";
     }
@@ -50,6 +76,9 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
             if (MinecraftClient.getInstance().world == null) return false;
             return MovementHelper.isLava(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
         }
+        private static boolean isLavaAdjacent(int x, int y, int z) {
+            return isLava(x+1,y,z) || isLava(x-1,y,z) || isLava(x,y,z+1) || isLava(x,y,z-1);
+        }
         private static boolean isWater(int x, int y, int z) {
             if (MinecraftClient.getInstance().world == null) return false;
             return MovementHelper.isWater(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
@@ -57,13 +86,15 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
 
         @Override
         public boolean isInGoal(int x, int y, int z) {
-            return !isLava(x, y, z);
+            return !isLava(x, y, z) && !isLavaAdjacent(x,y,z);
         }
 
         @Override
         public double heuristic(int x, int y, int z) {
             if (isLava(x, y, z)) {
                 return _strength;
+            } else if (isLavaAdjacent(x, y, z)) {
+                return _strength * 0.5f;
             }
             if (isWater(x, y, z)) {
                 return -100;

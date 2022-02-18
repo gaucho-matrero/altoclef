@@ -2,25 +2,24 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
-import adris.altoclef.chains.FoodChain;
-import adris.altoclef.chains.MobDefenseChain;
 import adris.altoclef.commandsystem.CommandExecutor;
-import adris.altoclef.mixins.ClientConnectionAccessor;
-import adris.altoclef.tasks.movement.IdleTask;
+import adris.altoclef.control.InputControls;
+import adris.altoclef.control.PlayerExtraController;
+import adris.altoclef.control.SlotHandler;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ClientRenderEvent;
+import adris.altoclef.eventbus.events.ClientTickEvent;
+import adris.altoclef.eventbus.events.SendChatEvent;
+import adris.altoclef.eventbus.events.TitleScreenEntryEvent;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
+import adris.altoclef.trackers.storage.ContainerSubTracker;
+import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.InputControls;
-import adris.altoclef.util.control.BotBehaviour;
-import adris.altoclef.util.control.PlayerExtraController;
-import adris.altoclef.util.control.SlotHandler;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.ActionListener;
-import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -31,25 +30,25 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayDeque;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+/**
+ * Central access point for AltoClef
+ */
 public class AltoClef implements ModInitializer {
 
     // Static access to altoclef
     private static final Queue<Consumer<AltoClef>> _postInitQueue = new ArrayDeque<>();
 
-    public final Action<String> onGameMessage = new Action<>();
-    public final Action<String> onGameOverlayMessage = new Action<>();
-    // I forget why this is here somebody help
-    private final Action<WorldChunk> _onChunkLoad = new Action<>();
     // Central Managers
     private static CommandExecutor _commandExecutor;
     private TaskRunner _taskRunner;
@@ -62,10 +61,10 @@ public class AltoClef implements ModInitializer {
     private MobDefenseChain _mobDefenseChain;
     private MLGBucketFallChain _mlgBucketChain;
     // Trackers
-    private InventoryTracker _inventoryTracker;
+    private ItemStorageTracker _storageTracker;
+    private ContainerSubTracker _containerSubTracker;
     private EntityTracker _entityTracker;
     private BlockTracker _blockTracker;
-    private ContainerTracker _containerTracker;
     private SimpleChunkTracker _chunkTracker;
     private MiscBlockTracker _miscBlockTracker;
     // Renderers
@@ -79,14 +78,7 @@ public class AltoClef implements ModInitializer {
     // Butler
     private Butler _butler;
 
-    // uh oh static
-    public static int getTicks() {
-        ClientConnection con = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getConnection();
-        return ((ClientConnectionAccessor) con).getTicks();
-    }
-
     // Are we in game (playing in a server/world)
-    // uh oh, static creep
     public static boolean inGame() {
         return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
     }
@@ -96,20 +88,17 @@ public class AltoClef implements ModInitializer {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // As such, nothing will be loaded here but basic initialization.
-        StaticMixinHookups.hookupMod(this);
+        EventBus.subscribe(TitleScreenEntryEvent.class, evt -> onInitializeLoad());
     }
 
     public void onInitializeLoad() {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        // Load settings
-        _settings = adris.altoclef.Settings.load();
-
         initializeBaritoneSettings();
 
         // Central Managers
-        _commandExecutor = new CommandExecutor(this, "@");
+        _commandExecutor = new CommandExecutor(this);
         _taskRunner = new TaskRunner(this);
         _trackerManager = new TrackerManager(this);
         _botBehaviour = new BotBehaviour(this);
@@ -125,10 +114,9 @@ public class AltoClef implements ModInitializer {
         _foodChain = new FoodChain(_taskRunner);
 
         // Trackers
-        _inventoryTracker = new InventoryTracker(_trackerManager);
+        _storageTracker = new ItemStorageTracker(this, _trackerManager, container -> _containerSubTracker = container);
         _entityTracker = new EntityTracker(_trackerManager);
         _blockTracker = new BlockTracker(this, _trackerManager);
-        _containerTracker = new ContainerTracker(this, _trackerManager);
         _chunkTracker = new SimpleChunkTracker(this);
         _miscBlockTracker = new MiscBlockTracker(this);
 
@@ -142,30 +130,73 @@ public class AltoClef implements ModInitializer {
 
         _butler = new Butler(this);
 
-        // Misc wiring
-        // When we place a block and might be tracking it, make the change immediate.
-        _extraController.onBlockPlaced.addListener(new ActionListener<>(value ->
-                _blockTracker.addBlock(value.blockState.getBlock(), value.blockPos)));
-
-
         initializeCommands();
 
+        // Load settings
+        adris.altoclef.Settings.load(newSettings -> {
+            _settings = newSettings;
+            // Baritone's `acceptableThrowawayItems` should match our own.
+            List<Item> baritoneCanPlace = Arrays.stream(_settings.getThrowawayItems(this, true))
+                    .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK) // Don't place soul sand or magma blocks, that messes us up.
+                    .collect(Collectors.toList());
+            getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
+            // If we should run an idle command...
+            if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
+                getUserTaskChain().signalNextTaskToBeIdleTask();
+                getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
+            }
+            // Don't break blocks or place blocks where we are explicitly protected.
+            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
+        });
+
+        // Receive + cancel chat
+        EventBus.subscribe(SendChatEvent.class, evt -> {
+            String line = evt.message;
+            if (getCommandExecutor().isClientCommand(line)) {
+                evt.cancel();
+                getCommandExecutor().execute(line);
+            }
+        });
+
+        // Debug jank/hookup
+        Debug.jankModInstance = this;
+
+        // Tick with the client
+        EventBus.subscribe(ClientTickEvent.class, evt -> onClientTick());
+        // Render
+        EventBus.subscribe(ClientRenderEvent.class, evt -> onClientRenderOverlay(evt.stack));
+
+        // Playground
         Playground.IDLE_TEST_INIT_FUNCTION(this);
+
+        // External mod initialization
         runEnqueuedPostInits();
     }
 
     // Client tick
-    public void onClientTick() {
+    private void onClientTick() {
         runEnqueuedPostInits();
 
         _inputControls.onTickPre();
 
+        // Cancel shortcut
+        if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
+            _userTaskChain.cancel(this);
+            if (_taskRunner.getCurrentTaskChain() != null) {
+                _taskRunner.getCurrentTaskChain().stop(this);
+            }
+        }
+
         // TODO: should this go here?
-        _containerTracker.onServerTick();
+        _storageTracker.setDirty();
+        _containerSubTracker.onServerTick();
         _miscBlockTracker.tick();
 
         _trackerManager.tick();
+        _blockTracker.preTickTask();
         _taskRunner.tick();
+        _blockTracker.postTickTask();
 
         _butler.tick();
         _messageSender.tick();
@@ -173,17 +204,8 @@ public class AltoClef implements ModInitializer {
         _inputControls.onTickPost();
     }
 
-    public void onClientRenderOverlay(MatrixStack matrixStack) {
+    private void onClientRenderOverlay(MatrixStack matrixStack) {
         _commandStatusOverlay.render(this, matrixStack);
-    }
-
-    public void onChunkLoad(WorldChunk chunk) {
-        _chunkTracker.onLoad(chunk.getPos());
-        _onChunkLoad.invoke(chunk);
-    }
-
-    public void onChunkUnload(ChunkPos chunkPos) {
-        _chunkTracker.onUnload(chunkPos);
     }
 
     /// GETTERS AND SETTERS
@@ -204,15 +226,8 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 2.0;
         getClientBaritoneSettings().mobAvoidanceRadius.value = 12;
 
-        // Don't break blocks or place blocks where we are explicitly protected.
-        getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
-        getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitelyProtected(blockPos));
-
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
-
-        // By default don't use shears.
-        getExtraBaritoneSettings().allowShears(false);
 
         // Give baritone more time to calculate paths. Sometimes they can be really far away.
         // Was: 2000L
@@ -233,49 +248,77 @@ public class AltoClef implements ModInitializer {
         }
     }
 
-    // Main handlers access
+    /**
+     * Executes commands (ex. `@get`/`@gamer`)
+     */
     public static CommandExecutor getCommandExecutor() {
         return _commandExecutor;
     }
 
+    /**
+     * Runs the highest priority task chain
+     * (task chains run the task tree)
+     */
     public TaskRunner getTaskRunner() {
         return _taskRunner;
     }
 
+    /**
+     * The user task chain (runs your command. Ex. Get Diamonds, Beat the Game)
+     */
     public UserTaskChain getUserTaskChain() {
         return _userTaskChain;
     }
 
+    /**
+     * Controls bot behaviours, like whether to temporarily "protect" certain blocks or items
+     */
     public BotBehaviour getBehaviour() {
         return _botBehaviour;
     }
 
-    // Trackers access
-    public InventoryTracker getInventoryTracker() {
-        return _inventoryTracker;
+    /**
+     * Tracks items in your inventory and in storage containers.
+     */
+    public ItemStorageTracker getItemStorage() {
+        return _storageTracker;
     }
 
+    /**
+     * Tracks loaded entities
+     */
     public EntityTracker getEntityTracker() {
         return _entityTracker;
     }
 
+    /**
+     * Tracks blocks and their positions
+     */
     public BlockTracker getBlockTracker() {
         return _blockTracker;
     }
 
-    public ContainerTracker getContainerTracker() {
-        return _containerTracker;
+    ContainerSubTracker getContainerSubTracker() {
+        return _containerSubTracker;
     }
 
+    /**
+     * Tracks of whether a chunk is loaded/visible or not
+     */
     public SimpleChunkTracker getChunkTracker() {
         return _chunkTracker;
     }
 
+    /**
+     * Tracks random block things, like the last nether portal we used
+     */
     public MiscBlockTracker getMiscBlockTracker() {
         return _miscBlockTracker;
     }
 
-    // Baritone access
+    /**
+     * Baritone access (could just be static honestly)
+     */
     public Baritone getClientBaritone() {
         if (getPlayer() == null) {
             return (Baritone) BaritoneAPI.getProvider().getPrimaryBaritone();
@@ -283,106 +326,132 @@ public class AltoClef implements ModInitializer {
         return (Baritone) BaritoneAPI.getProvider().getBaritoneForPlayer(getPlayer());
     }
 
+    /**
+     * Baritone settings access (could just be static honestly)
+     */
     public Settings getClientBaritoneSettings() {
         return Baritone.settings();
     }
 
+    /**
+     * Baritone settings special to AltoClef (could just be static honestly)
+     */
     public AltoClefSettings getExtraBaritoneSettings() {
-        return Baritone.getAltoClefSettings();
+        return AltoClefSettings.getInstance();
     }
 
+    /**
+     * AltoClef Settings
+     */
     public adris.altoclef.Settings getModSettings() {
         return _settings;
     }
 
-    public adris.altoclef.Settings reloadModSettings() {
-        adris.altoclef.Settings result = adris.altoclef.Settings.load();
-        //noinspection ConstantConditions
-        if (result != null) {
-            _settings = result;
-        }
-        // If we weren't running anything and are now "idling", idle.
-        if (getModSettings().shouldIdleWhenNotActive()) {
-            runUserTask(new IdleTask());
-        }
-
-        return result;
-    }
-
+    /**
+     * Butler controller. Keeps track of users and lets you receive user messages
+     */
     public Butler getButler() {
         return _butler;
     }
 
+    /**
+     * Sends chat messages (avoids auto-kicking)
+     */
     public MessageSender getMessageSender() {
         return _messageSender;
     }
 
+    /**
+     * Does Inventory/container slot actions
+     */
     public SlotHandler getSlotHandler() {
         return _slotHandler;
     }
 
-    // Minecraft access
+    /**
+     * Minecraft player client access (could just be static honestly)
+     */
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
 
+    /**
+     * Minecraft world access (could just be static honestly)
+     */
     public ClientWorld getWorld() {
         return MinecraftClient.getInstance().world;
     }
 
+    /**
+     * Minecraft client interaction controller access (could just be static honestly)
+     */
     public ClientPlayerInteractionManager getController() {
         return MinecraftClient.getInstance().interactionManager;
     }
 
+    /**
+     * Extra controls not present in ClientPlayerInteractionManager. This REALLY should be made static or combined with something else.
+     */
     public PlayerExtraController getControllerExtras() {
         return _extraController;
     }
 
+    /**
+     * Manual control over input actions (ex. jumping, attacking)
+     */
     public InputControls getInputControls() {
         return _inputControls;
     }
 
-    // Extra control
+    /**
+     * Run a user task
+     */
     public void runUserTask(Task task) {
         runUserTask(task, () -> { });
     }
 
-    @SuppressWarnings("rawtypes")
+    /**
+     * Run a user task
+     */
     public void runUserTask(Task task, Runnable onFinish) {
         _userTaskChain.runTask(this, task, onFinish);
     }
 
+    /**
+     * Cancel currently running user task
+     */
     public void cancelUserTask() {
         _userTaskChain.cancel(this);
     }
 
-    // Chains
+    /**
+     * Takes control away to eat food
+     */
     public FoodChain getFoodChain() {
         return _foodChain;
     }
 
+    /**
+     * Takes control away to defend against mobs
+     */
     public MobDefenseChain getMobDefenseChain() {
         return _mobDefenseChain;
     }
 
+    /**
+     * Takes control away to perform bucket saves
+     */
     public MLGBucketFallChain getMLGBucketChain() {
         return _mlgBucketChain;
-    }
-
-    public Dimension getCurrentDimension() {
-        if (!inGame()) return Dimension.OVERWORLD;
-        if (getWorld().getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (getWorld().getDimension().isNatural()) return Dimension.OVERWORLD;
-        return Dimension.END;
-    }
-    public Vec3d getOverworldPosition() {
-        return WorldHelper.getOverworldPosition(this, getPlayer().getPos());
     }
 
     public void log(String message) {
         log(message, MessagePriority.TIMELY);
     }
 
+    /**
+     * Logs to the console and also messages any player using the bot as a butler.
+     */
     public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
         _butler.onLog(message, priority);
@@ -392,13 +461,12 @@ public class AltoClef implements ModInitializer {
         logWarning(message, MessagePriority.TIMELY);
     }
 
+    /**
+     * Logs a warning to the console and also alerts any player using the bot as a butler.
+     */
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
         _butler.onLogWarning(message, priority);
-    }
-
-    public Action<WorldChunk> getOnChunkLoad() {
-        return _onChunkLoad;
     }
 
     private void runEnqueuedPostInits() {
@@ -408,6 +476,10 @@ public class AltoClef implements ModInitializer {
             }
         }
     }
+
+    /**
+     * Use this to access AltoClef as an external library.
+     */
     public static void subscribeToPostInit(Consumer<AltoClef> onPostInit) {
         synchronized (_postInitQueue) {
             _postInitQueue.add(onPostInit);

@@ -2,11 +2,13 @@ package adris.altoclef.tasks.squashed;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.CraftInTableTask;
+import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.UpgradeInSmithingTableTask;
+import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
+import adris.altoclef.tasks.squashed.CataloguedResourceTask.TaskSquasher;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.StorageHelper;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -49,7 +51,7 @@ public class CataloguedResourceTask extends ResourceTask {
         for (ResourceTask task : _tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
                 // If we failed to meet this task's targets, do the task.
-                if (!mod.getInventoryTracker().targetsMet(target)) return task;
+                if (!StorageHelper.itemTargetsMetInventory(mod, target)) return task;
             }
         }
         return null;
@@ -59,7 +61,7 @@ public class CataloguedResourceTask extends ResourceTask {
     public boolean isFinished(AltoClef mod) {
         for (ResourceTask task : _tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
-                if (!mod.getInventoryTracker().targetsMet(target)) return false;
+                if (!StorageHelper.itemTargetsMetInventory(mod, target)) return false;
             }
         }
         // All targets are met.

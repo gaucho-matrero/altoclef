@@ -8,11 +8,11 @@ import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import adris.altoclef.tasks.movement.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.trackers.EntityTracker;
-import adris.altoclef.util.KillAura;
-import adris.altoclef.util.baritone.BaritoneHelper;
+import adris.altoclef.control.KillAura;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import baritone.Baritone;
@@ -65,9 +65,9 @@ public class MobDefenseChain extends SingleTaskChain {
         double distance = creeper.squaredDistanceTo(pos);
         float fuse = creeper.getClientFuseTime(1);
 
-        // Not fusing. We only get fusing crepers.
-        if (fuse <= 0.001f) return 0;
-        return distance * (1 - fuse * fuse);
+        // Not fusing.
+        if (fuse <= 0.001f) return distance;
+        return distance * 0.2; // less is WORSE
     }
 
     @Override
@@ -85,7 +85,8 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Apply avoidance if we're vulnerable, avoiding mobs if at all possible.
-        mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
+        // Doing you a favor by disabling avoidance
 
 
         // Pause if we're not loaded into a world.
@@ -114,8 +115,8 @@ public class MobDefenseChain extends SingleTaskChain {
         //mod.getClientBaritoneSettings().avoidance.value = isVulnurable(mod);
 
         // Run away if a weird mob is close by.
-        Entity universallyDangerous = getUniversallyDangerousMob(mod);
-        if (universallyDangerous != null) {
+        Optional<Entity> universallyDangerous = getUniversallyDangerousMob(mod);
+        if (universallyDangerous.isPresent()) {
             _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE);
             setTask(_runAwayTask);
             return 70;
@@ -162,7 +163,7 @@ public class MobDefenseChain extends SingleTaskChain {
             ToolItem bestSword = null;
             Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
             for (Item item : SWORDS) {
-                if (mod.getInventoryTracker().hasItem(item)) {
+                if (mod.getItemStorage().hasItem(item)) {
                     bestSword = (ToolItem) item;
                     break;
                 }
@@ -311,7 +312,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean shouldForce = false;
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof Monster) {
-                    if (EntityTracker.isGenerallyHostileToPlayer(entity)) {
+                    if (EntityHelper.isGenerallyHostileToPlayer(mod, entity)) {
                         if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }
@@ -332,7 +333,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             }
         } catch (Exception e) {
-            Debug.logWarning("Weird exception caught and ignored while doing force field: " + e.getMessage());
+            Debug.logWarning("Weird exception caught and ignored while doing force field.");
+            e.printStackTrace();
         }
 
         _killAura.tickEnd(mod);
@@ -390,10 +392,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
-                double horizontalDistance = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-                double verticalDistance = delta.y;
+                double horizontalDistanceSq = delta.x * delta.x + delta.z * delta.z;
+                double verticalDistance = Math.abs(delta.y);
 
-                if (horizontalDistance < ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
+                if (horizontalDistanceSq < ARROW_KEEP_DISTANCE_HORIZONTAL*ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL)
                     return true;
             }
         } catch (ConcurrentModificationException e) {
@@ -402,14 +404,14 @@ public class MobDefenseChain extends SingleTaskChain {
         return false;
     }
 
-    private Entity getUniversallyDangerousMob(AltoClef mod) {
+    private Optional<Entity> getUniversallyDangerousMob(AltoClef mod) {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
         if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
-            Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
-            if (entity != null) {
+            Optional<Entity> entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
+            if (entity.isPresent()) {
                 double range = SAFE_KEEP_DISTANCE - 2;
-                if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isAngryAtPlayer(mod, entity)) {
+                if (entity.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, entity.get())) {
                     return entity;
                 }
             }
@@ -418,16 +420,16 @@ public class MobDefenseChain extends SingleTaskChain {
         // If we merely force field them and stand still our health will slowly be chipped away until we die
         if (mod.getEntityTracker().entityFound(HoglinEntity.class, ZoglinEntity.class)) {
             if (mod.getPlayer().getHealth() < 10) {
-                Entity entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
-                if (entity != null) {
+                Optional<Entity> entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class, ZoglinEntity.class);
+                if (entity.isPresent()) {
                     double range = SAFE_KEEP_DISTANCE - 1;
-                    if (entity.squaredDistanceTo(mod.getPlayer()) < range * range && EntityTracker.isAngryAtPlayer(mod, entity)) {
+                    if (entity.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, entity.get())) {
                         return entity;
                     }
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private boolean isInDanger(AltoClef mod) {
@@ -440,7 +442,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 for (Entity entity : hostiles) {
                     // Ignore skeletons
                     if (entity instanceof SkeletonEntity) continue;
-                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getBehaviour().shouldExcludeFromForcefield(entity) && EntityTracker.isAngryAtPlayer(mod, entity)) {
+                    if (entity.isInRange(player, SAFE_KEEP_DISTANCE) && !mod.getBehaviour().shouldExcludeFromForcefield(entity) && EntityHelper.isAngryAtPlayer(mod, entity)) {
                         return true;
                     }
                 }
@@ -462,6 +464,9 @@ public class MobDefenseChain extends SingleTaskChain {
 
     public void setTargetEntity(Entity entity) {
         _targetEntity = entity;
+    }
+    public void resetTargetEntity() {
+        _targetEntity = null;
     }
 
     public void setForceFieldRange(double range) {

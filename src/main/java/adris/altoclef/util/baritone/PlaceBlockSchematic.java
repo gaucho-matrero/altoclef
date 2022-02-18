@@ -1,11 +1,8 @@
 package adris.altoclef.util.baritone;
 
-import adris.altoclef.Debug;
 import baritone.api.schematic.AbstractSchematic;
-import baritone.utils.ToolSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.tag.BlockTags;
 
 import java.util.List;
 
@@ -63,11 +60,13 @@ public class PlaceBlockSchematic extends AbstractSchematic {
         //System.out.print("oof: [");
         for (BlockState possible : list) {
             if (possible == null) {
+                /*
                 if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock())) {
                     // Sheering items/flowers results in this issue, but it works fine!
                 } else {
                     Debug.logWarning("Weird issue, given possible state is null. Will ignore.");
                 }
+                 */
                 continue;
             }
             //System.out.print(possible.getBlock().getTranslationKey() + " ");

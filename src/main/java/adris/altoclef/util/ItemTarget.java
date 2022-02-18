@@ -9,6 +9,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Defines an item and a count.
+ *
+ * Multiple Minecraft Items can meet the criteria of an "item" (ex. "wooden planks" can be satisfied by oak, acacia, spruce, jungle, etc.)
+ */
 public class ItemTarget {
 
     private static final int BASICALLY_INFINITY = 99999999;
@@ -26,13 +31,8 @@ public class ItemTarget {
     }
 
     public ItemTarget(String catalogueName, int targetCount) {
-        if (catalogueName == null) return;
         _catalogueName = catalogueName;
         _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
-        if (_itemMatches == null) {
-            Debug.logError("Invalid catalogue name for item target: \"" + catalogueName + "\". Something isn't robust!");
-            _itemMatches = new Item[0];
-        }
         _targetCount = targetCount;
     }
 
@@ -53,8 +53,10 @@ public class ItemTarget {
     }
 
     public ItemTarget(ItemTarget toCopy, int newCount) {
-        _itemMatches = new Item[toCopy._itemMatches.length];
-        System.arraycopy(toCopy._itemMatches, 0, _itemMatches, 0, toCopy._itemMatches.length);
+        if (toCopy._itemMatches != null) {
+            _itemMatches = new Item[toCopy._itemMatches.length];
+            System.arraycopy(toCopy._itemMatches, 0, _itemMatches, 0, toCopy._itemMatches.length);
+        }
         _catalogueName = toCopy._catalogueName;
         _targetCount = newCount;
         _infinite = toCopy._infinite;
@@ -78,7 +80,7 @@ public class ItemTarget {
     }
 
     public Item[] getMatches() {
-        return _itemMatches;
+        return _itemMatches != null? _itemMatches : new Item[0];
     }
 
     public int getTargetCount() {
@@ -89,9 +91,11 @@ public class ItemTarget {
     }
 
     public boolean matches(Item item) {
-        for (Item match : _itemMatches) {
-            if (match == null) continue;
-            if (match.equals(item)) return true;
+        if (_itemMatches != null) {
+            for (Item match : _itemMatches) {
+                if (match == null) continue;
+                if (match.equals(item)) return true;
+            }
         }
         return false;
     }
@@ -114,14 +118,14 @@ public class ItemTarget {
                 if (_targetCount != other._targetCount) return false;
             }
             if ((other._itemMatches == null) != (_itemMatches == null)) return false;
-            boolean isNull = (other._itemMatches == null);
-            if (isNull) return true;
-            if (_itemMatches.length != other._itemMatches.length) return false;
-            for (int i = 0; i < _itemMatches.length; ++i) {
-                if (other._itemMatches[i] == null) {
-                    if ((other._itemMatches[i] == null) != (_itemMatches[i] == null)) return false;
-                } else {
-                    if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+            if (_itemMatches != null) {
+                if (_itemMatches.length != other._itemMatches.length) return false;
+                for (int i = 0; i < _itemMatches.length; ++i) {
+                    if (other._itemMatches[i] == null) {
+                        if ((other._itemMatches[i] == null) != (_itemMatches[i] == null)) return false;
+                    } else {
+                        if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+                    }
                 }
             }
             return true;

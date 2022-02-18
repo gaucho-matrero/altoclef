@@ -2,24 +2,22 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.movement.IdleTask;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.helpers.InputHelper;
-import adris.altoclef.util.csharpisbetter.Action;
-import adris.altoclef.util.csharpisbetter.Stopwatch;
-import org.lwjgl.glfw.GLFW;
-
-import java.util.function.Consumer;
+import adris.altoclef.util.time.Stopwatch;
 
 // A task chain that runs a user defined task at the same priority.
 // This basically replaces our old Task Runner.
 @SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
 
-    public final Action<String> onTaskFinish = new Action<>();
     private final Stopwatch _taskStopwatch = new Stopwatch();
     private Runnable _currentOnFinish = null;
+
+    private boolean _runningIdleTask;
+    private boolean _nextTaskIdleFlag;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -43,7 +41,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (!result.equals("")) {
             result += "and ";
         }
-        result += String.format("%.2f", (seconds % 60));
+        result += String.format("%.3f", (seconds % 60));
         return result;
     }
 
@@ -65,15 +63,6 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
-        // Stop shortcut
-        if (_mainTask != null && _mainTask.isActive() && InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
-            // Ignore if we're idling as a background task.
-            if (_mainTask instanceof IdleTask && mod.getModSettings().shouldIdleWhenNotActive()) {
-                return 50;
-            }
-            Debug.logMessage("(stop shortcut sent)");
-            cancel(mod);
-        }
         return 50;
     }
 
@@ -83,8 +72,14 @@ public class UserTaskChain extends SingleTaskChain {
     }
 
     public void runTask(AltoClef mod, Task task, Runnable onFinish) {
+        _runningIdleTask = _nextTaskIdleFlag;
+        _nextTaskIdleFlag = false;
+
         _currentOnFinish = onFinish;
-        Debug.logMessage("User Task Set: " + task.toString());
+
+        if (!_runningIdleTask) {
+            Debug.logMessage("User Task Set: " + task.toString());
+        }
         mod.getTaskRunner().enable();
         _taskStopwatch.begin();
         setTask(task);
@@ -97,7 +92,7 @@ public class UserTaskChain extends SingleTaskChain {
 
     @Override
     protected void onTaskFinish(AltoClef mod) {
-        boolean shouldIdle = mod.getModSettings().shouldIdleWhenNotActive();
+        boolean shouldIdle = mod.getModSettings().shouldRunIdleCommandWhenNotActive();
         if (!shouldIdle) {
             // Stop.
             mod.getTaskRunner().disable();
@@ -105,16 +100,33 @@ public class UserTaskChain extends SingleTaskChain {
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
         double seconds = _taskStopwatch.time();
-        Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
+        Task oldTask = _mainTask;
+        _mainTask = null;
         if (_currentOnFinish != null) {
             //noinspection unchecked
             _currentOnFinish.run();
         }
-        _currentOnFinish = null;
-        onTaskFinish.invoke(String.format("Took %.2f seconds", _taskStopwatch.time()));
-        _mainTask = null;
-        if (shouldIdle) {
-            mod.runUserTask(new IdleTask());
+        // our `onFinish` might have triggered more tasks.
+        boolean actuallyDone = _mainTask == null;
+        if (actuallyDone) {
+            if (!_runningIdleTask) {
+                Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
+                EventBus.publish(new TaskFinishedEvent(seconds, oldTask));
+            }
+            if (shouldIdle) {
+                AltoClef.getCommandExecutor().executeWithPrefix(mod.getModSettings().getIdleCommand());
+                signalNextTaskToBeIdleTask();
+                _runningIdleTask = true;
+            }
         }
+    }
+
+    public boolean isRunningIdleTask() {
+        return isActive() && _runningIdleTask;
+    }
+
+    // The next task will be an idle task.
+    public void signalNextTaskToBeIdleTask() {
+        _nextTaskIdleFlag = true;
     }
 }

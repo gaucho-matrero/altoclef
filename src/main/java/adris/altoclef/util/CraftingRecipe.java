@@ -45,7 +45,8 @@ public class CraftingRecipe {
 
         CraftingRecipe result = new CraftingRecipe();
         result._shortName = shortName;
-        result._slots = slots;
+        // Remove null
+        result._slots = Arrays.stream(slots).map(target -> target == null? ItemTarget.EMPTY : target).toArray(ItemTarget[]::new);
         result._outputCount = outputCount;
         if (slots.length == 4) {
             result._width = 2;
@@ -78,12 +79,16 @@ public class CraftingRecipe {
     }
 
     public ItemTarget getSlot(int index) {
-
-        return _slots[index];
+        ItemTarget result = _slots[index];
+        return result != null? result : ItemTarget.EMPTY;
     }
 
     public int getSlotCount() {
         return _slots.length;
+    }
+
+    public ItemTarget[] getSlots() {
+        return _slots;
     }
 
     public int getWidth() {
@@ -108,8 +113,7 @@ public class CraftingRecipe {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof CraftingRecipe) {
-            CraftingRecipe other = (CraftingRecipe) o;
+        if (o instanceof CraftingRecipe other) {
             if (other._shapeless != _shapeless) return false;
             if (other._outputCount != _outputCount) return false;
             if (other._height != _height) return false;

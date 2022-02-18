@@ -1,8 +1,8 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.BaseTimer;
-import adris.altoclef.util.csharpisbetter.TimerReal;
+import adris.altoclef.util.time.BaseTimer;
+import adris.altoclef.util.time.TimerReal;
 import net.minecraft.client.MinecraftClient;
 
 import java.util.Comparator;

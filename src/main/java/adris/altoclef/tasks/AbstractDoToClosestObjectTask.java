@@ -3,15 +3,16 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Optional;
 
 /**
- * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
- * <p>
  * Use this whenever you want to travel to a target position that may change.
+ * <p>
+ * https://www.notion.so/Closest-threshold-ing-system-utility-c3816b880402494ba9209c9f9b62b8bf
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
@@ -22,7 +23,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
 
-    protected abstract T getClosestTo(AltoClef mod, Vec3d pos);
+    protected abstract Optional<T> getClosestTo(AltoClef mod, Vec3d pos);
 
     protected abstract Vec3d getOriginPos(AltoClef mod);
 
@@ -67,10 +68,11 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         }
 
         // Get closest object
-        T newClosest = getClosestTo(mod, getOriginPos(mod));
+        Optional<T> checkNewClosest = getClosestTo(mod, getOriginPos(mod));
 
         // Receive closest object and position
-        if (newClosest != null && !newClosest.equals(_currentlyPursuing)) {
+        if (checkNewClosest.isPresent() && !checkNewClosest.get().equals(_currentlyPursuing)) {
+            T newClosest = checkNewClosest.get();
             // Different closest object
             if (_currentlyPursuing == null) {
                 // We don't have a closest object
@@ -80,7 +82,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
                     double closestDistanceSqr = getPos(mod, _currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
-                    int lastTick = AltoClef.getTicks();
+                    int lastTick = WorldHelper.getTicks();
 
                     if (!_heuristicMap.containsKey(_currentlyPursuing)) {
                         _heuristicMap.put(_currentlyPursuing, new CachedHeuristic());
@@ -122,7 +124,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         }
 
         //noinspection ConstantConditions
-        if (newClosest == null && _currentlyPursuing == null) {
+        if (checkNewClosest.isEmpty() && _currentlyPursuing == null) {
             setDebugState("Waiting for calculations I think (wandering)");
             _wasWandering = true;
             return getWanderTask(mod);

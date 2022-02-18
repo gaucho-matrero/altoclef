@@ -34,11 +34,11 @@ public class ExampleTask extends Task {
          * Then, place the block.
          */
 
-        if (mod.getInventoryTracker().getItemCount(Items.STONE_PICKAXE) < _numberOfStonePickaxesToGrab) {
+        if (mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) < _numberOfStonePickaxesToGrab) {
             return TaskCatalogue.getItemTask(Items.STONE_PICKAXE, _numberOfStonePickaxesToGrab);
         }
 
-        if (!mod.getInventoryTracker().hasItem(Items.COBBLESTONE)) {
+        if (!mod.getItemStorage().hasItem(Items.COBBLESTONE)) {
             return TaskCatalogue.getItemTask(Items.COBBLESTONE, 1);
         }
 
@@ -59,7 +59,7 @@ public class ExampleTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getInventoryTracker().getItemCount(Items.STONE_PICKAXE) >= _numberOfStonePickaxesToGrab &&
+        return mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) >= _numberOfStonePickaxesToGrab &&
                 mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() == Blocks.COBBLESTONE;
     }
 

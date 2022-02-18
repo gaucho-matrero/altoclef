@@ -14,10 +14,19 @@ public class Debug {
         logInternal(String.format(format, args));
     }
 
+    public static AltoClef jankModInstance;
+
+    private static String getLogPrefix() {
+        if (jankModInstance != null) {
+            return jankModInstance.getModSettings().getChatLogPrefix();
+        }
+        return "[Alto Clef] ";
+    }
+
     public static void logMessage(String message, boolean prefix) {
         if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
             if (prefix) {
-                message = "\u00A72\u00A7l\u00A7o[Alto Clef] \u00A7r" + message;
+                message = "\u00A72\u00A7l\u00A7o" + getLogPrefix() + "\u00A7r" + message;
             }
             MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
             //MinecraftClient.getInstance().player.sendChatMessage(msg);
@@ -36,10 +45,12 @@ public class Debug {
 
     public static void logWarning(String message) {
         logInternal("WARNING: " + message);
-        if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
-            String msg = "\u00A72\u00A7l\u00A7o[Alto Clef] \u00A7c" + message + "\u00A7r";
-            MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
-            //MinecraftClient.getInstance().player.sendChatMessage(msg);
+        if (jankModInstance != null && !jankModInstance.getModSettings().shouldHideAllWarningLogs()) {
+            if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
+                String msg = "\u00A72\u00A7l\u00A7o" + getLogPrefix() + "\u00A7c" + message + "\u00A7r";
+                MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
+                //MinecraftClient.getInstance().player.sendChatMessage(msg);
+            }
         }
     }
 
@@ -53,7 +64,7 @@ public class Debug {
         System.err.println("at:");
         System.err.println(stacktrace);
         if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
-            String msg = "\u00A72\u00A7l\u00A7c[Alto Clef ERROR]" + message + "\nat:\n" + stacktrace + "\u00A7r";
+            String msg = "\u00A72\u00A7l\u00A7c" + getLogPrefix() + "[ERROR] " + message + "\nat:\n" + stacktrace + "\u00A7r";
             MinecraftClient.getInstance().player.sendMessage(Text.of(msg), false);
         }
     }

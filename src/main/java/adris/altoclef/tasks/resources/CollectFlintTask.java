@@ -12,6 +12,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Optional;
+
 public class CollectFlintTask extends ResourceTask {
     private static final float CLOSE_ENOUGH_FLINT = 10;
 
@@ -36,13 +38,13 @@ public class CollectFlintTask extends ResourceTask {
     protected Task onResourceTick(AltoClef mod) {
 
         // We might just want to mine the closest gravel.
-        BlockPos closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), validGravel -> WorldHelper.fallingBlockSafeToBreak(validGravel) && WorldHelper.canBreak(mod, validGravel), Blocks.GRAVEL);
-        if (closest != null && closest.isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
+        Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), validGravel -> WorldHelper.fallingBlockSafeToBreak(validGravel) && WorldHelper.canBreak(mod, validGravel), Blocks.GRAVEL);
+        if (closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), CLOSE_ENOUGH_FLINT)) {
             return new DoToClosestBlockTask(DestroyBlockTask::new, Blocks.GRAVEL);
         }
 
         // If we have gravel, place it.
-        if (mod.getInventoryTracker().hasItem(Items.GRAVEL)) {
+        if (mod.getItemStorage().hasItem(Items.GRAVEL)) {
             // Place it
             return new PlaceBlockNearbyTask(Blocks.GRAVEL);
         }

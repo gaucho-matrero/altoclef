@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Sometimes we want to track specific block related things, like the last nether portal we used.
@@ -18,14 +19,23 @@ public class MiscBlockTracker {
 
     private final AltoClef _mod;
 
-    private final Map<Dimension, BlockPos> _lastNetherPortal = new HashMap<>();
+    private final Map<Dimension, BlockPos> _lastNetherPortalsUsed = new HashMap<>();
+
+    // Make sure we only care about the nether portal we ENTERED through
+    private Dimension _lastDimension;
+    private boolean _newDimensionTriggered;
 
     public MiscBlockTracker(AltoClef mod) {
         _mod = mod;
     }
 
     public void tick() {
-        if (AltoClef.inGame()) {
+        if (WorldHelper.getCurrentDimension() != _lastDimension) {
+            _lastDimension = WorldHelper.getCurrentDimension();
+            _newDimensionTriggered = true;
+        }
+
+        if (AltoClef.inGame() && _newDimensionTriggered) {
             for (BlockPos check : WorldHelper.scanRegion(_mod, _mod.getPlayer().getBlockPos().add(-1, -1, -1), _mod.getPlayer().getBlockPos().add(1, 1, 1))) {
                 Block currentBlock = _mod.getWorld().getBlockState(check).getBlock();
                 if (currentBlock == Blocks.NETHER_PORTAL) {
@@ -39,7 +49,8 @@ public class MiscBlockTracker {
                     }
                     BlockPos below = check.down();
                     if (WorldHelper.isSolid(_mod, below)) {
-                        _lastNetherPortal.put(_mod.getCurrentDimension(), check);
+                        _lastNetherPortalsUsed.put(WorldHelper.getCurrentDimension(), check);
+                        _newDimensionTriggered = false;
                     }
                     break;
                 }
@@ -48,21 +59,21 @@ public class MiscBlockTracker {
     }
 
     public void reset() {
-        _lastNetherPortal.clear();
+        _lastNetherPortalsUsed.clear();
     }
 
-    public BlockPos getLastNetherPortal(Dimension dimension) {
-        if (_lastNetherPortal.containsKey(dimension)) {
-            BlockPos portalPos = _lastNetherPortal.get(dimension);
+    public Optional<BlockPos> getLastUsedNetherPortal(Dimension dimension) {
+        if (_lastNetherPortalsUsed.containsKey(dimension)) {
+            BlockPos portalPos = _lastNetherPortalsUsed.get(dimension);
             // Check whether our nether portal pos is invalid.
             if (_mod.getChunkTracker().isChunkLoaded(portalPos)) {
                 if (!_mod.getBlockTracker().blockIsValid(portalPos, Blocks.NETHER_PORTAL)) {
-                    _lastNetherPortal.remove(dimension);
-                    return null;
+                    _lastNetherPortalsUsed.remove(dimension);
+                    return Optional.empty();
                 }
             }
-            return portalPos;
+            return Optional.ofNullable(portalPos);
         }
-        return null;
+        return Optional.empty();
     }
 }

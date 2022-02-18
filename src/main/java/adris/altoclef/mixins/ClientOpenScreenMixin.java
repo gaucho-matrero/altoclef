@@ -1,6 +1,7 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.StaticMixinHookups;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ScreenOpenEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +18,7 @@ public final class ClientOpenScreenMixin {
             at = @At("HEAD")
     )
     private void onScreenOpenBegin(@Nullable Screen screen, CallbackInfo ci) {
-        StaticMixinHookups.onScreenOpenBegin(screen);
+        EventBus.publish(new ScreenOpenEvent(screen, true));
     }
 
     @Inject(
@@ -25,6 +26,6 @@ public final class ClientOpenScreenMixin {
             at = @At("TAIL")
     )
     private void onScreenOpenEnd(@Nullable Screen screen, CallbackInfo ci) {
-        StaticMixinHookups.onScreenOpenEnd(screen);
+        EventBus.publish(new ScreenOpenEvent(screen, false));
     }
 }

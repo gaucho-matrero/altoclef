@@ -68,11 +68,19 @@ public abstract class Task {
         _stopped = false;
     }
 
+    public void stop(AltoClef mod) {
+        stop(mod, null);
+    }
+
+    /**
+     * Stops the task. Next time it's run it will run `onStart`
+     */
     public void stop(AltoClef mod, Task interruptTask) {
         if (!_active) return;
-
-        onStop(mod, interruptTask);
         Debug.logInternal("Task STOP: " + this + ", interrupted by " + interruptTask);
+        if (!_first) {
+            onStop(mod, interruptTask);
+        }
 
         if (_sub != null && !_sub.stopped()) {
             _sub.stop(mod, interruptTask);
@@ -83,17 +91,24 @@ public abstract class Task {
         _stopped = true;
     }
 
-    protected boolean taskAssert(AltoClef mod, boolean condition, String message) {
-        if (!condition && !_stopped) {
-            Debug.logError("Task assertion failed: " + message);
-            stop(mod);
-            _stopped = true;
+    /**
+     * Lets the task know it's execution has been "suspended"
+     *
+     * STILL RUNS `onStop`
+     *
+     * Doesn't stop it all-together (meaning `isActive` still returns true)
+     */
+    public void interrupt(AltoClef mod, Task interruptTask) {
+        if (!_active) return;
+        if (!_first) {
+            onStop(mod, interruptTask);
         }
-        return condition;
-    }
 
-    public void stop(AltoClef mod) {
-        stop(mod, null);
+        if (_sub != null && !_sub.stopped()) {
+            _sub.interrupt(mod, interruptTask);
+        }
+
+        _first = true;
     }
 
     protected void setDebugState(String state) {
@@ -159,11 +174,12 @@ public abstract class Task {
      */
     private boolean canBeInterrupted(AltoClef mod, Task subTask, Task toInterruptWith) {
         if (subTask == null) return true;
-        if (subTask.thisOrChildSatisfies(task -> task instanceof ITaskRequiresGrounded)) {
-            // This task (or any of its children) REQUIRES we be grounded or in water or something.
-            if (toInterruptWith instanceof ITaskOverridesGrounded) return true;
-            return (mod.getPlayer().isOnGround() || mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isClimbing());
-        }
-        return true;
+        // Our task can declare that is FORCES itself to be active NOW.
+        return (subTask.thisOrChildSatisfies(task -> {
+            if (task instanceof ITaskCanForce canForce) {
+                return !canForce.shouldForce(mod, toInterruptWith);
+            }
+            return true;
+        }));
     }
 }

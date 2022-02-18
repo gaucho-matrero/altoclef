@@ -2,10 +2,12 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChatMessageEvent;
+import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
-import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.MessageType;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
@@ -34,35 +36,42 @@ public class Butler {
     public Butler(AltoClef mod) {
         _mod = mod;
         _userAuth = new UserAuth(mod);
-        _mod.getUserTaskChain().onTaskFinish.addListener(
-                new ActionListener<>(msg -> {
-                    if (_currentUser != null) {
-                        //sendWhisper("Finished. " + msg);
-                        _currentUser = null;
-                    }
-                })
-        );
+
+        // Revoke our current user whenever a task finishes.
+        EventBus.subscribe(TaskFinishedEvent.class, evt -> {
+            if (_currentUser != null) {
+                _currentUser = null;
+            }
+        });
+
+        // Receive system events
+        EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            if (evt.messageType == MessageType.SYSTEM) {
+                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+                String message = evt.message.getString();
+                if (debug) {
+                    Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+                }
+                _mod.getButler().receiveMessage(message);
+            }
+        });
     }
 
-    public void reloadLists() {
-        _userAuth.reloadLists();
-    }
-
-    public void receiveMessage(String msg) {
+    private void receiveMessage(String msg) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
         String ourName = MinecraftClient.getInstance().getName();
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
-        } else if (_mod.getModSettings().isWhisperFormatDebug()){
+        } else if (ButlerConfig.getInstance().whisperFormatDebug){
             Debug.logMessage("    Not Parsing: MSG format not found.");
         }
     }
 
-    public void receiveWhisper(String username, String message) {
+    private void receiveWhisper(String username, String message) {
 
-        boolean debug = _mod.getModSettings().isWhisperFormatDebug();
+        boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
         // Ignore messages from other bots.
         if (message.startsWith(BUTLER_MESSAGE_START)) {
             if (debug) {
@@ -81,6 +90,7 @@ public class Butler {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isUserAuthorized(String username) {
         return _userAuth.isUserAuthorized(username);
     }
@@ -111,25 +121,24 @@ public class Butler {
 
     private void executeWhisper(String username, String message) {
         String prevUser = _currentUser;
-        try {
-            _commandInstantRan = true;
-            _commandFinished = false;
-            _currentUser = username;
-            sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-            AltoClef.getCommandExecutor().execute("@" + message, (nothing) -> {
-                // On finish
-                sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
-                if (!_commandInstantRan) {
-                    _currentUser = null;
-                }
-                _commandFinished = true;
-            });
-            _commandInstantRan = false;
-        } catch (CommandException e) {
+        _commandInstantRan = true;
+        _commandFinished = false;
+        _currentUser = username;
+        sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
+        AltoClef.getCommandExecutor().execute("@" + message, () -> {
+            // On finish
+            sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
+            if (!_commandInstantRan) {
+                _currentUser = null;
+            }
+            _commandFinished = true;
+        }, e -> {
             sendWhisper("TASK FAILED: " + e.getMessage(), MessagePriority.ASAP);
-            _currentUser = null;
             e.printStackTrace();
-        }
+            _currentUser = null;
+            _commandInstantRan = false;
+        });
+        _commandInstantRan = false;
         // Only set the current user if we're still running.
         if (_commandFinished) {
             _currentUser = prevUser;

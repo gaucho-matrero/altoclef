@@ -1,8 +1,9 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import baritone.api.utils.input.Input;
 
@@ -18,7 +19,7 @@ public class SafeRandomShimmyTask extends Task {
         _lookTimer  = new TimerGame(randomLookInterval);
     }
     public SafeRandomShimmyTask() {
-        this(10);
+        this(5);
     }
 
     @Override
@@ -30,6 +31,7 @@ public class SafeRandomShimmyTask extends Task {
     protected Task onTick(AltoClef mod) {
 
         if (_lookTimer.elapsed()) {
+            Debug.logMessage("Random Orientation");
             _lookTimer.reset();
             LookHelper.randomOrientation(mod);
         }

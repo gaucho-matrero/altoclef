@@ -2,7 +2,7 @@ package adris.altoclef.butler;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -73,7 +73,7 @@ public class WhisperChecker {
 
         _lastMessage = msg;
 
-        for (String format : mod.getModSettings().getWhisperFormats()) {
+        for (String format : ButlerConfig.getInstance().whisperFormats) {
             MessageResult check = tryParse(ourUsername, format, msg);
             if (check != null) {
                 String user = check.from;

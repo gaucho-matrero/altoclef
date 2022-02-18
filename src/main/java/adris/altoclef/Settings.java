@@ -1,42 +1,38 @@
 package adris.altoclef;
 
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.util.KillAura;
-import adris.altoclef.util.serialization.BlockPosDeserializer;
-import adris.altoclef.util.serialization.BlockPosSerializer;
+import adris.altoclef.control.KillAura;
+import adris.altoclef.util.BlockRange;
+import adris.altoclef.util.helpers.ConfigHelper;
+import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.serialization.IFailableConfigFile;
 import adris.altoclef.util.serialization.ItemDeserializer;
 import adris.altoclef.util.serialization.ItemSerializer;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.collect.Streams;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-@SuppressWarnings("ALL")
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 /**
  * The settings file, loaded and used across the codebase.
  *
  * Each setting is documented.
  */
-public class Settings {
+@SuppressWarnings("ALL")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+public class Settings implements IFailableConfigFile {
 
     public static final String SETTINGS_PATH = "altoclef_settings.json";
 
@@ -45,6 +41,10 @@ public class Settings {
     @JsonIgnore
     private transient boolean _failedToLoad = false;
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////** BEGIN SETTINGS w/ COMMENTS **//////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * If true, text will appear on the top left showing the current
      * task chain.
@@ -52,17 +52,40 @@ public class Settings {
     private boolean showTaskChains = true;
 
     /**
-     * Whenever we're moving, speed up our client by a multiple of this number.
-     * Useful when traveling long distances, and only is enabled when we're moving and not mining.
-     * <p>
-     * Set to 1 for this to have no effect.
+     * If true, all warning logs will be disabled.
+     *
+     * NOT RECOMMENDED, as it will make debugging more difficult.
+     * But if you know what you're doing, go nuts.
      */
-    private float speedHack = 1.0f;
+    private boolean hideAllWarningLogs = false;
+
+    /**
+     * The prefix for commands (ex. @gamer )
+     */
+    private String commandPrefix = "@";
+
+    /**
+     * When logging to chat, will prepend this to each log.
+     */
+    private String chatLogPrefix = "[Alto Clef] ";
+
+    /**
+     * If true, will show a timer.
+     */
+    private boolean showTimer = false;
 
     /**
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
      */
-    private float containerItemMoveDelay = 0.08f;
+    private float containerItemMoveDelay = 0.2f;
+
+    /**
+     * If true, use Minecraft's crafting recipe book to place items into
+     * the crafting table (should be much faster as it's almost instant)
+     *
+     * If false, will place items in each slot manually (the original way)
+     */
+    private boolean useCraftingBookToCraft = true;
 
     /**
      * If a dropped resource item is further than this from the player, don't pick it up.
@@ -81,7 +104,7 @@ public class Settings {
 
     /**
      * amount of food to collect when the food in inventory
-     * is lower than the value of foodUnitsThreshold
+     * is lower than the value of minimumFoodAllowed
      */
     private int foodUnitsToCollect = 0;
 
@@ -100,10 +123,10 @@ public class Settings {
     private float resourceChestLocateRange = 500;
 
     /**
-     * Some block resources are obtained through non-mining means
-     * (like a crafting table or stone block, which can be crafted or smelted).
+     * Some block resources are by default obtained through non-mining means.
+     * Crafting tables for example, are normally crafted using planks.
      * <p>
-     * However, if the block resource is found within this range it will be mined first.
+     * However, if the block resource is found within this range it may be mined first.
      * <p>
      * Set this to 0 to disable this feature
      * (keep in mind, this will not affect blocks like "dirt" and "cobblestone"
@@ -123,6 +146,13 @@ public class Settings {
      * search around each chest to make sure it's not in a dungeon.
      */
     private boolean avoidSearchingDungeonChests = true;
+
+    /**
+     * Will ignore mining/interacting with blocks that are BELOW an ocean (in an ocean biome and below y = 64)
+     *
+     * This is mainly here because alto-clef does NOT know how to deal with oceans
+     */
+    private boolean avoidOceanBlocks = true;
 
     /**
      * How close we must be to attack/interact with an entity.
@@ -165,7 +195,7 @@ public class Settings {
      * SMART: Closest hostile is attacked at max every 0.2 seconds.
      * OFF: Off
      */
-    private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.FASTEST;
+    private KillAura.Strategy forceFieldStrategy = KillAura.Strategy.SMART;
 
     /**
      * Only applies if mobDefense is on.
@@ -202,6 +232,19 @@ public class Settings {
     private boolean avoidDrowning = true;
 
     /**
+     * If enabled, the bot will close the open screen (furnace/crafting/chest/whatever) when the bot detects
+     * that its look direction has changed OR that it is mining something.
+     *
+     * This is here to stop the bot from getting stuck in a screen container.
+     */
+    private boolean autoCloseScreenWhenLookingOrMining = true;
+
+    /**
+     * If enabled, will attempt to extinguish ourselves when on fire (and not immune to fire)
+     */
+    private boolean extinguishSelfWithWater = true;
+
+    /**
      * If true, eat when we're hungry or in danger.
      */
     private boolean autoEat = true;
@@ -236,50 +279,19 @@ public class Settings {
     private DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR overworldToNetherBehaviour = DefaultGoToDimensionTask.OVERWORLD_TO_NETHER_BEHAVIOUR.BUILD_PORTAL_VANILLA;
 
     /**
-     * If true, will use blacklist for rejecting users from using your player as a butler
+     * When fast traveling via the nether, walk to our destination if we somehow end up closer than this range in the overworld.
+     * We will normally travel well within this range (to within 100 blocks if not within a few), so keep this value ~decently~ large.
      */
-    private boolean useButlerBlacklist = true;
-    /**
-     * If true, will use whitelist to only accept users from said whitelist.
-     */
-    private boolean useButlerWhitelist = true;
+    private int netherFastTravelWalkingRange = 600;
 
     /**
-     * Servers have different messaging plugins that change the way messages are displayed.
-     * Rather than attempt to implement all of them and introduce a big security risk,
-     * you may define custom whisper formats that the butler will watch out for.
-     * <p>
-     * Within curly brackets are three special parts:
-     * <p>
-     * {from}: Who the message was sent from
-     * {to}: Who the message was sent to, butler will ignore if this is not your username.
-     * {message}: The message.
-     * <p>
-     * <p>
-     * WARNING: The butler will only accept non-chat messages as commands, but don't make this too lenient,
-     * else you may risk unauthorized control to the bot. Basically, make sure that only whispers can
-     * create the following messages.
-     */
-    private String[] whisperFormats = new String[]{
-            "{from} whispers to you: {message}",
-            "{from} whispers: {message}",
-            "\\[{from} -> {to}\\] {message}"
-    };
-
-    /**
-     * If set to true, will print information about whispers that are parsed and those
-     * that have failed parsing.
+     * If set, will run this command by default when no other commands are running.
      *
-     * Enable this if you need help setting up the whisper format.
+     * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
+     * Or "follow <Your Username>" to follow you when not doing anything.
+     * Or "goto <Home base coords>" to return to home base when the bot finishes its work.
      */
-    private boolean whisperFormatDebug = false;
-
-    /**
-     * If true, the bot will perform basic survival tasks when no commands are in progress
-     * (eat food, force field mobs, etc.)
-     * It will only perform survival tasks allowed by other parameters in the settings file.
-     */
-    private boolean idleWhenNotActive = false;
+    private String idleCommand = "";
 
     /**
      * If we need to throw away something, throw away these items first.
@@ -310,12 +322,23 @@ public class Settings {
     );
 
     /**
+     * How many throwaway blocks to keep as building blocks.
+     */
+    private int reservedBuildingBlockCount = 64;
+
+    /**
+     * If true, items with custom names will be protected/marked as "important"
+     * so they won't be thrown away.
+     */
+    private boolean dontThrowAwayCustomNameItems = true;
+
+    /**
      * If we need to throw away something but we don't have any "throwaway Items",
      * throw away any unimportant item that's not currently needed in our task chain.
      * <p>
      * Careful with this! If true, any item not in "importantItems" is liable to be thrown away.
      */
-    private boolean throwAwayUnusedItems = false;
+    private boolean throwAwayUnusedItems = true;
 
     /**
      * We will NEVER throw away these items.
@@ -323,28 +346,45 @@ public class Settings {
      */
     @JsonSerialize(using = ItemSerializer.class)
     @JsonDeserialize(using = ItemDeserializer.class)
-    private List<Item> importantItems = Arrays.asList(
-            Items.ENCHANTED_GOLDEN_APPLE,
-            Items.ENDER_EYE,
+    private List<Item> importantItems = Streams.concat(
+            Stream.of(
+                    Items.ENCHANTED_GOLDEN_APPLE,
+                    Items.ENDER_EYE,
+                    Items.TRIDENT,
+                    Items.DIAMOND,
+                    Items.DIAMOND_BLOCK,
+                    Items.NETHERITE_SCRAP,
+                    Items.NETHERITE_INGOT,
+                    Items.NETHERITE_BLOCK
+            ),
+            Stream.of(ItemHelper.DIAMOND_ARMORS),
+            Stream.of(ItemHelper.NETHERITE_ARMORS),
+            Stream.of(ItemHelper.DIAMOND_TOOLS),
+            Stream.of(ItemHelper.NETHERITE_TOOLS),
             // Don't throw away shulker boxes that would be pretty bad lol
-            Items.SHULKER_BOX,
-            Items.BLACK_SHULKER_BOX,
-            Items.BLUE_SHULKER_BOX,
-            Items.BROWN_SHULKER_BOX,
-            Items.CYAN_SHULKER_BOX,
-            Items.GRAY_SHULKER_BOX,
-            Items.GREEN_SHULKER_BOX,
-            Items.LIGHT_BLUE_SHULKER_BOX,
-            Items.LIGHT_GRAY_SHULKER_BOX,
-            Items.LIME_SHULKER_BOX,
-            Items.MAGENTA_SHULKER_BOX,
-            Items.ORANGE_SHULKER_BOX,
-            Items.PINK_SHULKER_BOX,
-            Items.PURPLE_SHULKER_BOX,
-            Items.RED_SHULKER_BOX,
-            Items.WHITE_SHULKER_BOX,
-            Items.YELLOW_SHULKER_BOX
-    );
+            Stream.of(ItemHelper.SHULKER_BOXES)
+    ).toList();
+
+    /**
+     * If true, will only accept items found in `supportedFuels` as fuel when smelting.
+     *
+     * Be careful when setting this to false, as ALL burnable items are liable to be burned
+     * if they're not protected (blaze rods, beds, wooden tools, crafting tables etc.)
+     */
+    private boolean limitFuelsToSupportedFuels = true;
+
+    /**
+     * If `limitFuelsToSupportedFuels` is true, will use these items and ONLY these items as smelting fuel.
+     */
+    @JsonSerialize(using = ItemSerializer.class)
+    @JsonDeserialize(using = ItemDeserializer.class)
+    private List<Item> supportedFuels = Streams.concat(
+        Stream.of(
+            Items.COAL,
+            Items.CHARCOAL
+        ),
+        Stream.of(ItemHelper.PLANKS)
+    ).toList();
 
     /**
      * Where "home base" is for the bot.
@@ -371,62 +411,14 @@ public class Settings {
      *      },
      * ],
      */
-    private List<ProtectionRange> areasToProtect = Collections.emptyList();
+    private List<BlockRange> areasToProtect = Collections.emptyList();
 
-    public static Settings load() {
 
-        File loadFrom = new File(SETTINGS_PATH);
-        if (!loadFrom.exists()) {
-            Settings result = new Settings();
-            result.save();
-            return result;
-        }
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////** END SETTINGS w/ COMMENTS **////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
 
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(BlockPos.class, new BlockPosDeserializer());
-        mapper.registerModule(module);
 
-        Settings result = new Settings(); // Defaults
-        try {
-            result = mapper.readValue(Paths.get(SETTINGS_PATH).toFile(), Settings.class);
-        } catch (JsonMappingException ex) {
-            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". JSON Error Message: " + ex.getMessage() + ".\n JSON Error STACK TRACE:\n\n");
-            result._failedToLoad = true;
-            ex.printStackTrace();
-        } catch (IOException e) {
-            Debug.logError("Failed to read Settings at " + SETTINGS_PATH + ". IOException.");
-            result._failedToLoad = true;
-            e.printStackTrace();
-        }
-
-        // Save over to include NEW settings
-        // but only if a load was successful. Don't want to override user settings!
-        if (!result.failedToLoad()) {
-            result.save();
-        }
-
-        return result;
-    }
-
-    private static void save(Settings settings) {
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(BlockPos.class, new BlockPosSerializer());
-        mapper.registerModule(module);
-
-        try {
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-            // Pretty print and indent arrays too.
-            DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
-            prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-
-            mapper.writer(prettyPrinter).writeValue(Paths.get(SETTINGS_PATH).toFile(), settings);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     private static boolean idArrayContainsItem(Item item, int[] ids) {
         int id = Item.getRawId(item);
@@ -436,20 +428,23 @@ public class Settings {
         return false;
     }
 
-    public void save() {
-        save(this);
-    }
-
-    public boolean failedToLoad() {
-        return _failedToLoad;
-    }
-
     public boolean shouldShowTaskChain() {
         return showTaskChains;
     }
 
-    public float getSpeedHack() {
-        return speedHack;
+    public boolean shouldHideAllWarningLogs() {
+        return hideAllWarningLogs;
+    }
+
+    public String getCommandPrefix() {
+        return commandPrefix;
+    }
+    public String getChatLogPrefix() {
+        return chatLogPrefix;
+    }
+
+    public boolean shouldShowTimer() {
+        return showTimer;
     }
 
     public float getResourcePickupRange() {
@@ -466,6 +461,10 @@ public class Settings {
 
     public float getContainerItemMoveDelay() {
         return containerItemMoveDelay;
+    }
+
+    public boolean shouldUseCraftingBookToCraft() {
+        return useCraftingBookToCraft;
     }
 
     public int getFoodUnitsToCollect() {
@@ -504,14 +503,6 @@ public class Settings {
         return replantCrops;
     }
 
-    public boolean isUseButlerBlacklist() {
-        return useButlerBlacklist;
-    }
-
-    public boolean isUseButlerWhitelist() {
-        return useButlerWhitelist;
-    }
-
     public boolean shouldDealWithAnnoyingHostiles() {
         return killOrAvoidAnnoyingHostiles;
     }
@@ -520,8 +511,11 @@ public class Settings {
         return forceFieldStrategy;
     }
 
-    public boolean shouldIdleWhenNotActive() {
-        return idleWhenNotActive;
+    public String getIdleCommand() {
+        return idleCommand;
+    }
+    public boolean shouldRunIdleCommandWhenNotActive() {
+        return idleCommand != null && !idleCommand.isBlank();
     }
 
     public boolean shouldAutoMLGBucket() {
@@ -536,8 +530,20 @@ public class Settings {
         return avoidDrowning;
     }
 
+    public boolean shouldCloseScreenWhenLookingOrMining() {
+        return autoCloseScreenWhenLookingOrMining;
+    }
+
+    public boolean shouldExtinguishSelfWithWater() {
+        return extinguishSelfWithWater;
+    }
+
     public boolean shouldAvoidSearchingForDungeonChests() {
         return avoidSearchingDungeonChests;
+    }
+
+    public boolean shouldAvoidOcean() {
+        return avoidOceanBlocks;
     }
 
     public boolean isThrowaway(Item item) {
@@ -552,6 +558,14 @@ public class Settings {
         return this.throwAwayUnusedItems;
     }
 
+    public int getReservedBuildingBlockCount() {
+        return this.reservedBuildingBlockCount;
+    }
+
+    public boolean getDontThrowAwayCustomNameItems() {
+        return this.dontThrowAwayCustomNameItems;
+    }
+
     public float getEntityReachRange() {
         return entityReachRange;
     }
@@ -563,17 +577,21 @@ public class Settings {
         return getThrowawayItems(mod, false);
     }
 
-    public String[] getWhisperFormats() {
-        return whisperFormats;
+    public boolean shouldLimitFuelsToSupportedFuels() {
+        return limitFuelsToSupportedFuels;
     }
 
-    public boolean isWhisperFormatDebug() {
-        return whisperFormatDebug;
+    public boolean isSupportedFuel(Item item) {
+        return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
+    }
+    @JsonIgnore
+    public Item[] getSupportedFuelItems() {
+        return supportedFuels.toArray(Item[]::new);
     }
 
     public boolean isPositionExplicitelyProtected(BlockPos pos) {
-        for (ProtectionRange protection : areasToProtect) {
-            if (protection.includes(pos)) return true;
+        for (BlockRange protection : areasToProtect) {
+            if (protection.contains(pos)) return true;
         }
         return false;
     }
@@ -582,22 +600,25 @@ public class Settings {
         return overworldToNetherBehaviour;
     }
 
+    public int getNetherFastTravelWalkingRange() {
+        return netherFastTravelWalkingRange;
+    }
+
     public BlockPos getHomeBasePosition() {
         return homeBasePosition;
     }
 
-    private static class ProtectionRange {
-        public BlockPos start;
-        public BlockPos end;
+    @Override
+    public void onFailLoad() {
+        _failedToLoad = true;
+    }
 
-        public boolean includes(BlockPos pos) {
-            return (start.getX() <= pos.getX() && pos.getX() <= end.getX() &&
-                    start.getZ() <= pos.getZ() && pos.getZ() <= end.getZ() &&
-                    start.getY() <= pos.getY() && pos.getY() <= end.getY());
-        }
+    @Override
+    public boolean failedToLoad() {
+        return _failedToLoad;
+    }
 
-        public String toString() {
-            return "[" + start.toShortString() + " -> " + end.toShortString() + "]";
-        }
+    public static void load(Consumer<Settings> onReload) {
+        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
     }
 }

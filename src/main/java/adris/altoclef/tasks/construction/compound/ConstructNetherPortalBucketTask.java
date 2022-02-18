@@ -7,16 +7,18 @@ import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.ClearLiquidTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
+import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -100,7 +102,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         });
 
         // Protect some used items
-        mod.getBehaviour().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL);
+        mod.getBehaviour().addProtectedItems(Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.FLINT_AND_STEEL, Items.FIRE_CHARGE);
 
         _progressChecker.reset();
     }
@@ -137,15 +139,24 @@ public class ConstructNetherPortalBucketTask extends Task {
 
 
         // Get bucket if we don't have one.
-        int bucketCount = mod.getInventoryTracker().getItemCount(Items.BUCKET, Items.LAVA_BUCKET, Items.WATER_BUCKET);
+        int bucketCount = mod.getItemStorage().getItemCount(Items.BUCKET, Items.LAVA_BUCKET, Items.WATER_BUCKET);
         if (bucketCount < 2) {
             setDebugState("Getting buckets");
             _progressChecker.reset();
+            // If we have lava/water, get the inverse. Otherwise we dropped a bucket, just get a bucket.
+            if (mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+            } else if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
+            }
+            if (mod.getEntityTracker().itemDropped(Items.WATER_BUCKET, Items.LAVA_BUCKET)) {
+                return new PickupDroppedItemTask(new ItemTarget(new Item[]{Items.WATER_BUCKET, Items.LAVA_BUCKET}, 1), true);
+            }
             return TaskCatalogue.getItemTask(Items.BUCKET, 2);
         }
 
         // Get flint & steel if we don't have one
-        if (!mod.getInventoryTracker().hasItem(Items.FLINT_AND_STEEL)) {
+        if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) && !mod.getItemStorage().hasItem(Items.FIRE_CHARGE)) {
             setDebugState("Getting flint & steel");
             _progressChecker.reset();
             return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
@@ -155,7 +166,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         if (needsToLookForPortal) {
             _progressChecker.reset();
             // Get water before searching, just for convenience.
-            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Getting water");
                 _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
@@ -170,7 +181,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                 BlockPos lavaPos = findLavaLake(mod, mod.getPlayer().getBlockPos());
                 if (lavaPos != null) {
                     // We have a lava lake, set our portal origin!
-                    BlockPos foundPortalRegion = getPortalableRegion(lavaPos, mod.getPlayer().getBlockPos(), new Vec3i(-1, 0, 0), PORTALABLE_REGION_SIZE, 20);
+                    BlockPos foundPortalRegion = getPortalableRegion(mod, lavaPos, mod.getPlayer().getBlockPos(), new Vec3i(-1, 0, 0), PORTALABLE_REGION_SIZE, 20);
                     if (foundPortalRegion == null) {
                         Debug.logWarning("Failed to find portalable region nearby. Consider increasing the search timeout range");
                     } else {
@@ -203,7 +214,7 @@ public class ConstructNetherPortalBucketTask extends Task {
             }
 
             // Get lava early so placing it is faster
-            if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET) && frameBlock != Blocks.LAVA) {
+            if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET) && frameBlock != Blocks.LAVA) {
                 setDebugState("Collecting lava");
                 _progressChecker.reset();
                 return _collectLavaTask;
@@ -229,7 +240,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         setDebugState("Flinting and Steeling");
 
         // Flint and steel it baby
-        return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _portalOrigin.down(), true);
+        return new InteractWithBlockTask(new ItemTarget(new Item[]{Items.FLINT_AND_STEEL, Items.FIRE_CHARGE}, 1), Direction.UP, _portalOrigin.down(), true);
     }
 
     @Override
@@ -303,7 +314,7 @@ public class ConstructNetherPortalBucketTask extends Task {
     }
 
     // Get a region that a portal can fit into
-    private BlockPos getPortalableRegion(BlockPos lava, BlockPos playerPos, Vec3i sizeOffset, Vec3i sizeAllocation, int timeoutRange) {
+    private BlockPos getPortalableRegion(AltoClef mod, BlockPos lava, BlockPos playerPos, Vec3i sizeOffset, Vec3i sizeAllocation, int timeoutRange) {
         Vec3i[] directions = new Vec3i[]{new Vec3i(1, 0, 0), new Vec3i(-1, 0, 0), new Vec3i(0, 0, 1), new Vec3i(0, 0, -1)};
 
         double minDistanceToPlayer = Double.POSITIVE_INFINITY;
@@ -317,9 +328,10 @@ public class ConstructNetherPortalBucketTask extends Task {
                 Vec3i offset = new Vec3i(direction.getX() * offs, direction.getY() * offs, direction.getZ() * offs);
 
                 boolean found = true;
+                boolean solidFound = false;
                 // check for collision with lava in box
-                moveAlongLine:
                 // We have an extra buffer to make sure we never break a block NEXT to lava.
+                moveAlongLine:
                 for (int dx = -1; dx < sizeAllocation.getX() + 1; ++dx) {
                     for (int dz = -1; dz < sizeAllocation.getZ() + 1; ++dz) {
                         for (int dy = -1; dy < sizeAllocation.getY(); ++dy) {
@@ -330,8 +342,16 @@ public class ConstructNetherPortalBucketTask extends Task {
                                 found = false;
                                 break moveAlongLine;
                             }
+                            // Also check for at least 1 solid block for us to place on...
+                            if (dy <= 1 && !solidFound && WorldHelper.isSolid(mod, toCheck)) {
+                                solidFound = true;
+                            }
                         }
                     }
+                }
+                // Check for solid ground at least somewhere
+                if (!solidFound) {
+                    break;
                 }
 
                 if (found) {

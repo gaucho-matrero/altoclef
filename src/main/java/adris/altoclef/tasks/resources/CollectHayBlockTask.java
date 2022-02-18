@@ -1,12 +1,13 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.CraftInTableTask;
+import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.RecipeTarget;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -39,7 +40,7 @@ public class CollectHayBlockTask extends ResourceTask {
         }
 
         ItemTarget w = new ItemTarget(Items.WHEAT, 1);
-        return new CraftInTableTask(new ItemTarget(Items.HAY_BLOCK, _count), CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w, w, w, w, w, w, w, w, w}, 1));
+        return new CraftInTableTask(new RecipeTarget(Items.HAY_BLOCK, _count, CraftingRecipe.newShapedRecipe("hay_block", new ItemTarget[]{w, w, w, w, w, w, w, w, w}, 1)));
     }
 
     @Override

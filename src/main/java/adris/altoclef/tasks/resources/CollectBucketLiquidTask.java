@@ -7,13 +7,11 @@ import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
-import adris.altoclef.tasks.movement.GetCloseToBlockTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
@@ -24,12 +22,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.RaycastContext;
 
 import java.util.HashSet;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class CollectBucketLiquidTask extends ResourceTask {
@@ -130,7 +126,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         // Get buckets if we need em
-        int bucketsNeeded = _count - mod.getInventoryTracker().getItemCount(Items.BUCKET) - mod.getInventoryTracker().getItemCount(_target);
+        int bucketsNeeded = _count - mod.getItemStorage().getItemCount(Items.BUCKET) - mod.getItemStorage().getItemCount(_target);
         if (bucketsNeeded > 0) {
             setDebugState("Getting bucket...");
             return TaskCatalogue.getItemTask(Items.BUCKET, bucketsNeeded);
@@ -138,8 +134,8 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
         Predicate<BlockPos> isSourceLiquid = blockPos -> {
             if (_blacklist.contains(blockPos)) return false;
-            if (mod.getBlockTracker().unreachable(blockPos)) return false;
-            if (mod.getBlockTracker().unreachable(blockPos.up())) return false; // We may try reaching the block above.
+            if (!WorldHelper.canReach(mod, blockPos)) return false;
+            if (!WorldHelper.canReach(mod, blockPos.up())) return false; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
 
             // Lava, we break the block above. If it's bedrock, ignore.
@@ -158,7 +154,9 @@ public class CollectBucketLiquidTask extends ResourceTask {
 
             return new DoToClosestBlockTask(blockPos -> {
                 // Clear above if lava because we can't enter.
+                // but NOT if we're standing right above.
                 if (WorldHelper.isSolid(mod, blockPos.up())) {
+
                     if (!_progressChecker.check(mod)) {
                         Debug.logMessage("Failed to break, blacklisting & wandering");
                         mod.getBlockTracker().requestBlockUnreachable(blockPos);
@@ -183,7 +181,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
         }
 
         // Dimension
-        if (_toCollect == Blocks.WATER && mod.getCurrentDimension() == Dimension.NETHER) {
+        if (_toCollect == Blocks.WATER && WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 

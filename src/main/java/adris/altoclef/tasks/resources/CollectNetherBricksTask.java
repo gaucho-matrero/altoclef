@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.RecipeTarget;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -44,7 +45,7 @@ public class CollectNetherBricksTask extends ResourceTask {
         }
 
         ItemTarget b = new ItemTarget(Items.NETHER_BRICK, 1);
-        return new CraftInInventoryTask(new ItemTarget(Items.NETHER_BRICK, _count), CraftingRecipe.newShapedRecipe("nether_brick", new ItemTarget[]{b, b, b, b}, 1));
+        return new CraftInInventoryTask(new RecipeTarget(Items.NETHER_BRICK, _count, CraftingRecipe.newShapedRecipe("nether_brick", new ItemTarget[]{b, b, b, b}, 1)));
     }
 
     @Override

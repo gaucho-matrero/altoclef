@@ -1,6 +1,6 @@
 package adris.altoclef.util.progresscheck;
 
-import adris.altoclef.util.csharpisbetter.TimerGame;
+import adris.altoclef.util.time.TimerGame;
 
 /**
  * Simple progress checker that requires we always make progress.
