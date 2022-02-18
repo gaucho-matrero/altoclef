@@ -5,7 +5,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.time.Stopwatch;
+import adris.altoclef.util.csharpisbetter.Stopwatch;
 
 public abstract class SingleTaskChain extends TaskChain {
 
@@ -71,12 +71,8 @@ public abstract class SingleTaskChain extends TaskChain {
         // Stop our task. When we're started up again, let our task know we need to run.
         _interrupted = true;
         if (_mainTask != null && _mainTask.isActive()) {
-            _mainTask.interrupt(mod, null);
+            _mainTask.stop(mod);
         }
-    }
-
-    protected boolean isCurrentlyRunning(AltoClef mod) {
-        return !_interrupted && _mainTask.isActive() && !_mainTask.isFinished(mod);
     }
 
     public Task getCurrentTask() {

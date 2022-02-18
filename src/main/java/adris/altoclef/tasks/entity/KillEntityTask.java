@@ -3,9 +3,6 @@ package adris.altoclef.tasks.entity;
 import adris.altoclef.AltoClef;
 import net.minecraft.entity.Entity;
 
-import java.util.Objects;
-import java.util.Optional;
-
 /**
  * Kill a specific entity
  */
@@ -23,20 +20,20 @@ public class KillEntityTask extends AbstractKillEntityTask {
     }
 
     @Override
-    protected Optional<Entity> getEntityTarget(AltoClef mod) {
-        return Optional.of(_target);
+    protected Entity getEntityTarget(AltoClef mod) {
+        return _target;
     }
 
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
         if (other instanceof KillEntityTask task) {
-            return Objects.equals(task._target, _target);
+            return task._target.equals(_target);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Killing " + _target.getType().getTranslationKey();
+        return "Killing " + _target.getEntityName();
     }
 }

@@ -8,26 +8,25 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Finds the closest reachable block and runs a task on that block.
+ * Finds the closest reachable block and passes that block to a task.
  */
 public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos> {
 
     private final Block[] _targetBlocks;
 
     private final Supplier<Vec3d> _getOriginPos;
-    private final Function<Vec3d, Optional<BlockPos>> _getClosest;
+    private final Function<Vec3d, BlockPos> _getClosest;
 
     private final Function<BlockPos, Task> _getTargetTask;
 
     private final Predicate<BlockPos> _isValid;
 
-    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, Optional<BlockPos>> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
+    public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
         _getOriginPos = getOriginSupplier;
         _getTargetTask = getTargetTask;
         _getClosest = getClosestBlock;
@@ -35,7 +34,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         _targetBlocks = blocks;
     }
 
-    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, Optional<BlockPos>> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
+    public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, BlockPos> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
         this(null, getTargetTask, getClosestBlock, isValid, blocks);
     }
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Predicate<BlockPos> isValid, Block... blocks) {
@@ -51,7 +50,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     }
 
     @Override
-    protected Optional<BlockPos> getClosestTo(AltoClef mod, Vec3d pos) {
+    protected BlockPos getClosestTo(AltoClef mod, Vec3d pos) {
         if (_getClosest != null) {
             return _getClosest.apply(pos);
         }

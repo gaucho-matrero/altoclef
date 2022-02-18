@@ -1,7 +1,6 @@
 package adris.altoclef.util.baritone;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.util.helpers.BaritoneHelper;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalXZ;
 import baritone.api.pathing.goals.GoalYLevel;
@@ -67,11 +66,10 @@ public abstract class GoalRunAwayFromEntities implements Goal {
                 }
                 if (counter >= max) break;
             }
-            if (counter > 0) {
-                costSum /= counter;
-            }
+            costSum /= counter;
             return costSum * _penaltyFactor;
         }
+        //return -1 * BaritoneHelper.calculateGenericHeuristic(x, y, z, _badBoi.getPos().x, _badBoi.getPos().y, _badBoi.getPos().z);
     }
 
     protected abstract List<Entity> getEntities(AltoClef mod);

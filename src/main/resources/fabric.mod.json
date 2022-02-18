@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "altoclef",
-  "version": "0.3.3d-TEST",
+  "version": "${version}",
   "name": "Alto Clef",
   "description": "Plays Block Game",
   "authors": [
-    "TacoTechnica"
+    "Adris"
   ],
   "contact": {
     "homepage": "https://fabricc.net/",

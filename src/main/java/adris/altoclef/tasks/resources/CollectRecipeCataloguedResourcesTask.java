@@ -7,7 +7,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.item.Item;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -41,12 +40,12 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
 
         for (RecipeTarget target : _targets) {
             // Ignore this recipe if we have its item.
-            //if (mod.getItemStorage().targetMet(target.getItem())) continue;
+            //if (mod.getInventoryTracker().targetMet(target.getItem())) continue;
 
             // null = empty which is always met.
             if (target == null) continue;
 
-            int weNeed = target.getTargetCount() - mod.getItemStorage().getItemCount(target.getOutputItem());
+            int weNeed = target.getItem().getTargetCount() - mod.getInventoryTracker().getItemCount(target.getItem());
 
             if (weNeed > 0) {
                 CraftingRecipe recipe = target.getRecipe();
@@ -83,7 +82,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
             int count = catalogueCount.get(catalogueMaterialName);
             if (count > 0) {
                 ItemTarget itemTarget = new ItemTarget(catalogueMaterialName, count);
-                if (!StorageHelper.itemTargetsMet(mod, itemTarget)) {
+                if (!mod.getInventoryTracker().targetsMet(itemTarget)) {
                     setDebugState("Getting " + itemTarget);
                     return TaskCatalogue.getItemTask(catalogueMaterialName, count);
                 }
@@ -92,7 +91,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
         for (Item item : itemCount.keySet()) {
             int count = itemCount.get(item);
             if (count > 0) {
-                if (mod.getItemStorage().getItemCount(item) < count) {
+                if (mod.getInventoryTracker().getItemCount(item) < count) {
                     setDebugState("Getting " + item.getTranslationKey());
                     return TaskCatalogue.getItemTask(item, count);
                 }
@@ -125,7 +124,7 @@ public class CollectRecipeCataloguedResourcesTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         if (_finished) {
-            if (!StorageHelper.hasRecipeMaterialsOrTarget(mod, this._targets)) {
+            if (!mod.getInventoryTracker().hasRecipeMaterialsOrTarget(this._targets)) {
                 _finished = false;
                 Debug.logMessage("Invalid collect recipe \"finished\" state, resetting.");
             }

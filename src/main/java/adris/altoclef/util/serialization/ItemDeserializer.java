@@ -1,6 +1,5 @@
 package adris.altoclef.util.serialization;
 
-import adris.altoclef.Debug;
 import adris.altoclef.util.helpers.ItemHelper;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -33,7 +32,7 @@ public class ItemDeserializer extends StdDeserializer<Object> {
             throw new JsonParseException("Start array expected", p.getCurrentLocation());
         }
         while (p.nextToken() != JsonToken.END_ARRAY) {
-            Item item = null;
+            Item item;
             if (p.getCurrentToken() == JsonToken.VALUE_NUMBER_INT) {
                 // Old raw id (ew stinky)
                 int rawId = p.getIntValue();
@@ -42,16 +41,9 @@ public class ItemDeserializer extends StdDeserializer<Object> {
                 // Translation key (the proper way)
                 String itemKey = p.getText();
                 itemKey = ItemHelper.trimItemName(itemKey);
-                Identifier identifier = new Identifier(itemKey);
-                if (Registry.ITEM.containsId(identifier)) {
-                    item = Registry.ITEM.get(identifier);
-                } else {
-                    Debug.logWarning("Invalid item name:" + itemKey + " at " + p.getCurrentLocation().toString());
-                }
+                item = Registry.ITEM.get(new Identifier(itemKey));
             }
-            if (item != null) {
-                result.add(item);
-            }
+            result.add(item);
         }
 
         return result;

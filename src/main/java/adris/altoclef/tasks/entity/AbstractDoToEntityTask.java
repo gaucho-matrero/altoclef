@@ -7,14 +7,11 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
-import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-
-import java.util.Optional;
 
 /**
  * Interacts with an entity while maintaining distance.
@@ -49,7 +46,6 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     protected void onStart(AltoClef mod) {
         _wanderTask.resetWander();
         _progress.reset();
-        StorageHelper.closeScreen(); // Kinda duct tape but it should be future proof ish
     }
 
     @Override
@@ -61,18 +57,15 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return _wanderTask;
         }
 
-        Optional<Entity> checkEntity = getEntityTarget(mod);
+        Entity entity = getEntityTarget(mod);
 
+        mod.getMobDefenseChain().setTargetEntity(entity);
 
         // Oof
-        if (checkEntity.isEmpty()) {
-            mod.getMobDefenseChain().resetTargetEntity();
+        if (entity == null) {
             mod.getMobDefenseChain().resetForceField();
-            return _wanderTask;
-        } else {
-            mod.getMobDefenseChain().setTargetEntity(checkEntity.get());
+            return null;
         }
-        Entity entity = checkEntity.get();
 
         double playerReach = mod.getModSettings().getEntityReachRange();
 
@@ -116,7 +109,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             return new GetToEntityTask(entity, maintainDistance);
         }
 
-        return _wanderTask;
+        return null;
     }
 
     @Override
@@ -130,7 +123,6 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         return false;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean doubleCheck(double a, double b) {
         if (Double.isInfinite(a) == Double.isInfinite(b)) return true;
         return Math.abs(a - b) < 0.1;
@@ -146,6 +138,6 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         mod.getMobDefenseChain().resetForceField();
     }
 
-    protected abstract Optional<Entity> getEntityTarget(AltoClef mod);
+    protected abstract Entity getEntityTarget(AltoClef mod);
 
 }

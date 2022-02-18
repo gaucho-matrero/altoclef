@@ -1,18 +1,14 @@
 package adris.altoclef.util;
 
-import net.minecraft.item.Item;
-
 import java.util.Objects;
 
 public class RecipeTarget {
 
     private final CraftingRecipe _recipe;
-    private final Item _item;
-    private final int _targetCount;
+    private final ItemTarget _item;
 
-    public RecipeTarget(Item item, int targetCount, CraftingRecipe recipe) {
+    public RecipeTarget(ItemTarget item, CraftingRecipe recipe) {
         _item = item;
-        _targetCount = targetCount;
         _recipe = recipe;
     }
 
@@ -20,18 +16,15 @@ public class RecipeTarget {
         return _recipe;
     }
 
-    public Item getOutputItem() {
+    public ItemTarget getItem() {
         return _item;
-    }
-    public int getTargetCount() {
-        return _targetCount;
     }
 
     @Override
     public String toString() {
         return "RecipeTarget{" +
                 "_recipe=" + _recipe +
-                ", _item=" + _item + " x " + _targetCount +
+                ", _item=" + _item +
                 '}';
     }
 
@@ -40,7 +33,7 @@ public class RecipeTarget {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RecipeTarget that = (RecipeTarget) o;
-        return _targetCount == that._targetCount && _recipe.equals(that._recipe) && Objects.equals (_item, that._item);
+        return _recipe.equals(that._recipe) && (_item == null) == (that._item == null) && (_item == null || _item.equals(that._item));
     }
 
     @Override

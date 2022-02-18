@@ -3,8 +3,6 @@ package adris.altoclef.util.slots;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EquipmentSlot;
 
-import java.util.stream.IntStream;
-
 public class PlayerSlot extends Slot {
     public static final PlayerSlot CRAFT_OUTPUT_SLOT = new PlayerSlot(0);
     // Armor slots are not visible in crafting/furnace (they break), and as such are unsafe to use.
@@ -20,8 +18,6 @@ public class PlayerSlot extends Slot {
     };
     public static final PlayerSlot OFFHAND_SLOT = new PlayerSlot(45);
 
-    public static final PlayerSlot[] CRAFT_INPUT_SLOTS = IntStream.range(0, 4).mapToObj(PlayerSlot::getCraftInputSlot).toArray(PlayerSlot[]::new);
-
     public PlayerSlot(int windowSlot) {
         this(windowSlot, false);
     }
@@ -35,14 +31,15 @@ public class PlayerSlot extends Slot {
     }
 
     public static PlayerSlot getCraftInputSlot(int index) {
-        return new PlayerSlot(index + 1);
+        index += 1;
+        return new PlayerSlot(index);
     }
 
     public static Slot getEquipSlot(EquipmentSlot equipSlot) {
         switch (equipSlot) {
             case MAINHAND:
                 assert MinecraftClient.getInstance().player != null;
-                return Slot.getFromCurrentScreenInventory(MinecraftClient.getInstance().player.getInventory().selectedSlot);
+                return Slot.getFromInventory(MinecraftClient.getInstance().player.getInventory().selectedSlot);
             case OFFHAND:
                 return OFFHAND_SLOT;
             case FEET:

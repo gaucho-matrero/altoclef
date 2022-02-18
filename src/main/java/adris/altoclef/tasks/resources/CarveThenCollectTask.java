@@ -9,7 +9,6 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 
@@ -63,7 +62,7 @@ public class CarveThenCollectTask extends ResourceTask {
             return new DoToClosestBlockTask(DestroyBlockTask::new, _targetBlocks);
         }
         // Collect our "carve with" item (can be shears, axe, whatever)
-        if (!StorageHelper.itemTargetsMetInventory(mod, _carveWith)) {
+        if (!mod.getInventoryTracker().targetsMet(_carveWith)) {
             setDebugState("Collect our carve tool");
             return TaskCatalogue.getItemTask(_carveWith);
         }
@@ -73,8 +72,8 @@ public class CarveThenCollectTask extends ResourceTask {
             return new DoToClosestBlockTask(blockPos -> new InteractWithBlockTask(_carveWith, blockPos, false), _toCarveBlocks);
         }
         // Collect carve blocks if we don't have enough, or place them down if we do.
-        int neededCarveItems = _target.getTargetCount() - mod.getItemStorage().getItemCount(_target);
-        int currentCarveItems = mod.getItemStorage().getItemCount(_toCarve);
+        int neededCarveItems = _target.getTargetCount() - mod.getInventoryTracker().getItemCount(_target);
+        int currentCarveItems = mod.getInventoryTracker().getItemCount(_toCarve);
         if (neededCarveItems > currentCarveItems) {
             setDebugState("Collecting more blocks to carve");
             return TaskCatalogue.getItemTask(_toCarve);

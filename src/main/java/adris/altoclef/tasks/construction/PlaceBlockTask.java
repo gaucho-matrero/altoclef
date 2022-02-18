@@ -36,7 +36,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     private final boolean _useThrowaways;
     private final boolean _autoCollectStructureBlocks;
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3, true); // This can get stuck forever, so we increase the range.
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(6);
     private Task _materialTask;
     private int _failCount = 0;
 
@@ -52,7 +52,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     public static int getMaterialCount(AltoClef mod) {
-        return mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
+        return mod.getInventoryTracker().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
     }
 
     public static Task getMaterialTask(int count) {
@@ -62,8 +62,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStart(AltoClef mod) {
         _progressChecker.reset();
-        // If we get interrupted by another task, this might cause problems...
-        //_wanderTask.resetWander();
+        _wanderTask.resetWander();
     }
 
     @Override
@@ -153,7 +152,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected String toDebugString() {
-        return "Place structure" + ArrayUtils.toString(_toPlace) + " at " + _target.toShortString();
+        return "Place structure at " + _target.toShortString();
     }
 
     private boolean tryingAlternativeWay() {

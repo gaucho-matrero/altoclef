@@ -3,10 +3,9 @@ package adris.altoclef.tasks.squashed;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
+import adris.altoclef.tasks.UpgradeInSmithingTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.slots.SmithingTableSlot;
 import net.minecraft.item.ItemStack;
@@ -50,7 +49,7 @@ public class SmithingSquasher extends TypeSquasher<UpgradeInSmithingTableTask> {
         }
 
         private int getItemsInSlot(AltoClef mod, Slot slot, ItemTarget match) {
-            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+            ItemStack stack = mod.getInventoryTracker().getItemStackInSlot(slot);
             if (!stack.isEmpty() && match.matches(stack.getItem())) {
                 return stack.getCount();
             }

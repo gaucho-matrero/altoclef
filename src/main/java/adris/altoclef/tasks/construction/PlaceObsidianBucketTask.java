@@ -4,11 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.WorldHelper;
-import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -19,9 +17,6 @@ import net.minecraft.util.math.Vec3i;
  * Places obsidian at a position using buckets and a cast.
  */
 public class PlaceObsidianBucketTask extends Task {
-
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true); // This can get stuck forever, so we increase the range.
 
     public static final Vec3i[] CAST_FRAME = new Vec3i[]{
             new Vec3i(0, -1, 0),
@@ -59,8 +54,6 @@ public class PlaceObsidianBucketTask extends Task {
             BlockPos waterTarget = _pos.up();
             return block.equals(_pos) || block.equals(waterTarget);
         });
-
-        _progressChecker.reset();
     }
 
     @Override
@@ -71,23 +64,11 @@ public class PlaceObsidianBucketTask extends Task {
             return new ClearLiquidTask(_pos.up());
         }
 
-        if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
+        if (!mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
             // The only excuse is that we have lava at our position.
             if (!mod.getBlockTracker().blockIsValid(_pos, Blocks.LAVA)) {
-                _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
             }
-        }
-
-        // Manual wander to try and make this godforesaken task work
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            setDebugState("Wandering.");
-            _progressChecker.reset();
-            return _wanderTask;
-        }
-        if (!_progressChecker.check(mod)) {
-            _progressChecker.reset();
-            return _wanderTask;
         }
 
         if (_currentCastTarget != null) {
@@ -140,15 +121,14 @@ public class PlaceObsidianBucketTask extends Task {
             }
 
             // Make sure we have water, juuust in case we have another creeper appear run end here
-            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                _progressChecker.reset();
+            if (!mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
             }
 
             // Don't place lava at our position!
             // Would lead to an embarrassing death.
             BlockPos targetPos = _pos.add(-1, 1, 0);
-            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
+            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.LAVA_BUCKET)) {
                 setDebugState("Positioning player before lava");
                 return new GetToBlockTask(targetPos, false);
             }
@@ -176,7 +156,7 @@ public class PlaceObsidianBucketTask extends Task {
 
             // Get to position to avoid weird stuck scenario
             BlockPos targetPos = _pos.add(-1, 1, 0);
-            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+            if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getInventoryTracker().hasItem(Items.WATER_BUCKET)) {
                 setDebugState("Positioning player before water");
                 return new GetToBlockTask(targetPos, false);
             }

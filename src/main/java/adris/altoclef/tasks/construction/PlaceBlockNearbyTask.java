@@ -2,17 +2,16 @@ package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.Subscription;
-import adris.altoclef.eventbus.events.BlockPlaceEvent;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.control.PlayerExtraController;
+import adris.altoclef.util.csharpisbetter.ActionListener;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
-import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import adris.altoclef.util.time.TimerGame;
+import baritone.Baritone;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementHelper;
@@ -46,11 +45,17 @@ public class PlaceBlockNearbyTask extends Task {
     private BlockPos _tryPlace;   // Where we should TRY placing a block.
     // Oof, necesarry for the onBlockPlaced action.
     private AltoClef _mod;
-    private Subscription<BlockPlaceEvent> _onBlockPlaced;
+    private final ActionListener<PlayerExtraController.BlockPlaceEvent> onBlockPlaced;
 
     public PlaceBlockNearbyTask(Predicate<BlockPos> canPlaceHere, Block... toPlace) {
         _toPlace = toPlace;
         _canPlaceHere = canPlaceHere;
+        onBlockPlaced = new ActionListener<>(value ->
+        {
+            if (ArrayUtils.contains(_toPlace, value.blockState.getBlock())) {
+                stopPlacing(_mod);
+            }
+        });
     }
 
     public PlaceBlockNearbyTask(Block... toPlace) {
@@ -61,13 +66,7 @@ public class PlaceBlockNearbyTask extends Task {
     protected void onStart(AltoClef mod) {
         _mod = mod;
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
-
-        // Check for blocks being placed
-        _onBlockPlaced = EventBus.subscribe(BlockPlaceEvent.class, evt -> {
-            if (ArrayUtils.contains(_toPlace, evt.blockState.getBlock())) {
-                stopPlacing(_mod);
-            }
-        });
+        mod.getControllerExtras().onBlockPlaced.addListener(onBlockPlaced);
     }
 
     @Override
@@ -80,7 +79,7 @@ public class PlaceBlockNearbyTask extends Task {
         // -
 
         // Close screen first
-        StorageHelper.closeScreen();
+        mod.getControllerExtras().closeScreen();
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
@@ -111,7 +110,7 @@ public class PlaceBlockNearbyTask extends Task {
         }
 
         // Try to place at a particular spot.
-        if (_tryPlace == null || !WorldHelper.canReach(mod, _tryPlace)) {
+        if (_tryPlace == null || mod.getBlockTracker().unreachable(_tryPlace)) {
             _tryPlace = locateClosePlacePos(mod);
         }
         if (_tryPlace != null) {
@@ -133,7 +132,7 @@ public class PlaceBlockNearbyTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         stopPlacing(mod);
-        EventBus.unsubscribe(_onBlockPlaced);
+        mod.getControllerExtras().onBlockPlaced.removeListener(onBlockPlaced);
     }
 
     @Override
@@ -171,7 +170,7 @@ public class PlaceBlockNearbyTask extends Task {
                     return null;
                 }
                 //Debug.logMessage("TEMP: B (actual): " + placePos);
-                if (WorldHelper.canPlace(mod, placePos)) {
+                if (!Baritone.getAltoClefSettings().shouldAvoidPlacingAt(placePos.getX(), placePos.getY(), placePos.getZ())) {
                     return placePos;
                 }
             }
@@ -180,7 +179,7 @@ public class PlaceBlockNearbyTask extends Task {
     }
 
     private boolean blockEquipped(AltoClef mod) {
-        return StorageHelper.isEquipped(mod, ItemHelper.blocksToItems(_toPlace));
+        return mod.getInventoryTracker().isEquipped(ItemHelper.blocksToItems(_toPlace));
     }
 
     private boolean place(AltoClef mod, BlockPos targetPlace) {
@@ -237,7 +236,7 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             // We can't place here.
-            if (!WorldHelper.canReach(mod, blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
+            if (mod.getBlockTracker().unreachable(blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
                 continue;
             }
             boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());

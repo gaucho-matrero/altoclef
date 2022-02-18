@@ -3,10 +3,6 @@ package adris.altoclef.tasks.misc;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.Subscription;
-import adris.altoclef.eventbus.events.ChatMessageEvent;
-import adris.altoclef.eventbus.events.GameOverlayEvent;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -18,12 +14,12 @@ import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.csharpisbetter.ActionListener;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import adris.altoclef.util.time.TimerGame;
-import baritone.api.utils.input.Input;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -38,8 +34,6 @@ import net.minecraft.util.math.Vec3i;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
-
-    private boolean _stayInBed;
 
     private static final Block[] BEDS = CollectBedTask.BEDS;
 
@@ -62,20 +56,26 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private BlockPos _currentBedRegion;
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
-    private Subscription<ChatMessageEvent> _respawnPointSetMessageCheck;
-    private Subscription<GameOverlayEvent> _respawnFailureMessageCheck;
+    private final ActionListener<String> onCheckGameMessage = new ActionListener<>(value -> {
+        if (value.contains("Respawn point set")) {
+            _spawnSet = true;
+            _inBedTimer.reset();
+        }
+    });
     private boolean _sleepAttemptMade;
+    private final ActionListener<String> onOverlayMessage = new ActionListener<>(value -> {
+        final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
+        for (String checkMessage : NEUTRAL_MESSAGES) {
+            if (value.contains(checkMessage)) {
+                if (!_sleepAttemptMade) {
+                    _bedInteractTimeout.reset();
+                }
+                _sleepAttemptMade = true;
+            }
+        }
+    });
     private boolean _wasSleeping;
     private BlockPos _bedForSpawnPoint;
-
-    public PlaceBedAndSetSpawnTask() {
-
-    }
-
-    public PlaceBedAndSetSpawnTask stayInBed() {
-        _stayInBed = true;
-        return this;
-    }
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -110,24 +110,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
         _sleepAttemptMade = false;
         _wasSleeping = false;
 
-        _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            String msg = evt.message.asString();
-            if (msg.contains("Respawn point set")) {
-                _spawnSet = true;
-                _inBedTimer.reset();
-            }
-        });
-        _respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
-            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
-            for (String checkMessage : NEUTRAL_MESSAGES) {
-                if (evt.message.contains(checkMessage)) {
-                    if (!_sleepAttemptMade) {
-                        _bedInteractTimeout.reset();
-                    }
-                    _sleepAttemptMade = true;
-                }
-            }
-        });
+        mod.onGameMessage.addListener(onCheckGameMessage);
+        mod.onGameOverlayMessage.addListener(onOverlayMessage);
     }
 
     public void resetSleep() {
@@ -147,23 +131,27 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Place on the middle block, reliably placing the bed.
 
         // We cannot do this anywhere but the overworld.
-        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
-        Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
+        if (mod.getPlayer().isSleeping()) {
             _progressChecker.reset();
             setDebugState("Sleeping...");
-            _wasSleeping = true;
-            //Debug.logMessage("Closing sleeping thing");
-            _spawnSet = true;
-            screen.onClose();
+            // Click "leave bed" immediately.
+
+            Screen screen = MinecraftClient.getInstance().currentScreen;
+            if (_inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
+                _wasSleeping = true;
+                //Debug.logMessage("Closing sleeping thing");
+                _spawnSet = true;
+                screen.onClose();
+            }
             return null;
         }
 
-        if (_sleepAttemptMade && !_stayInBed) {
+        if (_sleepAttemptMade) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
@@ -191,35 +179,28 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         }
                     }
                 }
-                _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
-                if (_bedForSpawnPoint == null) {
-                    _bedForSpawnPoint = toSleepIn;
-                }
+                BlockPos targetMove = toSleepIn;
                 if (!closeEnough) {
                     try {
                         Direction face = mod.getWorld().getBlockState(toSleepIn).get(BedBlock.FACING);
                         Direction side = face.rotateYClockwise();
-                        /*
-                        BlockPos targetMove = toSleepIn.offset(side).offset(side); // Twice, juust to make sure...
-                         */
-                        return new GetToBlockTask(_bedForSpawnPoint.add(side.getVector()));
+                        targetMove = toSleepIn.offset(side);
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
                     }
                 } else {
                     _inBedTimer.reset();
                 }
-                if (closeEnough) {
-                    _inBedTimer.reset();
-                }
                 // Keep track of where our spawn point is
+                _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
+                //Debug.logMessage("Bed spawn point: " + _bedForSpawnPoint);
                 _progressChecker.reset();
-                return new InteractWithBlockTask(_bedForSpawnPoint);
+                return new InteractWithBlockTask(targetMove);
             }, BEDS);
         }
 
         // Get a bed if we don't have one.
-        if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
+        if (!mod.getInventoryTracker().hasItem(ItemHelper.BED)) {
             setDebugState("Getting a bed first");
             return TaskCatalogue.getItemTask("bed", 1);
         }
@@ -295,16 +276,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
             _progressChecker.reset();
             return _wanderTask;
         }
-
-        // Scoot backwards if we're trying to place and fail
-        if (thisOrChildSatisfies(task -> {
-            if (task instanceof InteractWithBlockTask intr)
-                return intr.getClickStatus() == InteractWithBlockTask.ClickResponse.CLICK_ATTEMPTED;
-            return false;
-        })) {
-            mod.getInputControls().tryPress(Input.MOVE_BACK);
-        }
-
         return new InteractWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 
@@ -312,8 +283,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(BEDS);
-        EventBus.unsubscribe(_respawnPointSetMessageCheck);
-        EventBus.unsubscribe(_respawnFailureMessageCheck);
+        mod.onGameMessage.removeListener(onCheckGameMessage);
+        mod.onGameOverlayMessage.removeListener(onOverlayMessage);
     }
 
     @Override
@@ -328,7 +299,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
+        if (mod.getCurrentDimension() != Dimension.OVERWORLD) {
             Debug.logWarning("Can't place spawnpoint/sleep in a bed unless we're in the overworld!");
             return true;
         }

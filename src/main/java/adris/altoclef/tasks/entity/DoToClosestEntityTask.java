@@ -7,15 +7,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-/**
- * Finds the closest entity and runs a task on that entity
- */
 @SuppressWarnings("ALL")
+/**
+ * Finds the closest entity and passes it to a task.
+ */
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
 
     private final Class[] _targetEntities;
@@ -51,8 +50,8 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
     }
 
     @Override
-    protected Optional<Entity> getClosestTo(AltoClef mod, Vec3d pos) {
-        if (!mod.getEntityTracker().entityFound(_targetEntities)) return Optional.empty();
+    protected Entity getClosestTo(AltoClef mod, Vec3d pos) {
+        if (!mod.getEntityTracker().entityFound(_targetEntities)) return null;
         return mod.getEntityTracker().getClosestEntity(pos, _shouldInteractWith, _targetEntities);
     }
 

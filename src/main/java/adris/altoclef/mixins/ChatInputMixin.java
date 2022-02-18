@@ -1,7 +1,7 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.SendChatEvent;
+import adris.altoclef.StaticMixinHookups;
+import baritone.api.event.events.ChatEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,8 +17,8 @@ public final class ChatInputMixin {
             cancellable = true
     )
     private void sendChatMessage(String msg, CallbackInfo ci) {
-        SendChatEvent event = new SendChatEvent(msg);
-        EventBus.publish(event);
+        ChatEvent event = new ChatEvent(msg);
+        StaticMixinHookups.onChat(event);
         if (event.isCancelled()) {
             ci.cancel();
         }

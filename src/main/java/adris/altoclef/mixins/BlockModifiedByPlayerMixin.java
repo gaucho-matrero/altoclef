@@ -1,7 +1,6 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.BlockBrokenEvent;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
@@ -23,13 +22,7 @@ public class BlockModifiedByPlayerMixin {
             at = @At("HEAD")
     )
     public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
-        if (player.world == world) {
-            BlockBrokenEvent evt = new BlockBrokenEvent();
-            evt.blockPos = pos;
-            evt.blockState = state;
-            evt.player = player;
-            EventBus.publish(evt);
-        }
+        StaticMixinHookups.onBlockBroken(world, pos, state, player);
     }
 
     @Inject(

@@ -1,7 +1,6 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.ChatMessageEvent;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.hud.ChatHudListener;
 import net.minecraft.network.MessageType;
 import net.minecraft.text.Text;
@@ -21,7 +20,8 @@ public final class ChatReadMixin {
             at = @At("HEAD")
     )
     private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
-        ChatMessageEvent evt = new ChatMessageEvent(messageType, message);
-        EventBus.publish(evt);
+        if (messageType == MessageType.SYSTEM) {
+            StaticMixinHookups.onGameMessage(message.getString(), true);
+        }
     }
 }

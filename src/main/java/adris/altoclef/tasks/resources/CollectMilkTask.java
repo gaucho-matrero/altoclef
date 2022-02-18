@@ -5,14 +5,11 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
-import adris.altoclef.tasks.resources.CollectMilkTask.MilkCowTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
-
-import java.util.Optional;
 
 public class CollectMilkTask extends ResourceTask {
 
@@ -35,7 +32,7 @@ public class CollectMilkTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Make sure we have a bucket.
-        if (!mod.getItemStorage().hasItem(Items.BUCKET)) {
+        if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
             return TaskCatalogue.getItemTask(Items.BUCKET, 1);
         }
         // Dimension
@@ -73,7 +70,7 @@ public class CollectMilkTask extends ResourceTask {
 
         @Override
         protected Task onEntityInteract(AltoClef mod, Entity entity) {
-            if (!mod.getItemStorage().hasItem(Items.BUCKET)) {
+            if (!mod.getInventoryTracker().hasItem(Items.BUCKET)) {
                 Debug.logWarning("Failed to milk cow because you have no bucket.");
                 return null;
             }
@@ -86,7 +83,7 @@ public class CollectMilkTask extends ResourceTask {
         }
 
         @Override
-        protected Optional<Entity> getEntityTarget(AltoClef mod) {
+        protected Entity getEntityTarget(AltoClef mod) {
             return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), CowEntity.class);
         }
 

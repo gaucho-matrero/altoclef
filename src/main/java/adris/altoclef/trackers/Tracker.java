@@ -16,13 +16,8 @@ public abstract class Tracker {
         _dirty = true;
     }
 
-    // Virtual
-    protected boolean isDirty() {
-        return _dirty;
-    }
-
     protected void ensureUpdated() {
-        if (isDirty()) {
+        if (_dirty) {
             updateState();
             _dirty = false;
         }

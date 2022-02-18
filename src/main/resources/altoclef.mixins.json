@@ -11,10 +11,8 @@
     "ClientInteractWithBlockMixin",
     "ClientPlayerInteractionAccessor",
     "ClientUIMixin",
-    "EntityAccessor",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",
-    "SlotClickMixin",
     "WorldBlockModifiedMixin"
   ],
   "client": [
@@ -24,8 +22,8 @@
     "ClientOpenScreenMixin",
     "ClientTickMixin",
     "EntryMixin",
-    "LoadChunkMixin",
-    "PlayerCollidesWithEntityMixin"
+    "PlayerCollidesWithEntityMixin",
+    "LoadChunkMixin"
   ],
   "injectors": {
     "defaultRequire": 1

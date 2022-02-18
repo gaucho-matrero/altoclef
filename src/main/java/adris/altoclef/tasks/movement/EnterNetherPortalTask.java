@@ -4,12 +4,13 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.util.csharpisbetter.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
-import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EnterNetherPortalTask extends Task {
@@ -98,13 +99,14 @@ public class EnterNetherPortalTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return WorldHelper.getCurrentDimension() == _targetDimension;
+        return mod.getCurrentDimension() == _targetDimension;
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof EnterNetherPortalTask task) {
-            return (Objects.equals(task._getPortalTask, _getPortalTask) && Objects.equals(task._targetDimension, _targetDimension));
+            //noinspection ConstantConditions
+            return (((task._getPortalTask == null) == (_getPortalTask == null) || task._getPortalTask.equals(_getPortalTask)) && task._targetDimension.equals(_targetDimension));
         }
         return false;
     }

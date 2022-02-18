@@ -1,7 +1,6 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.BlockPlaceEvent;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
@@ -24,8 +23,7 @@ public class WorldBlockModifiedMixin {
     )
     public void onBlockWasChanged(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {
         if (!hasBlock(oldBlock, pos) && hasBlock(newBlock, pos)) {
-            BlockPlaceEvent evt = new BlockPlaceEvent(pos, newBlock);
-            EventBus.publish(evt);
+            StaticMixinHookups.onBlockPlaced(pos, newBlock);
         }
     }
     //onBlockChanged

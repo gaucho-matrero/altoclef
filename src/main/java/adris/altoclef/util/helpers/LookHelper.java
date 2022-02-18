@@ -20,9 +20,6 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 
-/**
- * Helper functions to interpret and change our player's look direction
- */
 public interface LookHelper {
 
     static Optional<Rotation> getReach(BlockPos target, Direction side) {
@@ -89,7 +86,7 @@ public interface LookHelper {
     }
 
     static boolean cleanLineOfSight(Entity entity, BlockPos block, double maxRange) {
-        Vec3d center = WorldHelper.toVec3d(block);
+        Vec3d center = WorldHelper.blockCenter(block);
         BlockHitResult hit = raycast(entity, getCameraPos(entity), center, maxRange);
         if (hit == null) return true;
         return switch (hit.getType()) {
@@ -114,18 +111,6 @@ public interface LookHelper {
     static BlockHitResult raycast(Entity entity, Vec3d end, double maxRange) {
         Vec3d start = getCameraPos(entity);
         return raycast(entity, start, end, maxRange);
-    }
-
-    static Rotation getLookRotation(Entity entity) {
-        float pitch = entity.getPitch();
-        float yaw = entity.getYaw();
-        return new Rotation(yaw, pitch);
-    }
-    static Rotation getLookRotation() {
-        if (MinecraftClient.getInstance().player == null) {
-            return new Rotation(0,0);
-        }
-        return getLookRotation(MinecraftClient.getInstance().player);
     }
 
     static Vec3d getCameraPos(Entity entity) {
@@ -168,7 +153,7 @@ public interface LookHelper {
     private static boolean isCollidingInteractable(AltoClef mod) {
 
         if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            StorageHelper.closeScreen();
+            mod.getControllerExtras().closeScreen();
             return true;
         }
 
@@ -187,11 +172,13 @@ public interface LookHelper {
 
     static void randomOrientation(AltoClef mod) {
         Rotation r = new Rotation((float) Math.random() * 360f, -90 + (float) Math.random() * 180f);
-        lookAt(mod, r);
+        mod.getClientBaritone().getLookBehavior().updateTarget(r, true);
     }
 
     static boolean isLookingAt(AltoClef mod, Rotation rotation) {
-        return rotation.isReallyCloseTo(getLookRotation());
+        float pitch = mod.getPlayer().getPitch();
+        float yaw = mod.getPlayer().getYaw();
+        return rotation.isReallyCloseTo(new Rotation(yaw, pitch));
     }
     static boolean isLookingAt(AltoClef mod, BlockPos blockPos) {
         return mod.getClientBaritone().getPlayerContext().isLookingAt(blockPos);
@@ -199,8 +186,6 @@ public interface LookHelper {
 
     static void lookAt(AltoClef mod, Rotation rotation) {
         mod.getClientBaritone().getLookBehavior().updateTarget(rotation, true);
-        mod.getPlayer().setYaw(rotation.getYaw());
-        mod.getPlayer().setPitch(rotation.getPitch());
     }
     static void lookAt(AltoClef mod, Vec3d toLook) {
         Rotation targetRotation = getLookRotation(mod, toLook);
@@ -223,5 +208,4 @@ public interface LookHelper {
     static Rotation getLookRotation(AltoClef mod, BlockPos toLook) {
         return getLookRotation(mod, WorldHelper.toVec3d(toLook));
     }
-
 }

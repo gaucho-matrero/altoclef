@@ -7,12 +7,8 @@ import net.minecraft.client.gui.screen.ingame.CraftingScreen;
 import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.gui.screen.ingame.SmithingScreen;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.screen.ScreenHandler;
 
-import java.util.Iterator;
 import java.util.Objects;
 
 // Very helpful links
@@ -44,59 +40,50 @@ public abstract class Slot {
         }
     }
 
-    /*
-    private static Slot getFromCurrentScreenAbstract(int slot, boolean inventory) {
+    public static Slot getFromInventory(int inventorySlot) {
+        // -1 means cursor.
+        if (inventorySlot == CURSOR_SLOT_INDEX) {
+            return new CursorInventorySlot();
+        }
         switch (getCurrentType()) {
             case PLAYER:
-                return new PlayerSlot(slot, inventory);
+                return new PlayerInventorySlot(inventorySlot);
             case CRAFTING_TABLE:
-                return new CraftingTableSlot(slot, inventory);
+                return new CraftingTableInventorySlot(inventorySlot);
             case FURNACE_OR_SMITH:
-                return new FurnaceSlot(slot, inventory);
+                return new FurnaceInventorySlot(inventorySlot);
             case CHEST_LARGE:
-                return new ChestSlot(slot, true, inventory);
+                return new ChestInventorySlot(inventorySlot, true);
             case CHEST_SMALL:
-                return new ChestSlot(slot, false, inventory);
-            default:
-                Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
-                return null;
+                return new ChestInventorySlot(inventorySlot, false);
         }
+        Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
+        return null;
+    }
+
+    //@SuppressWarnings("CopyConstructorMissesField")
+    /*public Slot(Slot other) {
+        this(other._inventorySlot, true);
     }*/
 
-    public boolean isScreenOpen() {
-        return SlotScreenMapping.isScreenOpen(getClass());
-    }
-    public static Slot getFromCurrentScreen(int windowSlot) {
-        return SlotScreenMapping.getFromScreen(windowSlot, false);//getFromCurrentScreenAbstract(windowSlot, false);
-    }
-    public static Slot getFromCurrentScreenInventory(int inventorySlot) {
-        return SlotScreenMapping.getFromScreen(inventorySlot, true);//getFromCurrentScreenAbstract(windowSlot, true);
+    private static ContainerType getCurrentType() {
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (screen instanceof FurnaceScreen || screen instanceof SmithingScreen) {
+            return ContainerType.FURNACE_OR_SMITH;
+        }
+        if (screen instanceof GenericContainerScreen) {
+            GenericContainerScreenHandler handler = ((GenericContainerScreen) screen).getScreenHandler();
+            boolean big = (handler.getRows() == 6);
+            return big ? ContainerType.CHEST_LARGE : ContainerType.CHEST_SMALL;
+        }
+        if (screen instanceof CraftingScreen) {
+            return ContainerType.CRAFTING_TABLE;
+        }
+        return ContainerType.PLAYER;
     }
 
     public static boolean isCursor(Slot slot) {
-        return slot instanceof CursorSlot;
-    }
-
-    public static Iterable<Slot> getCurrentScreenSlots() {
-        return () -> new Iterator<>() {
-            final ClientPlayerEntity player = MinecraftClient.getInstance().player;
-            final ScreenHandler handler = player != null? player.currentScreenHandler : null;
-            int i = -1;
-            final int MAX = handler != null? handler.slots.size() : 0;
-            @Override
-            public boolean hasNext() {
-                return i < MAX;
-            }
-
-            @Override
-            public Slot next() {
-                if (i == -1) {
-                    ++i;
-                    return CursorSlot.SLOT;
-                }
-                return Slot.getFromCurrentScreen(i++);
-            }
-        };
+        return slot instanceof CursorInventorySlot;
     }
 
     public int getInventorySlot() {
@@ -142,20 +129,6 @@ public abstract class Slot {
         return Objects.hash(getInventorySlot(), getWindowSlot());
     }
 
-    /**
-     * @return Whether this slot exists within the player's inventory or in a container that's disconnected from the player's inventory.
-     */
-    public boolean isSlotInPlayerInventory() {
-        ScreenHandler handler = MinecraftClient.getInstance().player != null? MinecraftClient.getInstance().player.currentScreenHandler : null;
-        int windowSlot = getWindowSlot();
-        if (handler instanceof PlayerScreenHandler) {
-            // Everything visible is player inventory.
-            return true;
-        }
-        int slotCount = handler != null? handler.slots.size() : 0;
-        return windowSlot >= (slotCount - (4 * 9));
-    }
-
     enum ContainerType {
         PLAYER,
         CRAFTING_TABLE,
@@ -163,7 +136,4 @@ public abstract class Slot {
         CHEST_LARGE,
         FURNACE_OR_SMITH
     }
-
-    @SuppressWarnings("StaticInitializerReferencesSubClass")
-    public static Slot UNDEFINED = new PlayerSlot(UNDEFINED_SLOT_INDEX);
 }

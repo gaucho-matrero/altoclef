@@ -2,11 +2,10 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.Subscription;
-import adris.altoclef.eventbus.events.ChunkLoadEvent;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.csharpisbetter.ActionListener;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +24,7 @@ public abstract class SearchChunksExploreTask extends Task {
     private final Set<ChunkPos> _alreadyExplored = new HashSet<>();
     private ChunkSearchTask _searcher;
     private AltoClef _mod;
-    private Subscription<ChunkLoadEvent> _chunkLoadedSubscription;
+    private final ActionListener<WorldChunk> chunkLoadEvent = new ActionListener<>(this::onChunkLoad);
 
     // Virtual
     protected ChunkPos getBestChunkOverride(AltoClef mod, List<ChunkPos> chunks) {
@@ -35,9 +34,7 @@ public abstract class SearchChunksExploreTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         _mod = mod;
-
-        // Listen for chunk loading
-        _chunkLoadedSubscription = EventBus.subscribe(ChunkLoadEvent.class, evt -> onChunkLoad(evt.chunk.getPos()));
+        mod.getOnChunkLoad().addListener(chunkLoadEvent);
 
         resetSearch(mod);
     }
@@ -69,18 +66,18 @@ public abstract class SearchChunksExploreTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        EventBus.unsubscribe(_chunkLoadedSubscription);
+        mod.getOnChunkLoad().removeListener(chunkLoadEvent);
     }
 
-    // When we find a valid chunk, start our search there.
-    private void onChunkLoad(ChunkPos pos) {
+    // When we find that desert, start our search there.
+    private void onChunkLoad(WorldChunk chunk) {
         if (_searcher != null) return;
         if (!this.isActive()) return;
-        if (isChunkWithinSearchSpace(_mod, pos)) {
+        if (isChunkWithinSearchSpace(_mod, chunk.getPos())) {
             synchronized (_searcherMutex) {
-                if (!_alreadyExplored.contains(pos)) {
-                    Debug.logMessage("New searcher: " + pos);
-                    _searcher = new SearchSubTask(pos);
+                if (!_alreadyExplored.contains(chunk.getPos())) {
+                    Debug.logMessage("New searcher: " + chunk.getPos());
+                    _searcher = new SearchSubTask(chunk.getPos());
                 }
             }
         }
@@ -102,7 +99,7 @@ public abstract class SearchChunksExploreTask extends Task {
         _alreadyExplored.clear();
         // We want to search the currently loaded chunks too!!!
         for (ChunkPos start : mod.getChunkTracker().getLoadedChunks()) {
-            onChunkLoad(start);
+            onChunkLoad(mod.getWorld().getChunk(start.x, start.z));
         }
     }
 

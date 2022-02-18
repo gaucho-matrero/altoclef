@@ -2,11 +2,10 @@ package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
+import adris.altoclef.tasks.slot.MoveItemToSlotTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ArmorItem;
@@ -36,30 +35,30 @@ public class EquipArmorTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        ItemTarget[] armorsNotEquipped = Arrays.stream(_toEquip).filter(target -> !StorageHelper.itemTargetsMetInventory(mod, target) && !StorageHelper.isArmorEquipped(mod, target.getMatches())).toArray(ItemTarget[]::new);
-        boolean armorMet = armorsNotEquipped.length == 0;
+        boolean armorMet = Arrays.stream(_toEquip).allMatch(target -> mod.getInventoryTracker().targetsMet(target));
         if (!armorMet) {
             setDebugState("Obtaining armor");
-            return new CataloguedResourceTask(armorsNotEquipped);
+            return new CataloguedResourceTask(_toEquip);
         }
 
         setDebugState("Equipping armor");
 
         // Now equip
+
         for (ItemTarget targetArmor : _toEquip) {
             ArmorItem item = (ArmorItem) Objects.requireNonNull(targetArmor.getMatches())[0];
             if (item == null) {
                 Debug.logWarning("Item " + targetArmor + " is not armor! Will not equip.");
             } else {
-                if (!StorageHelper.isArmorEquipped(mod, item)) {
+                if (!mod.getInventoryTracker().isArmorEquipped(item)) {
                     if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                        StorageHelper.closeScreen();
+                        mod.getControllerExtras().closeScreen();
                     }
                     Slot toMove = PlayerSlot.getEquipSlot(item.getSlotType());
                     if (toMove == null) {
                         Debug.logWarning("Invalid armor equip slot for item " + item.getTranslationKey() + ": " + item.getSlotType());
                     }
-                    return new MoveItemToSlotFromInventoryTask(targetArmor, toMove);
+                    return new MoveItemToSlotTask(targetArmor, toMove);
                 }
             }
         }
@@ -97,8 +96,12 @@ public class EquipArmorTask extends Task {
         );
     }
 
+    public boolean hasArmor(AltoClef mod) {
+        return armorTestAll(item -> mod.getInventoryTracker().isArmorEquipped(item) || mod.getInventoryTracker().hasItem(item));
+    }
+
     public boolean armorEquipped(AltoClef mod) {
-        return armorTestAll(item -> StorageHelper.isArmorEquipped(mod, item));
+        return armorTestAll(item -> mod.getInventoryTracker().isArmorEquipped(item));
     }
 
 }

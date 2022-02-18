@@ -8,8 +8,6 @@ import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 
-import java.util.Optional;
-
 public class ShearSheepTask extends AbstractDoToEntityTask {
 
     public ShearSheepTask() {
@@ -23,7 +21,7 @@ public class ShearSheepTask extends AbstractDoToEntityTask {
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
-        if (!mod.getItemStorage().hasItem(Items.SHEARS)) {
+        if (!mod.getInventoryTracker().hasItem(Items.SHEARS)) {
             Debug.logWarning("Failed to shear sheep because you have no shears.");
             return null;
         }
@@ -36,7 +34,7 @@ public class ShearSheepTask extends AbstractDoToEntityTask {
     }
 
     @Override
-    protected Optional<Entity> getEntityTarget(AltoClef mod) {
+    protected Entity getEntityTarget(AltoClef mod) {
         return mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
                 entity -> {
                     if (entity instanceof SheepEntity sheep) {

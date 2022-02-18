@@ -1,7 +1,6 @@
 package adris.altoclef.mixins;
 
-import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.GameOverlayEvent;
+import adris.altoclef.StaticMixinHookups;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +17,6 @@ public class GameOverlayMixin {
     )
     public void onSetOverlayMessage(Text message, boolean tinted, CallbackInfo ci) {
         String text = message.getString();
-        EventBus.publish(new GameOverlayEvent(text));
+        StaticMixinHookups.onGameOverlayMessage(text);
     }
 }

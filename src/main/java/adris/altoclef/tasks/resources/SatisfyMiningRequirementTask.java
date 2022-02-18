@@ -4,7 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.item.Items;
 
 /**
@@ -61,6 +60,6 @@ public class SatisfyMiningRequirementTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return StorageHelper.miningRequirementMetInventory(mod, _requirement);
+        return mod.getInventoryTracker().miningRequirementMet(_requirement);
     }
 }

@@ -4,7 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.item.Item;
 
 public class GetBuildingMaterialsTask extends Task {
@@ -39,7 +38,7 @@ public class GetBuildingMaterialsTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return StorageHelper.getBuildingMaterialCount(mod) >= _count;
+        return mod.getInventoryTracker().getBuildingMaterialCount() >= _count;
     }
 
     @Override
