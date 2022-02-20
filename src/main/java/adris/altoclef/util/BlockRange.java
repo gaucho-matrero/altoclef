@@ -11,6 +11,8 @@ public class BlockRange {
     public BlockPos end;
     public Dimension dimension = Dimension.OVERWORLD;
 
+    private BlockRange() {}
+    
     public BlockRange(BlockPos start, BlockPos end, Dimension dimension) {
         this.start = start;
         this.end = end;
