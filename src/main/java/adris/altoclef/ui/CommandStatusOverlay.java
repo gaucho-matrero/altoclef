@@ -51,7 +51,7 @@ public class CommandStatusOverlay {
             // Draw the item chain
             List<String> itemChain = new ArrayList<>();
             for (Task task : tasks) {
-                if (!task.getItemName().isBlank()) {
+                if (task instanceof ResourceTask resourceTask && !resourceTask.getItemName().isBlank()) {
                     itemChain.add(task.getItemName());
                 }
             }

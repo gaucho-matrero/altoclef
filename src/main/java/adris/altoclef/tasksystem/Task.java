@@ -182,8 +182,4 @@ public abstract class Task {
             return true;
         }));
     }
-
-    public String getItemName() {
-        return "";
-    }
 }
