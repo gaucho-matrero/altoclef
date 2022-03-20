@@ -23,28 +23,6 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 - Print the entire bee movie script with signs in a straight line, automatically collecting signs + bridging materials along the way.
 - Become the terminator: Run away from players while unarmed, gather diamond gear in secret, then return and wreak havoc.
 
-## Version hash
-
-The current sha256 hash of this release is:
-
- ***3c2f032fd7517ddde90c28aabd69ba692fb9d905bca9b89ecd2a048213873e62***
-
-Last updated 02/04/2022. Git Commit: 795e886
-
-If you hash the jar file and do not get this value, please message James Green or Taco Technica on the discord so we can update it.
-
-### How to check the hash yourself
-
-(this tutorial assumes you are on windows)
-
-1. Navigate to artifacts.zip and extract it. 
-
-2. Open a command prompt window and navigate to the directory of your extracted files.
-
-3. type in **certutil -hashfile altoclef-4.0-SNAPSHOT.jar sha256**
-
-4. Compare that value to the one above. If they are the same, you have correctly downloaded the proper version of altoclef
-
 ## Download
 
 **Note:** After installing, please move/delete your old baritone configurations if you have any. Preexisting baritone configurations will interfere with altoclef and introduce bugs. This will be fixed in the future.
