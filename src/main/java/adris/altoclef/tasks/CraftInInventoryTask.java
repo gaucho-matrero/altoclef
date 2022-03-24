@@ -96,19 +96,8 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected String toDebugString() {
-        // Prevent redundancy
-        // eg Craft 2x2 CraftingRecipe{craft planks} for *acacia_planks x4*: [*acacia_planks x4*]
-        // given that the RecipeTarget already contains the goal of what to get
-        return toDebugStringName(); 
-    }
-
-    @Override
-    protected String toDebugStringName() {
-        return toCraftingDebugStringName() + " " + _target;
-    }
-
-    protected String toCraftingDebugStringName() {
-        return "Craft 2x2";
+        // example of _target: CraftingRecipe{craft planks} for *acacia_planks x4*
+        return "2x2 " + _target;
     }
 
     // virtual. By default assumes subtasks are CATALOGUED (in TaskCatalogue.java)

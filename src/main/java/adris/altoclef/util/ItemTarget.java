@@ -27,12 +27,11 @@ public class ItemTarget {
     public ItemTarget(Item[] items, int targetCount) {
         _itemMatches = items;
         _targetCount = targetCount;
+        /* DEBUG: This notes when a list of items is passed without a descriptive string.
         if (items.length > 1) {
-            //Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
-            // Hey you reading this.
-            // If you want to help improve the user experience, go ahead and uncomment the line, so you can test it.
-            // But don't do it in the release version, because it will be annoying.
+            Debug.logMessage("Friendly name for " + Arrays.toString(items) + " is not provided.");
         }
+        */
     }
 
     public ItemTarget(String catalogueName, int targetCount) {
