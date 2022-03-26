@@ -34,25 +34,9 @@ public class ReceiveOutputSlotTask extends Task {
     protected Task onTick(AltoClef mod) {
         ItemStack inOutput = StorageHelper.getItemStackInSlot(_slot);
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-        if (!cursor.isEmpty() && !ItemHelper.canStackTogether(inOutput, cursor)) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
-            if (moveTo.isPresent()) {
-                setDebugState("Moving cursor stack back");
-                return new ClickSlotTask(moveTo.get());
-            }
-            if (ItemHelper.canThrowAwayStack(mod, cursor)) {
-                setDebugState("Incompatible cursor stack, throwing");
-                return new ThrowCursorTask();
-            } else {
-                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
-                if (garbage.isPresent()) {
-                    setDebugState("Picking up garbage");
-                    return new ClickSlotTask(garbage.get());
-                } else {
-                    setDebugState("STUCK! Everything's protected.");
-                    return null;
-                }
-            }
+        boolean cursorSlotFree = cursor.isEmpty();
+        if(!cursorSlotFree && !ItemHelper.canStackTogether(inOutput, cursor)) {
+            return new EnsureFreeCursorSlotTask();
         }
         int craftCount = inOutput.getCount() * getCraftMultipleCount(mod);
         int weWantToAddToInventory = _toTake - mod.getItemStorage().getItemCountInventoryOnly(inOutput.getItem());

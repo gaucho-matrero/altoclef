@@ -48,7 +48,6 @@ public class SlotHandler {
         _slotActionTimer.reset();
     }
 
-
     public void clickSlot(Slot slot, int mouseButton, SlotActionType type) {
         if (!canDoSlotAction()) return;
 
