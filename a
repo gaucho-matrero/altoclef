@@ -1,0 +1,487 @@
+[33mcommit e4195ceda64f9844b686df14ab04d22a96ff79e5[m[33m ([m[1;36mHEAD -> [m[1;32mCraftingbookFix[m[33m, [m[1;31morigin/CraftingbookFix[m[33m)[m
+Author: James Green <james@p.ckplace.org>
+Date:   Sat Mar 26 00:34:46 2022 -0600
+
+    Commented out what needs to be done and where. Looking into the best way to do these changes. Basically, we need to ensure that the 2x2 crafting grid is empty before opening the crafting table. Otherwise, the 2x2 items become inaccessible to us for crafting. Suggestion: Either clear those spots after you finish crafting, or do not allow them to be
+    
+    used if you are opening a container
+
+[33mcommit a7f4c454853ec7baaa0fd70b579b7bcdcb971c43[m
+Author: James Green <james@p.ckplace.org>
+Date:   Fri Mar 25 18:24:44 2022 -0600
+
+    Realized that the problem was that the bot was attempting clear its crafting inventory, but it had items in its hand so it would end up getting stuck swapping between them. Added EnsureFreeCursorSlotTask to ensure that it can remove extra items from the crafting slolts. this seemed to work. TODO: There are some additional issues where the bot gets its items stuck in the 2x2 crafting grid, but then opens a crafting table and cannot find the items.
+
+[33mcommit c6a998641eb6c2538a081a74f228b4fb91643570[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: 3b6acb0d 12457926
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Sun Mar 20 19:03:21 2022 -0400
+
+    Merge pull request #228 from JamesGreen31/main
+    
+    Remove outdated version hash
+
+[33mcommit 12457926a1b8396f49ffb44315e221ca0531f3e1[m
+Merge: 3b6acb0d 929a7ed1
+Author: JGreen <72313560+JamesGreen31@users.noreply.github.com>
+Date:   Fri Mar 18 14:17:58 2022 -0600
+
+    Merge pull request #1 from JamesGreen31/update-readme
+    
+    removed outdated version hash
+
+[33mcommit 929a7ed1a4c270fbb9044c2578057db7ab5c8acd[m[33m ([m[1;31morigin/update-readme[m[33m, [m[1;32mupdate-readme[m[33m)[m
+Author: James Green <james@p.ckplace.org>
+Date:   Fri Mar 18 14:15:35 2022 -0600
+
+    removed outdated version hash
+
+[33mcommit 3b6acb0d09f1c0f322d3bb2a1efe719a89424e1f[m
+Merge: a18b569d 9d96bcb1
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Sun Feb 6 20:24:13 2022 -0500
+
+    Merge pull request #209 from wagyourtail/patch-1
+    
+    add hashing
+
+[33mcommit a18b569d5614378a5faa3c1afbe31b19bb7cae67[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sun Feb 6 11:37:59 2022 -0500
+
+    Attempt to make bed placing more reliable
+
+[33mcommit 7278668f7e57ddf41c5af5efff9d9dd0ee8a38ef[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sun Feb 6 11:18:10 2022 -0500
+
+    get planks: Account for stripped logs
+
+[33mcommit 0882606121de5aef153408d38db4d8e9cd582e22[m
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Sun Feb 6 11:06:17 2022 -0500
+
+    Trigger action, maybe github's actions service was down...
+
+[33mcommit 9d96bcb1eea82c1cdc654eac014741b957b5e11d[m
+Author: wagyourtail <wagyourtail@wagyourtail.xyz>
+Date:   Sat Feb 5 19:59:22 2022 -0700
+
+    fix bash script
+
+[33mcommit d61b16fc55786bf35b41df273ab2266ef79c864d[m
+Author: wagyourtail <wagyourtail@wagyourtail.xyz>
+Date:   Sat Feb 5 19:54:21 2022 -0700
+
+    fix shell
+
+[33mcommit 037ef0cce922af57e0e95146ef248b19cf00a42d[m
+Author: wagyourtail <wagyourtail@wagyourtail.xyz>
+Date:   Sat Feb 5 19:48:49 2022 -0700
+
+    add hashing
+
+[33mcommit 99e827e0117c1b3d172161224cd737e459c2a254[m
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Sat Feb 5 18:27:08 2022 -0500
+
+    Attempt to reload workflow so we trigger another action??
+
+[33mcommit 89c6affe848a1a1d8e6b6e948b38c1c46e3fd6f7[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 17:41:16 2022 -0500
+
+    MLG temporary adjustment
+
+[33mcommit f5d07dac8f86841af45e223bc72ee5df5030ef52[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 17:20:37 2022 -0500
+
+    Terminator Fixes/Adjustments
+
+[33mcommit e81ee662e41d90d83917f160e74b27b9587e4db0[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 10:17:18 2022 -0500
+
+    Add dimension to `BlockRange` (present in `protectedAreas`)
+
+[33mcommit 2c0538fd6027b8cc28b38ccf28f9907399e7ea8b[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 10:13:20 2022 -0500
+
+    Nether Portal building: Ensure "solid" ish ground
+
+[33mcommit df0d8a93d5e76a1d22b9e57486a0347f611285d1[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 10:13:00 2022 -0500
+
+    `BeatMinecraft` tweaks & fixes
+    - Dragon head "distance" config for bed strats
+    - Dragon fight avoid pearling when center is obstructed
+    - Slightly more sensitive dragon breath avoidance
+
+[33mcommit b04727b44f35194cd05ae504218702ebc1c5f0b1[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Sat Feb 5 09:10:03 2022 -0500
+
+    Fix "Receive Output on full inventory" cursor swapping stuck bug
+
+[33mcommit 51c4d1eda34dbec5dd8e5e555c4ef994a8fea9ee[m
+Merge: 795e886f d2ad7108
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Sat Feb 5 00:02:57 2022 -0500
+
+    Merge pull request #204 from JamesGreen31/Readme_hashupdate
+    
+    Readme hashupdate
+
+[33mcommit d2ad7108d27ff73a3f865eb941e7db22547b9122[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 21:51:15 2022 -0700
+
+    Fixed an old date/version number
+
+[33mcommit ffdb289267391a2c3d7245b5e81ec04d5a571f7b[m
+Merge: d1c5f18e 9639aa1c
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 21:49:07 2022 -0700
+
+    Merge branch 'Readme_hashupdate' of https://github.com/JamesGreen31/altoclef into Readme_hashupdate
+
+[33mcommit d1c5f18e2a356c02c9d568d317133240bcaaefc3[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 21:48:57 2022 -0700
+
+    Updated to 1.18; Updated hash to verify commit 795e886f1acbea89f23d270e2dd12cb613411062
+
+[33mcommit 9639aa1c0c27f6902510030cef4ef61071663ade[m
+Merge: 6f116436 795e886f
+Author: JGreen <72313560+JamesGreen31@users.noreply.github.com>
+Date:   Fri Feb 4 20:44:45 2022 -0800
+
+    Merge branch 'gaucho-matrero:main' into Readme_hashupdate
+
+[33mcommit 795e886f1acbea89f23d270e2dd12cb613411062[m
+Merge: 99ff19df 70723033
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 21:34:37 2022 -0500
+
+    Merge remote-tracking branch 'origin/main'
+
+[33mcommit 99ff19df1a49dd951a68b8f3401e367730bd68a7[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 21:34:19 2022 -0500
+
+    Make receiving crafting outputs not so wonky
+
+[33mcommit 70723033b4fca4e24a8c2f165f064e96a90616b8[m
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Fri Feb 4 20:36:18 2022 -0500
+
+    README 1.18
+
+[33mcommit 0b3ab3e2c0c64357a5fd2a034566342425feeb7d[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 20:34:54 2022 -0500
+
+    Missed a spot
+
+[33mcommit 10cf49ab43b739496621c94ebb7ad58eb41b303c[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 19:38:52 2022 -0500
+
+    Add predicate option to `EntityTracker.anyFound`
+
+[33mcommit bb08576789d6765666c5398a415ac1b5ccde66b7[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 18:47:19 2022 -0500
+
+    Add `hideWarningLogs` setting by request
+
+[33mcommit 8ba13a8e20987071fb2c267407837b1277d62dbd[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 18:44:33 2022 -0500
+
+    Fix `BlockRange` not being deserialized
+
+[33mcommit 6bce620dbed9de97fbb4c753782bca7456a0a806[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:52:33 2022 -0500
+
+    Cursor slot should NOT be considered a "can fit" clickable slot.
+
+[33mcommit 6f1164367dc4e21deefd0629e0bffdb6b22ee668[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 15:47:44 2022 -0700
+
+    Updated. verifies 4bc54653709bc8ce54072139c53caaaf7a0a5954
+
+[33mcommit bd640a3bec8f9050069a744dd68c3023f8c218f7[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:47:35 2022 -0500
+
+    Cursor slot is NOT a garbage slot
+
+[33mcommit 6d62278d69f5c902a906f0da56dd8bf37ca7540b[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:47:18 2022 -0500
+
+    Potentially make dodge projectile calculations not mess up if the projectile is below us
+
+[33mcommit edf140df69a8707fb507480ceba90f2f1f4d90dc[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:46:39 2022 -0500
+
+    Remove print that would have gotten triggered a bajillion times because sometimes we have empty `_itemMatches`... ughhh
+
+[33mcommit ee10a4441e3964c118f4ce53b37137980aa16bdb[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:46:04 2022 -0500
+
+    Try to fix annoying "ruh roh we can't destroy a block below us" issue
+
+[33mcommit 53c535bcfe0a6b985a7f980a1d6028689bbf2f89[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 15:45:40 2022 -0700
+
+    Updated. verifies 4bc54653709bc8ce54072139c53caaaf7a0a5954
+
+[33mcommit 26ede3ad87c69a3b3d2622600303617f225f79f1[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:45:27 2022 -0500
+
+    Reorder recipe book crafting "material" movement (oops didn't consider that one)
+
+[33mcommit 4bc54653709bc8ce54072139c53caaaf7a0a5954[m
+Merge: 8a62ab3a 36a6d2e0
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:06:57 2022 -0500
+
+    Merge remote-tracking branch 'origin/main'
+
+[33mcommit 8a62ab3ae41657cb8fd573bfa103a0e62cffd512[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:06:45 2022 -0500
+
+    Remove ItemTarget `_itemMatches` NPE's
+
+[33mcommit 36a6d2e0333b7d77a1917e349849cfbbc40d98ae[m
+Merge: 5b933996 ec4736d9
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Fri Feb 4 17:01:35 2022 -0500
+
+    Merge pull request #203 from JamesGreen31/Readme_hashupdate
+    
+    Updated hash
+
+[33mcommit ec4736d9608f00909e96f3394c6b60ee2df3c783[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 10:31:00 2022 -0700
+
+    Updated hash
+
+[33mcommit 31c0f1a856063f1705ad12465de52e92b720d46e[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Fri Feb 4 10:29:08 2022 -0700
+
+    Updated hash
+
+[33mcommit 5b933996d24fbb0c1c0ad0ecae5bf41fed28a389[m
+Merge: 0881bfbe f2963ec3
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Fri Feb 4 10:08:05 2022 -0500
+
+    Merge pull request #197 from JamesGreen31/Readme_hashupdate
+    
+    Readme hashupdate
+
+[33mcommit f2963ec3112c02f02a3a26d474683380801caec2[m
+Merge: 3f7f12ff b7e9e983
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Thu Feb 3 12:03:58 2022 -0700
+
+    Merge branch 'Readme_hashupdate' of https://github.com/JamesGreen31/altoclef into Readme_hashupdate
+
+[33mcommit 3f7f12ff38772c033afcfe6b40d1fc270c979ec1[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Thu Feb 3 12:03:45 2022 -0700
+
+    Updated
+
+[33mcommit b7e9e98374139a61deafc6acfff5e8555fa84d39[m
+Merge: c6069ab5 0881bfbe
+Author: JGreen <72313560+JamesGreen31@users.noreply.github.com>
+Date:   Thu Feb 3 10:42:48 2022 -0800
+
+    Merge branch 'gaucho-matrero:main' into Readme_hashupdate
+
+[33mcommit 0881bfbe6ae219af773176624ec037aeeb09c673[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Thu Feb 3 13:40:47 2022 -0500
+
+    no noll >:(
+
+[33mcommit c6069ab59fe0b84eb397e7379c98428dc5d3030b[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Thu Feb 3 10:43:01 2022 -0700
+
+    Updated hash
+
+[33mcommit 74df3aa34c6bbb8772b5f76aaf00a1d91d70e5fa[m
+Merge: fc259525 909a46f0
+Author: JGreen <72313560+JamesGreen31@users.noreply.github.com>
+Date:   Thu Feb 3 09:41:39 2022 -0800
+
+    Merge branch 'gaucho-matrero:main' into Readme_hashupdate
+
+[33mcommit 909a46f008696b92cac0cb854887f992068fed8c[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Thu Feb 3 09:46:07 2022 -0500
+
+    Slot fixes: CONVERSION slot behaviour, utilize garbage more, and recipe book cursor bug
+
+[33mcommit fc25952508438c636b7d850424a817951ebb507c[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Wed Feb 2 21:14:32 2022 -0700
+
+    Did wrong one. fixed
+
+[33mcommit 1267b018c816f74aa5ebc84591dc9435e4bf0414[m
+Author: Jgreen <james.green31@protonmail.ch>
+Date:   Wed Feb 2 21:11:03 2022 -0700
+
+    Added a sha256 checksum to the main jar
+
+[33mcommit 7415008e0e843d59fbf19f521425b8dc78e2fd6b[m[33m ([m[1;33mtag: v0.4.0[m[33m, [m[1;32mfixgame_4.0[m[33m)[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:55:27 2022 -0500
+
+    Build Actions w/ Java 17
+
+[33mcommit b143db2c7a7b1182ea12f47de9a024f3f43c4452[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:37:09 2022 -0500
+
+    1.0-SNAPSHOT is kinda annoying
+
+[33mcommit ef1beda2dec44e9bfdec7fbe053fdb4b27c11ed8[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:29:36 2022 -0500
+
+    Fix minor bug, really should fix this separately but whatever
+
+[33mcommit 7ce027d91630a01b80ebd504cd6e277479d68a75[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:29:15 2022 -0500
+
+    Re-add 1.18 fix (lol)
+
+[33mcommit 5d43b1516500a15726ad520418020fbdbf5ac67e[m
+Merge: d96d5ec6 feae9e32
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:12:59 2022 -0500
+
+    Merge branch 'main' into 1.18-DarkReaper231_main
+    
+    # Conflicts:
+    #       src/main/java/adris/altoclef/mixins/LoadChunkMixin.java
+    #       src/main/java/adris/altoclef/tasks/movement/SearchChunksExploreTask.java
+    #       src/main/java/adris/altoclef/tasks/speedrun/BeatMinecraft2Task.java
+    #       src/main/java/adris/altoclef/trackers/BlockTracker.java
+
+[33mcommit d96d5ec63807471f6f15ff2051a4ac0667840af3[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 19:12:10 2022 -0500
+
+    Fix up and make 1.18 work
+
+[33mcommit feae9e32d98462d43f3a78e1b304e2f6021bb814[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 18:04:37 2022 -0500
+
+    Tiny import cleanup
+
+[33mcommit 1480afd415fc74943b890611a57d55b9bfd17023[m
+Merge: a0fd6cd9 7b99d537
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 18:01:45 2022 -0500
+
+    Merge remote-tracking branch 'origin/main'
+    
+    # Conflicts:
+    #       src/main/java/adris/altoclef/tasks/speedrun/BeatMinecraft2Task.java
+
+[33mcommit a0fd6cd9eec6fdd5d0cf5ccd157774f2db322fa0[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 17:57:28 2022 -0500
+
+    Make `BeatMinecraft` work with Fast Travel and the thing messed up in our bed spawn task
+
+[33mcommit 1f203c4e977ae1823eecb543885c0a3d5c524dcf[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 17:55:43 2022 -0500
+
+    Tiny cleanups
+
+[33mcommit b3b5c336a6a6578c1e20685c1b381d62d4c27c19[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 17:49:24 2022 -0500
+
+    Fix obvious container collection bug...
+
+[33mcommit e0e6d555c26c046ca22bb508c58744998e3aa403[m
+Merge: 9e71ad70 7b99d537
+Author: JGreen <72313560+JamesGreen31@users.noreply.github.com>
+Date:   Wed Feb 2 10:46:16 2022 -0800
+
+    Merge branch 'gaucho-matrero:main' into Readme_hashupdate
+
+[33mcommit 7b99d537023ea7be93c40b512d65c4097e9e41e1[m
+Merge: 733c5741 460c5c85
+Author: TacoTechnica <adrisj7@gmail.com>
+Date:   Wed Feb 2 13:44:26 2022 -0500
+
+    Merge pull request #191 from SnivyLlama/main
+    
+    Loot desert temples & get to outer end islands
+
+[33mcommit 733c5741df360d22e76d7d37ffad7e7de65c67e2[m
+Merge: 4e7ae270 d5c0c8dd
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 13:37:57 2022 -0500
+
+    Merge branch 'JamesGreen_FastTravel_Split'
+    
+    # Conflicts:
+    #       src/main/java/adris/altoclef/tasks/movement/LocateStrongholdTask.java
+
+[33mcommit 4e7ae270093d9a8855e6cabc01bed4982756563d[m
+Merge: 8387b8df 135ec6bc
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 13:31:39 2022 -0500
+
+    Merge remote-tracking branch 'origin/main'
+
+[33mcommit 8387b8df8b9b8552a78dd8c6022d23bf9e4b7bbd[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 13:30:09 2022 -0500
+
+    Reduce crafting dropping
+
+[33mcommit 9a6e0d43637460e69374f43be201a3130bf254a3[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 10:34:24 2022 -0500
+
+    Remove NPE in `@get`
+
+[33mcommit 1e323e75aba3708ee0be6e28b323d9046a66ad0e[m
+Author: Adris Jautakas <adrisj7@gmail.com>
+Date:   Wed Feb 2 10:33:00 2022 -0500
+
+    Reduce item drop pickup delay
+
+[33mcommit 460c5c850f3cc669930e5f4dc4e8ccd21bb9425c[m
+Author: SnivyLlama <61280616+SnivyLlama@users.noreply.github.com>
+Date:   Tue Feb 1 18:57:34 2022 -0600
+
+    Whoopsie
