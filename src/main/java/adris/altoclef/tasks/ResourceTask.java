@@ -1,13 +1,17 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.container.DoStuffInContainerTask;
 import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeCraftingGridTask;
+import adris.altoclef.tasks.slot.EnsureFreeCursorSlotTask;
 import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.ITaskCanForce;
+import adris.altoclef.tasksystem.ITaskLimitsSlots;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
@@ -33,7 +37,7 @@ import java.util.Optional;
  *
  * If the target item is on the ground or in a chest, will grab from those sources first.
  */
-public abstract class ResourceTask extends Task implements ITaskCanForce {
+public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskLimitsSlots {
 
     protected final ItemTarget[] _itemTargets;
 
@@ -44,7 +48,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
     private Dimension _targetDimension;
-
+    private boolean ranCraftingSlotCheck = false;
+    private boolean ranCursorSlotCheck = false;
     private BlockPos _mineLastClosest = null;
 
     public ResourceTask(ItemTarget[] itemTargets) {
@@ -85,7 +90,6 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         // If we have an item in an INACCESSIBLE inventory slot
         for (ItemTarget target : _itemTargets) {
             if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
@@ -176,6 +180,17 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             }
         }
 
+        return onResourceTick_clearingPhase(mod);
+    }
+
+    private Task onResourceTick_clearingPhase(AltoClef mod) {
+        if(shouldEmptyCraftingGrid(mod,this) && !ranCraftingSlotCheck) {
+            ranCraftingSlotCheck = true;
+            return new EnsureFreeCraftingGridTask();
+        }
+        if(shouldEmptyCursorSlot(mod,this) && !ranCursorSlotCheck){
+            return new EnsureFreeCursorSlotTask();
+        }
         return onResourceTick(mod);
     }
 
@@ -246,6 +261,16 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     protected abstract boolean isEqualResource(ResourceTask other);
 
     protected abstract String toDebugStringName();
+
+    @Override
+    public boolean shouldEmptyCursorSlot(AltoClef mod, Task candidate) {
+        return false;
+    }
+
+    @Override
+    public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
+        return candidate instanceof DoStuffInContainerTask;
+    }
 
     public ItemTarget[] getItemTargets() {
         return _itemTargets;

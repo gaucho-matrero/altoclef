@@ -23,7 +23,6 @@ public class CraftInInventoryTask extends ResourceTask {
     private final RecipeTarget _target;
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
-    private boolean _finished = false;
     private boolean _fullCheckFailed = false;
 
     public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
@@ -31,7 +30,6 @@ public class CraftInInventoryTask extends ResourceTask {
         _target = target;
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
-        _finished = false;
     }
 
     public CraftInInventoryTask(RecipeTarget target) {
@@ -82,17 +80,12 @@ public class CraftInInventoryTask extends ResourceTask {
         // No need to free inventory, output gets picked up.
 
         // DO THE BELOW UJTIL ITS NULL, THEN RETURN ENSURE FREE CRAFTING GRID
-        if(!_finished) {
-            _finished = true;
-
             setDebugState("Crafting in inventory... for " + toGet);
             return mod.getModSettings().shouldUseCraftingBookToCraft()
                     ? new CraftGenericWithRecipeBooksTask(_target)
                     : new CraftGenericManuallyTask(_target);
 
-        }
-        // TODO: Clear the input slots after finishing the crafting
-        return new EnsureFreeCraftingGridTask();
+
     }
 
     @Override
