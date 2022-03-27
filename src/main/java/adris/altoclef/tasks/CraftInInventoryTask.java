@@ -80,7 +80,11 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         // No need to free inventory, output gets picked up.
+
+        // DO THE BELOW UJTIL ITS NULL, THEN RETURN ENSURE FREE CRAFTING GRID
         if(!_finished) {
+            _finished = true;
+
             setDebugState("Crafting in inventory... for " + toGet);
             return mod.getModSettings().shouldUseCraftingBookToCraft()
                     ? new CraftGenericWithRecipeBooksTask(_target)
