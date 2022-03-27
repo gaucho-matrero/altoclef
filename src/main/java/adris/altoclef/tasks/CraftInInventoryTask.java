@@ -82,7 +82,6 @@ public class CraftInInventoryTask extends ResourceTask {
         // No need to free inventory, output gets picked up.
         if(!_finished) {
             setDebugState("Crafting in inventory... for " + toGet);
-            _finished = true;
             return mod.getModSettings().shouldUseCraftingBookToCraft()
                     ? new CraftGenericWithRecipeBooksTask(_target)
                     : new CraftGenericManuallyTask(_target);
