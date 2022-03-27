@@ -20,6 +20,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
@@ -269,7 +270,14 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
 
     @Override
     public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
-        return candidate instanceof DoStuffInContainerTask;
+        if(candidate instanceof DoStuffInContainerTask){
+            for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
+                if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public ItemTarget[] getItemTargets() {
