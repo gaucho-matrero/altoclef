@@ -2,6 +2,9 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
+import adris.altoclef.tasks.slot.ClickSlotTask;
+import adris.altoclef.tasks.slot.EnsureFreeCraftingGridTask;
+import adris.altoclef.tasks.slot.EnsureFreeCursorSlotTask;
 import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -20,6 +23,7 @@ public class CraftInInventoryTask extends ResourceTask {
     private final RecipeTarget _target;
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
+    private boolean _finished = false;
     private boolean _fullCheckFailed = false;
 
     public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
@@ -27,6 +31,7 @@ public class CraftInInventoryTask extends ResourceTask {
         _target = target;
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
+        _finished = false;
     }
 
     public CraftInInventoryTask(RecipeTarget target) {
@@ -75,11 +80,16 @@ public class CraftInInventoryTask extends ResourceTask {
         }
 
         // No need to free inventory, output gets picked up.
+        if(!_finished) {
+            setDebugState("Crafting in inventory... for " + toGet);
+            _finished = true;
+            return mod.getModSettings().shouldUseCraftingBookToCraft()
+                    ? new CraftGenericWithRecipeBooksTask(_target)
+                    : new CraftGenericManuallyTask(_target);
 
-        setDebugState("Crafting in inventory... for " + toGet);
-        return mod.getModSettings().shouldUseCraftingBookToCraft()
-                ? new CraftGenericWithRecipeBooksTask(_target)
-                : new CraftGenericManuallyTask(_target);
+        }
+        // TODO: Clear the input slots after finishing the crafting
+        return new EnsureFreeCraftingGridTask();
     }
 
     @Override
