@@ -23,4 +23,6 @@ public interface ITaskLimitsSlots {
      */
      boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate);
 
+     //Any task that needs to be staged can be declared here
+
 }
