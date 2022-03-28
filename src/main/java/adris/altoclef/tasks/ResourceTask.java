@@ -49,8 +49,6 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
     private Dimension _targetDimension;
-    private boolean ranCraftingSlotCheck = false;
-    private boolean ranCursorSlotCheck = false;
     private BlockPos _mineLastClosest = null;
 
     public ResourceTask(ItemTarget[] itemTargets) {
@@ -185,11 +183,10 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     }
 
     private Task onResourceTick_clearingPhase(AltoClef mod) {
-        if(shouldEmptyCraftingGrid(mod,this) && !ranCraftingSlotCheck) {
-            ranCraftingSlotCheck = true;
+        if(shouldEmptyCraftingGrid(mod,this)) {
             return new EnsureFreeCraftingGridTask();
         }
-        if(shouldEmptyCursorSlot(mod,this) && !ranCursorSlotCheck){
+        if(shouldEmptyCursorSlot(mod,this)){
             return new EnsureFreeCursorSlotTask();
         }
         return onResourceTick(mod);
