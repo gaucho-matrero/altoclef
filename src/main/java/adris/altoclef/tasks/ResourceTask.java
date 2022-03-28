@@ -267,7 +267,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
 
     @Override
     public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
-        if(candidate instanceof DoStuffInContainerTask){
+        if(!(candidate instanceof CraftInInventoryTask)){
             for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                 if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                     return true;
