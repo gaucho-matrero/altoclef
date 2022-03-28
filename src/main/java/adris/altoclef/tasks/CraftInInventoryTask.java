@@ -2,9 +2,6 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.EnsureFreeCraftingGridTask;
-import adris.altoclef.tasks.slot.EnsureFreeCursorSlotTask;
 import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
