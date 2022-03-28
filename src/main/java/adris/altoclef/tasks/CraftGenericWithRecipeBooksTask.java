@@ -3,7 +3,6 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.EnsureFreeCraftingGridTask;
 import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
 import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
@@ -14,7 +13,6 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
-import net.minecraft.block.CraftingTableBlock;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
