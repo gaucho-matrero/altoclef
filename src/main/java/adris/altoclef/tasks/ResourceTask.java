@@ -183,6 +183,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     }
 
     private Task onResourceTick_clearingPhase(AltoClef mod) {
+        // We must ensure that the cursor slot is free LAST
         if(shouldEmptyCraftingGrid(mod,this)) {
             return new EnsureFreeCraftingGridTask();
         }
@@ -262,6 +263,10 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
 
     @Override
     public boolean shouldEmptyCursorSlot(AltoClef mod, Task candidate) {
+        //Craft in inventory task assumes cursor slot is free
+        if(!(candidate instanceof CraftInInventoryTask)){
+            return !StorageHelper.getItemStackInCursorSlot().isEmpty();
+        }
         return false;
     }
 
