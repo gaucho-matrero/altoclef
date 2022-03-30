@@ -9,6 +9,8 @@ assignees: ''
 
 ## Your Idea
 
+### Discord username (if you want updates)
+
 ### Developer Notes (leave this blank)
 
 _Difficulty_: **__**
