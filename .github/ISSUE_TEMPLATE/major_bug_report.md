@@ -15,3 +15,9 @@ assignees: ''
 
 ## Crashlogs and Screenshots (if applicable)
 _(you may drag + drop text logs and images here, thanks GitHub)_
+
+### Developer Notes (leave this blank)
+
+_Difficulty_: **__**
+_Estimated Time Required_: **__**
+Once development starts.
