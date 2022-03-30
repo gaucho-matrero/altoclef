@@ -264,15 +264,12 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     @Override
     public boolean shouldEmptyCursorSlot(AltoClef mod, Task candidate) {
         //Craft in inventory task assumes cursor slot is free
-        if(!(candidate instanceof CraftInInventoryTask)){
-            return !StorageHelper.getItemStackInCursorSlot().isEmpty();
-        }
         return false;
     }
 
     @Override
     public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
-        if(!(candidate instanceof CraftInInventoryTask)){
+        if((candidate instanceof DoStuffInContainerTask)){
             for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                 if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                     return true;
