@@ -62,6 +62,6 @@ public class EnsureFreeCursorSlotTask extends Task {
     // And filling this in will make it look ok in the task tree
     @Override
     protected String toDebugString() {
-        return null;
+        return "Breaking the cursor slot";
     }
 }

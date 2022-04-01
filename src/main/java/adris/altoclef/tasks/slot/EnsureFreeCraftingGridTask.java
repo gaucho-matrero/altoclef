@@ -42,6 +42,6 @@ public class EnsureFreeCraftingGridTask extends Task {
 
     @Override
     protected String toDebugString() {
-        return null;
+        return "Breaking the crafting grid";
     }
 }
