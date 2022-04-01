@@ -6,10 +6,7 @@ import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.EnsureFreeCraftingGridTask;
-import adris.altoclef.tasks.slot.EnsureFreeCursorSlotTask;
-import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
+import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.ITaskCanForce;
 import adris.altoclef.tasksystem.ITaskLimitsSlots;
 import adris.altoclef.tasksystem.Task;
@@ -264,13 +261,20 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     @Override
     public boolean shouldEmptyCursorSlot(AltoClef mod, Task candidate) {
         //Craft in inventory task assumes cursor slot is free
+        if(StorageHelper.isPlayerInventoryOpen()){
+            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)) || (thisOrChildSatisfies(task -> task instanceof ReceiveOutputSlotTask)))){
+                if(!StorageHelper.getItemStackInCursorSlot().isEmpty()){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
     @Override
     public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
         if(StorageHelper.isPlayerInventoryOpen()){
-            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)))){
+            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)) || (thisOrChildSatisfies(task -> task instanceof ReceiveOutputSlotTask)))){
                 for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                     if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                         return true;
