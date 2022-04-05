@@ -35,7 +35,7 @@ import java.util.Optional;
  *
  * If the target item is on the ground or in a chest, will grab from those sources first.
  */
-public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskLimitsSlots {
+public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     protected final ItemTarget[] _itemTargets;
 
@@ -175,17 +175,14 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
                 }
             }
         }
-
-        return onResourceTick_clearingPhase(mod);
-    }
-
-    private Task onResourceTick_clearingPhase(AltoClef mod) {
-        // We must ensure that the cursor slot is free LAST
-        if(shouldEmptyCraftingGrid(mod,this)) {
-            return new EnsureFreeCraftingGridTask();
-        }
-        if(shouldEmptyCursorSlot(mod,this)){
-            return new EnsureFreeCursorSlotTask();
+        if(StorageHelper.isPlayerInventoryOpen()){
+            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)) || (thisOrChildSatisfies(task -> task instanceof ReceiveOutputSlotTask)))){
+                for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
+                    if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
+                        return new EnsureFreeCraftingGridTask();
+                    }
+                }
+            }
         }
         return onResourceTick(mod);
     }
@@ -257,27 +254,6 @@ public abstract class ResourceTask extends Task implements ITaskCanForce, ITaskL
     protected abstract boolean isEqualResource(ResourceTask other);
 
     protected abstract String toDebugStringName();
-
-    @Override
-    public boolean shouldEmptyCursorSlot(AltoClef mod, Task candidate) {
-        //Craft in inventory task assumes cursor slot is free
-        return false;
-    }
-
-    @Override
-    public boolean shouldEmptyCraftingGrid(AltoClef mod, Task candidate) {
-
-        if(StorageHelper.isPlayerInventoryOpen()){
-            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)) || (thisOrChildSatisfies(task -> task instanceof ReceiveOutputSlotTask)))){
-                for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
-                    if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     public ItemTarget[] getItemTargets() {
         return _itemTargets;
