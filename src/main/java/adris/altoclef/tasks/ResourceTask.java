@@ -175,6 +175,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             }
         }
 
+
+        // Make sure that items don't get stuck in the player crafting grid
         if(StorageHelper.isPlayerInventoryOpen()){
             if (!((thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)))){
                 for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
