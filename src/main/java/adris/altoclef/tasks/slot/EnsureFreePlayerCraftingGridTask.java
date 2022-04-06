@@ -6,9 +6,8 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.resource.ResourceManager;
 
-public class EnsureFreeCraftingGridTask extends Task {
+public class EnsureFreePlayerCraftingGridTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -37,7 +36,7 @@ public class EnsureFreeCraftingGridTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        return other instanceof EnsureFreeCraftingGridTask;
+        return other instanceof EnsureFreePlayerCraftingGridTask;
     }
 
     @Override

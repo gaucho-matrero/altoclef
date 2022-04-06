@@ -1,7 +1,6 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.container.DoStuffInContainerTask;
 import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
@@ -180,7 +179,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             if (!((thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)))){
                 for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                     if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
-                        return new EnsureFreeCraftingGridTask();
+                        return new EnsureFreePlayerCraftingGridTask();
                     }
                 }
             }
