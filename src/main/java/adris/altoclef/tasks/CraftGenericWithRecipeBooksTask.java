@@ -1,12 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
+import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasks.slot.ThrowCursorTask;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -18,7 +17,7 @@ import net.minecraft.item.ItemStack;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class CraftGenericWithRecipeBooksTask extends Task {
+public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCraftingGrid {
 
     private final RecipeTarget _target;
 
@@ -33,6 +32,9 @@ public class CraftGenericWithRecipeBooksTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+
+        
+
         boolean bigCrafting = StorageHelper.isBigCraftingOpen();
 
         if (!bigCrafting && !StorageHelper.isPlayerInventoryOpen()) {
@@ -46,18 +48,22 @@ public class CraftGenericWithRecipeBooksTask extends Task {
         ItemStack output = StorageHelper.getItemStackInSlot(outputSlot);
         if (_target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(_target.getOutputItem()) < _target.getTargetCount()) {
             setDebugState("Getting output");
-            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
-        }
+            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
+        }  // TODO Migrate this back to Craft In Inventory
 
         // If a material is found in cursor, move it to the inventory.
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
+
+
+        // Crafting book REQUIRES that all materials be in the inventory. Materials CANNOT be in the cursor
         if (Arrays.stream(_target.getRecipe().getSlots()).anyMatch(target -> target.matches(cursor.getItem()))) {
             setDebugState("CURSOR HAS MATERIAL! Moving out.");
             Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
             if (toMoveTo.isPresent()) {
                 return new ClickSlotTask(toMoveTo.get());
             } else {
-                // Worst case scenario, find a slot that fits.
+                // If our inventory is full, but the material will be used for crafting, put it in the crafting grid.
+                // TODO: Add as an alternative method to EnsureCursorSlotTask
                 for (int recSlot = 0; recSlot < _target.getRecipe().getSlotCount(); ++recSlot) {
                     if (_target.getRecipe().getSlot(recSlot).matches(cursor.getItem())) {
                         Slot toMoveToPotential = bigCrafting? CraftingTableSlot.getInputSlot(recSlot, _target.getRecipe().isBig()) : PlayerSlot.getCraftInputSlot(recSlot);
@@ -67,7 +73,8 @@ public class CraftGenericWithRecipeBooksTask extends Task {
                         }
                     }
                 }
-                // Worst worst case scenario just... hang on to it and let the inventory settle...
+                // Crafting grid is full, and we still have the item, throw it away.
+                return new ThrowCursorTask();
             }
         }
 

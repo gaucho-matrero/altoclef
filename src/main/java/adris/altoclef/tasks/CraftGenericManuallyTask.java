@@ -3,8 +3,9 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
-import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
+import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasks.slot.ThrowCursorTask;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
@@ -23,7 +24,7 @@ import java.util.Optional;
  *
  * Not useful for custom tasks.
  */
-public class CraftGenericManuallyTask extends Task {
+public class CraftGenericManuallyTask extends Task implements ITaskUsesCraftingGrid {
 
     private final RecipeTarget _target;
 
@@ -83,7 +84,7 @@ public class CraftGenericManuallyTask extends Task {
                     if (!mod.getItemStorage().hasItemInventoryOnly(present.getItem())) {
                         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
                             setDebugState("NO MORE to fit: grabbing from output.");
-                            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
+                            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
                         } else {
                             // Move on to the NEXT slot, we can't fill this one anymore.
                             continue;
@@ -115,7 +116,7 @@ public class CraftGenericManuallyTask extends Task {
         }
 
         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
-            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
+            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
         } else {
             // Wait
             return null;

@@ -2,7 +2,7 @@ package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
+import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
@@ -60,7 +60,7 @@ public class CraftInInventoryTask extends ResourceTask {
                 Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
                 for (ItemTarget target : _itemTargets) {
                     if (target.matches(outputItem)) {
-                        return new ReceiveOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                        return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
                     }
                 }
             }
@@ -76,10 +76,10 @@ public class CraftInInventoryTask extends ResourceTask {
 
         // No need to free inventory, output gets picked up.
 
-        setDebugState("Crafting in inventory... for " + toGet);
-        return mod.getModSettings().shouldUseCraftingBookToCraft()
-                ? new CraftGenericWithRecipeBooksTask(_target)
-                : new CraftGenericManuallyTask(_target);
+            setDebugState("Crafting in inventory... for " + toGet);
+            return mod.getModSettings().shouldUseCraftingBookToCraft() ? new CraftGenericWithRecipeBooksTask(_target) : new CraftGenericManuallyTask(_target);
+
+
     }
 
     @Override

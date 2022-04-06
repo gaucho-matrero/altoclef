@@ -5,9 +5,9 @@ import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
+import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.ITaskCanForce;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
@@ -16,6 +16,7 @@ import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
@@ -39,12 +40,11 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     private final PickupDroppedItemTask _pickupTask;
     private ContainerCache _currentContainer;
-
+    private final EnsureFreePlayerCraftingGridTask _ensureFreeCraftingGridTask = new EnsureFreePlayerCraftingGridTask();
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
     private Dimension _targetDimension;
-
     private BlockPos _mineLastClosest = null;
 
     public ResourceTask(ItemTarget[] itemTargets) {
@@ -85,8 +85,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         // If we have an item in an INACCESSIBLE inventory slot
+
         for (ItemTarget target : _itemTargets) {
             if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
                 setDebugState("Moving from SPECIAL inventory slot");
@@ -171,6 +171,17 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                         if (_mineLastClosest.isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange() * 1.5 + 20)) {
                             return new MineAndCollectTask(_itemTargets, _mineIfPresent, MiningRequirement.HAND);
                         }
+                    }
+                }
+            }
+        }
+
+        // Make sure that items don't get stuck in the player crafting grid. May be an issue if a future task isn't a resource task.
+        if(StorageHelper.isPlayerInventoryOpen()){
+            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()){
+                for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
+                    if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
+                        return _ensureFreeCraftingGridTask;
                     }
                 }
             }
