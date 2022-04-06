@@ -40,7 +40,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     private final PickupDroppedItemTask _pickupTask;
     private ContainerCache _currentContainer;
-
+    private final EnsureFreePlayerCraftingGridTask _ensureFreeCraftingGridTask = new EnsureFreePlayerCraftingGridTask();
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
@@ -86,6 +86,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     @Override
     protected Task onTick(AltoClef mod) {
         // If we have an item in an INACCESSIBLE inventory slot
+
         for (ItemTarget target : _itemTargets) {
             if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
                 setDebugState("Moving from SPECIAL inventory slot");
@@ -175,13 +176,12 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             }
         }
 
-
-        // Make sure that items don't get stuck in the player crafting grid
+        // Make sure that items don't get stuck in the player crafting grid. May be an issue if a future task isn't a resource task.
         if(StorageHelper.isPlayerInventoryOpen()){
-            if (!((thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)))){
+            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()){
                 for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                     if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
-                        return new EnsureFreePlayerCraftingGridTask();
+                        return _ensureFreeCraftingGridTask;
                     }
                 }
             }
