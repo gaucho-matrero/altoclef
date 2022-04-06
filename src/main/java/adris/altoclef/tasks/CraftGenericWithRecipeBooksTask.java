@@ -1,13 +1,11 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.EnsureFreeCursorSlotTask;
-import adris.altoclef.tasks.slot.ReceiveOutputSlotTask;
+import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasks.slot.ThrowCursorTask;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -19,7 +17,7 @@ import net.minecraft.item.ItemStack;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class CraftGenericWithRecipeBooksTask extends Task {
+public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCraftingGrid {
 
     private final RecipeTarget _target;
 
@@ -50,7 +48,7 @@ public class CraftGenericWithRecipeBooksTask extends Task {
         ItemStack output = StorageHelper.getItemStackInSlot(outputSlot);
         if (_target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(_target.getOutputItem()) < _target.getTargetCount()) {
             setDebugState("Getting output");
-            return new ReceiveOutputSlotTask(outputSlot, _target.getTargetCount());
+            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
         }  // TODO Migrate this back to Craft In Inventory
 
         // If a material is found in cursor, move it to the inventory.

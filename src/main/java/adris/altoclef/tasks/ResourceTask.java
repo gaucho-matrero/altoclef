@@ -8,7 +8,7 @@ import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasks.slot.*;
 import adris.altoclef.tasksystem.ITaskCanForce;
-import adris.altoclef.tasksystem.ITaskLimitsSlots;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
@@ -175,8 +175,9 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 }
             }
         }
+
         if(StorageHelper.isPlayerInventoryOpen()){
-            if(!((thisOrChildSatisfies(task -> task instanceof CraftGenericManuallyTask)) || (thisOrChildSatisfies(task -> task instanceof CraftGenericWithRecipeBooksTask)) || (thisOrChildSatisfies(task -> task instanceof ReceiveOutputSlotTask)))){
+            if (!((thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)))){
                 for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
                     if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                         return new EnsureFreeCraftingGridTask();
@@ -184,6 +185,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 }
             }
         }
+
         return onResourceTick(mod);
     }
 

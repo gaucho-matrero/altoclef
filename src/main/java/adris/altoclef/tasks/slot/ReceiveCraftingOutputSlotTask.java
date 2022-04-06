@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.slot;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -10,18 +11,16 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 
-import java.util.Optional;
-
-public class ReceiveOutputSlotTask extends Task {
+public class ReceiveCraftingOutputSlotTask extends Task implements ITaskUsesCraftingGrid {
 
     private final int _toTake;
     private final Slot _slot;
 
-    public ReceiveOutputSlotTask(Slot slot, int toTake) {
+    public ReceiveCraftingOutputSlotTask(Slot slot, int toTake) {
         _slot = slot;
         _toTake = toTake;
     }
-    public ReceiveOutputSlotTask(Slot slot, boolean all) {
+    public ReceiveCraftingOutputSlotTask(Slot slot, boolean all) {
         this(slot, all? Integer.MAX_VALUE : 1);
     }
 
@@ -56,7 +55,7 @@ public class ReceiveOutputSlotTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        if (other instanceof ReceiveOutputSlotTask task) {
+        if (other instanceof ReceiveCraftingOutputSlotTask task) {
             return task._slot.equals(_slot) && task._toTake == _toTake;
         }
         return false;
