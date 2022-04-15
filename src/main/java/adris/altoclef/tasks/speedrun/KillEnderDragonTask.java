@@ -314,7 +314,7 @@ public class KillEnderDragonTask extends Task {
                                     // We have sort of a rounded circle here.
                                     if (Math.abs(dx) == 2 && Math.abs(dz) == 2) continue;
                                     BlockPos toCheck = _exitPortalTop.add(dx, bottomYDelta, dz);
-                                    double distSq = toCheck.getSquaredDistance(head.getPos(), false);
+                                    double distSq = toCheck.getSquaredDistance(head.getPos());
                                     if (distSq < closestDist) {
                                         closest = toCheck;
                                         closestDist = distSq;

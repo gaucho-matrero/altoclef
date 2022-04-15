@@ -159,7 +159,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             _wasSleeping = true;
             //Debug.logMessage("Closing sleeping thing");
             _spawnSet = true;
-            screen.onClose();
+            screen.close(); // may be chat empty ??
             return null;
         }
 
@@ -354,7 +354,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 for (int dy = origin.getY() - SCAN_RANGE; dy < origin.getY() + SCAN_RANGE; ++dy) {
                     // Test range
                     BlockPos attemptStandPos = new BlockPos(dx, dy, dz);
-                    double distance = attemptStandPos.getSquaredDistance(mod.getPlayer().getPos(), false);
+                    double distance = attemptStandPos.getSquaredDistance(mod.getPlayer().getPos());
                     if (distance > closestDist) continue;
                     // Everything from here on out is checking for a BETTER pos.
                     for (int checkX = 0; checkX < BED_CLEAR_SIZE.getX(); ++checkX) {

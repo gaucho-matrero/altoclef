@@ -241,7 +241,7 @@ public class PlaceBlockNearbyTask extends Task {
                 continue;
             }
             boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());
-            double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos(), false);
+            double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos());
 
             double score = distSq + (solid ? 4 : 0) + (hasBelow ? 0 : 10) + (inside ? 3 : 0);
 

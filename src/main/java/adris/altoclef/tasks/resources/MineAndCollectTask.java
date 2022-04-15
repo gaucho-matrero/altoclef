@@ -192,7 +192,7 @@ public class MineAndCollectTask extends ResourceTask {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos, true);
+            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos);
             double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
