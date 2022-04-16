@@ -12,10 +12,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.registry.Registry;
-import org.apache.commons.compress.compressors.lz77support.LZ77Compressor;
-
 import java.util.*;
 
 /**
@@ -289,8 +288,12 @@ public class ItemHelper {
                         || b == Blocks.DEAD_BUSH
                         || b ==Blocks.VINE
                         || b == Blocks.TRIPWIRE
-                        || Registry.BLOCK.getKey(b).map(e -> Registry.BLOCK.entryOf(e).streamTags().anyMatch(t -> t == BlockTags.WOOL)).orElse(false)
+                        || isOfBlockType(b, BlockTags.WOOL)
                         || b == Blocks.NETHER_SPROUTS;
+    }
+
+    public static boolean isOfBlockType(Block b, TagKey<Block> tag) {
+        return Registry.BLOCK.getKey(b).map(e -> Registry.BLOCK.entryOf(e).streamTags().anyMatch(t -> t == tag)).orElse(false);
     }
 
     public static class ColorfulItems {
