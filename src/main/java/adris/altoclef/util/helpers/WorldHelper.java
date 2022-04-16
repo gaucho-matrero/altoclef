@@ -260,8 +260,8 @@ public interface WorldHelper {
 
     static boolean isOcean(RegistryEntry<Biome> b){
         return (b.matchesKey(BiomeKeys.OCEAN)
-        ||b.matchesKey(BiomeKeys.COLD_OCEAN)
-        ||b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
+        || b.matchesKey(BiomeKeys.COLD_OCEAN)
+        || b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
         || b.matchesKey(BiomeKeys.DEEP_OCEAN)
         || b.matchesKey(BiomeKeys.DEEP_FROZEN_OCEAN)
         || b.matchesKey(BiomeKeys.DEEP_LUKEWARM_OCEAN)
