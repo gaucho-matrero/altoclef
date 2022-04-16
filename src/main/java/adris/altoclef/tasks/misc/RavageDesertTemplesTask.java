@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class RavageDesertTemplesTask extends Task {
             setDebugState("Looting found temple");
             return _lootTask;
         }
-        return new SearchWithinBiomeTask(Biome.Category.DESERT);
+        return new SearchWithinBiomeTask(BiomeKeys.DESERT);
     }
 
     @Override

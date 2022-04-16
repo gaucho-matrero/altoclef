@@ -12,6 +12,7 @@ import net.minecraft.block.CocoaBlock;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 
 import java.util.HashSet;
 import java.util.function.Predicate;
@@ -66,7 +67,7 @@ public class CollectCocoaBeansTask extends ResourceTask {
 
         // Search for jungles
         setDebugState("Exploring around jungles");
-        return new SearchWithinBiomeTask(Biome.Category.JUNGLE);
+        return new SearchWithinBiomeTask(BiomeKeys.JUNGLE);
     }
 
     @Override

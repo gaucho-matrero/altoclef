@@ -19,8 +19,10 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.util.math.*;
+import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 
 import java.util.*;
 
@@ -246,7 +248,7 @@ public interface WorldHelper {
         if (mod.getModSettings().shouldAvoidOcean()) {
             // 45 is roughly the ocean floor. We add 2 just cause why not.
             // This > 47 can clearly cause a stuck bug.
-            if (mod.getPlayer().getY() > 47 && mod.getChunkTracker().isChunkLoaded(pos) && mod.getWorld().getBiome(pos).getCategory().equals(Biome.Category.OCEAN)) {
+            if (mod.getPlayer().getY() > 47 && mod.getChunkTracker().isChunkLoaded(pos) && isOcean(mod.getWorld().getBiome(pos))) { // But if we stuck, add more oceans
                 // Block is in an ocean biome. If it's below sea level...
                 if (pos.getY() < 64 && getGroundHeight(mod, pos.getX(), pos.getZ(), Blocks.WATER) > pos.getY()) {
                     return false;
@@ -254,6 +256,18 @@ public interface WorldHelper {
             }
         }
         return !mod.getBlockTracker().unreachable(pos);
+    }
+
+    static boolean isOcean(RegistryEntry<Biome> b){
+        return (b.matchesKey(BiomeKeys.OCEAN)
+        || b.matchesKey(BiomeKeys.COLD_OCEAN)
+        || b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
+        || b.matchesKey(BiomeKeys.DEEP_OCEAN)
+        || b.matchesKey(BiomeKeys.DEEP_FROZEN_OCEAN)
+        || b.matchesKey(BiomeKeys.DEEP_LUKEWARM_OCEAN)
+        || b.matchesKey(BiomeKeys.LUKEWARM_OCEAN)
+        || b.matchesKey(BiomeKeys.WARM_OCEAN)
+        || b.matchesKey(BiomeKeys.FROZEN_OCEAN));
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {

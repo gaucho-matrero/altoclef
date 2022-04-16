@@ -190,7 +190,7 @@ public class ContainerSubTracker extends Tracker {
                 toRemove.add(cache.getBlockPos());
                 continue;
             }
-            double dist = cache.getBlockPos().getSquaredDistance(pos, true);
+            double dist = cache.getBlockPos().getSquaredDistance(pos);
             if (dist < bestDist) {
                 if (accept.test(cache)) {
                     bestDist = dist;

@@ -276,7 +276,7 @@ public class BlockTracker extends Tracker {
                     }
                     if (!valid) continue;
                     if (check.isWithinDistance(pos, range)) {
-                        double sq = check.getSquaredDistance(pos, false);
+                        double sq = check.getSquaredDistance(pos);
                         if (sq < closestDistance) {
                             closestDistance = sq;
                             nearest = check;
@@ -649,7 +649,7 @@ public class BlockTracker extends Tracker {
                             // This is invalid, because some blocks we may want to GO TO not BREAK.
                             //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
                             .distinct()
-                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos, true)))
+                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos)))
                             .collect(Collectors.toList());
                     tracking = tracking.stream()
                             .limit(_config.maxCacheSizePerBlockType)
