@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
   "id": "altoclef",
-  "version": "0.3.3d-TEST",
+  "version": "0.4.1a",
   "name": "Alto Clef",
   "description": "Plays Block Game",
   "authors": [
-    "TacoTechnica"
+    "TacoTechnica",
+    "James Green"
   ],
   "contact": {
     "homepage": "https://fabricc.net/",
