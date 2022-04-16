@@ -6,6 +6,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 
 public class LocateDesertTempleTask extends Task {
 
@@ -27,7 +28,7 @@ public class LocateDesertTempleTask extends Task {
             setDebugState("Going to found desert temple");
             return new GetToBlockTask(_finalPos, false);
         }
-        return new SearchWithinBiomeTask(Biome.Category.DESERT);
+        return new SearchWithinBiomeTask(BiomeKeys.DESERT);
     }
 
     @Override
