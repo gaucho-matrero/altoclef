@@ -1,7 +1,8 @@
-package adris.altoclef.tasks.resources.wood;
+package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -27,15 +28,16 @@ public class CollectSticksTask extends ResourceTask {
 
     private final int _targetCount;
 
-    private final Item[] _itemsToPickup;
+    private static final Item[] _itemsToPickup;
+    static {
+        List<Item> itemsToPickup = new ArrayList<>(Arrays.asList(ItemHelper.LOG));
+        itemsToPickup.addAll(Arrays.asList(ItemHelper.PLANKS));
+        _itemsToPickup = itemsToPickup.toArray(new Item[itemsToPickup.size()]);
+    }
 
     public CollectSticksTask(int targetCount) {
         super(Items.STICK, targetCount);
         _targetCount = targetCount;
-        List<Item> itemsToPickup = new ArrayList<>(Arrays.asList(ItemHelper.LOG));
-        itemsToPickup.addAll(Arrays.asList(ItemHelper.PLANKS));
-        itemsToPickup.add(Items.DEAD_BUSH);
-        _itemsToPickup = itemsToPickup.toArray(new Item[itemsToPickup.size()]);
     }
 
     @Override
@@ -67,20 +69,7 @@ public class CollectSticksTask extends ResourceTask {
         // Do the same for logs to craft planks
         int potentialStickCountFromLogsAndPlanks = potentialStickCountFromPlanks + mod.getItemStorage().getItemCount(ItemHelper.LOG)*8;
         if (potentialStickCountFromLogsAndPlanks >= _targetCount) {
-            for (Item log : ItemHelper.LOG) {
-                int count = mod.getItemStorage().getItemCount(log);
-                if (count > 0) {
-                    Item plankCheck = ItemHelper.logToPlanks(log);
-                    if (plankCheck == null) {
-                        Debug.logError("Invalid/Un-convertable log: " + log + " (failed to find corresponding plank)");
-                    }
-                    int plankCount = mod.getItemStorage().getItemCount(plankCheck);
-                    int otherPlankCount = mod.getItemStorage().getItemCount(ItemHelper.PLANKS) - plankCount;
-                    int targetTotalPlanks = Math.min(count*4 + plankCount, _targetCount - otherPlankCount);
-                    setDebugState("Crafting planks from logs for sticks");
-                    return new CraftInInventoryTask(new RecipeTarget(plankCheck, targetTotalPlanks, generatePlankRecipe(ItemHelper.LOG)));
-                }
-            }
+            return TaskCatalogue.getItemTask(new ItemTarget(ItemHelper.PLANKS));
         }
         // Check the ground for loot
         if (mod.getEntityTracker().itemDropped(_itemsToPickup)) {
@@ -90,7 +79,7 @@ public class CollectSticksTask extends ResourceTask {
         ArrayList<Block> blocksToMine = new ArrayList<>(Arrays.asList(ItemHelper.itemsToBlocks(ItemHelper.LOG)));
         blocksToMine.add(Blocks.DEAD_BUSH);
         blocksToMine.addAll(Arrays.asList(ItemHelper.itemsToBlocks(ItemHelper.PLANKS)));
-        Optional<BlockPos> block = mod.getBlockTracker().getNearestTracking(ItemHelper.itemsToBlocks(_itemsToPickup)); // very janky but i suck at java
+        Optional<BlockPos> block = mod.getBlockTracker().getNearestTracking(blocksToMine.toArray(new Block[blocksToMine.size()])); // very janky but i suck at java
         if (block.isPresent()) {
             BlockPos blockPos = block.get();
             return new DestroyBlockTask(blockPos);
@@ -108,7 +97,7 @@ public class CollectSticksTask extends ResourceTask {
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
-        return other instanceof CollectSticksTask;
+        return other instanceof CollectSticksTask && this._targetCount == ((CollectSticksTask) other)._targetCount;
     }
 
     @Override
