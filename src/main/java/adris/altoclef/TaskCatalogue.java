@@ -195,7 +195,6 @@ public class TaskCatalogue {
                 woodCatalogue.dontMineIfPresent();
             }
             // shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
-            // mine("stick", MiningRequirement.HAND, Blocks.DEAD_BUSH, Items.STICK);
             simple("stick", Items.STICK, CollectSticksTask::new);
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("deepslate", Items.DEEPSLATE, "cobbled_deepslate").dontMineIfPresent();
