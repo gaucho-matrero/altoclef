@@ -194,7 +194,8 @@ public class TaskCatalogue {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
             }
-            shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
+            // shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
+            simple("stick", Items.STICK, CollectSticksTask::new);
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
             smelt("deepslate", Items.DEEPSLATE, "cobbled_deepslate").dontMineIfPresent();
             smelt("smooth_stone", Items.SMOOTH_STONE, "stone");
@@ -360,7 +361,6 @@ public class TaskCatalogue {
             shapedRecipe2x2("chiseled_nether_bricks", Items.CHISELED_NETHER_BRICKS, 1, "nether_brick_slab", o, "nether_brick_slab", o);
             shapedRecipe2x2("chiseled_quartz_block", Items.CHISELED_QUARTZ_BLOCK, 1, "quartz_slab", o, "quartz_slab", o);
             shapedRecipe2x2("chiseled_deepslate", Items.CHISELED_DEEPSLATE, 1, "cobbled_deepslate_slab", o, "cobbled_deepslate_slab", o);
-
             /// TOOLS
             tools("wooden", "planks", Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE);
             tools("stone", "cobblestone", Items.STONE_PICKAXE, Items.STONE_SHOVEL, Items.STONE_SWORD, Items.STONE_AXE, Items.STONE_HOE);
