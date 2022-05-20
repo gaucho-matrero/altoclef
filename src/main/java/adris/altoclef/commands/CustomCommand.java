@@ -9,7 +9,7 @@ import adris.altoclef.commandsystem.CommandException;
 
 public class CustomCommand extends Command {
     //TODO Delete dummyAlto and party after settings is updated to include the
-    //  custom command json.
+    //  custom command json. 
     static class dummyAlto extends AltoClef{
         /**
          * AltoClef Settings [stub]
