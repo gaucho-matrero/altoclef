@@ -32,6 +32,7 @@ public class ContainerSubTracker extends Tracker {
     private Block _lastBlockInteraction;
     private final HashMap<Dimension, HashMap<BlockPos, ContainerCache>> _containerCaches = new HashMap<>();
     private ContainerCache _enderChestCache;
+    private boolean _hasSentError;
 
     public ContainerSubTracker(TrackerManager manager) {
         super(manager);
@@ -79,6 +80,7 @@ public class ContainerSubTracker extends Tracker {
         _containerOpen = false;
         _lastBlockPosInteraction = null;
         _lastBlockInteraction = null;
+        _hasSentError = false;
     }
     public void onServerTick() {
         if (MinecraftClient.getInstance().player == null)
@@ -103,7 +105,10 @@ public class ContainerSubTracker extends Tracker {
             if (dimCache.containsKey(containerPos)) {
                 ContainerType currentType = dimCache.get(containerPos).getContainerType();
                 if (!ContainerType.screenHandlerMatches(currentType, handler)) {
-                    Debug.logMessage("Mismatched container screen at " + containerPos.toShortString() + ", will overwrite container data: " + handler.getType() + " ?=> " + currentType);
+                    if (!_hasSentError) {
+                        Debug.logMessage("Mismatched container screen at " + containerPos.toShortString() + ", will overwrite container data: " + handler.getType() + " ?=> " + currentType);
+                        _hasSentError = true;
+                    }
                     dimCache.remove(containerPos);
                 }
             }
