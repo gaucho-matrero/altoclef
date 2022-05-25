@@ -61,7 +61,8 @@ public class ContainerSubTracker extends Tracker {
             block.equals(Blocks.ENDER_CHEST) ||
             block instanceof HopperBlock ||
             block instanceof ShulkerBoxBlock ||
-            block instanceof DispenserBlock) {
+            block instanceof DispenserBlock ||
+            block instanceof BarrelBlock) {
             _lastBlockPosInteraction = pos;
             _lastBlockInteraction = block;
         }
