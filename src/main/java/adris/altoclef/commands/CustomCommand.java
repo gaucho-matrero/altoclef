@@ -27,38 +27,41 @@ public class CustomCommand extends Command {
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         CustomTaskConfig dupliate = _ctc;
 
-       String customCommand = parser.get(String.class);
+        String customCommand = parser.get(String.class);
 
         StringBuilder commandToExecute = new StringBuilder();
         int commandIndex = -1;
-       for(int i=0; i<_ctc.customTasks.length; i++){
-           if(_ctc.customTasks[i].name.equalsIgnoreCase(customCommand)){
-               commandIndex = i;
-               break;
-           }
-       }
-       for(int i = 0; i<_ctc.customTasks[commandIndex].tasks.length;i++){
-           if(i>0){
-               commandToExecute.append(";");
-           }
-           commandToExecute.append(_ctc.customTasks[commandIndex].tasks[i].command).append(" ");
-           if(_ctc.customTasks[commandIndex].tasks[i].command.equals("get")) {
-               //parameters have two inside arrays so we need to be careful here
+        for (int i = 0; i < _ctc.customTasks.length; i++) {
+            if (_ctc.customTasks[i].name.equalsIgnoreCase(customCommand)) {
+                commandIndex = i;
+                break;
+            }
+        }
+        if (commandIndex > -1) {
+            for (int i = 0; i < _ctc.customTasks[commandIndex].tasks.length; i++) {
+                if (i > 0) {
+                    commandToExecute.append(";");
+                }
+                commandToExecute.append(_ctc.customTasks[commandIndex].tasks[i].command).append(" ");
+                if (_ctc.customTasks[commandIndex].tasks[i].command.equals("get") || _ctc.customTasks[commandIndex].tasks[i].command.equals("equip")) {
+                    //parameters have two inside arrays so we need to be careful here
 
-                   commandToExecute.append("[");
-                   for(int j=0; j<_ctc.customTasks[commandIndex].tasks[i].parameters.length;j++){
-                       commandToExecute.append(Arrays.toString(_ctc.customTasks[commandIndex].tasks[i].parameters[j]).replaceAll("\\[","").replaceAll("]","").replaceAll(",",""));
-                       if(j<_ctc.customTasks[commandIndex].tasks[i].parameters.length-1){
-                           commandToExecute.append("?");
+                    commandToExecute.append("[");
+                    for (int j = 0; j < _ctc.customTasks[commandIndex].tasks[i].parameters.length; j++) {
+                        commandToExecute.append(Arrays.toString(_ctc.customTasks[commandIndex].tasks[i].parameters[j]).replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", ""));
+                        if (j < _ctc.customTasks[commandIndex].tasks[i].parameters.length - 1) {
+                            commandToExecute.append("?");
 
-                       }
-                   }
-                   commandToExecute.append("]");
-           }
-           else{
-               commandToExecute.append(Arrays.toString(_ctc.customTasks[commandIndex].tasks[i].parameters[0]).replaceAll("\\[","").replaceAll("]",""));
-           }
-       }
-        AltoClef.getCommandExecutor().execute(mod.getModSettings().getCommandPrefix() + commandToExecute.toString().replaceAll(",","").replaceAll("\\?",","));
+                        }
+                    }
+                    commandToExecute.append("]");
+                } else {
+                    commandToExecute.append(Arrays.toString(_ctc.customTasks[commandIndex].tasks[i].parameters[0]).replaceAll("\\[", "").replaceAll("]", ""));
+                }
+            }
+            AltoClef.getCommandExecutor().execute(mod.getModSettings().getCommandPrefix() + commandToExecute.toString().replaceAll(",", "").replaceAll("\\?", ","));
+        }else{
+
+        }
     }
 }
