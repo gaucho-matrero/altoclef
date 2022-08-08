@@ -119,6 +119,10 @@ public class InventorySubTracker extends Tracker {
                 if (airSlot.equals(CursorSlot.SLOT))
                     continue;
                 int windowCheck = airSlot.getWindowSlot();
+                // ignore 2x2 crafting grid -- it isn't meant for storage
+                if(windowCheck>=1 && windowCheck <=4){
+                    continue;
+                }
                 // Special case: Armor/shield, we wish to ignore these if our inventory is not open.
                 if (windowCheck < handler.slots.size() && handler.getSlot(windowCheck).canInsert(item)) {
                     result.add(airSlot);
@@ -213,13 +217,14 @@ public class InventorySubTracker extends Tracker {
         // Because we don't want the bot to think we "have" an item if it's in our output slot. Otherwise it will
         // softlock because it will assume we're all good (we got the item!) when in reality we need to grab that item.
         //
-        // We also don't want our bot to think we "have" an item if it's in our armor/crafting/shield slots. That's annoying to work with.
+        // We also don't want our bot to think we "have" an item if it's in our armor/crafting output/shield slots.
         if (slot instanceof CraftingTableSlot && slot.equals(CraftingTableSlot.OUTPUT_SLOT))
             return true;
         if (slot instanceof PlayerSlot) {
             // Ignore non-normal inventory slots
             int window = slot.getWindowSlot();
-            return window < 9 || window > 44;
+            return window == 0 || (window > 4 && window < 9) || window > 44; // true if not a crafting input slot, or inventory slot.
+            // see https://www.bing.com/images/search?view=detailV2&ccid=GXPg52lU&id=39603603AB7D76576A2105B2F6BE2A0FC2B2D105&thid=OIP.GXPg52lU6gsFhvkpox6s7gAAAA&mediaurl=https%3A%2F%2Fproxy.spigotmc.org%2Fe591497c17b455c6ca7fce480c2b1107d70959f7%3Furl%3Dhttp%3A%252F%252Fwiki.vg%252Fimages%252F1%252F13%252FInventory-slots.png&cdnurl=https%3A%2F%2Fth.bing.com%2Fth%2Fid%2FR.1973e0e76954ea0b0586f929a31eacee%3Frik%3DBdGywg8qvvayBQ%26pid%3DImgRaw%26r%3D0%26sres%3D1%26sresct%3D1&exph=331&expw=352&q=minecraft+player+slots&simid=607989819895736642&form=IRPRST&ck=5F38F8F6548913579460DF7D15D859C2&selectedindex=13&ajaxhist=0&ajaxserp=0&vt=0
         }
         return false;
     }
