@@ -85,7 +85,6 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         // If we have an item in an INACCESSIBLE inventory slot
 
         for (ItemTarget target : _itemTargets) {
@@ -176,6 +175,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 }
             }
         }
+
         // Make sure that items don't get stuck in the player crafting grid. May be an issue if a future task isn't a resource task.
         if(StorageHelper.isPlayerInventoryOpen()){
             if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()){
@@ -186,6 +186,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 }
             }
         }
+
         return onResourceTick(mod);
     }
 

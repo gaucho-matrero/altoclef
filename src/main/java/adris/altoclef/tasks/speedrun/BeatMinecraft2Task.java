@@ -577,7 +577,7 @@ public class BeatMinecraft2Task extends Task {
         int blazeRodTarget = (int)Math.ceil(((double)targetEyes - eyeCount - blazePowderCount) / 2.0);
         int enderPearlTarget = targetEyes - eyeCount;
         boolean needsBlazeRods = blazeRodCount < blazeRodTarget;
-        boolean needsBlazePowder =  eyeCount + blazePowderCount < targetEyes;
+        boolean needsBlazePowder = eyeCount + blazePowderCount < targetEyes;
         boolean needsEnderPearls = mod.getItemStorage().getItemCount(Items.ENDER_PEARL) < enderPearlTarget;
 
         if (needsBlazePowder && !needsBlazeRods) {
