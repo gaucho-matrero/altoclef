@@ -119,7 +119,11 @@ public class InventorySubTracker extends Tracker {
                 if (airSlot.equals(CursorSlot.SLOT))
                     continue;
                 int windowCheck = airSlot.getWindowSlot();
-                // Special case: Armor/shield, we wish to ignore these if our inventory is not open.
+                // ignore 2x2 crafting grid -- it isn't meant for storage
+                if(windowCheck>=1 && windowCheck <=4){
+                    continue;
+                }
+                // Special case: Armor/shield, we wish to ignore these slots our inventory is not open.
                 if (windowCheck < handler.slots.size() && handler.getSlot(windowCheck).canInsert(item)) {
                     result.add(airSlot);
                 }
@@ -213,13 +217,16 @@ public class InventorySubTracker extends Tracker {
         // Because we don't want the bot to think we "have" an item if it's in our output slot. Otherwise it will
         // softlock because it will assume we're all good (we got the item!) when in reality we need to grab that item.
         //
-        // We also don't want our bot to think we "have" an item if it's in our armor/crafting/shield slots. That's annoying to work with.
+        // We also don't want our bot to think we "have" an item if it's in our armor/crafting output/shield slots as that would require a special
+        // case to use it (de-equipping armor, which can be checked with "Is Item Equipped" or crafing an item, which uses materials.
         if (slot instanceof CraftingTableSlot && slot.equals(CraftingTableSlot.OUTPUT_SLOT))
             return true;
         if (slot instanceof PlayerSlot) {
             // Ignore non-normal inventory slots
             int window = slot.getWindowSlot();
-            return window < 9 || window > 44;
+            return window == 0 || (window > 4 && window < 9) || window > 44; // true if not a crafting input slot, or inventory slot.
+            // player slot numbers here:
+            // https://binged.it/3SB1q3w
         }
         return false;
     }

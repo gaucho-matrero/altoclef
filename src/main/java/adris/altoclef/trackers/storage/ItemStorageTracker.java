@@ -1,15 +1,10 @@
 package adris.altoclef.trackers.storage;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.container.SmeltInFurnaceTask;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.slots.CraftingTableSlot;
-import adris.altoclef.util.slots.FurnaceSlot;
-import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
