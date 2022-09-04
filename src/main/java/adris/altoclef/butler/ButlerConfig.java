@@ -51,4 +51,19 @@ public class ButlerConfig {
      */
     public boolean whisperFormatDebug = false;
 
+    /**
+     * If set to true, will reply with "Sorry, you're not authorized!".
+     *
+     * Disable this if you need to stay undercover.
+     */
+    public boolean sendAuthorizationResponse = true;
+
+    /**
+     * Use this to customize the response if "sendAuthorizationResponse"
+     * 
+     * You may use {from} to get sender username.
+     * 
+     * Disable this if you need to stay undercover.
+     */
+    public boolean authorizationResponse = "Sorry {from} but you are not authorized!";
 }
