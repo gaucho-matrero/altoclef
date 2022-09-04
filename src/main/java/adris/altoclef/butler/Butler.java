@@ -46,14 +46,12 @@ public class Butler {
 
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            if (evt.messageType == MessageType.SYSTEM) {
-                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-                String message = evt.message.getString();
-                if (debug) {
-                    Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
-                }
-                _mod.getButler().receiveMessage(message);
+            boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+            String message = evt.message.getString();
+            if (debug) {
+                Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
             }
+            _mod.getButler().receiveMessage(message);
         });
     }
 
@@ -63,6 +61,7 @@ public class Butler {
         String ourName = MinecraftClient.getInstance().getName();
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
+            if (result.message.startsWith*)
             this.receiveWhisper(result.from, result.message);
         } else if (ButlerConfig.getInstance().whisperFormatDebug){
             Debug.logMessage("    Not Parsing: MSG format not found.");
@@ -86,7 +85,9 @@ public class Butler {
             if (debug) {
                 Debug.logMessage("    Rejecting: User \"" + username + "\" is not authorized.");
             }
-            sendWhisper(username, "Sorry, you're not authorized!", MessagePriority.UNAUTHORIZED);
+            if (ButlerConfig.getInstance().sendAuthorizationResponse) {
+                sendWhisper(username, ButlerConfig.getInstance().authorizationResponse.replace("{from}", username), MessagePriority.UNAUTHORIZED);
+            }
         }
     }
 
