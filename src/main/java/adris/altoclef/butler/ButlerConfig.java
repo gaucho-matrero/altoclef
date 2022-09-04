@@ -65,5 +65,5 @@ public class ButlerConfig {
      * 
      * Disable this if you need to stay undercover.
      */
-    public boolean authorizationResponse = "Sorry {from} but you are not authorized!";
+    public String authorizationResponse = "Sorry {from} but you are not authorized!";
 }
