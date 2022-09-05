@@ -125,7 +125,7 @@ public class Butler {
         _commandFinished = false;
         _currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-        AltoClef.getCommandExecutor().execute("@"+message, () -> {
+        AltoClef.getCommandExecutor().execute(_mod.getModSettings().getCommandPrefix()+message, () -> {
             // On finish
             sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
             if (!_commandInstantRan) {
