@@ -74,7 +74,7 @@ public class WhisperChecker {
         _lastMessage = msg;
 
         for (String format : ButlerConfig.getInstance().whisperFormats) {
-            MessageResult check = tryParse(ourUsername, format, msg);
+            MessageResult check = tryParse(ourUsername, format.replace("{message}", mod.getModSettings().getCommandPrefix()+"{message}"), msg);
             if (check != null) {
                 String user = check.from;
                 String message = check.message;
