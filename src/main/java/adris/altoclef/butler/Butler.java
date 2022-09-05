@@ -61,7 +61,6 @@ public class Butler {
         String ourName = MinecraftClient.getInstance().getName();
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
-            if (result.message.startsWith*)
             this.receiveWhisper(result.from, result.message);
         } else if (ButlerConfig.getInstance().whisperFormatDebug){
             Debug.logMessage("    Not Parsing: MSG format not found.");
@@ -126,7 +125,7 @@ public class Butler {
         _commandFinished = false;
         _currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-        AltoClef.getCommandExecutor().execute("@" + message, () -> {
+        AltoClef.getCommandExecutor().execute(message, () -> {
             // On finish
             sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
             if (!_commandInstantRan) {
