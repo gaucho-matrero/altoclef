@@ -52,23 +52,22 @@ public class ButlerConfig {
     public boolean whisperFormatDebug = false;
 
     /**
-     * If set to true, will reply with "Sorry, you're not authorized!".
-     *
-     * Disable this if you need to stay undercover.
-     */
+    * Determines if failure messages should be sent to a non-authorized entity attempting to use butler
+    *
+    * Disable this if you need to stay undercover.
+    */
     public boolean sendAuthorizationResponse = true;
 
     /**
-     * Use this to customize the response if "sendAuthorizationResponse"
-     * 
-     * You may use {from} to get sender username.
-     */
-    public String authorizationResponse = "Sorry {from} but you are not authorized!";
+    * The response sent in a failed execution due to non-authorization
+    * @param from: the username of the player who triggered the failed authorization response
+    */
+    public String failedAuthorizationResposne = "Sorry {from} but you are not authorized!";
 
     /**
      * Use this to choose if the prefix should be required in messages
      * 
      * Disable this if you want to be able to send normal messages and not butler commands.
      */
-    public boolean requirePrefixMsg = true;
+    public boolean requirePrefixMsg = false;
 }

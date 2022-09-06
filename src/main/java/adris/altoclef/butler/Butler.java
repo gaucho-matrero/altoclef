@@ -85,7 +85,7 @@ public class Butler {
                 Debug.logMessage("    Rejecting: User \"" + username + "\" is not authorized.");
             }
             if (ButlerConfig.getInstance().sendAuthorizationResponse) {
-                sendWhisper(username, ButlerConfig.getInstance().authorizationResponse.replace("{from}", username), MessagePriority.UNAUTHORIZED);
+                sendWhisper(username, ButlerConfig.getInstance().failedAuthorizationResposne.replace("{from}", username), MessagePriority.UNAUTHORIZED);
             }
         }
     }
