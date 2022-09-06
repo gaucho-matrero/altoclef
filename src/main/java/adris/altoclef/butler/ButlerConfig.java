@@ -62,8 +62,13 @@ public class ButlerConfig {
      * Use this to customize the response if "sendAuthorizationResponse"
      * 
      * You may use {from} to get sender username.
-     * 
-     * Disable this if you need to stay undercover.
      */
     public String authorizationResponse = "Sorry {from} but you are not authorized!";
+
+    /**
+     * Use this to choose if the prefix should be required in messages
+     * 
+     * Disable this if you want to be able to send normal messages and not butler commands.
+     */
+    public boolean requirePrefixMsg = true;
 }
