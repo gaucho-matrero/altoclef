@@ -60,7 +60,7 @@ public class ButlerConfig {
 
     /**
     * The response sent in a failed execution due to non-authorization
-    * {from}: the username of the player who triggered the failed authorization response
+    * @param from: the username of the player who triggered the failed authorization response
     */
     public String failedAuthorizationResposne = "Sorry {from} but you are not authorized!";
 
