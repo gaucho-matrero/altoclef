@@ -90,25 +90,45 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#useButlerBlacklist" class="member-name-link">useButlerBlacklist</a></code></div>
+<div class="col-first even-row-color"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#failedAuthorizationResposne" class="member-name-link">failedAuthorizationResposne</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">If true, will use blacklist for rejecting users from using your player as a butler</div>
+<div class="block">The response sent in a failed execution due to non-authorization
+ {from}: the username of the player who triggered the failed authorization response</div>
 </div>
 <div class="col-first odd-row-color"><code>boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#useButlerWhitelist" class="member-name-link">useButlerWhitelist</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#requirePrefixMsg" class="member-name-link">requirePrefixMsg</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">If true, will use whitelist to only accept users from said whitelist.</div>
+<div class="block">Use this to choose if the prefix should be required in messages
+ 
+ Disable this if you want to be able to send normal messages and not butler commands.</div>
 </div>
 <div class="col-first even-row-color"><code>boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#whisperFormatDebug" class="member-name-link">whisperFormatDebug</a></code></div>
+<div class="col-second even-row-color"><code><a href="#sendAuthorizationResponse" class="member-name-link">sendAuthorizationResponse</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">Determines if failure messages should be sent to a non-authorized entity attempting to use butler
+
+ Disable this if you need to stay undercover.</div>
+</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#useButlerBlacklist" class="member-name-link">useButlerBlacklist</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">If true, will use blacklist for rejecting users from using your player as a butler</div>
+</div>
+<div class="col-first even-row-color"><code>boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#useButlerWhitelist" class="member-name-link">useButlerWhitelist</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">If true, will use whitelist to only accept users from said whitelist.</div>
+</div>
+<div class="col-first odd-row-color"><code>boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#whisperFormatDebug" class="member-name-link">whisperFormatDebug</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">If set to true, will print information about whispers that are parsed and those
  that have failed parsing.</div>
 </div>
-<div class="col-first odd-row-color"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]</code></div>
-<div class="col-second odd-row-color"><code><a href="#whisperFormats" class="member-name-link">whisperFormats</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]</code></div>
+<div class="col-second even-row-color"><code><a href="#whisperFormats" class="member-name-link">whisperFormats</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Servers have different messaging plugins that change the way messages are displayed.</div>
 </div>
 </div>
@@ -200,6 +220,32 @@ loadScripts(document, 'script');</script>
  that have failed parsing.
 
  Enable this if you need help setting up the whisper format.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sendAuthorizationResponse">
+<h3>sendAuthorizationResponse</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">sendAuthorizationResponse</span></div>
+<div class="block">Determines if failure messages should be sent to a non-authorized entity attempting to use butler
+
+ Disable this if you need to stay undercover.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="failedAuthorizationResposne">
+<h3>failedAuthorizationResposne</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">failedAuthorizationResposne</span></div>
+<div class="block">The response sent in a failed execution due to non-authorization
+ {from}: the username of the player who triggered the failed authorization response</div>
+</section>
+</li>
+<li>
+<section class="detail" id="requirePrefixMsg">
+<h3>requirePrefixMsg</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">requirePrefixMsg</span></div>
+<div class="block">Use this to choose if the prefix should be required in messages
+ 
+ Disable this if you want to be able to send normal messages and not butler commands.</div>
 </section>
 </li>
 </ul>
