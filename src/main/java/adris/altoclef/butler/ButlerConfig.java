@@ -51,4 +51,23 @@ public class ButlerConfig {
      */
     public boolean whisperFormatDebug = false;
 
+    /**
+    * Determines if failure messages should be sent to a non-authorized entity attempting to use butler
+    *
+    * Disable this if you need to stay undercover.
+    */
+    public boolean sendAuthorizationResponse = true;
+
+    /**
+    * The response sent in a failed execution due to non-authorization
+    * {from}: the username of the player who triggered the failed authorization response
+    */
+    public String failedAuthorizationResposne = "Sorry {from} but you are not authorized!";
+
+    /**
+     * Use this to choose if the prefix should be required in messages
+     * 
+     * Disable this if you want to be able to send normal messages and not butler commands.
+     */
+    public boolean requirePrefixMsg = false;
 }

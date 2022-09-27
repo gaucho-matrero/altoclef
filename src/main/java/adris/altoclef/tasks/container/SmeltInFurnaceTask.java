@@ -190,7 +190,13 @@ public class SmeltInFurnaceTask extends ResourceTask {
                 return new MoveInaccessibleItemToInventoryTask(_allMaterials);
             }
 
-            // We have fuel and materials. Get to our container and smelt!
+           // Make sure we have room for the output in our inventory
+            EnsureFreeInventorySlotTask _freeInventoryTask = new EnsureFreeInventorySlotTask();
+            if (_freeInventoryTask.isActive() && !_freeInventoryTask.isFinished(mod) && !mod.getItemStorage().hasEmptyInventorySlot()) {
+                setDebugState("Freeing inventory.");
+                return _freeInventoryTask;
+            }
+            // We have fuel and materials and there is a free space in the inventory. Get to our container and smelt!
             return super.onTick(mod);
         }
 

@@ -46,14 +46,12 @@ public class Butler {
 
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            if (evt.messageType == MessageType.SYSTEM) {
-                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-                String message = evt.message.getString();
-                if (debug) {
-                    Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
-                }
-                _mod.getButler().receiveMessage(message);
+            boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+            String message = evt.message.getString();
+            if (debug) {
+                Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
             }
+            _mod.getButler().receiveMessage(message);
         });
     }
 
@@ -86,7 +84,9 @@ public class Butler {
             if (debug) {
                 Debug.logMessage("    Rejecting: User \"" + username + "\" is not authorized.");
             }
-            sendWhisper(username, "Sorry, you're not authorized!", MessagePriority.UNAUTHORIZED);
+            if (ButlerConfig.getInstance().sendAuthorizationResponse) {
+                sendWhisper(username, ButlerConfig.getInstance().failedAuthorizationResposne.replace("{from}", username), MessagePriority.UNAUTHORIZED);
+            }
         }
     }
 
@@ -125,7 +125,8 @@ public class Butler {
         _commandFinished = false;
         _currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-        AltoClef.getCommandExecutor().execute("@" + message, () -> {
+        String prefix = ButlerConfig.getInstance().requirePrefixMsg ? _mod.getModSettings().getCommandPrefix() : "";
+        AltoClef.getCommandExecutor().execute(prefix+message, () -> {
             // On finish
             sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
             if (!_commandInstantRan) {

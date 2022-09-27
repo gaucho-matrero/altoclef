@@ -1,7 +1,7 @@
 package adris.altoclef;
 
-import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.control.KillAura;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.util.BlockRange;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -403,11 +403,13 @@ public class Settings implements IFailableConfigFile {
      * areasToProtect : [
      *      {
      *          "start": "-10, 0, -10",
-     *          "end": "10, 255, 10"
+     *          "end": "10, 255, 10",
+     *          "dimension" : "OVERWORLD"
      *      },
      *      {
      *          "start": "1000, 50, 2000",
-     *          "end": "1200, 255, 2100"
+     *          "end": "1200, 255, 2100",
+     *          "dimension" : "OVERWORLD"
      *      },
      * ],
      */
