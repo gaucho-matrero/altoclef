@@ -15,7 +15,7 @@ repositories {
     mavenCentral()
     maven {
         name = "gaucho-matrero-repo"
-        url = "https://darkreaper231.github.io/maven/"
+        url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
         dirs '../baritone/build/libs'
