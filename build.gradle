@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "0.10-SNAPSHOT"
+    id "fabric-loom" version "0.11-SNAPSHOT"
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
@@ -45,13 +45,11 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.18.2'
+        modImplementation 'baritone-fabric-api:baritone-fabric-unoptimized:1.19.2'
     } else {
-        modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
-        include "cabaletta:baritone-unoptimized-fabric:1.18.2"
+        modImplementation "cabaletta:baritone-fabric-unoptimized:1.19.2"
+        include "cabaletta:baritone-fabric-unoptimized:1.19.2"
     }
-    //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
-    //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
 }
 shadowJar {
     configurations = [project.configurations.shadow]

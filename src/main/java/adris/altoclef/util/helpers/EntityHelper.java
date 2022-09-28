@@ -52,7 +52,7 @@ public class EntityHelper {
 
     public static boolean isTradingPiglin(Entity entity) {
         if (entity instanceof PiglinEntity pig) {
-            for (ItemStack stack : pig.getItemsHand()) {
+            for (ItemStack stack : pig.getHandItems()) {
                 if (stack.getItem().equals(Items.GOLD_INGOT)) {
                     // We're trading with this one, ignore it.
                     return true;

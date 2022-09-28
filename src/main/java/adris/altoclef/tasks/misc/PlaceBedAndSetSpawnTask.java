@@ -111,7 +111,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         _wasSleeping = false;
 
         _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            String msg = evt.message.asString();
+            String msg = evt.message.getContent();
             if (msg.contains("Respawn point set")) {
                 _spawnSet = true;
                 _inBedTimer.reset();
