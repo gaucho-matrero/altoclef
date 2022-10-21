@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "0.10-SNAPSHOT"
+    id "fabric-loom" version "1.0-SNAPSHOT"
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
@@ -18,7 +18,7 @@ repositories {
         url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
-        dirs '../baritone/build/libs'
+        dirs '../baritone/dist'
     }
 }
 
@@ -45,7 +45,7 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.18.2'
+        modImplementation 'baritone-api-fabric:baritone-fabric-unoptimized-1.9.0-local'
     } else {
         modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
         include "cabaletta:baritone-unoptimized-fabric:1.18.2"

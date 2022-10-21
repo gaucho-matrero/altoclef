@@ -43,7 +43,7 @@ public class ContainerSubTracker extends Tracker {
         // Listen for when we interact with a block
         EventBus.subscribe(BlockInteractEvent.class, evt -> {
             BlockPos blockPos = evt.hitResult.getBlockPos();
-            BlockState bs = evt.world.getBlockState(blockPos);
+            BlockState bs = _mod.getWorld().getBlockState(blockPos);
             onBlockInteract(blockPos, bs.getBlock());
         });
         EventBus.subscribe(ScreenOpenEvent.class, evt -> {

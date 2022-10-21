@@ -99,8 +99,8 @@ public interface WorldHelper {
     static Dimension getCurrentDimension() {
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return Dimension.OVERWORLD;
-        if (world.getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (world.getDimension().isNatural()) return Dimension.OVERWORLD;
+        if (world.getDimension().ultrawarm()) return Dimension.NETHER;
+        if (world.getDimension().natural()) return Dimension.OVERWORLD;
         return Dimension.END;
     }
 

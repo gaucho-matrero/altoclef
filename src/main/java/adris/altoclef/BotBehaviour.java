@@ -1,7 +1,7 @@
 package adris.altoclef;
 
 import adris.altoclef.util.slots.Slot;
-import baritone.altoclef.AltoClefSettings;
+import adris.altoclef.AltoClefSettings;
 import baritone.api.Settings;
 import baritone.api.utils.RayTraceUtils;
 import net.minecraft.block.BlockState;
@@ -348,7 +348,7 @@ public class BotBehaviour {
             }
             _allowWalkThroughFlowingWater = settings.isFlowingWaterPassAllowed();
 
-            rayFluidHandling = RayTraceUtils.fluidHandling;
+            //rayFluidHandling = RayTraceUtils.fluidHandling;
         }
 
         private void readMinecraftState() {
@@ -399,7 +399,7 @@ public class BotBehaviour {
             sa.allowSwimThroughLava(swimThroughLava);
 
             // Extra / hard coded
-            RayTraceUtils.fluidHandling = rayFluidHandling;
+            //RayTraceUtils.fluidHandling = rayFluidHandling;
 
             // Minecraft
             MinecraftClient.getInstance().options.pauseOnLostFocus = pauseOnLostFocus;

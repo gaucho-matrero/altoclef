@@ -3,6 +3,7 @@ package adris.altoclef.mixins;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.SendChatEvent;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,8 +17,8 @@ public final class ChatInputMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void sendChatMessage(String msg, CallbackInfo ci) {
-        SendChatEvent event = new SendChatEvent(msg);
+    private void sendChatMessage(String msg, Text preview, CallbackInfo ci) {
+        SendChatEvent event = new SendChatEvent(msg,preview);
         EventBus.publish(event);
         if (event.isCancelled()) {
             ci.cancel();

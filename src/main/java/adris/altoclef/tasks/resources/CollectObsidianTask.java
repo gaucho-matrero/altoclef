@@ -144,7 +144,7 @@ public class CollectObsidianTask extends ResourceTask {
             return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[]{Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
         }
 
-        if (!mod.getWorld().getDimension().isUltrawarm()) {
+        if (!mod.getWorld().getDimension().ultrawarm()) {
             setDebugState("We can't place water, so we're wandering.");
             return new TimeoutWanderTask();
         }

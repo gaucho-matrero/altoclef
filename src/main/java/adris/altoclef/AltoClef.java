@@ -21,7 +21,7 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
-import baritone.altoclef.AltoClefSettings;
+import adris.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
@@ -236,6 +236,8 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().planAheadFailureTimeoutMS.value = 10000L;
         // Was 100
         getClientBaritoneSettings().movementTimeoutTicks.value = 200;
+
+        getClientBaritoneSettings().freeLook.value=false;
     }
 
     // List all command sources here.
