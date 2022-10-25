@@ -2,6 +2,7 @@ package adris.altoclef.tasks.speedrun;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.GameOptionsAccessor;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.entity.AbstractKillEntityTask;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
@@ -23,6 +24,7 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.SimpleOption;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
@@ -297,7 +299,7 @@ public class KillEnderDragonTask extends Task {
                         Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
                         mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
                         // Also look towards da dragon
-                        MinecraftClient.getInstance().options.autoJump = false;
+                        ((GameOptionsAccessor) MinecraftClient.getInstance().options).setAutoJump(SimpleOption.ofBoolean("options.autoJump", false));
                         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                         hit(mod);
                     } else {

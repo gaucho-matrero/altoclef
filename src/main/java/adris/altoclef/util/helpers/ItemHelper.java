@@ -390,7 +390,7 @@ public class ItemHelper {
             return false;
         if (isStackProtected(mod, stack))
             return false;
-        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems();
+        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems() || !mod.getBehaviour().isProtected(stack.getItem());
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

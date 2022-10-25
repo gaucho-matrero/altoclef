@@ -149,7 +149,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
                 assert MinecraftClient.getInstance().interactionManager != null;
                 if (_throwTimer.elapsed()) {
                     if (LookHelper.tryAvoidingInteractable(mod)) {
-                        MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
+                        MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), Hand.MAIN_HAND);
                         //MinecraftClient.getInstance().options.keyUse.setPressed(true);
                         _throwTimer.reset();
                     }

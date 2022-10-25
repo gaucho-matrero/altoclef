@@ -180,7 +180,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
             }
 
             // We don't have enough fuel...
-            if (StorageHelper.calculateInventoryFuelCount(mod) < fuelNeeded) {
+            if (_furnaceCache.burningFuelCount<=0 && StorageHelper.calculateInventoryFuelCount(mod) < fuelNeeded) {
                 setDebugState("Getting Fuel");
                 return new CollectFuelTask(fuelNeeded);
             }
