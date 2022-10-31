@@ -36,7 +36,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     private final boolean _useThrowaways;
     private final boolean _autoCollectStructureBlocks;
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(3, true); // This can get stuck forever, so we increase the range.
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5); // This can get stuck forever, so we increase the range.
     private Task _materialTask;
     private int _failCount = 0;
 
@@ -52,11 +52,12 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     public static int getMaterialCount(AltoClef mod) {
-        return mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK);
+        return mod.getItemStorage().getItemCount(Items.DIRT, Items.COBBLESTONE, Items.NETHERRACK, Items.COBBLED_DEEPSLATE);
     }
 
     public static Task getMaterialTask(int count) {
-        return TaskCatalogue.getSquashedItemTask(new ItemTarget(Items.DIRT, count), new ItemTarget(Items.COBBLESTONE, count), new ItemTarget(Items.NETHERRACK, count));
+        return TaskCatalogue.getSquashedItemTask(new ItemTarget(Items.DIRT, count), new ItemTarget(Items.COBBLESTONE,
+                count), new ItemTarget(Items.NETHERRACK, count), new ItemTarget(Items.COBBLED_DEEPSLATE, count));
     }
 
     @Override
@@ -68,7 +69,6 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
         // Perform timeout wander
         if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
             setDebugState("Wandering.");
@@ -114,7 +114,6 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
             return new GetToBlockTask(_target.up(), false);
         } else {
             setDebugState("Letting baritone place a block.");
-
             // Perform baritone placement
             if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
                 Debug.logInternal("Run Structure Build");
@@ -122,7 +121,6 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, _target);
             }
         }
-
         return null;
     }
 

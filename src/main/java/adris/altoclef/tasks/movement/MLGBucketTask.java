@@ -2,7 +2,6 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.movement.MLGBucketTask.ConeClutchContext;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.serialization.ItemDeserializer;
@@ -60,9 +59,11 @@ public class MLGBucketTask extends Task {
     private BlockPos _movingTorwards;
 
     private static boolean isLava(BlockPos pos) {
+        assert MinecraftClient.getInstance().world != null;
         return MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == Blocks.LAVA;
     }
     private static boolean lavaWillProtect(BlockPos pos) {
+        assert MinecraftClient.getInstance().world != null;
         BlockState state = MinecraftClient.getInstance().world.getBlockState(pos);
         if (state.getBlock() == Blocks.LAVA) {
             int level = state.getFluidState().getLevel();
@@ -70,32 +71,43 @@ public class MLGBucketTask extends Task {
         }
         return false;
     }
+
     private static boolean isWater(BlockPos pos) {
+        assert MinecraftClient.getInstance().world != null;
         return MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == Blocks.WATER;
     }
 
-    @Override
-    protected void onStart(AltoClef mod) {
-        _placedPos = null;
-        // hold shift while falling.
-        // Look down at first, might help
-        mod.getPlayer().setPitch(90);
+    /**
+     * Can we reach this block while falling, or will gravity pull us too far?
+     */
+    private static boolean canTravelToInAir(BlockPos pos) {
+        Entity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        double verticalDist = player.getPos().getY() - pos.getY() - 1;
+        double verticalVelocity = -1 * player.getVelocity().y;
+        double grav = EntityHelper.ENTITY_GRAVITY;
+        double movementSpeedPerTick = _config.averageHorizontalMovementSpeedPerTick; // Calculated, but also somewhat conservative
+        // 1d projectile motion
+        double ticksToTravelSq = (-verticalVelocity + Math.sqrt(verticalVelocity * verticalVelocity + 2 * grav * verticalDist)) / grav;
+        double maxMoveDistanceSq = movementSpeedPerTick * movementSpeedPerTick * ticksToTravelSq * ticksToTravelSq;
+        // We need to get within 1 block, so subtract a "radius" or something idk
+        double horizontalDistance = WorldHelper.distanceXZ(player.getPos(), WorldHelper.toVec3d(pos)) - 0.8;
+        if (horizontalDistance < 0)
+            horizontalDistance = 0;
+        return maxMoveDistanceSq > horizontalDistance * horizontalDistance;
     }
 
-    @Override
-    protected Task onTick(AltoClef mod) {
-        // ALWAYS faster
-        mod.getInputControls().hold(Input.SPRINT);
-        // Check AROUND player instead of directly under.
-        // We may crop the edge of a block or wall.
-        BlockPos oldMovingTorwards = _movingTorwards != null? _movingTorwards.mutableCopy() : null;
-        _movingTorwards = null;
-        Task result = onTickInternal(mod, oldMovingTorwards);
-
-        handleForwardVelocity(mod, !Objects.equals(oldMovingTorwards, _movingTorwards));
-        handleCancellingSidewaysVelocity(mod);
-
-        return result;
+    private static boolean isFallDeadly(BlockPos pos) {
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        double damage = calculateFallDamageToLandOn(pos);
+        assert MinecraftClient.getInstance().world != null;
+        Block b = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+        if (b == Blocks.HAY_BLOCK) {
+            damage *= 0.2f;
+        }
+        assert player != null;
+        double resultingHealth = player.getHealth() - (float) damage;
+        return resultingHealth < _config.preferLavaWhenFallDropsHealthBelowThreshold;
     }
 
     private Task onTickInternal(AltoClef mod, BlockPos oldMovingTorwards) {
@@ -124,6 +136,16 @@ public class MLGBucketTask extends Task {
         }
     }
 
+    private static double calculateFallDamageToLandOn(BlockPos pos) {
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        double totalFallDistance = player.fallDistance + (player.getY() - pos.getY() - 1);
+        // Copied from living entity I think, somewhere idk you get the picture.
+        double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
+        // Be a bit conservative, assume MORE damage
+        return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
+    }
+
     private Task placeMLGBucketTask(AltoClef mod, BlockPos toPlaceOn) {
         if (!hasClutchItem(mod)) {
             setDebugState("No clutch item");
@@ -149,7 +171,7 @@ public class MLGBucketTask extends Task {
             setDebugState("Performing MLG");
             LookHelper.lookAt(mod, reachable.get());
             // Try water by default
-            boolean hasClutch = (!mod.getWorld().getDimension().isUltrawarm() && mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET));
+            boolean hasClutch = (!mod.getWorld().getDimension().ultrawarm() && mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET));
             if (!hasClutch) {
                 // Go through our "clutch" items and see if any fit
                 for (Item tryEquip : _config.clutchItems) {
@@ -175,30 +197,20 @@ public class MLGBucketTask extends Task {
         return null;
     }
 
-    /**
-     * We will land in this block, handle our jump.
-     *
-     * Twisted vines require we press space ONLY when we're inside the vines
-     */
-    private void handleJumpForLand(AltoClef mod, BlockPos willLandOn) {
-        BlockPos willLandIn = WorldHelper.isSolid(mod, willLandOn) ? willLandOn.up() : willLandOn;
-        BlockState s = mod.getWorld().getBlockState(willLandIn);
-        if (s.getBlock() == Blocks.LAVA) {
-            // ALWAYS hold jump for lava
-            mod.getInputControls().hold(Input.JUMP);
-            return;
-        }
-        Box blockBounds;
-        try {
-            blockBounds = s.getCollisionShape(mod.getWorld(), willLandIn).getBoundingBox();
-        } catch (UnsupportedOperationException ex) {
-            blockBounds = Box.of(WorldHelper.toVec3d(willLandIn), 1, 1, 1);
-        }
-        boolean inside = mod.getPlayer().getBoundingBox().intersects(blockBounds);
-        if (inside)
-            mod.getInputControls().hold(Input.JUMP);
-        else
-            mod.getInputControls().release(Input.JUMP);
+    @Override
+    protected Task onTick(AltoClef mod) {
+        // ALWAYS faster
+        mod.getInputControls().hold(Input.SPRINT);
+        // Check AROUND player instead of directly under.
+        // We may crop the edge of a block or wall.
+        BlockPos oldMovingTorwards = _movingTorwards != null ? _movingTorwards.mutableCopy() : null;
+        _movingTorwards = null;
+        Task result = onTickInternal(mod, oldMovingTorwards);
+
+        handleForwardVelocity(mod, !Objects.equals(oldMovingTorwards, _movingTorwards));
+        handleCancellingSidewaysVelocity(mod);
+
+        return result;
     }
 
     private void handleForwardVelocity(AltoClef mod, boolean newForwardTarget) {
@@ -217,40 +229,7 @@ public class MLGBucketTask extends Task {
             LookHelper.lookAt(mod, _movingTorwards);
         }
         Debug.logInternal("F:" + forwardStrength);
-        moveForwardBack(mod, (int)Math.signum(forwardStrength));
-    }
-
-    /**
-     * While falling to a target, we look towards the center and press forwards.
-     * However, if we change our direction we end up moving sideways with respect to our look direction, which
-     * often messes us up.
-     *
-     * This will nudge the bot left/right so we're no longer "slipping" to the side.
-     */
-    private void handleCancellingSidewaysVelocity(AltoClef mod) {
-        if (_movingTorwards == null) {
-            moveLeftRight(mod, 0);
-            return;
-        }
-        // Cancel our left/right velocity with respect to block
-        Vec3d velocity = mod.getPlayer().getVelocity();
-        Vec3d deltaTarget = WorldHelper.toVec3d(_movingTorwards).subtract(mod.getPlayer().getPos());
-        // "right" velocity relative to delta
-        Rotation look = LookHelper.getLookRotation();
-        Vec3d forwardFacing = LookHelper.toVec3d(look).multiply(1, 0, 1).normalize();
-        Vec3d rightVelocity = MathsHelper.projectOntoPlane(velocity, forwardFacing).multiply(1, 0, 1); // Flatten
-        // Also consider how much further to the right we should move
-        Vec3d rightDelta = MathsHelper.projectOntoPlane(deltaTarget, forwardFacing).multiply(1, 0, 1);
-        // Do a little PD loop
-        Vec3d pd = rightDelta.subtract(rightVelocity.multiply(2));
-        // We're traveling too fast sideways
-        Vec3d faceRight = forwardFacing.crossProduct(new Vec3d(0,1,0));
-        boolean moveRight = pd.dotProduct(faceRight) > 0;
-        if (moveRight) {
-            moveLeftRight(mod, 1);
-        } else {
-            moveLeftRight(mod, -1);
-        }
+        moveForwardBack(mod, (int) Math.signum(forwardStrength));
     }
 
     private static void moveLeftRight(AltoClef mod, int delta) {
@@ -278,28 +257,45 @@ public class MLGBucketTask extends Task {
         }
     }
 
-
-    private RaycastContext castDown(Vec3d origin) {
-        Entity player = MinecraftClient.getInstance().player;
-        return new RaycastContext(origin, origin.add(0, -1 * _config.castDownDistance, 0), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player);
+    @Override
+    protected void onStart(AltoClef mod) {
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
+        _placedPos = null;
+        // hold shift while falling.
+        // Look down at first, might help
+        mod.getPlayer().setPitch(90);
     }
 
-    private RaycastContext castCone(double yaw, double pitch) {
-        Entity player = MinecraftClient.getInstance().player;
-        Vec3d origin = player.getPos();
-        double dy = _config.epicClutchConeCastHeight;
-        double dH = dy * Math.sin(Math.toRadians(pitch)); // horizontal distance
-        double yawRad = Math.toRadians(yaw);
-        double dx = dH * Math.cos(yawRad);
-        double dz = dH * Math.sin(yawRad);
-        Vec3d end = origin.add(dx, -1 * dy, dz);
-        return new RaycastContext(origin, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player);
+    /**
+     * We will land in this block, handle our jump.
+     * <p>
+     * Twisted vines require we press space ONLY when we're inside the vines
+     */
+    private void handleJumpForLand(AltoClef mod, BlockPos willLandOn) {
+        BlockPos willLandIn = WorldHelper.isSolid(mod, willLandOn) ? willLandOn.up() : willLandOn;
+        BlockState s = mod.getWorld().getBlockState(willLandIn);
+        if (s.getBlock() == Blocks.LAVA) {
+            // ALWAYS hold jump for lava
+            mod.getInputControls().hold(Input.JUMP);
+            return;
+        }
+        Box blockBounds;
+        try {
+            blockBounds = s.getCollisionShape(mod.getWorld(), willLandIn).getBoundingBox();
+        } catch (UnsupportedOperationException ex) {
+            blockBounds = Box.of(WorldHelper.toVec3d(willLandIn), 1, 1, 1);
+        }
+        boolean inside = mod.getPlayer().getBoundingBox().intersects(blockBounds);
+        if (inside)
+            mod.getInputControls().hold(Input.JUMP);
+        else
+            mod.getInputControls().release(Input.JUMP);
     }
 
     private Optional<BlockPos> getBlockWeWillLandOn(AltoClef mod) {
         Vec3d velCheck = mod.getPlayer().getVelocity();
         // Flatten and slightly exaggerate the velocity
-        velCheck.multiply(10,0,10);
+        velCheck.multiply(10, 0, 10);
         Box b = mod.getPlayer().getBoundingBox().offset(velCheck);
         Vec3d c = b.getCenter();
         Vec3d[] coords = new Vec3d[]{
@@ -329,67 +325,36 @@ public class MLGBucketTask extends Task {
         return Optional.ofNullable(result.getBlockPos());
     }
 
-    class ConeClutchContext {
-        private double highestY = Double.NEGATIVE_INFINITY;
-        private double closestXZ = Double.POSITIVE_INFINITY;
-        private boolean bestBlockIsSafe = false;
-        private boolean bestBlockIsDeadlyFall = false;
-        private boolean bestBlockIsLava = false;
-        public BlockPos bestBlock = null;
-        private final boolean hasClutchItem;
-        public ConeClutchContext(AltoClef mod) {
-            hasClutchItem = hasClutchItem(mod);
+    /**
+     * While falling to a target, we look towards the center and press forwards.
+     * However, if we change our direction we end up moving sideways with respect to our look direction, which
+     * often messes us up.
+     * <p>
+     * This will nudge the bot left/right so we're no longer "slipping" to the side.
+     */
+    private void handleCancellingSidewaysVelocity(AltoClef mod) {
+        if (_movingTorwards == null) {
+            moveLeftRight(mod, 0);
+            return;
         }
-        public void checkBlock(AltoClef mod, BlockPos check) {
-            // Already checked
-            if (Objects.equals(bestBlock, check))
-                return;
-            if (WorldHelper.isAir(mod, check)) {
-                Debug.logMessage("(MLG Air block checked for landing, the block broke. We'll try another): " + check);
-                return;
-            }
-            boolean lava = isLava(check);
-            boolean lavaWillProtect = lava && lavaWillProtect(check);
-            boolean water = isWater(check);
-            boolean isDeadlyFall = !hasClutchItem && isFallDeadly(check);
-            boolean safe = water;
-            // Prioritize safe blocks ALWAYS
-            if (bestBlockIsSafe && !safe)
-                return;
-            double height = check.getY();
-            double distSqXZ = WorldHelper.distanceXZSquared(WorldHelper.toVec3d(check), mod.getPlayer().getPos());
-            boolean highestSoFar = height > highestY;
-            boolean closestSoFar = distSqXZ < closestXZ;
-            // We found a new contender
-            if (
-                    bestBlock == null || // No target was found.
-                            (safe && !bestBlockIsSafe) || // We ALWAYS land in water if we can
-                            (lava && lavaWillProtect && bestBlockIsDeadlyFall && !hasClutchItem) || // Land in lava if our best alternative is death by fall damage
-                            (!lava && !isDeadlyFall && ((closestSoFar && hasClutchItem) && highestSoFar || bestBlockIsLava)) // If it's not lava and is not deadly, land on it if it's higher than before OR if our best alternative is lava
-            ) {
-                if (canTravelToInAir((lava || water)? check.down() : check)) {
-                    if (highestSoFar) {
-                        highestY = height;
-                    }
-                    if (closestSoFar) {
-                        closestXZ = distSqXZ;
-                    }
-                    bestBlockIsSafe = safe;
-                    bestBlockIsDeadlyFall = isDeadlyFall;
-                    bestBlockIsLava = lava;
-                    bestBlock = check;
-                }
-            }
-        }
-        public void checkRay(AltoClef mod, RaycastContext rctx) {
-            BlockHitResult hit = mod.getWorld().raycast(rctx);
-            if (hit.getType() == HitResult.Type.BLOCK) {
-                BlockPos check = hit.getBlockPos();
-                // For now, REQUIRE we land on this
-                if (hit.getSide().getOffsetY() <= 0)
-                    return;
-                checkBlock(mod, check);
-            }
+        // Cancel our left/right velocity with respect to block
+        Vec3d velocity = mod.getPlayer().getVelocity();
+        Vec3d deltaTarget = WorldHelper.toVec3d(_movingTorwards).subtract(mod.getPlayer().getPos());
+        // "right" velocity relative to delta
+        Rotation look = LookHelper.getLookRotation();
+        Vec3d forwardFacing = LookHelper.toVec3d(look).multiply(1, 0, 1).normalize();
+        Vec3d rightVelocity = MathsHelper.projectOntoPlane(velocity, forwardFacing).multiply(1, 0, 1); // Flatten
+        // Also consider how much further to the right we should move
+        Vec3d rightDelta = MathsHelper.projectOntoPlane(deltaTarget, forwardFacing).multiply(1, 0, 1);
+        // Do a little PD loop
+        Vec3d pd = rightDelta.subtract(rightVelocity.multiply(2));
+        // We're traveling too fast sideways
+        Vec3d faceRight = forwardFacing.crossProduct(new Vec3d(0, 1, 0));
+        boolean moveRight = pd.dotProduct(faceRight) > 0;
+        if (moveRight) {
+            moveLeftRight(mod, 1);
+        } else {
+            moveLeftRight(mod, -1);
         }
     }
 
@@ -432,60 +397,105 @@ public class MLGBucketTask extends Task {
         return Optional.ofNullable(cctx.bestBlock);
     }
 
-    /**
-     * Can we reach this block while falling, or will gravity pull us too far?
-     */
-    private static boolean canTravelToInAir(BlockPos pos) {
+    private RaycastContext castDown(Vec3d origin) {
         Entity player = MinecraftClient.getInstance().player;
-        double verticalDist = player.getPos().getY() - pos.getY() - 1;
-        double verticalVelocity = -1 * player.getVelocity().y;
-        double grav = EntityHelper.ENTITY_GRAVITY;
-        double movementSpeedPerTick = _config.averageHorizontalMovementSpeedPerTick; // Calculated, but also somewhat conservative
-        // 1d projectile motion
-        double ticksToTravelSq = (-verticalVelocity + Math.sqrt(verticalVelocity*verticalVelocity + 2*grav*verticalDist)) / grav;
-        double maxMoveDistanceSq = movementSpeedPerTick * movementSpeedPerTick * ticksToTravelSq * ticksToTravelSq;
-        // We need to get within 1 block, so subtract a "radius" or something idk
-        double horizontalDistance = WorldHelper.distanceXZ(player.getPos(), WorldHelper.toVec3d(pos)) - 0.8;
-        if (horizontalDistance < 0)
-            horizontalDistance = 0;
-        return maxMoveDistanceSq > horizontalDistance*horizontalDistance;
+        assert player != null;
+        return new RaycastContext(origin, origin.add(0, -1 * _config.castDownDistance, 0), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player);
     }
 
-    private static boolean isFallDeadly(BlockPos pos) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        double damage = calculateFallDamageToLandOn(pos);
-        Block b = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
-        if (b == Blocks.HAY_BLOCK) {
-            damage *= 0.2f;
-        }
-        double resultingHealth = player.getHealth() - (float)damage;
-        return resultingHealth < _config.preferLavaWhenFallDropsHealthBelowThreshold;
+    private RaycastContext castCone(double yaw, double pitch) {
+        Entity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        Vec3d origin = player.getPos();
+        double dy = _config.epicClutchConeCastHeight;
+        double dH = dy * Math.sin(Math.toRadians(pitch)); // horizontal distance
+        double yawRad = Math.toRadians(yaw);
+        double dx = dH * Math.cos(yawRad);
+        double dz = dH * Math.sin(yawRad);
+        Vec3d end = origin.add(dx, -1 * dy, dz);
+        return new RaycastContext(origin, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, player);
     }
-    private static double calculateFallDamageToLandOn(BlockPos pos) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        double totalFallDistance = player.fallDistance + (player.getY() - pos.getY() - 1);
-        // Copied from living entity I think, somewhere idk you get the picture.
-        double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
-        // Be a bit conservative, assume MORE damage
-        return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
+
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
+        _movingTorwards = null;
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+        moveLeftRight(mod, 0);
+        moveForwardBack(mod, 0);
+        mod.getInputControls().release(Input.SPRINT);
+        mod.getInputControls().release(Input.JUMP);
     }
 
     private boolean hasClutchItem(AltoClef mod) {
-        if (!mod.getWorld().getDimension().isUltrawarm() && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+        if (!mod.getWorld().getDimension().ultrawarm() && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
             return true;
         }
         return _config.clutchItems.stream().anyMatch(item -> mod.getItemStorage().hasItem(item));
     }
 
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        _movingTorwards = null;
-        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
+    class ConeClutchContext {
+        private double highestY = Double.NEGATIVE_INFINITY;
+        private double closestXZ = Double.POSITIVE_INFINITY;
+        private boolean bestBlockIsSafe = false;
+        private boolean bestBlockIsDeadlyFall = false;
+        private boolean bestBlockIsLava = false;
+        public BlockPos bestBlock = null;
+        private final boolean hasClutchItem;
 
-        moveLeftRight(mod, 0);
-        moveForwardBack(mod, 0);
-        mod.getInputControls().release(Input.SPRINT);
-        mod.getInputControls().release(Input.JUMP);
+        public ConeClutchContext(AltoClef mod) {
+            hasClutchItem = hasClutchItem(mod);
+        }
+        public void checkBlock(AltoClef mod, BlockPos check) {
+            // Already checked
+            if (Objects.equals(bestBlock, check))
+                return;
+            if (WorldHelper.isAir(mod, check)) {
+                Debug.logMessage("(MLG Air block checked for landing, the block broke. We'll try another): " + check);
+                return;
+            }
+            boolean lava = isLava(check);
+            boolean lavaWillProtect = lava && lavaWillProtect(check);
+            boolean water = isWater(check);
+            boolean isDeadlyFall = !hasClutchItem && isFallDeadly(check);
+            // Prioritize safe blocks ALWAYS
+            if (bestBlockIsSafe && !water)
+                return;
+            double height = check.getY();
+            double distSqXZ = WorldHelper.distanceXZSquared(WorldHelper.toVec3d(check), mod.getPlayer().getPos());
+            boolean highestSoFar = height > highestY;
+            boolean closestSoFar = distSqXZ < closestXZ;
+            // We found a new contender
+            if (
+                    bestBlock == null || // No target was found.
+                            (water && !bestBlockIsSafe) || // We ALWAYS land in water if we can
+                            (lava && lavaWillProtect && bestBlockIsDeadlyFall && !hasClutchItem) || // Land in lava if our best alternative is death by fall damage
+                            (!lava && !isDeadlyFall && ((closestSoFar && hasClutchItem) && highestSoFar || bestBlockIsLava)) // If it's not lava and is not deadly, land on it if it's higher than before OR if our best alternative is lava
+            ) {
+                if (canTravelToInAir((lava || water)? check.down() : check)) {
+                    if (highestSoFar) {
+                        highestY = height;
+                    }
+                    if (closestSoFar) {
+                        closestXZ = distSqXZ;
+                    }
+                    bestBlockIsSafe = water;
+                    bestBlockIsDeadlyFall = isDeadlyFall;
+                    bestBlockIsLava = lava;
+                    bestBlock = check;
+                }
+            }
+        }
+        public void checkRay(AltoClef mod, RaycastContext rctx) {
+            BlockHitResult hit = mod.getWorld().raycast(rctx);
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                BlockPos check = hit.getBlockPos();
+                // For now, REQUIRE we land on this
+                if (hit.getSide().getOffsetY() <= 0)
+                    return;
+                checkBlock(mod, check);
+            }
+        }
     }
 
     @Override

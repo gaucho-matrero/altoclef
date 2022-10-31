@@ -33,7 +33,7 @@ public class StoreInAnyContainerTask extends Task {
     private final HashSet<BlockPos> _dungeonChests = new HashSet<>();
     private final HashSet<BlockPos> _nonDungeonChests = new HashSet<>();
 
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private BlockPos _currentChestTry = null;
 
     private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);

@@ -44,14 +44,14 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(BEDS);
         super.onResourceStart(mod);
+        mod.getBlockTracker().trackBlock(BEDS);
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(BEDS);
         super.onResourceStop(mod, interruptTask);
+        mod.getBlockTracker().stopTracking(BEDS);
     }
 
     @Override

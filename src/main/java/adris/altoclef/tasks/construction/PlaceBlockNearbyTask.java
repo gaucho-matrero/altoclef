@@ -12,12 +12,15 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
 import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -26,6 +29,7 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -38,7 +42,7 @@ public class PlaceBlockNearbyTask extends Task {
     private final Block[] _toPlace;
 
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private final TimeoutWanderTask _wander = new TimeoutWanderTask(2);
+    private final TimeoutWanderTask _wander = new TimeoutWanderTask(5);
 
     private final TimerGame _randomlookTimer = new TimerGame(0.25);
     private final Predicate<BlockPos> _canPlaceHere;
@@ -59,6 +63,7 @@ public class PlaceBlockNearbyTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        _progressChecker.reset();
         _mod = mod;
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, false);
 
@@ -72,6 +77,9 @@ public class PlaceBlockNearbyTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
+            _progressChecker.reset();
+        }
         // Method:
         // - If looking at placable block
         //      Place immediately
@@ -80,7 +88,27 @@ public class PlaceBlockNearbyTask extends Task {
         // -
 
         // Close screen first
-        StorageHelper.closeScreen();
+        ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if (!cursorStack.isEmpty()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+            if (moveTo.isPresent()) {
+                mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+                return null;
+            }
+            if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                return null;
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            if (garbage.isPresent()) {
+                mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                return null;
+            }
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        } else {
+            StorageHelper.closeScreen();
+        }
 
         // Try placing where we're looking right now.
         BlockPos current = getCurrentlyLookingBlockPlace(mod);
@@ -197,7 +225,7 @@ public class PlaceBlockNearbyTask extends Task {
             }
             Hand hand = Hand.MAIN_HAND;
             assert MinecraftClient.getInstance().interactionManager != null;
-            if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver)  == ActionResult.SUCCESS) {
+            if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), hand, (BlockHitResult) mouseOver) == ActionResult.SUCCESS) {
                 mod.getPlayer().swingHand(hand);
                 _justPlaced = targetPlace;
                 Debug.logMessage("PRESSED");

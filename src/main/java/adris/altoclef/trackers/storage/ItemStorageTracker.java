@@ -5,7 +5,7 @@ import adris.altoclef.trackers.Tracker;
 import adris.altoclef.trackers.TrackerManager;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.slots.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -22,13 +22,11 @@ import java.util.function.Predicate;
 /**
  * Access ALL forms of storage.
  */
-@SuppressWarnings("UnnecessaryLocalVariable")
 public class ItemStorageTracker extends Tracker {
 
     private final InventorySubTracker _inventory;
     private final ContainerSubTracker _containers;
 
-    /*
     private static Slot[] getCurrentConversionSlots() {
         // TODO: Anvil input, anything else...
         if (StorageHelper.isPlayerInventoryOpen()) {
@@ -36,10 +34,14 @@ public class ItemStorageTracker extends Tracker {
         } else if (StorageHelper.isBigCraftingOpen()) {
             return CraftingTableSlot.INPUT_SLOTS;
         } else if (StorageHelper.isFurnaceOpen()) {
-            return new Slot[] {FurnaceSlot.INPUT_SLOT_FUEL, FurnaceSlot.INPUT_SLOT_MATERIALS};
+            return new Slot[]{FurnaceSlot.INPUT_SLOT_FUEL, FurnaceSlot.INPUT_SLOT_MATERIALS};
+        } else if (StorageHelper.isSmokerOpen()) {
+            return new Slot[]{SmokerSlot.INPUT_SLOT_FUEL, SmokerSlot.INPUT_SLOT_MATERIALS};
+        } else if (StorageHelper.isBlastFurnaceOpen()) {
+            return new Slot[]{BlastFurnaceSlot.INPUT_SLOT_FUEL, BlastFurnaceSlot.INPUT_SLOT_MATERIALS};
         }
         return new Slot[0];
-    }*/
+    }
 
     public ItemStorageTracker(AltoClef mod, TrackerManager manager, Consumer<ContainerSubTracker> containerTrackerConsumer) {
         super(manager);
@@ -53,16 +55,10 @@ public class ItemStorageTracker extends Tracker {
      * (ex. crafting table slots/furnace input, stuff the player is use )
      */
     public int getItemCount(Item ...items) {
-        int inConversionSlots = _mod.getBehaviour().getConversionSlots().stream().mapToInt(pair -> {
-            Slot slot = pair.getLeft();
-            if (slot.isScreenOpen()) {
-                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-                if (ArrayUtils.contains(items, stack.getItem())) {
-                    boolean satisfiesConversion = pair.getRight().test(stack);
-                    if (satisfiesConversion) {
-                        return stack.getCount();
-                    }
-                }
+        int inConversionSlots = Arrays.stream(getCurrentConversionSlots()).mapToInt(slot -> {
+            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+            if (ArrayUtils.contains(items, stack.getItem())) {
+                return stack.getCount();
             }
             return 0;
         }).reduce(0, Integer::sum);
@@ -81,50 +77,49 @@ public class ItemStorageTracker extends Tracker {
 
     /**
      * Gets the number of items STRICTLY in the player's inventory.
-     *
+     * <p>
      * ONLY USE THIS when getting an item is the END GOAL. This will
      * NOT count items in a crafting/furnace slot!
      */
-     public int getItemCountInventoryOnly(Item ...items) {
+    public int getItemCountInventoryOnly(Item... items) {
         return _inventory.getItemCount(true, false, items);
-     }
+    }
 
     /**
      * Gets the number of items only in the currently open container, NOT the player's inventory.
      */
-     public int getItemCountContainer(Item ...items) {
-         return _inventory.getItemCount(false, true, items);
-     }
+    public int getItemCountContainer(Item... items) {
+        return _inventory.getItemCount(false, true, items);
+    }
 
     /**
      * Gets whether an item is in the player's inventory OR if the player is USING IT in a conversion process
      * (ex. crafting table slots/furnace input, stuff the player is use )
      */
-    public boolean hasItem(Item ...items) {
-        boolean hasInConversion = _mod.getBehaviour().getConversionSlots().stream().anyMatch(pair -> {
-            Slot slot = pair.getLeft();
-            if (slot.isScreenOpen()) {
-                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-                if (ArrayUtils.contains(items, stack.getItem())) {
-                    boolean satisfiesConversion = pair.getRight().test(stack);
-                    return satisfiesConversion;
-                }
-            }
-            return false;
-        });
-        return hasInConversion || _inventory.hasItem(true, items);
+    public boolean hasItem(Item... items) {
+        return Arrays.stream(getCurrentConversionSlots()).anyMatch(slot -> {
+            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+            return ArrayUtils.contains(items, stack.getItem());
+        }) || _inventory.hasItem(true, items);
     }
-    public boolean hasItemAll(Item ...items) {
+
+    public boolean hasItemInOffhand(Item item) {
+        ItemStack offhand = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
+        return offhand.getItem() == item;
+    }
+
+    public boolean hasItemAll(Item... items) {
         return Arrays.stream(items).allMatch(this::hasItem);
     }
-    public boolean hasItem(ItemTarget ...targets) {
+
+    public boolean hasItem(ItemTarget... targets) {
         return Arrays.stream(targets).anyMatch(target -> hasItem(target.getMatches()));
     }
 
     /**
      * Returns whether an item is visible on the screen in any slot
      */
-    public boolean hasItemScreen(Item ...items) {
+    public boolean hasItemScreen(Item... items) {
         return _inventory.hasItem(false, items);
     }
 
@@ -206,7 +201,6 @@ public class ItemStorageTracker extends Tracker {
         return _inventory.getSlotsThatCanFit(true, true, stack, acceptPartial);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasEmptyInventorySlot() {
         return _inventory.hasEmptySlot(true);
     }

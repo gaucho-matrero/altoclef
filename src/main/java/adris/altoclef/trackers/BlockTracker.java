@@ -7,10 +7,10 @@ import adris.altoclef.eventbus.events.BlockPlaceEvent;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.BaritoneHelper;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.helpers.StlHelper;
+import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
@@ -669,9 +669,9 @@ public class BlockTracker extends Tracker {
         public double scanInterval = 7;
         public double scanIntervalWhenNewBlocksFound = 2;
         public boolean scanAsynchronously = true;
-        public int maxTotalCacheSize = 10000;
-        public int maxCacheSizePerBlockType = 100;
-        public double cutoffDistance = 64*2;
+        public int maxTotalCacheSize = 2500;
+        public int maxCacheSizePerBlockType = 25;
+        public double cutoffDistance = 128;
         public int defaultUnreachableAttemptsAllowed = 4;
     }
 }

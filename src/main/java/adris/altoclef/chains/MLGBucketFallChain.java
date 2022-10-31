@@ -5,10 +5,11 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.MLGBucketTask;
 import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -38,20 +39,24 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     @Override
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
-
         if (isFallingOhNo(mod)) {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
             _lastMLG = (MLGBucketTask) _mainTask;
             return 100;
-        } else if (!_tryCollectWaterTimer.elapsed() && mod.getPlayer().getVelocity().y >= -0.5) { // Why -0.5? Cause it's slower than -0.7.
+        } else if (!_tryCollectWaterTimer.elapsed()) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getItemStorage().hasItem(Items.BUCKET) && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-
                 if (_lastMLG != null) {
                     BlockPos placed = _lastMLG.getWaterPlacedPos();
+                    boolean isPlacedWater;
+                    try {
+                        isPlacedWater = mod.getWorld().getBlockState(placed).getBlock() == Blocks.WATER;
+                    } catch (Exception e) {
+                        isPlacedWater = false;
+                    }
                     //Debug.logInternal("PLACED: " + placed);
-                    if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5)) {
+                    if (placed != null && placed.isWithinDistance(mod.getPlayer().getPos(), 5.5) && isPlacedWater) {
                         BlockPos toInteract = placed;
                         // Allow looking at fluids
                         mod.getBehaviour().push();
@@ -100,6 +105,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
             mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
+        _lastMLG = null;
         return Float.NEGATIVE_INFINITY;
     }
 
@@ -112,6 +118,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     public boolean isActive() {
         // We're always checking for mlg.
         return true;
+    }
+
+    public boolean doneMLG() {
+        return _lastMLG == null;
     }
 
     public boolean isChorusFruiting() {

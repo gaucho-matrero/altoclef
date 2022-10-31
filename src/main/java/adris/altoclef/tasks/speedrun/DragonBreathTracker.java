@@ -43,7 +43,7 @@ public class DragonBreathTracker {
             mod.getBehaviour().setBlockBreakAdditionalPenalty(10); // Normally 2
 
             // do NOT ever wander
-            _checker = new MovementProgressChecker(999999);
+            _checker = new MovementProgressChecker((int) Float.POSITIVE_INFINITY);
         }
 
         @Override
@@ -54,7 +54,7 @@ public class DragonBreathTracker {
 
         @Override
         protected Goal newGoal(AltoClef mod) {
-            return new GoalRunAway(2, _breathBlocks.toArray(BlockPos[]::new));
+            return new GoalRunAway(10, _breathBlocks.toArray(BlockPos[]::new));
         }
 
         @Override

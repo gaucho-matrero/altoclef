@@ -13,7 +13,7 @@ public class GetToChunkTask extends CustomBaritoneGoalTask {
 
     public GetToChunkTask(ChunkPos pos) {
         // Override checker to be more lenient, as we are traversing entire chunks here.
-        _checker = new MovementProgressChecker(20, 0.5, 5, 0.001, 3);
+        _checker = new MovementProgressChecker();
         _pos = pos;
     }
 

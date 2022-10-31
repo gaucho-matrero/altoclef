@@ -8,7 +8,6 @@ import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 
 /**
  * Given a block position with fire in it, extinguish the fire at that position
@@ -28,7 +27,7 @@ public class PutOutFireTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        return new InteractWithBlockTask(ItemTarget.EMPTY, Direction.UP, _firePosition.down(), Input.CLICK_LEFT, false, false);
+        return new InteractWithBlockTask(ItemTarget.EMPTY, null, _firePosition, Input.CLICK_LEFT, false, false);
     }
 
     @Override

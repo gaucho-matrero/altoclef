@@ -3,20 +3,24 @@ package adris.altoclef.tasks.construction;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.baritone.PlaceBlockSchematic;
-import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.slots.Slot;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.PillagerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
@@ -25,15 +29,76 @@ import java.util.Optional;
  * Destroy a block at a position.
  */
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
+    private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
+    Block[] annoyingBlocks = new Block[]{
+            Blocks.VINE,
+            Blocks.NETHER_SPROUTS,
+            Blocks.CAVE_VINES,
+            Blocks.CAVE_VINES_PLANT,
+            Blocks.TWISTING_VINES,
+            Blocks.TWISTING_VINES_PLANT,
+            Blocks.WEEPING_VINES_PLANT,
+            Blocks.LADDER,
+            Blocks.BIG_DRIPLEAF,
+            Blocks.BIG_DRIPLEAF_STEM,
+            Blocks.SMALL_DRIPLEAF,
+            Blocks.TALL_GRASS,
+            Blocks.GRASS,
+            Blocks.SWEET_BERRY_BUSH
+    };
+    private Task _unstuckTask = null;
+    private boolean isMining;
+
+    private static BlockPos[] generateSides(BlockPos pos) {
+        return new BlockPos[]{
+                pos.add(1, 0, 0),
+                pos.add(-1, 0, 0),
+                pos.add(0, 0, 1),
+                pos.add(0, 0, -1),
+                pos.add(1, 0, -1),
+                pos.add(1, 0, 1),
+                pos.add(-1, 0, -1),
+                pos.add(-1, 0, 1)
+        };
+    }
+
+    private boolean isAnnoying(AltoClef mod, BlockPos pos) {
+        for (Block AnnoyingBlocks : annoyingBlocks) {
+            return mod.getWorld().getBlockState(pos).getBlock() == AnnoyingBlocks ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof DoorBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
+        }
+        return false;
+    }
+
+    // This happens all the time in mineshafts and swamps/jungles
+    private BlockPos stuckInBlock(AltoClef mod) {
+        BlockPos p = mod.getPlayer().getBlockPos();
+        if (isAnnoying(mod, p)) return p;
+        if (isAnnoying(mod, p.up())) return p.up();
+        BlockPos[] toCheck = generateSides(p);
+        for (BlockPos check : toCheck) {
+            if (isAnnoying(mod, check)) {
+                return check;
+            }
+        }
+        BlockPos[] toCheckHigh = generateSides(p.up());
+        for (BlockPos check : toCheckHigh) {
+            if (isAnnoying(mod, check)) {
+                return check;
+            }
+        }
+        return null;
+    }
 
     private final BlockPos _pos;
-    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(6, 0.1, 4, 0.01);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
 
-    private final TimerGame _tryToMineTimer = new TimerGame(5);
-
-    // For vines and stuff
-    private boolean _wasClose = false;
+    private Task getFenceUnstuckTask() {
+        return new SafeRandomShimmyTask();
+    }
 
     public DestroyBlockTask(BlockPos pos) {
         _pos = pos;
@@ -41,32 +106,82 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStart(AltoClef mod) {
-        _tryToMineTimer.forceElapse();
-        _wanderTask.resetWander();
-        StorageHelper.closeScreen();
-
-        mod.getBehaviour().push();
-        // Avoid placing on top, to prevent our annoying "run away" bug
-        mod.getBehaviour().avoidBlockPlacing(pos -> _pos.up().equals(pos));
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
+        _moveChecker.reset();
+        stuckCheck.reset();
+        ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if (!cursorStack.isEmpty()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+            moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        } else {
+            StorageHelper.closeScreen();
+        }
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-
-        // Wander and check
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+        if (mod.getWorld().getBlockState(_pos).getBlock() == Blocks.WHITE_WOOL) {
+            Iterable<Entity> entities = mod.getWorld().getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof PillagerEntity) {
+                    if (_pos.isWithinDistance(entity.getPos(), 144)) {
+                        Debug.logMessage("Blacklisting pillager wool.");
+                        mod.getBlockTracker().requestBlockUnreachable(_pos, 0);
+                    }
+                }
+            }
+        }
+        if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
             _moveChecker.reset();
-            return _wanderTask;
+        }
+        if (WorldHelper.isInNetherPortal(mod)) {
+            if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                setDebugState("Getting out from nether portal");
+                mod.getInputControls().hold(Input.SNEAK);
+                mod.getInputControls().hold(Input.MOVE_FORWARD);
+                return null;
+            } else {
+                mod.getInputControls().release(Input.SNEAK);
+                mod.getInputControls().release(Input.MOVE_BACK);
+                mod.getInputControls().release(Input.MOVE_FORWARD);
+            }
+        } else {
+            if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                mod.getInputControls().release(Input.SNEAK);
+                mod.getInputControls().release(Input.MOVE_BACK);
+                mod.getInputControls().release(Input.MOVE_FORWARD);
+            }
+        }
+        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
+            setDebugState("Getting unstuck from block.");
+            stuckCheck.reset();
+            // Stop other tasks, we are JUST shimmying
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+            mod.getClientBaritone().getExploreProcess().onLostControl();
+            return _unstuckTask;
+        }
+        if (!_moveChecker.check(mod) || !stuckCheck.check(mod)) {
+            BlockPos blockStuck = stuckInBlock(mod);
+            if (blockStuck != null) {
+                _unstuckTask = getFenceUnstuckTask();
+                return _unstuckTask;
+            }
+            stuckCheck.reset();
         }
         if (!_moveChecker.check(mod)) {
             _moveChecker.reset();
             mod.getBlockTracker().requestBlockUnreachable(_pos);
-            _wanderTask.resetWander();
-            return _wanderTask;
         }
 
         // do NOT break if we're standing above it and it's dangerous below...
-        if (!WorldHelper.isSolid(mod, _pos.up()) && mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().isOnGround()? mod.getPlayer().getPos() : mod.getPlayer().getPos().add(0, -1, 0), 0.89)) {
+        if (!WorldHelper.isSolid(mod, _pos.up()) && mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().isOnGround() ? mod.getPlayer().getPos() : mod.getPlayer().getPos().add(0, -1, 0), 0.89)) {
             if (WorldHelper.dangerousToBreakIfRightAbove(mod, _pos)) {
                 setDebugState("It's dangerous to break as we're right above it, moving away and trying again.");
                 return new RunAwayFromPositionTask(3, _pos.getY(), _pos);
@@ -75,42 +190,48 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
         // We're trying to mine
         Optional<Rotation> reach = LookHelper.getReach(_pos);
-        if (reach.isPresent()) {
-            _tryToMineTimer.reset();
-        }
-        if (!_tryToMineTimer.elapsed()) {
-            if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround())) {
-                setDebugState("Block in range, mining...");
-                // Break the block, force it.
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                mod.getClientBaritone().getBuilderProcess().onLostControl();
-                if (!LookHelper.isLookingAt(mod, _pos)) {
-                    LookHelper.lookAt(mod, reach.get());
-                }
-                if (LookHelper.isLookingAt(mod, _pos)) {
-                    // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
-                    mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
-                }
-            } else {
-                setDebugState("Breaking the normal way.");
-                if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
-                    // Try breaking normally.
-                    mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                    Debug.logMessage("Break Block: Restarting builder process");
-                    mod.getClientBaritone().getBuilderProcess().build("destroy block", new PlaceBlockSchematic(Blocks.AIR), _pos);
-                }
+        if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround()) &&
+                !mod.getFoodChain().isTryingToEat() && !WorldHelper.isInNetherPortal(mod) &&
+                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+            setDebugState("Block in range, mining...");
+            stuckCheck.reset();
+            isMining = true;
+            mod.getInputControls().release(Input.SNEAK);
+            mod.getInputControls().release(Input.MOVE_BACK);
+            mod.getInputControls().release(Input.MOVE_FORWARD);
+            // Break the block, force it.
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+            mod.getClientBaritone().getBuilderProcess().onLostControl();
+            if (!LookHelper.isLookingAt(mod, _pos)) {
+                reach.ifPresent(rotation -> LookHelper.lookAt(mod, rotation));
+            }
+            if (LookHelper.isLookingAt(mod, _pos)) {
+                // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
+                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }
         } else {
             setDebugState("Getting to block...");
-            boolean isClose = _pos.isWithinDistance(mod.getPlayer().getPos(), 1);
-            if (isClose != _wasClose) {
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                _wasClose = isClose;
+            if (isMining && mod.getPlayer().isTouchingWater()) {
+                isMining = false;
+                mod.getBlockTracker().requestBlockUnreachable(_pos);
+            } else {
+                isMining = false;
+            }
+            boolean isCloseToMoveBack = _pos.isWithinDistance(mod.getPlayer().getPos(), 2);
+            if (isCloseToMoveBack) {
+                if (!mod.getClientBaritone().getPathingBehavior().isPathing() && !mod.getPlayer().isTouchingWater() &&
+                        !mod.getFoodChain().isTryingToEat()) {
+                    mod.getInputControls().hold(Input.SNEAK);
+                    mod.getInputControls().hold(Input.MOVE_BACK);
+                } else {
+                    mod.getInputControls().release(Input.SNEAK);
+                    mod.getInputControls().release(Input.MOVE_BACK);
+                }
             }
             if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                // If we're close, go TO the block (potentially disrupts vines and stuff)
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(isClose? new GoalBlock(_pos) : new GoalNear(_pos, 1));
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(mod.getWorld().getBlockState(_pos.up()).getBlock() ==
+                        Blocks.SNOW ? new GoalBlock(_pos) : new GoalNear(_pos, 1));
             }
         }
 
@@ -119,14 +240,16 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        if (!AltoClef.inGame())
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
+        if (!AltoClef.inGame()) {
             return;
-        mod.getBehaviour().pop();
-        mod.getClientBaritone().getBuilderProcess().onLostControl();
-        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+        }
         // Do not keep breaking.
         // Can lead to trouble, for example, if lava is right above the NEXT block.
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
+        mod.getInputControls().release(Input.SNEAK);
+        mod.getInputControls().release(Input.MOVE_BACK);
+        mod.getInputControls().release(Input.MOVE_FORWARD);
     }
 
     @Override

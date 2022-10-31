@@ -9,11 +9,16 @@ public class BeatMinecraftConfig {
     public boolean rePickupCraftingTable = true;
     public boolean searchRuinedPortals = true;
     public boolean searchDesertTemples = true;
-    public int minFoodUnits = 10;
+    public int minFoodUnits = 180;
     public int foodUnits = 220;
     public int requiredBeds = 10;
     public boolean alwaysCookRawFood = true;
     public int minBuildMaterialCount = 5;
-    public int buildMaterialCount = 40;
-    public double dragonHeadCloseEnoughClickBedRange = 5.3;
+    public int buildMaterialCount = 64;
+    public double dragonHeadCloseEnoughClickBedRange = 6;
+    public boolean ironGearBeforeDiamondGear = true;
+    public boolean getShield = true;
+    public boolean renderDistanceManipulation = true;
+    public boolean rePickupSmoker = true;
+    public boolean rePickupFurnace = true;
 }

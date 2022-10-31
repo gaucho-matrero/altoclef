@@ -7,8 +7,8 @@ import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
-import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.entity.KillPlayerTask;
+import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.movement.RunAwayFromEntitiesTask;
 import adris.altoclef.tasks.movement.SearchChunksExploreTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
@@ -16,12 +16,12 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -160,17 +160,17 @@ public class TerminatorTask extends Task {
             if (mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), toPunk -> shouldPunk(mod, (PlayerEntity) toPunk), PlayerEntity.class).isPresent()) {
                 setDebugState("Punking.");
                 return new DoToClosestEntityTask(
-                    entity -> {
-                        if (entity instanceof PlayerEntity) {
-                            tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
-                            return new KillPlayerTask(entity.getName().getString());
-                        }
-                        // Should never happen.
-                        Debug.logWarning("This should never happen.");
-                        return _scanTask;
-                    },
-                    interact -> shouldPunk(mod, (PlayerEntity) interact),
-                    PlayerEntity.class
+                        entity -> {
+                            if (entity instanceof PlayerEntity) {
+                                tryDoFunnyMessageTo(mod, (PlayerEntity) entity);
+                                return new KillPlayerTask(entity.getName().getString());
+                            }
+                            // Should never happen.
+                            Debug.logWarning("This should never happen.");
+                            return _scanTask;
+                        },
+                        interact -> shouldPunk(mod, (PlayerEntity) interact),
+                        PlayerEntity.class
                 );
             }
         }
@@ -343,7 +343,7 @@ public class TerminatorTask extends Task {
         public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
             super(toRunAwayFrom, distanceToRun, true, 0.1);
             // More lenient progress checker
-            _checker = new MovementProgressChecker(2);
+            _checker = new MovementProgressChecker();
         }
 
         @Override

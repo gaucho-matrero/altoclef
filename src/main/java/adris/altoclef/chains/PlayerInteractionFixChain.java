@@ -5,11 +5,11 @@ import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.ItemHelper;
-import adris.altoclef.util.slots.PlayerSlot;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
@@ -18,18 +18,18 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
 
 public class PlayerInteractionFixChain extends TaskChain {
-
-    private final TimerGame _stackHeldTimeout = new TimerGame(8);
+    private final TimerGame _stackHeldTimeout = new TimerGame(1);
     private final TimerGame _generalDuctTapeSwapTimeout = new TimerGame(30);
     private final TimerGame _shiftDepressTimeout = new TimerGame(10);
-    private final TimerGame _betterToolTimer = new TimerGame(0.5);
-    private final TimerGame _mouseMovingButScreenOpenTimeout = new TimerGame(0.2);
+    private final TimerGame _betterToolTimer = new TimerGame(0);
+    private final TimerGame _mouseMovingButScreenOpenTimeout = new TimerGame(1);
     private ItemStack _lastHandStack = null;
 
     private Screen _lastScreen;
@@ -74,7 +74,9 @@ public class PlayerInteractionFixChain extends TaskChain {
                         boolean isAllowedToManage = !mod.getClientBaritone().getPathingBehavior().isPathing() || bestToolSlot.get().getInventorySlot() >= 9;
                         if (isAllowedToManage) {
                             Debug.logMessage("Found better tool in inventory, equipping.");
-                            mod.getSlotHandler().forceEquipSlot(bestToolSlot.get());
+                            ItemStack bestToolItemStack = StorageHelper.getItemStackInSlot(bestToolSlot.get());
+                            Item bestToolItem = bestToolItemStack.getItem();
+                            mod.getSlotHandler().forceEquipItem(bestToolItem);
                         }
                     }
                 }
@@ -84,7 +86,6 @@ public class PlayerInteractionFixChain extends TaskChain {
         // Unpress shift (it gets stuck for some reason???)
         if (mod.getInputControls().isHeldDown(Input.SNEAK)) {
             if (_shiftDepressTimeout.elapsed()) {
-                Debug.logMessage("Unpressing shift/sneak");
                 mod.getInputControls().release(Input.SNEAK);
             }
         } else {
@@ -117,24 +118,48 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         // If we have something in our hand for a period of time...
         if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
-            Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false);
             if (moveTo.isPresent()) {
                 mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
-            } else {
-                // Try throwing away cursor slot if it's garbage
-                if (ItemHelper.canThrowAwayStack(mod, StorageHelper.getItemStackInCursorSlot())) {
-                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                } else {
-                    Debug.logMessage("Cursor stack edge case: Full inventory AND NO GARBAGE! We're stuck.");
-                }
+                return Float.NEGATIVE_INFINITY;
             }
+            if (ItemHelper.canThrowAwayStack(mod, StorageHelper.getItemStackInCursorSlot())) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                return Float.NEGATIVE_INFINITY;
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            if (garbage.isPresent()) {
+                mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                return Float.NEGATIVE_INFINITY;
+            }
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
             return Float.NEGATIVE_INFINITY;
         }
 
         if (shouldCloseOpenScreen(mod)) {
-            Debug.logMessage("Closed screen since we changed our look.");
-            StorageHelper.closeScreen();
+            //Debug.logMessage("Closed screen since we changed our look.");
+            ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+            if (!cursorStack.isEmpty()) {
+                Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+                if (moveTo.isPresent()) {
+                    mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+                    return Float.NEGATIVE_INFINITY;
+                }
+                if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    return Float.NEGATIVE_INFINITY;
+                }
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                // Try throwing away cursor slot if it's garbage
+                if (garbage.isPresent()) {
+                    mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                    return Float.NEGATIVE_INFINITY;
+                }
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            } else {
+                StorageHelper.closeScreen();
+            }
             return Float.NEGATIVE_INFINITY;
         }
 

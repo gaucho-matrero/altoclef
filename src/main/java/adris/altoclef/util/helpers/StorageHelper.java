@@ -6,7 +6,10 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.util.*;
-import adris.altoclef.util.slots.*;
+import adris.altoclef.util.slots.CraftingTableSlot;
+import adris.altoclef.util.slots.CursorSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.slots.Slot;
 import baritone.utils.ToolSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -39,9 +42,9 @@ public class StorageHelper {
         Screen screen = MinecraftClient.getInstance().currentScreen;
         if (
                 screen != null &&
-                !(screen instanceof GameMenuScreen) &&
-                !(screen instanceof GameOptionsScreen) &&
-                !(screen instanceof ChatScreen)) {
+                        !(screen instanceof GameMenuScreen) &&
+                        !(screen instanceof GameOptionsScreen) &&
+                        !(screen instanceof ChatScreen)) {
             // Close the screen if we're in-game
             MinecraftClient.getInstance().player.closeHandledScreen();
         }
@@ -59,20 +62,20 @@ public class StorageHelper {
         PlayerInventory inv = player.getInventory();
         if (inv != null) {
             if (slot.equals(PlayerSlot.OFFHAND_SLOT))
-                return inv.offHand.stream().findFirst().orElse(ItemStack.EMPTY).copy();
+                return inv.offHand.stream().findFirst().orElse(ItemStack.EMPTY);
             if (slot.equals(PlayerSlot.ARMOR_HELMET_SLOT))
-                return inv.getArmorStack(3).copy();
+                return inv.getArmorStack(3);
             if (slot.equals(PlayerSlot.ARMOR_CHESTPLATE_SLOT))
-                return inv.getArmorStack(2).copy();
+                return inv.getArmorStack(2);
             if (slot.equals(PlayerSlot.ARMOR_LEGGINGS_SLOT))
-                return inv.getArmorStack(1).copy();
+                return inv.getArmorStack(1);
             if (slot.equals(PlayerSlot.ARMOR_BOOTS_SLOT))
-                return inv.getArmorStack(0).copy();
+                return inv.getArmorStack(0);
         }
         try {
             // We might have messed up and opened the wrong slot.
             net.minecraft.screen.slot.Slot mcSlot = player.currentScreenHandler.getSlot(slot.getWindowSlot());
-            return (mcSlot != null) ? mcSlot.getStack().copy() : ItemStack.EMPTY;
+            return (mcSlot != null) ? mcSlot.getStack() : ItemStack.EMPTY;
         } catch (Exception e) {
             Debug.logWarning("Screen Slot Error (ignored)");
             e.printStackTrace();
@@ -277,8 +280,6 @@ public class StorageHelper {
                     // Just discard the one with the smallest quantity, but this doesn't really matter.
                     return left.getCount() - right.getCount();
                 });
-            } else {
-                Debug.logWarning("No unused items to throw away found. Every item is protected.");
             }
         }
         return Optional.empty();
@@ -312,20 +313,24 @@ public class StorageHelper {
         });
     }
 
-    public static boolean isArmorEquipped(AltoClef mod, Item ...any) {
+    public static boolean isArmorEquipped(AltoClef mod, Item... any) {
         for (Item item : any) {
             if (item instanceof ArmorItem armor) {
                 ItemStack equippedStack = mod.getPlayer().getInventory().getArmorStack(armor.getSlotType().getEntitySlotId());
                 if (equippedStack.getItem().equals(item))
                     return true;
             }
+            if (item instanceof ShieldItem shield) {
+                ItemStack equippedStack = mod.getPlayer().getInventory().getStack(PlayerInventory.OFF_HAND_SLOT);
+                if (equippedStack.getItem().equals(shield))
+                    return true;
+            }
         }
         return false;
     }
 
-
     public static int getBuildingMaterialCount(AltoClef mod) {
-        return mod.getItemStorage().getItemCount(Arrays.stream(mod.getModSettings().getThrowawayItems(mod, true)).filter(item -> item instanceof BlockItem).toArray(Item[]::new));
+        return mod.getItemStorage().getItemCount(Arrays.stream(mod.getModSettings().getThrowawayItems(mod, true)).filter(item -> item instanceof BlockItem && !item.equals(Items.GRAVEL) && !item.equals(Items.SAND)).toArray(Item[]::new));
     }
 
     private static boolean isScreenOpenInner(Predicate<ScreenHandler> pNotNull) {
@@ -338,18 +343,28 @@ public class StorageHelper {
     public static boolean isBigCraftingOpen() {
         return isScreenOpenInner(screen -> screen instanceof CraftingScreenHandler);
     }
+
     public static boolean isPlayerInventoryOpen() {
         return isScreenOpenInner(screen -> screen instanceof PlayerScreenHandler);
     }
+
     public static boolean isFurnaceOpen() {
         return isScreenOpenInner(screen -> screen instanceof FurnaceScreenHandler);
     }
 
-    public static boolean isArmorEquippedAll(AltoClef mod, Item ...items) {
+    public static boolean isSmokerOpen() {
+        return isScreenOpenInner(screen -> screen instanceof SmokerScreenHandler);
+    }
+
+    public static boolean isBlastFurnaceOpen() {
+        return isScreenOpenInner(screen -> screen instanceof BlastFurnaceScreenHandler);
+    }
+
+    public static boolean isArmorEquippedAll(AltoClef mod, Item... items) {
         return Arrays.stream(items).allMatch(item -> isArmorEquipped(mod, item));
     }
 
-    public static boolean isEquipped(AltoClef mod, Item ...items) {
+    public static boolean isEquipped(AltoClef mod, Item... items) {
         return ArrayUtils.contains(items, StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem());
     }
 
@@ -484,7 +499,7 @@ public class StorageHelper {
     public static ItemStack getItemStackInCursorSlot() {
         if (MinecraftClient.getInstance().player != null) {
             if (MinecraftClient.getInstance().player.currentScreenHandler != null) {
-                return MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack().copy();
+                return MinecraftClient.getInstance().player.currentScreenHandler.getCursorStack();
             }
         }
         return ItemStack.EMPTY;
@@ -504,17 +519,62 @@ public class StorageHelper {
         PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor) handler).getPropertyDelegate();
         return (double) d.get(0) / 200.0;
     }
+
+    public static double getSmokerFuel(AbstractFurnaceScreenHandler handler) {
+        PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor) handler).getPropertyDelegate();
+        return (double) d.get(0) / 200.0;
+    }
+
+    public static double getBlastFurnaceFuel(AbstractFurnaceScreenHandler handler) {
+        PropertyDelegate d = ((AbstractFurnaceScreenHandlerAccessor) handler).getPropertyDelegate();
+        return (double) d.get(0) / 200.0;
+    }
+
     public static double getFurnaceFuel() {
         if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler furnace)
             return getFurnaceFuel(furnace);
         return -1;
     }
+
+    public static double getSmokerFuel() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler smoker)
+            return getSmokerFuel(smoker);
+        return -1;
+    }
+
+    public static double getBlastFurnaceFuel() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler blastFurnace)
+            return getBlastFurnaceFuel(blastFurnace);
+        return -1;
+    }
+
     public static double getFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
         return (double) handler.getCookProgress() / 24.0;
     }
+
+    public static double getSmokerCookPercent(AbstractFurnaceScreenHandler handler) {
+        return (double) handler.getCookProgress() / 24.0;
+    }
+
+    public static double getBlastFurnaceCookPercent(AbstractFurnaceScreenHandler handler) {
+        return (double) handler.getCookProgress() / 24.0;
+    }
+
     public static double getFurnaceCookPercent() {
         if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler furnace)
             return getFurnaceCookPercent(furnace);
+        return -1;
+    }
+
+    public static double getSmokerCookPercent() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler smoker)
+            return getSmokerCookPercent(smoker);
+        return -1;
+    }
+
+    public static double getBlastFurnaceCookPercent() {
+        if (MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.currentScreenHandler instanceof AbstractFurnaceScreenHandler blastFurnace)
+            return getBlastFurnaceCookPercent(blastFurnace);
         return -1;
     }
 

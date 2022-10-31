@@ -3,23 +3,24 @@ package adris.altoclef.tasks.container;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.slots.SmithingTableSlot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.SmithingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.Optional;
 
 public class UpgradeInSmithingTableTask extends ResourceTask {
 
@@ -44,12 +45,9 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBehaviour().push();
-        mod.getBehaviour().markSlotAsConversionSlot(SmithingTableSlot.INPUT_SLOT_TOOL, stack -> _tool.matches(stack.getItem()));
-        mod.getBehaviour().markSlotAsConversionSlot(SmithingTableSlot.INPUT_SLOT_MATERIALS, stack -> _material.matches(stack.getItem()));
     }
 
-    private int getItemsInSlot(AltoClef mod, Slot slot, ItemTarget match) {
+    private int getItemsInSlot(Slot slot, ItemTarget match) {
         ItemStack stack = StorageHelper.getItemStackInSlot(slot);
         if (!stack.isEmpty() && match.matches(stack.getItem())) {
             return stack.getCount();
@@ -63,9 +61,9 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
         boolean inSmithingTable = (mod.getPlayer().currentScreenHandler instanceof SmithingScreenHandler);
 
-        int materialsInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_MATERIALS, _material) : 0;
-        int toolsInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.INPUT_SLOT_TOOL, _tool) : 0;
-        int ouputInSlot = inSmithingTable ? getItemsInSlot(mod, SmithingTableSlot.OUTPUT_SLOT, _output) : 0;
+        int materialsInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.INPUT_SLOT_MATERIALS, _material) : 0;
+        int toolsInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.INPUT_SLOT_TOOL, _tool) : 0;
+        int ouputInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.OUTPUT_SLOT, _output) : 0;
 
         int desiredOutput = _output.getTargetCount() - ouputInSlot;
 
@@ -79,18 +77,39 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         if (StorageHelper.isArmorEquipped(mod, _tool.getMatches())) {
             // Exit out of any screen so we can move our armor
             if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-                StorageHelper.closeScreen();
+                ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+                if (!cursorStack.isEmpty()) {
+                    Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+                    if (moveTo.isPresent()) {
+                        mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                    // Try throwing away cursor slot if it's garbage
+                    if (garbage.isPresent()) {
+                        mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                } else {
+                    StorageHelper.closeScreen();
+                }
                 setDebugState("Quickly removing equipped armor");
                 return null;
             }
             // Take off our armor
-            if (!mod.getItemStorage().hasEmptyInventorySlot()) {
+            if (mod.getItemStorage().hasEmptyInventorySlot()) {
                 return new EnsureFreeInventorySlotTask();
             }
             for (Slot armorSlot : PlayerSlot.ARMOR_SLOTS) {
                 if (_tool.matches(StorageHelper.getItemStackInSlot(armorSlot).getItem())) {
                     setDebugState("Quickly removing equipped armor");
-                    return new ClickSlotTask(armorSlot, 0, SlotActionType.QUICK_MOVE);
+                    mod.getSlotHandler().clickSlot(armorSlot, 0, SlotActionType.QUICK_MOVE);
+                    return null;
                 }
             }
         }
@@ -101,7 +120,6 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBehaviour().push();
     }
 
     @Override
@@ -158,7 +176,8 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             ItemStack currentOutput = StorageHelper.getItemStackInSlot(outputSlot);
             // Grab from output
             if (!currentOutput.isEmpty()) {
-                return new ClickSlotTask(outputSlot, SlotActionType.QUICK_MOVE);
+                mod.getSlotHandler().clickSlot(outputSlot, 0, SlotActionType.QUICK_MOVE);
+                return null;
             }
             // Put materials in slot
             if (currentMaterials.isEmpty() || !_material.matches(currentMaterials.getItem())) {

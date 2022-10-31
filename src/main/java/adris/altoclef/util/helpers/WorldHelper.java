@@ -33,7 +33,7 @@ public interface WorldHelper {
 
     // God bless 1.18
     int WORLD_CEILING_Y = 255;
-    int WORLD_FLOOR_Y = 0;
+    int WORLD_FLOOR_Y = -64;
 
     /**
      * Get the number of in-game ticks the game/world has been active for.
@@ -99,8 +99,8 @@ public interface WorldHelper {
     static Dimension getCurrentDimension() {
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return Dimension.OVERWORLD;
-        if (world.getDimension().isUltrawarm()) return Dimension.NETHER;
-        if (world.getDimension().isNatural()) return Dimension.OVERWORLD;
+        if (world.getDimension().ultrawarm()) return Dimension.NETHER;
+        if (world.getDimension().natural()) return Dimension.OVERWORLD;
         return Dimension.END;
     }
 
@@ -230,10 +230,11 @@ public interface WorldHelper {
             // Always fall in water
             // TODO: If there's a 1 meter thick layer of water and then a massive drop below, the bot will think it is safe.
             if (MovementHelper.isWater(s))
-                return false;
+                return true;
             // We hit ground, depends
-            if (WorldHelper.isSolid(mod, check))
+            if (WorldHelper.isSolid(mod, check)) {
                 return tooFarToFall;
+            }
         }
         // At this point we probably fall through the void, so not safe.
         return true;
@@ -260,14 +261,14 @@ public interface WorldHelper {
 
     static boolean isOcean(RegistryEntry<Biome> b){
         return (b.matchesKey(BiomeKeys.OCEAN)
-        || b.matchesKey(BiomeKeys.COLD_OCEAN)
-        || b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
-        || b.matchesKey(BiomeKeys.DEEP_OCEAN)
-        || b.matchesKey(BiomeKeys.DEEP_FROZEN_OCEAN)
-        || b.matchesKey(BiomeKeys.DEEP_LUKEWARM_OCEAN)
-        || b.matchesKey(BiomeKeys.LUKEWARM_OCEAN)
-        || b.matchesKey(BiomeKeys.WARM_OCEAN)
-        || b.matchesKey(BiomeKeys.FROZEN_OCEAN));
+                || b.matchesKey(BiomeKeys.COLD_OCEAN)
+                || b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
+                || b.matchesKey(BiomeKeys.DEEP_OCEAN)
+                || b.matchesKey(BiomeKeys.DEEP_FROZEN_OCEAN)
+                || b.matchesKey(BiomeKeys.DEEP_LUKEWARM_OCEAN)
+                || b.matchesKey(BiomeKeys.LUKEWARM_OCEAN)
+                || b.matchesKey(BiomeKeys.WARM_OCEAN)
+                || b.matchesKey(BiomeKeys.FROZEN_OCEAN));
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {
@@ -300,7 +301,7 @@ public interface WorldHelper {
     static Iterable<BlockPos> getBlocksTouchingPlayer(AltoClef mod) {
         return getBlocksTouchingBox(mod, mod.getPlayer().getBoundingBox());
     }
-    
+
     static Iterable<BlockPos> getBlocksTouchingBox(AltoClef mod, Box box) {
         BlockPos min = new BlockPos(box.minX, box.minY, box.minZ);
         BlockPos max = new BlockPos(box.maxX, box.maxY, box.maxZ);

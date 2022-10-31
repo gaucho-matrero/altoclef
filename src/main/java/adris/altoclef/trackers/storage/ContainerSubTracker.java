@@ -43,7 +43,7 @@ public class ContainerSubTracker extends Tracker {
         // Listen for when we interact with a block
         EventBus.subscribe(BlockInteractEvent.class, evt -> {
             BlockPos blockPos = evt.hitResult.getBlockPos();
-            BlockState bs = evt.world.getBlockState(blockPos);
+            BlockState bs = _mod.getWorld().getBlockState(blockPos);
             onBlockInteract(blockPos, bs.getBlock());
         });
         EventBus.subscribe(ScreenOpenEvent.class, evt -> {
@@ -58,12 +58,12 @@ public class ContainerSubTracker extends Tracker {
 
     private void onBlockInteract(BlockPos pos, Block block) {
         if (block instanceof AbstractFurnaceBlock ||
-            block instanceof ChestBlock ||
-            block.equals(Blocks.ENDER_CHEST) ||
-            block instanceof HopperBlock ||
-            block instanceof ShulkerBoxBlock ||
-            block instanceof DispenserBlock ||
-            block instanceof BarrelBlock) {
+                block instanceof ChestBlock ||
+                block.equals(Blocks.ENDER_CHEST) ||
+                block instanceof HopperBlock ||
+                block instanceof ShulkerBoxBlock ||
+                block instanceof DispenserBlock ||
+                block instanceof BarrelBlock) {
             _lastBlockPosInteraction = pos;
             _lastBlockInteraction = block;
         }

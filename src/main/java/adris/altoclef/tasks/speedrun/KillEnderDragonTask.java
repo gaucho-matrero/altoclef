@@ -12,10 +12,10 @@ import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -112,10 +112,10 @@ public class KillEnderDragonTask extends Task {
             }
         }
 
-        if (!isRailingOnDragon() && _lookDownTimer.elapsed()) {
+        if (!isRailingOnDragon() && _lookDownTimer.elapsed() && !mod.getControllerExtras().isBreakingBlock()) {
             if (mod.getPlayer().isOnGround()) {
                 _lookDownTimer.reset();
-                mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, -90f), true);
+                mod.getClientBaritone().getLookBehavior().updateTarget(new Rotation(0f, 90f), true);
             }
         }
 
@@ -146,14 +146,14 @@ public class KillEnderDragonTask extends Task {
         if (mod.getEntityTracker().entityFound(EndCrystalEntity.class)) {
             setDebugState("Kamakazeeing crystals");
             return new DoToClosestEntityTask(
-                (toDestroy) -> {
-                    if (toDestroy.isInRange(mod.getPlayer(), 7)) {
-                        mod.getControllerExtras().attack(toDestroy);
-                    }
-                    // Go next to the crystal, arbitrary where we just need to get close.
-                    return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
-                },
-                EndCrystalEntity.class
+                    (toDestroy) -> {
+                        if (toDestroy.isInRange(mod.getPlayer(), 7)) {
+                            mod.getControllerExtras().attack(toDestroy);
+                        }
+                        // Go next to the crystal, arbitrary where we just need to get close.
+                        return new GetToBlockTask(toDestroy.getBlockPos().add(1, 0, 0), false);
+                    },
+                    EndCrystalEntity.class
             );
         }
 
@@ -297,7 +297,7 @@ public class KillEnderDragonTask extends Task {
                         Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
                         mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
                         // Also look towards da dragon
-                        MinecraftClient.getInstance().options.autoJump = false;
+                        MinecraftClient.getInstance().options.getAutoJump().setValue(false);
                         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
                         hit(mod);
                     } else {

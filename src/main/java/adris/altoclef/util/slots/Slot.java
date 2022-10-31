@@ -3,10 +3,7 @@ package adris.altoclef.util.slots;
 import adris.altoclef.Debug;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.CraftingScreen;
-import net.minecraft.client.gui.screen.ingame.FurnaceScreen;
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
-import net.minecraft.client.gui.screen.ingame.SmithingScreen;
+import net.minecraft.client.gui.screen.ingame.*;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -44,14 +41,13 @@ public abstract class Slot {
         }
     }
 
-    /*
     private static Slot getFromCurrentScreenAbstract(int slot, boolean inventory) {
         switch (getCurrentType()) {
             case PLAYER:
                 return new PlayerSlot(slot, inventory);
             case CRAFTING_TABLE:
                 return new CraftingTableSlot(slot, inventory);
-            case FURNACE_OR_SMITH:
+            case FURNACE_OR_SMITH_OR_SMOKER_OR_BLAST:
                 return new FurnaceSlot(slot, inventory);
             case CHEST_LARGE:
                 return new ChestSlot(slot, true, inventory);
@@ -61,16 +57,31 @@ public abstract class Slot {
                 Debug.logWarning("Unhandled slot for inventory check: " + getCurrentType());
                 return null;
         }
-    }*/
+    }
 
-    public boolean isScreenOpen() {
-        return SlotScreenMapping.isScreenOpen(getClass());
-    }
     public static Slot getFromCurrentScreen(int windowSlot) {
-        return SlotScreenMapping.getFromScreen(windowSlot, false);//getFromCurrentScreenAbstract(windowSlot, false);
+        return getFromCurrentScreenAbstract(windowSlot, false);
     }
+
     public static Slot getFromCurrentScreenInventory(int inventorySlot) {
-        return SlotScreenMapping.getFromScreen(inventorySlot, true);//getFromCurrentScreenAbstract(windowSlot, true);
+        return getFromCurrentScreenAbstract(inventorySlot, true);
+    }
+
+    private static ContainerType getCurrentType() {
+        Screen screen = MinecraftClient.getInstance().currentScreen;
+        if (screen instanceof FurnaceScreen || screen instanceof SmithingScreen || screen instanceof SmokerScreen ||
+                screen instanceof BlastFurnaceScreen) {
+            return ContainerType.FURNACE_OR_SMITH_OR_SMOKER_OR_BLAST;
+        }
+        if (screen instanceof GenericContainerScreen) {
+            GenericContainerScreenHandler handler = ((GenericContainerScreen) screen).getScreenHandler();
+            boolean big = (handler.getRows() == 6);
+            return big ? ContainerType.CHEST_LARGE : ContainerType.CHEST_SMALL;
+        }
+        if (screen instanceof CraftingScreen) {
+            return ContainerType.CRAFTING_TABLE;
+        }
+        return ContainerType.PLAYER;
     }
 
     public static boolean isCursor(Slot slot) {
@@ -80,7 +91,7 @@ public abstract class Slot {
     public static Iterable<Slot> getCurrentScreenSlots() {
         return () -> new Iterator<>() {
             final ClientPlayerEntity player = MinecraftClient.getInstance().player;
-            final ScreenHandler handler = player != null? player.currentScreenHandler : null;
+            final ScreenHandler handler = player != null ? player.currentScreenHandler : null;
             int i = -1;
             final int MAX = handler != null? handler.slots.size() : 0;
             @Override
@@ -92,7 +103,7 @@ public abstract class Slot {
             public Slot next() {
                 if (i == -1) {
                     ++i;
-                    return CursorSlot.SLOT;
+                    return new CursorSlot();
                 }
                 return Slot.getFromCurrentScreen(i++);
             }
@@ -161,7 +172,7 @@ public abstract class Slot {
         CRAFTING_TABLE,
         CHEST_SMALL,
         CHEST_LARGE,
-        FURNACE_OR_SMITH
+        FURNACE_OR_SMITH_OR_SMOKER_OR_BLAST
     }
 
     @SuppressWarnings("StaticInitializerReferencesSubClass")

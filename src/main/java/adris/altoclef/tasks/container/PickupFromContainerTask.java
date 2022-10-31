@@ -1,14 +1,17 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.FurnaceScreenHandler;
+import net.minecraft.screen.SmokerScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -114,7 +117,8 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
                 if (bestPotential.isPresent()) {
                     // Just pick it up, it's now ours.
-                    return new ClickSlotTask(bestPotential.get());
+                    mod.getSlotHandler().clickSlot(bestPotential.get(), 0, SlotActionType.PICKUP);
+                    return null;
                 }
                 setDebugState("SHOULD NOT HAPPEN! No valid items detected.");
             }
@@ -122,6 +126,11 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
         // We're done.
         setDebugState("Done");
+        if (mod.getPlayer().currentScreenHandler instanceof SmokerScreenHandler || mod.getPlayer().currentScreenHandler
+                instanceof FurnaceScreenHandler) {
+            mod.getSlotHandler().clickSlot(FurnaceSlot.INPUT_SLOT_MATERIALS, 0, SlotActionType.PICKUP);
+            return null;
+        }
         return null;
     }
 }

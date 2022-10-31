@@ -46,7 +46,7 @@ public class KillAndLootTask extends ResourceTask {
                 return getToCorrectDimensionTask(mod);
             }
             setDebugState("Searching for mob...");
-            return new TimeoutWanderTask(9999999);
+            return new TimeoutWanderTask();
         }
         // We found the mob!
         return _killTask;

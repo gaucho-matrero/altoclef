@@ -5,17 +5,17 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -52,6 +52,7 @@ public abstract class DoStuffInContainerTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getBehaviour().push();
         if (_openTableTask == null) {
             _openTableTask = new DoToClosestBlockTask(InteractWithBlockTask::new, _containerBlocks);
         }
@@ -59,7 +60,6 @@ public abstract class DoStuffInContainerTask extends Task {
         mod.getBlockTracker().trackBlock(_containerBlocks);
 
         // Protect container since we might place it.
-        mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(ItemHelper.blocksToItems(_containerBlocks));
     }
 
@@ -140,12 +140,16 @@ public abstract class DoStuffInContainerTask extends Task {
         setDebugState("Walking to container... " + nearest.get().toShortString());
 
         if (!StorageHelper.getItemStackInCursorSlot().isEmpty()) {
-            setDebugState("Clearing cursor slot (otherwise this causes BIG problems)");
-            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false).or(() -> StorageHelper.getGarbageSlot(mod));
+            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
             if (toMoveTo.isEmpty()) {
                 return new EnsureFreeInventorySlotTask();
             } else {
-                return new ClickSlotTask(toMoveTo.get());
+                if (ItemHelper.canThrowAwayStack(mod, StorageHelper.getItemStackInCursorSlot())) {
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                } else {
+                    mod.getSlotHandler().clickSlot(toMoveTo.get(), 0, SlotActionType.PICKUP);
+                }
+                return null;
             }
         }
         return _openTableTask;
@@ -167,8 +171,8 @@ public abstract class DoStuffInContainerTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_containerBlocks);
         mod.getBehaviour().pop();
+        mod.getBlockTracker().stopTracking(_containerBlocks);
     }
 
     @Override

@@ -3,12 +3,12 @@ package adris.altoclef.control;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.slots.PlayerSlot;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CursorSlot;
+import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.*;
@@ -48,14 +48,14 @@ public class SlotHandler {
         _slotActionTimer.reset();
     }
 
+
     public void clickSlot(Slot slot, int mouseButton, SlotActionType type) {
         if (!canDoSlotAction()) return;
 
         if (slot.getWindowSlot() == -1) {
-            Debug.logWarning("Tried to click the cursor slot. Shouldn't do this!");
+            clickSlot(PlayerSlot.UNDEFINED, 0, SlotActionType.PICKUP);
             return;
         }
-
         // NOT THE CASE! We may have something in the cursor slot to place.
         //if (getItemStackInSlot(slot).isEmpty()) return getItemStackInSlot(slot);
 
@@ -79,6 +79,20 @@ public class SlotHandler {
         } catch (Exception e) {
             Debug.logWarning("Slot Click Error (ignored)");
             e.printStackTrace();
+        }
+    }
+
+    public void forceEquipItemToOffhand(Item toEquip) {
+        if (StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT).getItem() == toEquip) {
+            return;
+        }
+        List<Slot> currentItemSlot = _mod.getItemStorage().getSlotsWithItemPlayerInventory(false,
+                toEquip);
+        Slot itemInSlot = currentItemSlot.get(0);
+        if (!Slot.isCursor(itemInSlot)) {
+            _mod.getSlotHandler().clickSlot(itemInSlot, 0, SlotActionType.PICKUP);
+        } else {
+            _mod.getSlotHandler().clickSlot(PlayerSlot.OFFHAND_SLOT, 0, SlotActionType.PICKUP);
         }
     }
 
@@ -131,8 +145,8 @@ public class SlotHandler {
                             || item == Items.COMPASS
                             || item instanceof EmptyMapItem
                             || item instanceof Wearable
-                            || item == Items.SHIELD
-                            || item == Items.LEAD;
+                            || item == Items.LEAD
+                            || item == Items.SHIELD;
                 }
         );
     }
@@ -158,7 +172,7 @@ public class SlotHandler {
                     }
                 }
                 if (ItemHelper.canThrowAwayStack(_mod, cursor)) {
-                    clickSlotForce(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    clickSlotForce(PlayerSlot.UNDEFINED, 0, SlotActionType.PICKUP);
                     return true;
                 }
                 // Can't throw :(

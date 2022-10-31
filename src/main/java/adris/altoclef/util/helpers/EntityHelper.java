@@ -1,8 +1,6 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.DamageUtil;
 import net.minecraft.entity.Entity;
@@ -10,9 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -21,7 +17,6 @@ import net.minecraft.item.Items;
  * Helper functions to interpret entity state
  */
 public class EntityHelper {
-
     public static final double ENTITY_GRAVITY = 0.08; // per second
 
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
@@ -31,28 +26,23 @@ public class EntityHelper {
         }
         return hostile;
     }
-
     public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
-        // TODO: Ignore on Peaceful difficulty.
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        // NOTE: These do not work.
-        if (hostile instanceof EndermanEntity enderman) {
-            return enderman.isAngryAt(player) && enderman.isAngry();
-        }
-        if (hostile instanceof PiglinEntity) {
-            // Angry if we're not wearing gold
-            return !StorageHelper.isArmorEquipped(mod, ItemHelper.GOLDEN_ARMORS);
-        }
-        if (hostile instanceof ZombifiedPiglinEntity zombie) {
-            // Will ALWAYS be false.
-            return zombie.hasAngerTime() && zombie.isAngryAt(player);
+        if (hostile instanceof MobEntity entity) {
+            if (entity instanceof HostileEntity entity1) {
+                return entity1.isAttacking() || !(entity1 instanceof EndermanEntity || entity1 instanceof PiglinEntity ||
+                        entity1 instanceof SpiderEntity || entity1 instanceof ZombifiedPiglinEntity);
+            }
+            if (entity instanceof SlimeEntity entity1) {
+                return entity1.canSee(mod.getPlayer());
+            }
+            return entity.isAttacking();
         }
         return !isTradingPiglin(hostile);
     }
 
     public static boolean isTradingPiglin(Entity entity) {
         if (entity instanceof PiglinEntity pig) {
-            for (ItemStack stack : pig.getItemsHand()) {
+            for (ItemStack stack : pig.getHandItems()) {
                 if (stack.getItem().equals(Items.GOLD_INGOT)) {
                     // We're trading with this one, ignore it.
                     return true;

@@ -3,12 +3,12 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.construction.PutOutFireTask;
+import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasks.movement.SearchChunkForBlockTask;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -26,9 +26,8 @@ import java.util.Optional;
 public class CollectBlazeRodsTask extends ResourceTask {
 
     private static final double SPAWNER_BLAZE_RADIUS = 32;
-
+    private static final double TOO_LITTLE_HEALTH_BLAZE = 10;
     private static final int TOO_MANY_BLAZES = 5;
-    private static final double TOO_LITTLE_HEALTH_BLAZE = 5;
     private final int _count;
     private final Task _searcher = new SearchChunkForBlockTask(Blocks.NETHER_BRICKS);
 
@@ -42,7 +41,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
     }
 
     private static boolean isHoveringAboveLavaOrTooHigh(AltoClef mod, Entity entity) {
-        int MAX_HEIGHT = 23;
+        int MAX_HEIGHT = 11;
         for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
             if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
             if (WorldHelper.isSolid(mod, check)) return false;
@@ -57,7 +56,6 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-
         // We must go to the nether.
         if (WorldHelper.getCurrentDimension() != Dimension.NETHER) {
             setDebugState("Going to nether");
@@ -67,14 +65,14 @@ public class CollectBlazeRodsTask extends ResourceTask {
         Optional<Entity> toKill = Optional.empty();
         // If there is a blaze, kill it.
         if (mod.getEntityTracker().entityFound(BlazeEntity.class)) {
-
-            // If we're in danger and there are too many blazes, run away.
-            if (mod.getEntityTracker().getTrackedEntities(BlazeEntity.class).size() >= TOO_MANY_BLAZES && mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE) {
-                setDebugState("Running away as there are too many blazes nearby.");
-                return new TimeoutWanderTask();
+            toKill = mod.getEntityTracker().getClosestEntity(BlazeEntity.class);
+            if (toKill.isPresent()) {
+                if (mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE &&
+                        mod.getEntityTracker().getTrackedEntities(BlazeEntity.class).size() >= TOO_MANY_BLAZES) {
+                    setDebugState("Running away as there are too many blazes nearby.");
+                    return new RunAwayFromHostilesTask(15 * 2, true);
+                }
             }
-
-            toKill = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), BlazeEntity.class);
 
             if (_foundBlazeSpawner != null && toKill.isPresent()) {
                 Entity kill = toKill.get();
@@ -91,10 +89,14 @@ public class CollectBlazeRodsTask extends ResourceTask {
                 }
             }
         }
-
         if (toKill.isPresent() && toKill.get().isAlive()) {
+            if (isHoveringAboveLavaOrTooHigh(mod, toKill.get())) {
+                toKill = Optional.empty();
+            }
             setDebugState("Killing blaze");
-            return new KillEntitiesTask(entity -> !isHoveringAboveLavaOrTooHigh(mod, entity), BlazeEntity.class);
+            if (toKill.isPresent()) {
+                return new KillEntitiesTask(toKill.get().getClass());
+            }
         }
 
 

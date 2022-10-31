@@ -8,5 +8,6 @@ public enum WoodType {
     OAK,
     JUNGLE,
     SPRUCE,
-    WARPED
+    WARPED,
+    MANGROVE
 }

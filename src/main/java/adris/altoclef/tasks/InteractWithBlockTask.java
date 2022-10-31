@@ -3,32 +3,103 @@ package adris.altoclef.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.baritone.GoalBlockSide;
-import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalNear;
 import baritone.api.pathing.goals.GoalTwoBlocks;
 import baritone.api.process.ICustomGoalProcess;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.block.*;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Left or Right click on a block on a particular (or any) side of the block.
  */
 public class InteractWithBlockTask extends Task {
+    private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
+    private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
+    Block[] annoyingBlocks = new Block[]{
+            Blocks.VINE,
+            Blocks.NETHER_SPROUTS,
+            Blocks.CAVE_VINES,
+            Blocks.CAVE_VINES_PLANT,
+            Blocks.TWISTING_VINES,
+            Blocks.TWISTING_VINES_PLANT,
+            Blocks.WEEPING_VINES_PLANT,
+            Blocks.LADDER,
+            Blocks.BIG_DRIPLEAF,
+            Blocks.BIG_DRIPLEAF_STEM,
+            Blocks.SMALL_DRIPLEAF,
+            Blocks.TALL_GRASS,
+            Blocks.GRASS,
+            Blocks.SWEET_BERRY_BUSH
+    };
+    private Task _unstuckTask = null;
+
+    private static BlockPos[] generateSides(BlockPos pos) {
+        return new BlockPos[]{
+                pos.add(1, 0, 0),
+                pos.add(-1, 0, 0),
+                pos.add(0, 0, 1),
+                pos.add(0, 0, -1),
+                pos.add(1, 0, -1),
+                pos.add(1, 0, 1),
+                pos.add(-1, 0, -1),
+                pos.add(-1, 0, 1)
+        };
+    }
+
+    private boolean isAnnoying(AltoClef mod, BlockPos pos) {
+        for (Block AnnoyingBlocks : annoyingBlocks) {
+            return mod.getWorld().getBlockState(pos).getBlock() == AnnoyingBlocks ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof DoorBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock ||
+                    mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
+        }
+        return false;
+    }
+
+    // This happens all the time in mineshafts and swamps/jungles
+    private BlockPos stuckInBlock(AltoClef mod) {
+        BlockPos p = mod.getPlayer().getBlockPos();
+        if (isAnnoying(mod, p)) return p;
+        if (isAnnoying(mod, p.up())) return p.up();
+        BlockPos[] toCheck = generateSides(p);
+        for (BlockPos check : toCheck) {
+            if (isAnnoying(mod, check)) {
+                return check;
+            }
+        }
+        BlockPos[] toCheckHigh = generateSides(p.up());
+        for (BlockPos check : toCheckHigh) {
+            if (isAnnoying(mod, check)) {
+                return check;
+            }
+        }
+        return null;
+    }
 
     private final ItemTarget _toUse;
     private final Direction _direction;
@@ -38,9 +109,12 @@ public class InteractWithBlockTask extends Task {
     private final Input _interactInput;
     private final boolean _shiftClick;
     private final TimerGame _clickTimer = new TimerGame(5);
-    private final MovementProgressChecker _moveChecker = new MovementProgressChecker(4, 0.1, 4, 0.01);
+
+    private Task getFenceUnstuckTask() {
+        return new SafeRandomShimmyTask();
+    }
+
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
-    private final int reachDistance = 0;
 
     private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
 
@@ -74,7 +148,6 @@ public class InteractWithBlockTask extends Task {
     public InteractWithBlockTask(ItemTarget toUse, BlockPos target) {
         this(toUse, target, false);
     }
-
     public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, interactOffset, shiftClick);
     }
@@ -128,12 +201,52 @@ public class InteractWithBlockTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
         _moveChecker.reset();
+        stuckCheck.reset();
         _wanderTask.resetWander();
+        _clickTimer.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
+            _moveChecker.reset();
+        }
+        if (WorldHelper.isInNetherPortal(mod)) {
+            if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                setDebugState("Getting out from nether portal");
+                mod.getInputControls().hold(Input.SNEAK);
+                mod.getInputControls().hold(Input.MOVE_FORWARD);
+                return null;
+            } else {
+                mod.getInputControls().release(Input.SNEAK);
+                mod.getInputControls().release(Input.MOVE_BACK);
+                mod.getInputControls().release(Input.MOVE_FORWARD);
+            }
+        } else {
+            if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                mod.getInputControls().release(Input.SNEAK);
+                mod.getInputControls().release(Input.MOVE_BACK);
+                mod.getInputControls().release(Input.MOVE_FORWARD);
+            }
+        }
+        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
+            setDebugState("Getting unstuck from block.");
+            stuckCheck.reset();
+            // Stop other tasks, we are JUST shimmying
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+            mod.getClientBaritone().getExploreProcess().onLostControl();
+            return _unstuckTask;
+        }
+        if (!_moveChecker.check(mod) || !stuckCheck.check(mod)) {
+            BlockPos blockStuck = stuckInBlock(mod);
+            if (blockStuck != null) {
+                _unstuckTask = getFenceUnstuckTask();
+                return _unstuckTask;
+            }
+            stuckCheck.reset();
+        }
 
         _cachedClickStatus = ClickResponse.CANT_REACH;
 
@@ -156,11 +269,12 @@ public class InteractWithBlockTask extends Task {
             return _wanderTask;
         }
 
+        int reachDistance = 0;
         Goal moveGoal = createGoalForInteract(_target, reachDistance, _direction, _interactOffset, _walkInto);
         ICustomGoalProcess proc = mod.getClientBaritone().getCustomGoalProcess();
 
         _cachedClickStatus = rightClick(mod);
-        switch (_cachedClickStatus) {
+        switch (Objects.requireNonNull(_cachedClickStatus)) {
             case CANT_REACH -> {
                 setDebugState("Getting to our goal");
                 // Get to our goal then
@@ -177,14 +291,13 @@ public class InteractWithBlockTask extends Task {
                 _clickTimer.reset();
             }
             case CLICK_ATTEMPTED -> {
-                Debug.logInternal("(InteractWithBlockTask: Click attempted!)");
+                setDebugState("Clicking.");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
                 if (_clickTimer.elapsed()) {
                     // We tried clicking but failed.
                     _clickTimer.reset();
-                    mod.getBlockTracker().requestBlockUnreachable(_target);
                     return _wanderTask;
                 }
             }
@@ -195,8 +308,8 @@ public class InteractWithBlockTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
         mod.getInputControls().release(Input.SNEAK);
-        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
     }
 
     @Override
@@ -231,11 +344,34 @@ public class InteractWithBlockTask extends Task {
     private ClickResponse rightClick(AltoClef mod) {
 
         // Don't interact if baritone can't interact.
-        if (mod.getExtraBaritoneSettings().isInteractionPaused()) return ClickResponse.WAIT_FOR_CLICK;
+        if (mod.getExtraBaritoneSettings().isInteractionPaused() || mod.getFoodChain().isTryingToEat() ||
+                mod.getPlayer().isBlocking() || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel())
+            return ClickResponse.WAIT_FOR_CLICK;
 
         // We can't interact while a screen is open.
         if (!StorageHelper.isPlayerInventoryOpen()) {
-            StorageHelper.closeScreen();
+            ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+            if (!cursorStack.isEmpty()) {
+                Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+                if (moveTo.isPresent()) {
+                    mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+                    return ClickResponse.WAIT_FOR_CLICK;
+                }
+                if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    return ClickResponse.WAIT_FOR_CLICK;
+                }
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                // Try throwing away cursor slot if it's garbage
+                if (garbage.isPresent()) {
+                    mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                    return ClickResponse.WAIT_FOR_CLICK;
+                }
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                return ClickResponse.WAIT_FOR_CLICK;
+            } else {
+                StorageHelper.closeScreen();
+            }
         }
 
         Optional<Rotation> reachable = getCurrentReach();
@@ -248,10 +384,13 @@ public class InteractWithBlockTask extends Task {
                     mod.getSlotHandler().forceDeequipRightClickableItem();
                 }
                 mod.getInputControls().tryPress(_interactInput);
-                //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(_interactInput, true);
-                if (_shiftClick) {
-                    mod.getInputControls().hold(Input.SNEAK);
+                if (mod.getInputControls().isHeldDown(_interactInput)) {
+                    if (_shiftClick) {
+                        mod.getInputControls().hold(Input.SNEAK);
+                    }
+                    return ClickResponse.CLICK_ATTEMPTED;
                 }
+                //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(_interactInput, true);
             }
             return ClickResponse.WAIT_FOR_CLICK;
         }

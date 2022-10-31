@@ -6,15 +6,15 @@ import adris.altoclef.eventbus.events.PlayerCollidedWithEntityEvent;
 import adris.altoclef.mixins.PersistentProjectileEntityAccessor;
 import adris.altoclef.trackers.blacklisting.EntityLocateBlacklist;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.baritone.CachedProjectile;
+import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.ProjectileHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.mob.*;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -154,6 +154,7 @@ public class EntityTracker extends Tracker {
                 if (_entityMap.containsKey(toFind)) {
                     for (Entity entity : _entityMap.get(toFind)) {
                         // Don't accept entities that no longer exist
+                        if (_entityBlacklist.unreachable(entity)) continue;
                         if (!entity.isAlive()) continue;
                         if (!acceptPredicate.test(entity)) continue;
                         double cost = entity.squaredDistanceTo(position);
@@ -351,20 +352,16 @@ public class EntityTracker extends Tracker {
                         }
                         _itemDropLocations.get(droppedItem).add(ientity);
                     }
-                } else if (entity instanceof MobEntity) {
+                }
+                if (entity instanceof MobEntity) {
+                    if (EntityHelper.isAngryAtPlayer(_mod, entity)) {
 
-                    //noinspection ConstantConditions
-                    if (entity instanceof HostileEntity || entity instanceof HoglinEntity || entity instanceof ZoglinEntity) {
+                        // Check if the mob is facing us or is close enough
+                        boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);
 
-                        if (EntityHelper.isAngryAtPlayer(_mod, entity)) {
-
-                            // Check if the mob is facing us or is close enough
-                            boolean closeEnough = entity.isInRange(_mod.getPlayer(), 26);
-
-                            //Debug.logInternal("TARGET: " + hostile.is);
-                            if (closeEnough) {
-                                _hostiles.add(entity);
-                            }
+                        //Debug.logInternal("TARGET: " + hostile.is);
+                        if (closeEnough) {
+                            _hostiles.add(entity);
                         }
                     }
                 } else if (entity instanceof ProjectileEntity projEntity) {

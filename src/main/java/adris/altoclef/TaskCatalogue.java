@@ -1,6 +1,7 @@
 package adris.altoclef;
 
-import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
@@ -202,7 +203,7 @@ public class TaskCatalogue {
             smelt("smooth_quartz", Items.SMOOTH_QUARTZ, "quartz_block");
             smelt("smooth_basalt", Items.SMOOTH_BASALT, "basalt");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron", Items.IRON_ORE);
+            simple("iron_ingot", Items.IRON_INGOT, CollectIronIngotTask::new).forceDimension(Dimension.OVERWORLD);
             smelt("copper_ingot", Items.COPPER_INGOT, "raw_copper", Items.COPPER_ORE);
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");

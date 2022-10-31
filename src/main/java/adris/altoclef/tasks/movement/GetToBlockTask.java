@@ -41,20 +41,20 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     protected void onStart(AltoClef mod) {
+        super.onStart(mod);
         if (_preferStairs) {
             mod.getBehaviour().push();
             mod.getBehaviour().setPreferredStairs(true);
         }
-        super.onStart(mod);
     }
 
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        super.onStop(mod, interruptTask);
         if (_preferStairs) {
             mod.getBehaviour().pop();
         }
-        super.onStop(mod, interruptTask);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
 
     @Override
     protected void onWander(AltoClef mod) {
-        mod.getBlockTracker().requestBlockUnreachable(_position);
         super.onWander(mod);
+        mod.getBlockTracker().requestBlockUnreachable(_position);
     }
 }

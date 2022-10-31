@@ -24,13 +24,15 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
+        mod.getClientBaritone().getExploreProcess().onLostControl();
+        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
         mod.getBehaviour().allowSwimThroughLava(true);
         // Encourage placing of all blocks!
         mod.getBehaviour().setBlockPlacePenalty(0);
         mod.getBehaviour().setBlockBreakAdditionalPenalty(20); // Normally 2
 
         // do NOT ever wander
-        _checker = new MovementProgressChecker(999999);
+        _checker = new MovementProgressChecker((int) Float.POSITIVE_INFINITY);
     }
 
     @Override
@@ -77,7 +79,9 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
             return MovementHelper.isLava(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
         }
         private static boolean isLavaAdjacent(int x, int y, int z) {
-            return isLava(x+1,y,z) || isLava(x-1,y,z) || isLava(x,y,z+1) || isLava(x,y,z-1);
+            return isLava(x + 1, y, z) || isLava(x - 1, y, z) || isLava(x, y, z + 1) || isLava(x, y, z - 1)
+                    || isLava(x + 1, y, z - 1) || isLava(x + 1, y, z + 1) || isLava(x - 1, y, z - 1)
+                    || isLava(x - 1, y, z + 1);
         }
         private static boolean isWater(int x, int y, int z) {
             if (MinecraftClient.getInstance().world == null) return false;

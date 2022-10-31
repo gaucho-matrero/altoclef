@@ -2,10 +2,11 @@ package adris.altoclef.tasks.slot;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.helpers.ItemHelper;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
 
@@ -18,19 +19,14 @@ public class EnsureFreeInventorySlotTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
-        if (cursorStack.isEmpty() || !ItemHelper.canThrowAwayStack(mod, cursorStack)) {
-            Optional<Slot> toThrow = StorageHelper.getGarbageSlot(mod);
-            if (toThrow.isPresent()) {
-                setDebugState("Finding garbage");
-                return new ClickSlotTask(toThrow.get());
-            } else {
-                setDebugState("NO THROWAWAYABLE!");
-                return null;
-            }
-        } else {
-            setDebugState("Throwing cursor");
-            return new ThrowCursorTask();
+        Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+        if (cursorStack.isEmpty()) {
+            garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            return null;
         }
+        LookHelper.randomOrientation(mod);
+        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        return null;
     }
 
     @Override

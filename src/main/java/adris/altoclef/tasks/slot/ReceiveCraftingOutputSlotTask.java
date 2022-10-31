@@ -20,8 +20,9 @@ public class ReceiveCraftingOutputSlotTask extends Task implements ITaskUsesCraf
         _slot = slot;
         _toTake = toTake;
     }
+
     public ReceiveCraftingOutputSlotTask(Slot slot, boolean all) {
-        this(slot, all? Integer.MAX_VALUE : 1);
+        this(slot, all ? Integer.MAX_VALUE : 1);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ReceiveCraftingOutputSlotTask extends Task implements ITaskUsesCraf
         ItemStack inOutput = StorageHelper.getItemStackInSlot(_slot);
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
         boolean cursorSlotFree = cursor.isEmpty();
-        if(!cursorSlotFree && !ItemHelper.canStackTogether(inOutput, cursor)) {
+        if (!cursorSlotFree && !ItemHelper.canStackTogether(inOutput, cursor)) {
             return new EnsureFreeCursorSlotTask();
         }
         int craftCount = inOutput.getCount() * getCraftMultipleCount(mod);
@@ -42,15 +43,16 @@ public class ReceiveCraftingOutputSlotTask extends Task implements ITaskUsesCraf
         boolean takeAll = weWantToAddToInventory >= craftCount;
         if (takeAll && mod.getItemStorage().getSlotThatCanFitInPlayerInventory(inOutput, true).isPresent()) {
             setDebugState("Quick moving output");
-            return new ClickSlotTask(_slot, SlotActionType.QUICK_MOVE);
+            mod.getSlotHandler().clickSlot(_slot, 0, SlotActionType.QUICK_MOVE);
+            return null;
         }
         setDebugState("Picking up output");
-        return new ClickSlotTask(_slot);
+        mod.getSlotHandler().clickSlot(_slot, 0, SlotActionType.PICKUP);
+        return null;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-
     }
 
     @Override

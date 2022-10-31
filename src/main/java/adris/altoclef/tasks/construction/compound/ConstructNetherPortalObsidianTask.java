@@ -9,8 +9,8 @@ import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -47,16 +47,30 @@ public class ConstructNetherPortalObsidianTask extends Task {
     };
 
     private static final Vec3i[] PORTAL_INTERIOR = new Vec3i[]{
+            //Inside
             new Vec3i(0, 0, 0),
             new Vec3i(0, 1, 0),
             new Vec3i(0, 2, 0),
             new Vec3i(0, 0, 1),
             new Vec3i(0, 1, 1),
-            new Vec3i(0, 2, 1)
+            new Vec3i(0, 2, 1),
+            //Outside 1
+            new Vec3i(1, 0, 0),
+            new Vec3i(1, 1, 0),
+            new Vec3i(1, 2, 0),
+            new Vec3i(1, 0, 1),
+            new Vec3i(1, 1, 1),
+            new Vec3i(1, 2, 1),
+            //Outside 2
+            new Vec3i(-1, 0, 0),
+            new Vec3i(-1, 1, 0),
+            new Vec3i(-1, 2, 0),
+            new Vec3i(-1, 0, 1),
+            new Vec3i(-1, 1, 1),
+            new Vec3i(-1, 2, 1)
     };
 
     private static final Vec3i PORTALABLE_REGION_SIZE = new Vec3i(3, 6, 6);
-    private static final Vec3i PORTAL_ORIGIN_RELATIVE_TO_REGION = new Vec3i(1, 0, 2);
 
     private final TimerGame _areaSearchTimer = new TimerGame(5);
 
@@ -101,7 +115,13 @@ public class ConstructNetherPortalObsidianTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-
+        if (_origin != null) {
+            if (mod.getWorld().getBlockState(_origin.up()).getBlock() == Blocks.NETHER_PORTAL) {
+                setDebugState("Done constructing nether portal.");
+                mod.getBlockTracker().addBlock(Blocks.NETHER_PORTAL, _origin.up());
+                return null;
+            }
+        }
         int neededObsidian = 10;
         BlockPos placeTarget = null;
         if (_origin != null) {
@@ -155,7 +175,6 @@ public class ConstructNetherPortalObsidianTask extends Task {
                 return new DestroyBlockTask(_destroyTarget);
             }
         }
-
         // Flint and steel
         return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _origin.down(), true);
     }

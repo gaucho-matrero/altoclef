@@ -48,7 +48,7 @@ public enum ContainerType {
                 return handler instanceof BrewingStandScreenHandler;
             }
             case MISC -> {
-                return handler instanceof Generic3x3ContainerScreenHandler || handler instanceof GenericContainerScreenHandler || handler instanceof HopperScreenHandler;
+                return handler instanceof Generic3x3ContainerScreenHandler || handler instanceof GenericContainerScreenHandler;
             }
             case EMPTY -> {
                 return false;

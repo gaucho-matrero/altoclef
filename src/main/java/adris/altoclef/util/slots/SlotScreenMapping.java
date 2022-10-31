@@ -3,11 +3,8 @@ package adris.altoclef.util.slots;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.*;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.util.Pair;
 import org.apache.commons.lang3.NotImplementedException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -19,6 +16,8 @@ public class SlotScreenMapping {
     private static final List<SlotScreenMappingEntry> _classList = List.of(
             e(CraftingTableSlot.class, screen -> screen instanceof CraftingScreen, CraftingTableSlot::new),
             e(FurnaceSlot.class, screen -> screen instanceof AbstractFurnaceScreen, FurnaceSlot::new),
+            e(SmokerSlot.class, screen -> screen instanceof AbstractFurnaceScreen, SmokerSlot::new),
+            e(BlastFurnaceSlot.class, screen -> screen instanceof AbstractFurnaceScreen, BlastFurnaceSlot::new),
             e(SmithingTableSlot.class, screen -> screen instanceof SmithingScreen, SmithingTableSlot::new),
             e(BrewingStandSlot.class, screen -> screen instanceof BrewingStandScreen, BrewingStandSlot::new),
             e(ChestSlot.class, screen -> screen instanceof GenericContainerScreen, ChestSlot::new),

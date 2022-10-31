@@ -87,7 +87,9 @@ public class DeathMenuChain extends TaskChain {
                 }
             }
         } else {
-            _waitOnDeathScreenBeforeRespawnTimer.reset();
+            if (AltoClef.inGame()) {
+                _waitOnDeathScreenBeforeRespawnTimer.reset();
+            }
             if (screen instanceof DisconnectedScreen) {
                 if (shouldAutoReconnect(mod)) {
                     Debug.logMessage("RECONNECTING: Going to Multiplayer Screen");

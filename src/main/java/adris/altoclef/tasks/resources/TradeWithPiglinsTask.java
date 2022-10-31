@@ -6,11 +6,10 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.AbstractDoToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.resources.TradeWithPiglinsTask.PerformTradeWithPiglin;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.EntityHelper;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HoglinEntity;
@@ -131,8 +130,8 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         @Override
         protected void onStop(AltoClef mod, Task interruptTask) {
-            mod.getBehaviour().pop();
             super.onStop(mod, interruptTask);
+            mod.getBehaviour().pop();
         }
 
         @Override

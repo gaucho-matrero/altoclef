@@ -30,7 +30,7 @@ public class ItemDeserializer extends StdDeserializer<Object> {
         List<Item> result = new ArrayList<>();
 
         if (p.getCurrentToken() != JsonToken.START_ARRAY) {
-            throw new JsonParseException("Start array expected", p.getCurrentLocation());
+            throw new JsonParseException(p, "Start array expected");
         }
         while (p.nextToken() != JsonToken.END_ARRAY) {
             Item item = null;
