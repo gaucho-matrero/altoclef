@@ -56,6 +56,7 @@ public enum ContainerType {
             default -> throw new NotImplementedException("Missed this chest type: " + type);
         }
     }
+
     public static boolean screenHandlerMatches(ContainerType type) {
         if (MinecraftClient.getInstance().player != null) {
             ScreenHandler h = MinecraftClient.getInstance().player.currentScreenHandler;
@@ -64,6 +65,7 @@ public enum ContainerType {
         }
         return false;
     }
+
     public static boolean screenHandlerMatchesAny() {
         return screenHandlerMatches(CHEST) ||
                 screenHandlerMatches(SHULKER) ||

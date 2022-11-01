@@ -118,11 +118,11 @@ public class ReplaceBlocksTask extends Task {
         // Now replace
         setDebugState("Searching for blocks to replace...");
         return new DoToClosestBlockTask(whereToPlace -> {
-                _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
-                return _replaceTask;
-            },
-            this::isWithinRange,
-            _toFind
+            _replaceTask = new PlaceBlockTask(whereToPlace, blocksToPlace);
+            return _replaceTask;
+        },
+                this::isWithinRange,
+                _toFind
         );
     }
 

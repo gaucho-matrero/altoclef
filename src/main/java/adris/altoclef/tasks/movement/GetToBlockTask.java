@@ -18,6 +18,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     public GetToBlockTask(BlockPos position, boolean preferStairs) {
         this(position, preferStairs, null);
     }
+
     public GetToBlockTask(BlockPos position, Dimension dimension) {
         this(position, false, dimension);
     }
@@ -31,6 +32,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     public GetToBlockTask(BlockPos position) {
         this(position, false);
     }
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (_dimension != null && WorldHelper.getCurrentDimension() != _dimension) {

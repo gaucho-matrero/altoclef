@@ -121,10 +121,10 @@ public class MoveItemToSlotTask extends Task {
                 bestMatch = slot;
                 continue;
             }
-            int countBest  = StorageHelper.getItemStackInSlot(bestMatch).getCount();
+            int countBest = StorageHelper.getItemStackInSlot(bestMatch).getCount();
             int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
-            if (   (countBest < _toMove.getTargetCount() && countCheck > countBest)
-                    || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest) ) {
+            if ((countBest < _toMove.getTargetCount() && countCheck > countBest)
+                    || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest)) {
                 // If we don't have enough, go for largest
                 // If we have too much, go for smallest over the limit.
                 bestMatch = slot;

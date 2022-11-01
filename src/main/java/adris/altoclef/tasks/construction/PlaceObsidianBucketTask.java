@@ -20,8 +20,6 @@ import net.minecraft.util.math.Vec3i;
  */
 public class PlaceObsidianBucketTask extends Task {
 
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-
     public static final Vec3i[] CAST_FRAME = new Vec3i[]{
             new Vec3i(0, -1, 0),
             new Vec3i(0, 0, -1),
@@ -30,7 +28,7 @@ public class PlaceObsidianBucketTask extends Task {
             new Vec3i(1, 0, 0),
             new Vec3i(1, 1, 0)
     };
-
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final BlockPos _pos;
 
     private BlockPos _currentCastTarget;

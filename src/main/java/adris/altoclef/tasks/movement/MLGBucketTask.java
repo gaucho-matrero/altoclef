@@ -36,21 +36,8 @@ import java.util.Optional;
 
 public class MLGBucketTask extends Task {
 
-    private static class MLGClutchConfig {
-        public double castDownDistance = 40;
-        public double averageHorizontalMovementSpeedPerTick = 0.25; // How "far" the player moves horizontally per tick. Set too low and the bot will ignore viable clutches. Set too high and the bot will go for clutches it can't reach.
-        public double epicClutchConeCastHeight = 40; // How high the "epic clutch" ray cone is
-        public double epicClutchConePitchAngle = 25; // How wide (degrees) the "epic clutch" ray cone is
-        public int epicClutchConePitchResolution = 8; // How many divisions in each direction the cone's pitch has
-        public int epicClutchConeYawDivisionStart = 6; // How many divisions to start the cone clutch at in the center
-        public int epicClutchConeYawDivisionEnd = 20; // How many divisions to move the cone clutch at torwars the end
-        public int preferLavaWhenFallDropsHealthBelowThreshold = 3; // If a fall results in our player's health going below this value, consider it deadly.
-        public int lavaLevelOrGreaterWillCancelFallDamage = 5; // Lava at this level will cancel our fall damage if we hold space.
-        @JsonSerialize(using = ItemSerializer.class)
-        @JsonDeserialize(using = ItemDeserializer.class)
-        public List<Item> clutchItems = List.of(Items.HAY_BLOCK, Items.TWISTING_VINES);
-    }
     private static MLGClutchConfig _config;
+
     static {
         ConfigHelper.loadConfig("configs/mlg_clutch_settings.json", MLGClutchConfig::new, MLGClutchConfig.class, newConfig -> _config = newConfig);
     }
@@ -62,6 +49,7 @@ public class MLGBucketTask extends Task {
         assert MinecraftClient.getInstance().world != null;
         return MinecraftClient.getInstance().world.getBlockState(pos).getBlock() == Blocks.LAVA;
     }
+
     private static boolean lavaWillProtect(BlockPos pos) {
         assert MinecraftClient.getInstance().world != null;
         BlockState state = MinecraftClient.getInstance().world.getBlockState(pos);
@@ -110,6 +98,42 @@ public class MLGBucketTask extends Task {
         return resultingHealth < _config.preferLavaWhenFallDropsHealthBelowThreshold;
     }
 
+    private static double calculateFallDamageToLandOn(BlockPos pos) {
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        assert player != null;
+        double totalFallDistance = player.fallDistance + (player.getY() - pos.getY() - 1);
+        // Copied from living entity I think, somewhere idk you get the picture.
+        double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
+        // Be a bit conservative, assume MORE damage
+        return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
+    }
+
+    private static void moveLeftRight(AltoClef mod, int delta) {
+        if (delta == 0) {
+            mod.getInputControls().release(Input.MOVE_LEFT);
+            mod.getInputControls().release(Input.MOVE_RIGHT);
+        } else if (delta > 0) {
+            mod.getInputControls().release(Input.MOVE_LEFT);
+            mod.getInputControls().hold(Input.MOVE_RIGHT);
+        } else {
+            mod.getInputControls().hold(Input.MOVE_LEFT);
+            mod.getInputControls().release(Input.MOVE_RIGHT);
+        }
+    }
+
+    private static void moveForwardBack(AltoClef mod, int delta) {
+        if (delta == 0) {
+            mod.getInputControls().release(Input.MOVE_FORWARD);
+            mod.getInputControls().release(Input.MOVE_BACK);
+        } else if (delta > 0) {
+            mod.getInputControls().hold(Input.MOVE_FORWARD);
+            mod.getInputControls().release(Input.MOVE_BACK);
+        } else {
+            mod.getInputControls().release(Input.MOVE_FORWARD);
+            mod.getInputControls().hold(Input.MOVE_BACK);
+        }
+    }
+
     private Task onTickInternal(AltoClef mod, BlockPos oldMovingTorwards) {
         Optional<BlockPos> willLandOn = getBlockWeWillLandOn(mod);
         Optional<BlockPos> bestClutchPos = getBestConeClutchBlock(mod, oldMovingTorwards);
@@ -134,16 +158,6 @@ public class MLGBucketTask extends Task {
             mod.getInputControls().release(Input.JUMP);
             return null;
         }
-    }
-
-    private static double calculateFallDamageToLandOn(BlockPos pos) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        assert player != null;
-        double totalFallDistance = player.fallDistance + (player.getY() - pos.getY() - 1);
-        // Copied from living entity I think, somewhere idk you get the picture.
-        double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
-        // Be a bit conservative, assume MORE damage
-        return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
     }
 
     private Task placeMLGBucketTask(AltoClef mod, BlockPos toPlaceOn) {
@@ -182,7 +196,7 @@ public class MLGBucketTask extends Task {
                 }
             }
             // Try to capture tall grass as well...
-            BlockPos[] toCheckLook = new BlockPos[] {toPlaceOn, toPlaceOn.up(), toPlaceOn.up(2)};
+            BlockPos[] toCheckLook = new BlockPos[]{toPlaceOn, toPlaceOn.up(), toPlaceOn.up(2)};
             if (hasClutch && Arrays.stream(toCheckLook).anyMatch(check -> mod.getClientBaritone().getPlayerContext().isLookingAt(check))) {
                 Debug.logMessage("HIT: " + willLandIn);
                 _placedPos = willLandIn;
@@ -230,31 +244,6 @@ public class MLGBucketTask extends Task {
         }
         Debug.logInternal("F:" + forwardStrength);
         moveForwardBack(mod, (int) Math.signum(forwardStrength));
-    }
-
-    private static void moveLeftRight(AltoClef mod, int delta) {
-        if (delta == 0) {
-            mod.getInputControls().release(Input.MOVE_LEFT);
-            mod.getInputControls().release(Input.MOVE_RIGHT);
-        } else if (delta > 0) {
-            mod.getInputControls().release(Input.MOVE_LEFT);
-            mod.getInputControls().hold(Input.MOVE_RIGHT);
-        } else {
-            mod.getInputControls().hold(Input.MOVE_LEFT);
-            mod.getInputControls().release(Input.MOVE_RIGHT);
-        }
-    }
-    private static void moveForwardBack(AltoClef mod, int delta) {
-        if (delta == 0) {
-            mod.getInputControls().release(Input.MOVE_FORWARD);
-            mod.getInputControls().release(Input.MOVE_BACK);
-        } else if (delta > 0) {
-            mod.getInputControls().hold(Input.MOVE_FORWARD);
-            mod.getInputControls().release(Input.MOVE_BACK);
-        } else {
-            mod.getInputControls().release(Input.MOVE_FORWARD);
-            mod.getInputControls().hold(Input.MOVE_BACK);
-        }
     }
 
     @Override
@@ -434,18 +423,57 @@ public class MLGBucketTask extends Task {
         return _config.clutchItems.stream().anyMatch(item -> mod.getItemStorage().hasItem(item));
     }
 
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
+    }
+
+    @Override
+    protected boolean isEqual(Task other) {
+        return other instanceof MLGBucketTask;
+    }
+
+    @Override
+    protected String toDebugString() {
+        String result = "Epic gaemer moment";
+        if (_movingTorwards != null) {
+            result += " (CLUTCH AT: " + _movingTorwards + ")";
+        }
+        return result;
+    }
+
+    public BlockPos getWaterPlacedPos() {
+        return _placedPos;
+    }
+
+    private static class MLGClutchConfig {
+        public double castDownDistance = 40;
+        public double averageHorizontalMovementSpeedPerTick = 0.25; // How "far" the player moves horizontally per tick. Set too low and the bot will ignore viable clutches. Set too high and the bot will go for clutches it can't reach.
+        public double epicClutchConeCastHeight = 40; // How high the "epic clutch" ray cone is
+        public double epicClutchConePitchAngle = 25; // How wide (degrees) the "epic clutch" ray cone is
+        public int epicClutchConePitchResolution = 8; // How many divisions in each direction the cone's pitch has
+        public int epicClutchConeYawDivisionStart = 6; // How many divisions to start the cone clutch at in the center
+        public int epicClutchConeYawDivisionEnd = 20; // How many divisions to move the cone clutch at torwars the end
+        public int preferLavaWhenFallDropsHealthBelowThreshold = 3; // If a fall results in our player's health going below this value, consider it deadly.
+        public int lavaLevelOrGreaterWillCancelFallDamage = 5; // Lava at this level will cancel our fall damage if we hold space.
+        @JsonSerialize(using = ItemSerializer.class)
+        @JsonDeserialize(using = ItemDeserializer.class)
+        public List<Item> clutchItems = List.of(Items.HAY_BLOCK, Items.TWISTING_VINES);
+    }
+
     class ConeClutchContext {
+        private final boolean hasClutchItem;
+        public BlockPos bestBlock = null;
         private double highestY = Double.NEGATIVE_INFINITY;
         private double closestXZ = Double.POSITIVE_INFINITY;
         private boolean bestBlockIsSafe = false;
         private boolean bestBlockIsDeadlyFall = false;
         private boolean bestBlockIsLava = false;
-        public BlockPos bestBlock = null;
-        private final boolean hasClutchItem;
 
         public ConeClutchContext(AltoClef mod) {
             hasClutchItem = hasClutchItem(mod);
         }
+
         public void checkBlock(AltoClef mod, BlockPos check) {
             // Already checked
             if (Objects.equals(bestBlock, check))
@@ -472,7 +500,7 @@ public class MLGBucketTask extends Task {
                             (lava && lavaWillProtect && bestBlockIsDeadlyFall && !hasClutchItem) || // Land in lava if our best alternative is death by fall damage
                             (!lava && !isDeadlyFall && ((closestSoFar && hasClutchItem) && highestSoFar || bestBlockIsLava)) // If it's not lava and is not deadly, land on it if it's higher than before OR if our best alternative is lava
             ) {
-                if (canTravelToInAir((lava || water)? check.down() : check)) {
+                if (canTravelToInAir((lava || water) ? check.down() : check)) {
                     if (highestSoFar) {
                         highestY = height;
                     }
@@ -486,6 +514,7 @@ public class MLGBucketTask extends Task {
                 }
             }
         }
+
         public void checkRay(AltoClef mod, RaycastContext rctx) {
             BlockHitResult hit = mod.getWorld().raycast(rctx);
             if (hit.getType() == HitResult.Type.BLOCK) {
@@ -496,29 +525,6 @@ public class MLGBucketTask extends Task {
                 checkBlock(mod, check);
             }
         }
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
-    }
-
-    @Override
-    protected boolean isEqual(Task other) {
-        return other instanceof MLGBucketTask;
-    }
-
-    @Override
-    protected String toDebugString() {
-        String result = "Epic gaemer moment";
-        if (_movingTorwards != null) {
-            result += " (CLUTCH AT: " + _movingTorwards + ")";
-        }
-        return result;
-    }
-
-    public BlockPos getWaterPlacedPos() {
-        return _placedPos;
     }
 
 }

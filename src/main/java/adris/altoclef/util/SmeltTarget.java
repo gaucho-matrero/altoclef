@@ -6,9 +6,9 @@ import java.util.Objects;
 
 public class SmeltTarget {
 
-    private ItemTarget _material;
     private final ItemTarget _item;
     private final Item[] _optionalMaterials;
+    private ItemTarget _material;
 
     public SmeltTarget(ItemTarget item, ItemTarget material, Item... optionalMaterials) {
         _item = item;

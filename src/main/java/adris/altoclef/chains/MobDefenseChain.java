@@ -589,6 +589,7 @@ public class MobDefenseChain extends SingleTaskChain {
     public void setTargetEntity(Entity entity) {
         _targetEntity = entity;
     }
+
     public void resetTargetEntity() {
         _targetEntity = null;
     }

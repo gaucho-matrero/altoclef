@@ -17,7 +17,9 @@ import net.minecraft.util.math.BlockPos;
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
     private final Task _wanderTask = new TimeoutWanderTask(5, true);
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
+    private final boolean _wander;
     protected MovementProgressChecker _checker = new MovementProgressChecker();
+    protected Goal _cachedGoal = null;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -35,6 +37,16 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;
+
+    // This happens all the time in mineshafts and swamps/jungles
+
+    public CustomBaritoneGoalTask(boolean wander) {
+        _wander = wander;
+    }
+
+    public CustomBaritoneGoalTask() {
+        this(true);
+    }
 
     private static BlockPos[] generateSides(BlockPos pos) {
         return new BlockPos[]{
@@ -60,8 +72,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
         return false;
     }
 
-    // This happens all the time in mineshafts and swamps/jungles
-
     private BlockPos stuckInBlock(AltoClef mod) {
         BlockPos p = mod.getPlayer().getBlockPos();
         if (isAnnoying(mod, p)) return p;
@@ -83,18 +93,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
 
     private Task getFenceUnstuckTask() {
         return new SafeRandomShimmyTask();
-    }
-
-    private final boolean _wander;
-
-    protected Goal _cachedGoal = null;
-
-    public CustomBaritoneGoalTask(boolean wander) {
-        _wander = wander;
-    }
-
-    public CustomBaritoneGoalTask() {
-        this(true);
     }
 
     @Override
@@ -187,5 +185,6 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
 
     protected abstract Goal newGoal(AltoClef mod);
 
-    protected void onWander(AltoClef mod) {}
+    protected void onWander(AltoClef mod) {
+    }
 }

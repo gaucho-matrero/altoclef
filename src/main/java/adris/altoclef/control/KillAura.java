@@ -30,9 +30,9 @@ public class KillAura {
     // Smart aura data
     private final List<Entity> _targets = new ArrayList<>();
     private final TimerGame _hitDelay = new TimerGame(0.2);
+    boolean _shielding = false;
     private double _forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity _forceHit = null;
-    boolean _shielding = false;
 
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
@@ -197,13 +197,6 @@ public class KillAura {
         }
     }
 
-    public enum Strategy {
-        OFF,
-        FASTEST,
-        DELAY,
-        SMART
-    }
-
     private void startShielding(AltoClef mod) {
         ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
@@ -240,5 +233,12 @@ public class KillAura {
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
             _shielding = false;
         }
+    }
+
+    public enum Strategy {
+        OFF,
+        FASTEST,
+        DELAY,
+        SMART
     }
 }

@@ -63,6 +63,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
     public void ignoreMaterials() {
         _doTask.ignoreMaterials();
     }
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
@@ -131,11 +132,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask {
 
         private final SmeltTarget _target;
-        private boolean _ignoreMaterials;
-
         private final FurnaceCache _furnaceCache = new FurnaceCache();
-
         private final ItemTarget _allMaterials;
+        private boolean _ignoreMaterials;
 
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, new ItemTarget(Items.FURNACE));
@@ -146,6 +145,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         public void ignoreMaterials() {
             _ignoreMaterials = true;
         }
+
         @Override
         protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
             if (other instanceof DoSmeltInFurnaceTask task) {

@@ -17,6 +17,7 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
     public EscapeFromLavaTask(float strength) {
         _strength = strength;
     }
+
     public EscapeFromLavaTask() {
         this(100);
     }
@@ -78,11 +79,13 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
             if (MinecraftClient.getInstance().world == null) return false;
             return MovementHelper.isLava(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
         }
+
         private static boolean isLavaAdjacent(int x, int y, int z) {
             return isLava(x + 1, y, z) || isLava(x - 1, y, z) || isLava(x, y, z + 1) || isLava(x, y, z - 1)
                     || isLava(x + 1, y, z - 1) || isLava(x + 1, y, z + 1) || isLava(x - 1, y, z - 1)
                     || isLava(x - 1, y, z + 1);
         }
+
         private static boolean isWater(int x, int y, int z) {
             if (MinecraftClient.getInstance().world == null) return false;
             return MovementHelper.isWater(MinecraftClient.getInstance().world.getBlockState(new BlockPos(x, y, z)));
@@ -90,7 +93,7 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
 
         @Override
         public boolean isInGoal(int x, int y, int z) {
-            return !isLava(x, y, z) && !isLavaAdjacent(x,y,z);
+            return !isLava(x, y, z) && !isLavaAdjacent(x, y, z);
         }
 
         @Override

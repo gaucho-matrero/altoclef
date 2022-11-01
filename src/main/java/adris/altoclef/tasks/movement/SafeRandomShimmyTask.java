@@ -16,8 +16,9 @@ public class SafeRandomShimmyTask extends Task {
     private final TimerGame _lookTimer;
 
     public SafeRandomShimmyTask(float randomLookInterval) {
-        _lookTimer  = new TimerGame(randomLookInterval);
+        _lookTimer = new TimerGame(randomLookInterval);
     }
+
     public SafeRandomShimmyTask() {
         this(5);
     }

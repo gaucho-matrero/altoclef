@@ -141,6 +141,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
         }
         return mod.getPlayer().isOnFire() && !_wasInLavaTimer.elapsed();
     }
+
     private boolean isInFire(AltoClef mod) {
         if (mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             for (BlockPos pos : WorldHelper.getBlocksTouchingPlayer(mod)) {

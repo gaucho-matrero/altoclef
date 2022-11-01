@@ -28,13 +28,12 @@ import java.util.function.Supplier;
 public class ConfigHelper {
 
     private static final String ALTO_FOLDER = "altoclef";
+    // For reloading
+    private static final HashMap<String, Runnable> _loadedConfigs = new HashMap<>();
 
     private static File getConfigFile(String path) {
         return Paths.get(ALTO_FOLDER, path).toFile();
     }
-
-    // For reloading
-    private static final HashMap<String, Runnable> _loadedConfigs = new HashMap<>();
 
     public static void reloadAllConfigs() {
         for (Runnable reload : _loadedConfigs.values()) {

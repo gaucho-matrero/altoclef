@@ -33,6 +33,7 @@ public abstract class BaseTimer {
     protected void setPrevTimeForce(double toSet) {
         _prevTime = toSet;
     }
+
     protected double getPrevTime() {
         return _prevTime;
     }

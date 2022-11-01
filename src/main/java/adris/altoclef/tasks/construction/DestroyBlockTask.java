@@ -31,6 +31,7 @@ import java.util.Optional;
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
+    private final BlockPos _pos;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -49,6 +50,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     };
     private Task _unstuckTask = null;
     private boolean isMining;
+
+    public DestroyBlockTask(BlockPos pos) {
+        _pos = pos;
+    }
 
     private static BlockPos[] generateSides(BlockPos pos) {
         return new BlockPos[]{
@@ -94,14 +99,8 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         return null;
     }
 
-    private final BlockPos _pos;
-
     private Task getFenceUnstuckTask() {
         return new SafeRandomShimmyTask();
-    }
-
-    public DestroyBlockTask(BlockPos pos) {
-        _pos = pos;
     }
 
     @Override

@@ -42,9 +42,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     protected final ItemTarget[] _itemTargets;
 
     private final PickupDroppedItemTask _pickupTask;
-    private ContainerCache _currentContainer;
     private final EnsureFreePlayerCraftingGridTask _ensureFreeCraftingGridTask = new EnsureFreePlayerCraftingGridTask();
-
+    private ContainerCache _currentContainer;
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
@@ -191,10 +190,10 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             }
         }
         // Make sure that items don't get stuck in the player crafting grid. May be an issue if a future task isn't a resource task.
-        if(StorageHelper.isPlayerInventoryOpen()){
-            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()){
-                for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
-                    if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
+        if (StorageHelper.isPlayerInventoryOpen()) {
+            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()) {
+                for (Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
+                    if (!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                         return _ensureFreeCraftingGridTask;
                     }
                 }
@@ -228,7 +227,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         result.append(toDebugStringName()).append(": [");
         int c = 0;
         for (ItemTarget target : _itemTargets) {
-            result.append(target != null? target.toString() : "(null)");
+            result.append(target != null ? target.toString() : "(null)");
             if (++c != _itemTargets.length) {
                 result.append(", ");
             }

@@ -25,8 +25,16 @@ import java.util.Optional;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
+    private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
+    // Not clean practice, but it helps keep things self contained I think.
+    private static boolean isGettingPickaxeFirstFlag = false;
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final ItemTarget[] _itemTargets;
+
+    // This happens all the time in mineshafts and swamps/jungles
+    private final Set<ItemEntity> _blacklist = new HashSet<>();
+    private final boolean _freeInventoryIfFull;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -43,6 +51,27 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             Blocks.GRASS
     };
     private Task _unstuckTask = null;
+    // Am starting to regret not making this a singleton
+    private AltoClef _mod;
+    private boolean _collectingPickaxeForThisResource = false;
+    private ItemEntity _currentDrop = null;
+
+    public PickupDroppedItemTask(ItemTarget[] itemTargets, boolean freeInventoryIfFull) {
+        _itemTargets = itemTargets;
+        _freeInventoryIfFull = freeInventoryIfFull;
+    }
+
+    public PickupDroppedItemTask(ItemTarget target, boolean freeInventoryIfFull) {
+        this(new ItemTarget[]{target}, freeInventoryIfFull);
+    }
+
+    public PickupDroppedItemTask(Item item, int targetCount, boolean freeInventoryIfFull) {
+        this(new ItemTarget(item, targetCount), freeInventoryIfFull);
+    }
+
+    public PickupDroppedItemTask(Item item, int targetCount) {
+        this(item, targetCount, true);
+    }
 
     private static BlockPos[] generateSides(BlockPos pos) {
         return new BlockPos[]{
@@ -57,7 +86,9 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         };
     }
 
-    // This happens all the time in mineshafts and swamps/jungles
+    public static boolean isIsGettingPickaxeFirst(AltoClef mod) {
+        return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();
+    }
 
     private boolean isAnnoying(AltoClef mod, BlockPos pos) {
         for (Block AnnoyingBlocks : annoyingBlocks) {
@@ -89,41 +120,8 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         return null;
     }
 
-    // Am starting to regret not making this a singleton
-    private AltoClef _mod;
-
-    private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
-    // Not clean practice, but it helps keep things self contained I think.
-    private static boolean isGettingPickaxeFirstFlag = false;
-    private final ItemTarget[] _itemTargets;
-    private final Set<ItemEntity> _blacklist = new HashSet<>();
-
     private Task getFenceUnstuckTask() {
         return new SafeRandomShimmyTask();
-    }
-
-    private final boolean _freeInventoryIfFull;
-    private boolean _collectingPickaxeForThisResource = false;
-    private ItemEntity _currentDrop = null;
-
-    public PickupDroppedItemTask(ItemTarget[] itemTargets, boolean freeInventoryIfFull) {
-        _itemTargets = itemTargets;
-        _freeInventoryIfFull = freeInventoryIfFull;
-    }
-
-    public PickupDroppedItemTask(ItemTarget target, boolean freeInventoryIfFull) {
-        this(new ItemTarget[]{target}, freeInventoryIfFull);
-    }
-
-    public PickupDroppedItemTask(Item item, int targetCount, boolean freeInventoryIfFull) {
-        this(new ItemTarget(item, targetCount), freeInventoryIfFull);
-    }
-    public PickupDroppedItemTask(Item item, int targetCount) {
-        this(item, targetCount, true);
-    }
-
-    public static boolean isIsGettingPickaxeFirst(AltoClef mod) {
-        return isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst();
     }
 
     public boolean isCollectingPickaxeForThis() {
@@ -234,9 +232,9 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             // Assume we'll land down one or two blocks from here. We could do this more advanced but whatever.
             BlockPos p = obj.getBlockPos();
             if (!WorldHelper.isSolid(mod, p.down(3))) {
-                return obj.getPos().subtract(0,2,0);
+                return obj.getPos().subtract(0, 2, 0);
             }
-            return obj.getPos().subtract(0,1,0);
+            return obj.getPos().subtract(0, 1, 0);
         }
         return obj.getPos();
     }

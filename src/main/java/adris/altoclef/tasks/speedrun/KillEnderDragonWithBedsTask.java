@@ -26,7 +26,14 @@ public class KillEnderDragonWithBedsTask extends Task {
     private Task _positionTask;
 
     public KillEnderDragonWithBedsTask(IDragonWaiter notPerchingOverride) {
-        _whenNotPerchingTask = (Task)notPerchingOverride;
+        _whenNotPerchingTask = (Task) notPerchingOverride;
+    }
+
+    private static BlockPos locateExitPortalTop(AltoClef mod) {
+        if (!mod.getChunkTracker().isChunkLoaded(new BlockPos(0, 64, 0))) return null;
+        int height = WorldHelper.getGroundHeight(mod, 0, 0, Blocks.BEDROCK);
+        if (height != -1) return new BlockPos(0, height, 0);
+        return null;
     }
 
     @Override
@@ -75,7 +82,7 @@ public class KillEnderDragonWithBedsTask extends Task {
             perching = false;
         }
 
-        ((IDragonWaiter)_whenNotPerchingTask).setPerchState(perching);
+        ((IDragonWaiter) _whenNotPerchingTask).setPerchState(perching);
 
         // When the dragon is not perching...
         if (_whenNotPerchingTask.isActive() && !_whenNotPerchingTask.isFinished(mod)) {
@@ -178,12 +185,5 @@ public class KillEnderDragonWithBedsTask extends Task {
     @Override
     protected String toDebugString() {
         return "Bedding the Ender Dragon";
-    }
-
-    private static BlockPos locateExitPortalTop(AltoClef mod) {
-        if (!mod.getChunkTracker().isChunkLoaded(new BlockPos(0, 64, 0))) return null;
-        int height = WorldHelper.getGroundHeight(mod, 0, 0, Blocks.BEDROCK);
-        if (height != -1) return new BlockPos(0, height, 0);
-        return null;
     }
 }

@@ -54,13 +54,14 @@ public class ContainerStoredTracker {
     /**
      * How many items have been ADDED to containers satisfying our conditions?
      */
-    public int getStoredCount(Item ...items) {
+    public int getStoredCount(Item... items) {
         int result = 0;
         for (Item item : items) {
             result += _totalDeposited.getOrDefault(item, 0);
         }
         return result;
     }
+
     public boolean matches(ItemTarget target) {
         return getStoredCount(target.getMatches()) >= target.getTargetCount();
     }
@@ -69,7 +70,7 @@ public class ContainerStoredTracker {
         return Arrays.stream(toStore)
                 .filter(target -> !matches(target) && mod.getItemStorage().hasItem(target.getMatches()))
                 // If we don't have enough, reduce the count to what we CAN add
-                .map(target -> mod.getItemStorage().getItemCount(target) < target.getTargetCount()? new ItemTarget(target, mod.getItemStorage().getItemCount(target)) : target)
+                .map(target -> mod.getItemStorage().getItemCount(target) < target.getTargetCount() ? new ItemTarget(target, mod.getItemStorage().getItemCount(target)) : target)
                 .toArray(ItemTarget[]::new);
     }
 }

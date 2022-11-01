@@ -29,23 +29,23 @@ import java.util.stream.Collectors;
 
 /**
  * Tracks blocks the way we want it, when we want it.
- *
+ * <p>
  * Gives you a "Check and don't care" interface where you can check for blocks and their locations over and over again
  * without scanning the world over and over again.
- *
+ * <p>
  * Also keeps track of blacklists for unreachable blocks
  */
 public class BlockTracker extends Tracker {
-
-    private static BlockTrackerConfig _config = new BlockTrackerConfig();
-    static {
-        ConfigHelper.loadConfig("configs/block_tracker.json", BlockTrackerConfig::new, BlockTrackerConfig.class, newConfig -> _config = newConfig);
-    }
 
     // This should be moved to an instance variable
     // but if set to true, block scanning will happen
     // asynchronously to spread out the expensive cost of scanning.
     private static final boolean ASYNC_SCANNING = true;
+    private static BlockTrackerConfig _config = new BlockTrackerConfig();
+
+    static {
+        ConfigHelper.loadConfig("configs/block_tracker.json", BlockTrackerConfig::new, BlockTrackerConfig.class, newConfig -> _config = newConfig);
+    }
 
     private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
 
@@ -61,14 +61,11 @@ public class BlockTracker extends Tracker {
     private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
     private final Object _scanMutex = new Object();
-
-    private boolean _scanning = false;
-
     // Only perform scans at the END of our frame
     private final Semaphore _endOfFrameMutex = new Semaphore(1);
-
     //private Block _currentlyTracking = null;
     private final AltoClef _mod;
+    private boolean _scanning = false;
 
     public BlockTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
@@ -97,6 +94,7 @@ public class BlockTracker extends Tracker {
             e.printStackTrace();
         }
     }
+
     public void postTickTask() {
         _endOfFrameMutex.release();
     }
@@ -141,7 +139,7 @@ public class BlockTracker extends Tracker {
 
     /**
      * Stops tracking some blocks, after calling {@link #trackBlock(Block...) trackBlock}.
-     *
+     * <p>
      * Only call this once for every {@link #trackBlock(Block...) trackBlock}.
      */
     public void stopTracking(Block... blocks) {
@@ -184,8 +182,9 @@ public class BlockTracker extends Tracker {
 
     /**
      * Checks whether any blocks of a type have been found.
+     *
      * @param isValidTest A filter predicate, returns true if a block at a position should be included.
-     * @param blocks The blocks to check for
+     * @param blocks      The blocks to check for
      */
     public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
         updateState();
@@ -198,18 +197,21 @@ public class BlockTracker extends Tracker {
         // Add juuust a little, to prevent digging down all the time/bias towards blocks BELOW the player
         return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), blocks);
     }
+
     public Optional<BlockPos> getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, p -> true, blocks);
     }
+
     public Optional<BlockPos> getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
         return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
     }
 
     /**
      * Gets the nearest tracked block.
-     * @param pos From what position? (defaults to the player's position)
+     *
+     * @param pos         From what position? (defaults to the player's position)
      * @param isValidTest Filter predicate
-     * @param blocks The blocks to check for
+     * @param blocks      The blocks to check for
      * @return Optional.of(block position) if found, otherwise Optional.empty
      */
     public Optional<BlockPos> getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
@@ -244,8 +246,9 @@ public class BlockTracker extends Tracker {
 
     /**
      * Scans a radius for the closest block of a given type .
-     * @param pos The center of this radius
-     * @param range Radius to scan for
+     *
+     * @param pos    The center of this radius
+     * @param range  Radius to scan for
      * @param blocks What blocks to check for
      */
     public Optional<BlockPos> getNearestWithinRange(Vec3d pos, double range, Block... blocks) {
@@ -423,7 +426,8 @@ public class BlockTracker extends Tracker {
 
     /**
      * Inform the block tracker that the bot was NOT able to reach a block.
-     * @param pos block that we were unable to reach
+     *
+     * @param pos             block that we were unable to reach
      * @param allowedFailures how many times we can try reaching before we finally declare this block "unreachable"
      */
     public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {

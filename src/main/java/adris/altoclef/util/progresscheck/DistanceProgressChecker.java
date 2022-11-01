@@ -5,9 +5,9 @@ import net.minecraft.util.math.Vec3d;
 public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     private final IProgressChecker<Double> _distanceChecker;
+    private final boolean _reduceDistance;
     private Vec3d _start;
     private Vec3d _prevPos;
-    private final boolean _reduceDistance;
 
     public DistanceProgressChecker(IProgressChecker<Double> distanceChecker, boolean reduceDistance) {
         _distanceChecker = distanceChecker;

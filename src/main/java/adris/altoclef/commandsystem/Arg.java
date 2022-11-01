@@ -1,8 +1,8 @@
 package adris.altoclef.commandsystem;
 
 public class Arg<T> extends ArgBase {
-    public T Default;
     private final Class<T> _tType;
+    public T Default;
     private boolean _isArray = false;
     private String _name = "";
     private boolean _showDefault;
@@ -19,7 +19,7 @@ public class Arg<T> extends ArgBase {
         if (!_tType.isEnum()) {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
             if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class, ItemList.class, GotoTarget.class)) {
-                throw new CommandException("Arguments are not programmed to parse the following type: " + _tType +". This is either not implemented intentionally or by accident somehow.");
+                throw new CommandException("Arguments are not programmed to parse the following type: " + _tType + ". This is either not implemented intentionally or by accident somehow.");
             }
         }
     }
@@ -35,6 +35,20 @@ public class Arg<T> extends ArgBase {
 
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
         this(type, name, defaultValue, minArgCountToUseDefault, true);
+    }
+
+    public static Object parseEnum(String unit, Class type) throws CommandException {
+        unit = unit.toLowerCase().trim();
+        StringBuilder res = new StringBuilder();
+        for (Object v : type.getEnumConstants()) {
+            if (v.toString().toLowerCase().equals(unit)) {
+                return v;
+            }
+            res.append(type);
+            res.append("|");
+        }
+        res.delete(res.length() - 1, res.length()); // Remove the last "|"
+        throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
     }
 
     // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
@@ -89,20 +103,6 @@ public class Arg<T> extends ArgBase {
     private void parseErrorCheck(boolean good, Object value, String type) throws CommandException {
         if (!good)
             throw new CommandException("Failed to parse the following argument into type " + type + ": " + value + ".");
-    }
-
-    public static Object parseEnum(String unit, Class type) throws CommandException{
-        unit = unit.toLowerCase().trim();
-        StringBuilder res = new StringBuilder();
-        for (Object v : type.getEnumConstants()) {
-            if (v.toString().toLowerCase().equals(unit)) {
-                return v;
-            }
-            res.append(type);
-            res.append("|");
-        }
-        res.delete(res.length() - 1, res.length()); // Remove the last "|"
-        throw new CommandException("Invalid argument found: " + unit + ". Accepted values are: " + res);
     }
 
     private <V> V parseUnitUtil(Class<V> vType, String unit, String[] unitPlusRemainder) throws CommandException {

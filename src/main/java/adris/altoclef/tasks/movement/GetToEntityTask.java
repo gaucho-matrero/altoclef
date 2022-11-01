@@ -15,6 +15,8 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _progress = new MovementProgressChecker();
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
+    private final Entity _entity;
+    private final double _closeEnoughDistance;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -32,6 +34,15 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;
+
+    public GetToEntityTask(Entity entity, double closeEnoughDistance) {
+        _entity = entity;
+        _closeEnoughDistance = closeEnoughDistance;
+    }
+
+    public GetToEntityTask(Entity entity) {
+        this(entity, 1);
+    }
 
     private static BlockPos[] generateSides(BlockPos pos) {
         return new BlockPos[]{
@@ -57,10 +68,6 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
         return false;
     }
 
-    private final Entity _entity;
-
-    private final double _closeEnoughDistance;
-
     // This happens all the time in mineshafts and swamps/jungles
     private BlockPos stuckInBlock(AltoClef mod) {
         BlockPos p = mod.getPlayer().getBlockPos();
@@ -83,15 +90,6 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     private Task getFenceUnstuckTask() {
         return new SafeRandomShimmyTask();
-    }
-
-    public GetToEntityTask(Entity entity, double closeEnoughDistance) {
-        _entity = entity;
-        _closeEnoughDistance = closeEnoughDistance;
-    }
-
-    public GetToEntityTask(Entity entity) {
-        this(entity, 1);
     }
 
     @Override

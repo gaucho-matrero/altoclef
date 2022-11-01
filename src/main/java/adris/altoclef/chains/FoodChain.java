@@ -23,24 +23,23 @@ import java.util.Optional;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class FoodChain extends SingleTaskChain {
-    private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
     private static FoodChainConfig _config;
+
     static {
         ConfigHelper.loadConfig("configs/food_chain_settings.json", FoodChainConfig::new, FoodChainConfig.class, newConfig -> _config = newConfig);
     }
 
+    private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
+    boolean _hasFood;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
-
     private Optional<Item> _cachedPerfectFood = Optional.empty();
+    private boolean shouldStop = false;
 
     public FoodChain(TaskRunner runner) {
         super(runner);
     }
-
-    boolean _hasFood;
-    private boolean shouldStop = false;
 
     @Override
     protected void onTaskFinish(AltoClef mod) {
@@ -233,10 +232,10 @@ public class FoodChain extends SingleTaskChain {
         double bestFoodScore = Double.NEGATIVE_INFINITY;
         int foodTotal = 0;
         ClientPlayerEntity player = mod.getPlayer();
-        float health = player != null? player.getHealth() : 20;
+        float health = player != null ? player.getHealth() : 20;
         //float toHeal = player != null? 20 - player.getHealth() : 0;
-        float hunger = player != null? player.getHungerManager().getFoodLevel() : 20;
-        float saturation = player != null? player.getHungerManager().getSaturationLevel() : 20;
+        float hunger = player != null ? player.getHungerManager().getFoodLevel() : 20;
+        float saturation = player != null ? player.getHungerManager().getSaturationLevel() : 20;
         // Get best food item + calculate food total
         for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
             if (stack.isFood()) {

@@ -417,6 +417,10 @@ public class Settings implements IFailableConfigFile {
     ////////** END SETTINGS w/ COMMENTS **////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
 
+    public static void load(Consumer<Settings> onReload) {
+        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
+    }
+
     public boolean shouldShowTaskChain() {
         return showTaskChains;
     }
@@ -609,9 +613,5 @@ public class Settings implements IFailableConfigFile {
     @Override
     public boolean failedToLoad() {
         return _failedToLoad;
-    }
-
-    public static void load(Consumer<Settings> onReload) {
-        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
     }
 }

@@ -28,6 +28,7 @@ public class EquipArmorTask extends Task {
     public EquipArmorTask(ItemTarget... toEquip) {
         _toEquip = toEquip;
     }
+
     public EquipArmorTask(Item... toEquip) {
         this(Arrays.stream(toEquip).map(ItemTarget::new).toArray(ItemTarget[]::new));
     }

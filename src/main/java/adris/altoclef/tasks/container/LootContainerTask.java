@@ -20,10 +20,10 @@ import java.util.function.Predicate;
 
 
 public class LootContainerTask extends Task {
-    private boolean _weDoneHere = false;
-    private final Predicate<ItemStack> _check;
     public final BlockPos chest;
     public final List<Item> targets = new ArrayList<>();
+    private final Predicate<ItemStack> _check;
+    private boolean _weDoneHere = false;
 
     public LootContainerTask(BlockPos chestPos, List<Item> items) {
         chest = chestPos;
@@ -49,7 +49,7 @@ public class LootContainerTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if(!ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
+        if (!ContainerType.screenHandlerMatches(ContainerType.CHEST)) {
             setDebugState("Interact with container");
             return new InteractWithBlockTask(chest);
         }

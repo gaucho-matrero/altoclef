@@ -23,37 +23,6 @@ import java.util.*;
  */
 public class ItemHelper {
 
-    public static String stripItemName(Item item) {
-        String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
-        for (String possible : possibilities) {
-            if (item.getTranslationKey().startsWith(possible)) {
-                return item.getTranslationKey().substring(possible.length());
-            }
-        }
-        return item.getTranslationKey();
-    }
-
-    public static Item[] blocksToItems(Block[] blocks) {
-        Item[] result = new Item[blocks.length];
-        for (int i = 0; i < blocks.length; ++i) {
-            result[i] = blocks[i].asItem();
-        }
-        return result;
-    }
-
-    public static Block[] itemsToBlocks(Item[] items) {
-        ArrayList<Block> result = new ArrayList<>();
-        for (Item item : items) {
-            if (item instanceof BlockItem) {
-                Block b = Block.getBlockFromItem(item);
-                if (b != null && b != Blocks.AIR) {
-                    result.add(b);
-                }
-            }
-        }
-        return result.toArray(Block[]::new);
-    }
-
     public static final Item[] DIRTS = new Item[]{Items.DIRT, Items.DIRT_PATH, Items.COARSE_DIRT, Items.ROOTED_DIRT};
     public static final Item[] PLANKS = new Item[]{Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS,
             Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS, Items.MANGROVE_PLANKS};
@@ -100,34 +69,27 @@ public class ItemHelper {
             Items.STRIPPED_CRIMSON_STEM, Items.STRIPPED_WARPED_STEM, Items.STRIPPED_CRIMSON_HYPHAE,
             Items.STRIPPED_WARPED_HYPHAE, Items.MANGROVE_LOG, Items.MANGROVE_WOOD, Items.STRIPPED_MANGROVE_LOG,
             Items.STRIPPED_MANGROVE_WOOD};
-
     public static final Item[] DYE = new Item[]{Items.WHITE_DYE, Items.BLACK_DYE, Items.BLUE_DYE, Items.BROWN_DYE, Items.CYAN_DYE, Items.GRAY_DYE, Items.GREEN_DYE, Items.LIGHT_BLUE_DYE, Items.LIGHT_GRAY_DYE, Items.LIME_DYE, Items.MAGENTA_DYE, Items.ORANGE_DYE, Items.PINK_DYE, Items.PURPLE_DYE, Items.RED_DYE, Items.YELLOW_DYE};
     public static final Item[] WOOL = new Item[]{Items.WHITE_WOOL, Items.BLACK_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.CYAN_WOOL, Items.GRAY_WOOL, Items.GREEN_WOOL, Items.LIGHT_BLUE_WOOL, Items.LIGHT_GRAY_WOOL, Items.LIME_WOOL, Items.MAGENTA_WOOL, Items.ORANGE_WOOL, Items.PINK_WOOL, Items.PURPLE_WOOL, Items.RED_WOOL, Items.YELLOW_WOOL};
     public static final Item[] BED = new Item[]{Items.WHITE_BED, Items.BLACK_BED, Items.BLUE_BED, Items.BROWN_BED, Items.CYAN_BED, Items.GRAY_BED, Items.GREEN_BED, Items.LIGHT_BLUE_BED, Items.LIGHT_GRAY_BED, Items.LIME_BED, Items.MAGENTA_BED, Items.ORANGE_BED, Items.PINK_BED, Items.PURPLE_BED, Items.RED_BED, Items.YELLOW_BED};
     public static final Item[] CARPET = new Item[]{Items.WHITE_CARPET, Items.BLACK_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.CYAN_CARPET, Items.GRAY_CARPET, Items.GREEN_CARPET, Items.LIGHT_BLUE_CARPET, Items.LIGHT_GRAY_CARPET, Items.LIME_CARPET, Items.MAGENTA_CARPET, Items.ORANGE_CARPET, Items.PINK_CARPET, Items.PURPLE_CARPET, Items.RED_CARPET, Items.YELLOW_CARPET};
-
     public static final Item[] SHULKER_BOXES = new Item[]{Items.WHITE_SHULKER_BOX, Items.BLACK_SHULKER_BOX, Items.BLUE_SHULKER_BOX, Items.BROWN_SHULKER_BOX, Items.CYAN_SHULKER_BOX, Items.GRAY_SHULKER_BOX, Items.GREEN_SHULKER_BOX, Items.LIGHT_BLUE_SHULKER_BOX, Items.LIGHT_GRAY_SHULKER_BOX, Items.LIME_SHULKER_BOX, Items.MAGENTA_SHULKER_BOX, Items.ORANGE_SHULKER_BOX, Items.PINK_SHULKER_BOX, Items.PURPLE_SHULKER_BOX, Items.RED_SHULKER_BOX, Items.YELLOW_SHULKER_BOX};
-
     public static final Item[] FLOWER = new Item[]{Items.ALLIUM, Items.AZURE_BLUET, Items.BLUE_ORCHID, Items.CORNFLOWER, Items.DANDELION, Items.LILAC, Items.LILY_OF_THE_VALLEY, Items.ORANGE_TULIP, Items.OXEYE_DAISY, Items.PINK_TULIP, Items.POPPY, Items.PEONY, Items.RED_TULIP, Items.ROSE_BUSH, Items.SUNFLOWER, Items.WHITE_TULIP};
-
     public static final Item[] LEATHER_ARMORS = new Item[]{Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_HELMET, Items.LEATHER_BOOTS};
     public static final Item[] GOLDEN_ARMORS = new Item[]{Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_HELMET, Items.GOLDEN_BOOTS};
     public static final Item[] IRON_ARMORS = new Item[]{Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_HELMET, Items.IRON_BOOTS};
     public static final Item[] DIAMOND_ARMORS = new Item[]{Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_HELMET, Items.DIAMOND_BOOTS};
     public static final Item[] NETHERITE_ARMORS = new Item[]{Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_HELMET, Items.NETHERITE_BOOTS};
-
     public static final Item[] WOODEN_TOOLS = new Item[]{Items.WOODEN_PICKAXE, Items.WOODEN_SHOVEL, Items.WOODEN_SWORD, Items.WOODEN_AXE, Items.WOODEN_HOE};
     public static final Item[] STONE_TOOLS = new Item[]{Items.STONE_PICKAXE, Items.STONE_SHOVEL, Items.STONE_SWORD, Items.STONE_AXE, Items.STONE_HOE};
     public static final Item[] IRON_TOOLS = new Item[]{Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_SWORD, Items.IRON_AXE, Items.IRON_HOE};
     public static final Item[] GOLDEN_TOOLS = new Item[]{Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_SWORD, Items.GOLDEN_AXE, Items.GOLDEN_HOE};
     public static final Item[] DIAMOND_TOOLS = new Item[]{Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_HOE};
     public static final Item[] NETHERITE_TOOLS = new Item[]{Items.NETHERITE_PICKAXE, Items.NETHERITE_SHOVEL, Items.NETHERITE_SWORD, Items.NETHERITE_AXE, Items.NETHERITE_HOE};
-
     public static final Block[] WOOD_SIGNS_ALL = new Block[]{Blocks.ACACIA_SIGN, Blocks.BIRCH_SIGN, Blocks.DARK_OAK_SIGN,
             Blocks.OAK_SIGN, Blocks.JUNGLE_SIGN, Blocks.SPRUCE_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.BIRCH_WALL_SIGN,
             Blocks.DARK_OAK_WALL_SIGN, Blocks.OAK_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN,
             Blocks.MANGROVE_WALL_SIGN};
-
     private static final Map<Item, Item> _logToPlanks = new HashMap<>() {
         {
             put(Items.MANGROVE_LOG, Items.MANGROVE_PLANKS);
@@ -224,7 +186,6 @@ public class ItemHelper {
             put(type, new WoodItems(prefix, planks, log, strippedLog, strippedWood, wood, sign, door, button, stairs, slab, fence, fenceGate, boat, sapling, leaves, pressurePlate, trapdoor));
         }
     };
-
     private static final HashMap<Item, Item> _cookableFoodMap = new HashMap<>() {
         {
             put(Items.PORKCHOP, Items.COOKED_PORKCHOP);
@@ -238,6 +199,25 @@ public class ItemHelper {
         }
     };
     public static final Item[] RAW_FOODS = _cookableFoodMap.keySet().toArray(Item[]::new);
+    private static Map<Item, Integer> _fuelTimeMap = null;
+
+    public static String stripItemName(Item item) {
+        String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
+        for (String possible : possibilities) {
+            if (item.getTranslationKey().startsWith(possible)) {
+                return item.getTranslationKey().substring(possible.length());
+            }
+        }
+        return item.getTranslationKey();
+    }
+
+    public static Item[] blocksToItems(Block[] blocks) {
+        Item[] result = new Item[blocks.length];
+        for (int i = 0; i < blocks.length; ++i) {
+            result[i] = blocks[i].asItem();
+        }
+        return result;
+    }
 
     /* Logs:
         ACACIA
@@ -268,6 +248,19 @@ public class ItemHelper {
         RED
         YELLOW
      */
+
+    public static Block[] itemsToBlocks(Item[] items) {
+        ArrayList<Block> result = new ArrayList<>();
+        for (Item item : items) {
+            if (item instanceof BlockItem) {
+                Block b = Block.getBlockFromItem(item);
+                if (b != null && b != Blocks.AIR) {
+                    result.add(b);
+                }
+            }
+        }
+        return result.toArray(Block[]::new);
+    }
 
     public static Item logToPlanks(Item logItem) {
         return _logToPlanks.getOrDefault(logItem, null);
@@ -301,10 +294,6 @@ public class ItemHelper {
         return Optional.ofNullable(_cookableFoodMap.getOrDefault(rawFood, null));
     }
 
-    public boolean isRawFood(Item item) {
-        return _cookableFoodMap.containsKey(item);
-    }
-
     public static String trimItemName(String name) {
         if (name.startsWith("block.minecraft.")) {
             name = name.substring("block.minecraft.".length());
@@ -333,6 +322,61 @@ public class ItemHelper {
 
     public static boolean isOfBlockType(Block b, TagKey<Block> tag) {
         return Registry.BLOCK.getKey(b).map(e -> Registry.BLOCK.entryOf(e).streamTags().anyMatch(t -> t == tag)).orElse(false);
+    }
+
+    private static boolean isStackProtected(AltoClef mod, ItemStack stack) {
+        if (stack.hasCustomName() && mod.getModSettings().getDontThrowAwayCustomNameItems())
+            return true;
+        return mod.getBehaviour().isProtected(stack.getItem()) || mod.getModSettings().isImportant(stack.getItem());
+    }
+
+    public static boolean canThrowAwayStack(AltoClef mod, ItemStack stack) {
+        // Can't throw away empty stacks!
+        if (stack.isEmpty())
+            return false;
+        if (isStackProtected(mod, stack))
+            return false;
+        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems() ||
+                !mod.getBehaviour().isProtected(stack.getItem());
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public static boolean canStackTogether(ItemStack from, ItemStack to) {
+        if (to.isEmpty() && from.getCount() <= from.getMaxCount())
+            return true;
+        return to.getItem().equals(from.getItem()) && (from.getCount() + to.getCount() < to.getMaxCount());
+    }
+
+    private static Map<Item, Integer> getFuelTimeMap() {
+        if (_fuelTimeMap == null) {
+            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
+        }
+        return _fuelTimeMap;
+    }
+
+    public static double getFuelAmount(Item... items) {
+        double total = 0;
+        for (Item item : items) {
+            if (getFuelTimeMap().containsKey(item)) {
+                int timeTicks = getFuelTimeMap().get(item);
+                // 300 ticks of wood -> 1.5 operations
+                // 200 ticks -> 1 operation
+                total += (double) timeTicks / 200.0;
+            }
+        }
+        return total;
+    }
+
+    public static double getFuelAmount(ItemStack stack) {
+        return getFuelAmount(stack.getItem()) * stack.getCount();
+    }
+
+    public static boolean isFuel(Item item) {
+        return getFuelTimeMap().containsKey(item);
+    }
+
+    public boolean isRawFood(Item item) {
+        return _cookableFoodMap.containsKey(item);
     }
 
     public static class ColorfulItems {
@@ -415,56 +459,6 @@ public class ItemHelper {
         public boolean isNetherWood() {
             return planks == Items.CRIMSON_PLANKS || planks == Items.WARPED_PLANKS;
         }
-    }
-
-    private static boolean isStackProtected(AltoClef mod, ItemStack stack) {
-        if (stack.hasCustomName() && mod.getModSettings().getDontThrowAwayCustomNameItems())
-            return true;
-        return mod.getBehaviour().isProtected(stack.getItem()) || mod.getModSettings().isImportant(stack.getItem());
-    }
-
-    public static boolean canThrowAwayStack(AltoClef mod, ItemStack stack) {
-        // Can't throw away empty stacks!
-        if (stack.isEmpty())
-            return false;
-        if (isStackProtected(mod, stack))
-            return false;
-        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems() ||
-                !mod.getBehaviour().isProtected(stack.getItem());
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean canStackTogether(ItemStack from, ItemStack to) {
-        if (to.isEmpty() && from.getCount() <= from.getMaxCount())
-            return true;
-        return to.getItem().equals(from.getItem()) && (from.getCount() + to.getCount() < to.getMaxCount());
-    }
-
-    private static Map<Item, Integer> _fuelTimeMap = null;
-    private static Map<Item, Integer> getFuelTimeMap() {
-        if (_fuelTimeMap == null) {
-            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
-        }
-        return _fuelTimeMap;
-    }
-    public static double getFuelAmount(Item... items) {
-        double total = 0;
-        for (Item item : items) {
-            if (getFuelTimeMap().containsKey(item)) {
-                int timeTicks = getFuelTimeMap().get(item);
-                // 300 ticks of wood -> 1.5 operations
-                // 200 ticks -> 1 operation
-                total += (double) timeTicks / 200.0;
-            }
-        }
-        return total;
-    }
-    public static double getFuelAmount(ItemStack stack) {
-        return getFuelAmount(stack.getItem()) * stack.getCount();
-    }
-
-    public static boolean isFuel(Item item) {
-        return getFuelTimeMap().containsKey(item);
     }
 
 }

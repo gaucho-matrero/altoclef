@@ -13,7 +13,7 @@ public enum ArmorRequirement {
 
     private final Item[] _armors;
 
-    ArmorRequirement(Item ...armors) {
+    ArmorRequirement(Item... armors) {
         _armors = armors;
     }
 

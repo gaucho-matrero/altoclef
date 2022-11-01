@@ -37,7 +37,26 @@ public class InventorySubTracker extends Tracker {
         super(manager);
     }
 
-    public int getItemCount(boolean playerInventory, boolean containerInventory, Item ...items) {
+    private static boolean shouldIgnoreSlotForContainer(Slot slot) {
+        // IMPORTANT NOTE:!!!!
+        // Ignore crafting table output when calculating container slots.
+        //
+        // Why?
+        // Because we don't want the bot to think we "have" an item if it's in our output slot. Otherwise it will
+        // softlock because it will assume we're all good (we got the item!) when in reality we need to grab that item.
+        //
+        // We also don't want our bot to think we "have" an item if it's in our armor/crafting/shield slots. That's annoying to work with.
+        if (slot instanceof CraftingTableSlot && slot.equals(CraftingTableSlot.OUTPUT_SLOT))
+            return true;
+        if (slot instanceof PlayerSlot) {
+            // Ignore non-normal inventory slots
+            int window = slot.getWindowSlot();
+            return window < 9 || window > 44;
+        }
+        return false;
+    }
+
+    public int getItemCount(boolean playerInventory, boolean containerInventory, Item... items) {
         ensureUpdated();
         int result = 0;
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
@@ -51,7 +70,8 @@ public class InventorySubTracker extends Tracker {
         }
         return result;
     }
-    public boolean hasItem(boolean playerInventoryOnly, Item ...items) {
+
+    public boolean hasItem(boolean playerInventoryOnly, Item... items) {
         ensureUpdated();
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
         for (Item item : items) {
@@ -64,7 +84,8 @@ public class InventorySubTracker extends Tracker {
         }
         return false;
     }
-    public List<Slot> getSlotsWithItems(boolean playerInventory, boolean containerInventory, Item ...items) {
+
+    public List<Slot> getSlotsWithItems(boolean playerInventory, boolean containerInventory, Item... items) {
         ensureUpdated();
         List<Slot> result = new ArrayList<>();
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
@@ -158,7 +179,7 @@ public class InventorySubTracker extends Tracker {
         }
 
         if (slot != null) {
-            HashMap<Item, List<Slot>> toAdd = isSlotPlayerInventory? _itemToSlotPlayer : _itemToSlotContainer;
+            HashMap<Item, List<Slot>> toAdd = isSlotPlayerInventory ? _itemToSlotPlayer : _itemToSlotContainer;
             if (!toAdd.containsKey(item))
                 toAdd.put(item, new ArrayList<>());
             toAdd.get(item).add(slot);
@@ -167,7 +188,7 @@ public class InventorySubTracker extends Tracker {
 
     @Override
     protected void updateState() {
-        _prevScreenHandler = MinecraftClient.getInstance().player != null? MinecraftClient.getInstance().player.currentScreenHandler : null;
+        _prevScreenHandler = MinecraftClient.getInstance().player != null ? MinecraftClient.getInstance().player.currentScreenHandler : null;
 
         _itemToSlotPlayer.clear();
         _itemToSlotContainer.clear();
@@ -201,26 +222,7 @@ public class InventorySubTracker extends Tracker {
 
     @Override
     protected boolean isDirty() {
-        ScreenHandler handler = MinecraftClient.getInstance().player != null? MinecraftClient.getInstance().player.currentScreenHandler : null;
+        ScreenHandler handler = MinecraftClient.getInstance().player != null ? MinecraftClient.getInstance().player.currentScreenHandler : null;
         return super.isDirty() || handler != _prevScreenHandler;
-    }
-
-    private static boolean shouldIgnoreSlotForContainer(Slot slot) {
-        // IMPORTANT NOTE:!!!!
-        // Ignore crafting table output when calculating container slots.
-        //
-        // Why?
-        // Because we don't want the bot to think we "have" an item if it's in our output slot. Otherwise it will
-        // softlock because it will assume we're all good (we got the item!) when in reality we need to grab that item.
-        //
-        // We also don't want our bot to think we "have" an item if it's in our armor/crafting/shield slots. That's annoying to work with.
-        if (slot instanceof CraftingTableSlot && slot.equals(CraftingTableSlot.OUTPUT_SLOT))
-            return true;
-        if (slot instanceof PlayerSlot) {
-            // Ignore non-normal inventory slots
-            int window = slot.getWindowSlot();
-            return window < 9 || window > 44;
-        }
-        return false;
     }
 }

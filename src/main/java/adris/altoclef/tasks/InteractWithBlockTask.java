@@ -39,6 +39,15 @@ import java.util.Optional;
 public class InteractWithBlockTask extends Task {
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
+    private final ItemTarget _toUse;
+    private final Direction _direction;
+    private final BlockPos _target;
+    private final boolean _walkInto;
+    private final Vec3i _interactOffset;
+    private final Input _interactInput;
+    private final boolean _shiftClick;
+    private final TimerGame _clickTimer = new TimerGame(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -56,6 +65,65 @@ public class InteractWithBlockTask extends Task {
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;
+    private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
+        _toUse = toUse;
+        _direction = direction;
+        _target = target;
+        _interactInput = interactInput;
+        _walkInto = walkInto;
+        _interactOffset = interactOffset;
+        _shiftClick = shiftClick;
+    }
+
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
+        this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shiftClick);
+    }
+
+    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
+        this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
+    }
+
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
+        // null means any side is OK
+        this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
+    }
+
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
+        this(toUse, target, walkInto, Vec3i.ZERO);
+    }
+
+    public InteractWithBlockTask(ItemTarget toUse, BlockPos target) {
+        this(toUse, target, false);
+    }
+
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
+        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, interactOffset, shiftClick);
+    }
+
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
+        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, shiftClick);
+    }
+
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, boolean walkInto) {
+        this(new ItemTarget(toUse, 1), direction, target, walkInto);
+    }
+
+    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
+        this(new ItemTarget(toUse, 1), target, walkInto, interactOffset);
+    }
+
+    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto) {
+        this(new ItemTarget(toUse, 1), target, walkInto);
+    }
+
+    public InteractWithBlockTask(Item toUse, BlockPos target) {
+        this(new ItemTarget(toUse, 1), target);
+    }
+
+    public InteractWithBlockTask(BlockPos target) {
+        this(ItemTarget.EMPTY, null, target, Input.CLICK_RIGHT, false, false);
+    }
 
     private static BlockPos[] generateSides(BlockPos pos) {
         return new BlockPos[]{
@@ -68,6 +136,33 @@ public class InteractWithBlockTask extends Task {
                 pos.add(-1, 0, -1),
                 pos.add(-1, 0, 1)
         };
+    }
+
+    private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
+
+        boolean sideMatters = interactSide != null;
+        if (sideMatters) {
+            Vec3i offs = interactSide.getVector();
+            if (offs.getY() == -1) {
+                // If we're below, place ourselves two blocks below.
+                offs = offs.down();
+            }
+            target = target.add(offs);
+        }
+
+        if (walkInto) {
+            return new GoalTwoBlocks(target);
+        } else {
+            if (sideMatters) {
+                // Make sure we're on the right side of the block.
+                Goal sideGoal = new GoalBlockSide(target, interactSide, 1);
+                return new GoalAnd(sideGoal, new GoalNear(target.add(interactOffset), reachDistance));
+            } else {
+                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
+                return new GoalTwoBlocks(target.up());
+                //return new GoalNear(target.add(interactOffset), reachDistance);
+            }
+        }
     }
 
     private boolean isAnnoying(AltoClef mod, BlockPos pos) {
@@ -101,102 +196,8 @@ public class InteractWithBlockTask extends Task {
         return null;
     }
 
-    private final ItemTarget _toUse;
-    private final Direction _direction;
-    private final BlockPos _target;
-    private final boolean _walkInto;
-    private final Vec3i _interactOffset;
-    private final Input _interactInput;
-    private final boolean _shiftClick;
-    private final TimerGame _clickTimer = new TimerGame(5);
-
     private Task getFenceUnstuckTask() {
         return new SafeRandomShimmyTask();
-    }
-
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
-
-    private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
-
-    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
-        _toUse = toUse;
-        _direction = direction;
-        _target = target;
-        _interactInput = interactInput;
-        _walkInto = walkInto;
-        _interactOffset = interactOffset;
-        _shiftClick = shiftClick;
-    }
-
-    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
-        this(toUse, direction, target, interactInput, walkInto, Vec3i.ZERO, shiftClick);
-    }
-
-    public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, boolean walkInto) {
-        this(toUse, direction, target, Input.CLICK_RIGHT, walkInto, true);
-    }
-
-    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
-        // null means any side is OK
-        this(toUse, null, target, Input.CLICK_RIGHT, walkInto, interactOffset, true);
-    }
-
-    public InteractWithBlockTask(ItemTarget toUse, BlockPos target, boolean walkInto) {
-        this(toUse, target, walkInto, Vec3i.ZERO);
-    }
-
-    public InteractWithBlockTask(ItemTarget toUse, BlockPos target) {
-        this(toUse, target, false);
-    }
-    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
-        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, interactOffset, shiftClick);
-    }
-    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
-        this(new ItemTarget(toUse, 1), direction, target, interactInput, walkInto, shiftClick);
-    }
-    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, boolean walkInto) {
-        this(new ItemTarget(toUse, 1), direction, target, walkInto);
-    }
-    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
-        this(new ItemTarget(toUse, 1), target, walkInto, interactOffset);
-    }
-    public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto) {
-        this(new ItemTarget(toUse, 1), target, walkInto);
-    }
-    public InteractWithBlockTask(Item toUse, BlockPos target) {
-        this(new ItemTarget(toUse, 1), target);
-    }
-
-
-    public InteractWithBlockTask(BlockPos target) {
-        this(ItemTarget.EMPTY, null, target, Input.CLICK_RIGHT, false, false);
-    }
-
-    private static Goal createGoalForInteract(BlockPos target, int reachDistance, Direction interactSide, Vec3i interactOffset, boolean walkInto) {
-
-        boolean sideMatters = interactSide != null;
-        if (sideMatters) {
-            Vec3i offs = interactSide.getVector();
-            if (offs.getY() == -1) {
-                // If we're below, place ourselves two blocks below.
-                offs = offs.down();
-            }
-            target = target.add(offs);
-        }
-
-        if (walkInto) {
-            return new GoalTwoBlocks(target);
-        } else {
-            if (sideMatters) {
-                // Make sure we're on the right side of the block.
-                Goal sideGoal = new GoalBlockSide(target, interactSide, 1);
-                return new GoalAnd(sideGoal, new GoalNear(target.add(interactOffset), reachDistance));
-            } else {
-                // TODO: Cleaner method of picking which side to approach from. This is only here for the lava stuff.
-                return new GoalTwoBlocks(target.up());
-                //return new GoalNear(target.add(interactOffset), reachDistance);
-            }
-        }
     }
 
     @Override

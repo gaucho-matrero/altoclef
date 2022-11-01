@@ -13,15 +13,15 @@ public class SearchChunkForBlockTask extends SearchChunksExploreTask {
 
     private final HashSet<Block> _toSearchFor = new HashSet<>();
 
-    public SearchChunkForBlockTask(Block ...blocks) {
+    public SearchChunkForBlockTask(Block... blocks) {
         _toSearchFor.addAll(Arrays.asList(blocks));
     }
 
     @Override
     protected boolean isChunkWithinSearchSpace(AltoClef mod, ChunkPos pos) {
         return mod.getChunkTracker().scanChunk(pos, block -> {
-                return _toSearchFor.contains(mod.getWorld().getBlockState(block).getBlock());
-            }
+                    return _toSearchFor.contains(mod.getWorld().getBlockState(block).getBlock());
+                }
         );
     }
 

@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class CollectWoodenPressurePlateTask extends CraftWithMatchingPlanksTask {
 
     public CollectWoodenPressurePlateTask(Item[] targets, ItemTarget planks, int count) {
-        super(targets,  woodItems -> woodItems.pressurePlate, createRecipe(planks), new boolean[]{true, true, false, false}, count);
+        super(targets, woodItems -> woodItems.pressurePlate, createRecipe(planks), new boolean[]{true, true, false, false}, count);
     }
 
     public CollectWoodenPressurePlateTask(Item target, String plankCatalogueName, int count) {

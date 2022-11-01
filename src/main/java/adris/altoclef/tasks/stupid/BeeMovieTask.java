@@ -3,11 +3,10 @@ package adris.altoclef.tasks.stupid;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.PlaceSignTask;
+import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
-import adris.altoclef.tasks.stupid.BeeMovieTask.StreamedSignStringParser;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -45,11 +44,11 @@ public class BeeMovieTask extends Task {
     private final String _uniqueId;
     private final Task _extraSignAcquireTask;
     private final Task _structureMaterialsTask;
-    private boolean _finished = false;
     private final List<String> _cachedStrings = new ArrayList<>();
-    private PlaceSignTask _currentPlace = null;
     // Grab extra resources and acquire extra tools for speed
     private final boolean _sharpenTheAxe = true;
+    private boolean _finished = false;
+    private PlaceSignTask _currentPlace = null;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
         _uniqueId = uniqueId;

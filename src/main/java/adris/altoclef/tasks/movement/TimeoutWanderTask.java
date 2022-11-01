@@ -24,6 +24,9 @@ import java.util.Optional;
  */
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
+    private final float _distanceToWander;
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final boolean _increaseRange;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -42,32 +45,12 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     };
     int timer1 = 1;
     int timer2;
-
-    private final float _distanceToWander;
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-
-    private static BlockPos[] generateSides(BlockPos pos) {
-        return new BlockPos[]{
-                pos.add(1, 0, 0),
-                pos.add(-1, 0, 0),
-                pos.add(0, 0, 1),
-                pos.add(0, 0, -1),
-                pos.add(1, 0, -1),
-                pos.add(1, 0, 1),
-                pos.add(-1, 0, -1),
-                pos.add(-1, 0, 1)
-        };
-    }
-
-    private final boolean _increaseRange;
-    //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
-
     private Vec3d _origin;
+    //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
     private boolean _forceExplore;
     private Task _unstuckTask = null;
     private int _failCounter;
     private double _wanderDistanceExtension;
-
     public TimeoutWanderTask(float distanceToWander, boolean increaseRange) {
         _distanceToWander = distanceToWander;
         _increaseRange = increaseRange;
@@ -85,6 +68,19 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     public TimeoutWanderTask(boolean forceExplore) {
         this();
         _forceExplore = forceExplore;
+    }
+
+    private static BlockPos[] generateSides(BlockPos pos) {
+        return new BlockPos[]{
+                pos.add(1, 0, 0),
+                pos.add(-1, 0, 0),
+                pos.add(0, 0, 1),
+                pos.add(0, 0, -1),
+                pos.add(1, 0, -1),
+                pos.add(1, 0, 1),
+                pos.add(-1, 0, -1),
+                pos.add(-1, 0, 1)
+        };
     }
 
     private boolean isAnnoying(AltoClef mod, BlockPos pos) {

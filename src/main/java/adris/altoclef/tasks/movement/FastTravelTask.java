@@ -28,18 +28,16 @@ public class FastTravelTask extends Task {
     private final boolean _collectPortalMaterialsIfAbsent;
     private final BlockPos _target;
     private final Integer _threshold;
-
-    private boolean _forceOverworldWalking;
-
     // If we fail to move to the precise center after we're "close enough" to our threshold, just call it quits and place the portal.
     private final TimerGame _attemptToMoveToIdealNetherCoordinateTimeout = new TimerGame(15);
-
+    private boolean _forceOverworldWalking;
     private Task _goToOverworldTask;
 
     /**
      * Creates fast travel task instance.
-     * @param overworldTarget target location in overworld after post travel
-     * @param threshold Threshold for when to fast travel vs when to walk
+     *
+     * @param overworldTarget                target location in overworld after post travel
+     * @param threshold                      Threshold for when to fast travel vs when to walk
      * @param collectPortalMaterialsIfAbsent if we don't have (10 obsidian or a diamond pickaxe) and (a flint and steel or fire charge), collect these items. Otherwise just walk the whole way.
      */
     public FastTravelTask(BlockPos overworldTarget, Integer threshold, boolean collectPortalMaterialsIfAbsent) {
@@ -50,8 +48,9 @@ public class FastTravelTask extends Task {
 
     /**
      * Creates fast travel task instance
-     * @param overworldTarget target location in overworld after post travel
-     *                               Bot will use nether travel based on the threshold value in settings.
+     *
+     * @param overworldTarget                target location in overworld after post travel
+     *                                       Bot will use nether travel based on the threshold value in settings.
      * @param collectPortalMaterialsIfAbsent if we don't have (10 obsidian or a diamond pickaxe) and (a flint and steel or fire charge), collect these items. Otherwise just walk the whole way.
      */
     public FastTravelTask(BlockPos overworldTarget, boolean collectPortalMaterialsIfAbsent) {

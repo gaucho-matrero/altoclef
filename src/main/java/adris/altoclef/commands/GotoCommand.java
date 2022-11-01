@@ -28,7 +28,8 @@ public class GotoCommand extends Command {
 
     public static Task getMovementTaskFor(GotoTarget target) {
         return switch (target.getType()) {
-            case XYZ -> new GetToBlockTask(new BlockPos(target.getX(), target.getY(), target.getZ()), target.getDimension());
+            case XYZ ->
+                    new GetToBlockTask(new BlockPos(target.getX(), target.getY(), target.getZ()), target.getDimension());
             case XZ -> new GetToXZTask(target.getX(), target.getZ(), target.getDimension());
             case Y -> new GetToYTask(target.getY(), target.getDimension());
             case NONE -> new DefaultGoToDimensionTask(target.getDimension());

@@ -29,14 +29,25 @@ public class LocateStrongholdCoordinatesTask extends Task {
     private static final int SECOND_EYE_THROW_DISTANCE = 30; // target distance between first throw and second throw
 
     private final int _targetEyes;
+    private final TimerGame _throwTimer = new TimerGame(5);
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection = null;
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection2 = null;
     private Entity _currentThrownEye = null;
     private Vec3d _strongholdEstimatePos = null;
-    private final TimerGame _throwTimer = new TimerGame(5);
 
     public LocateStrongholdCoordinatesTask(int targetEyes) {
         _targetEyes = targetEyes;
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
+        Vec3d s1 = start1;
+        Vec3d s2 = start2;
+        Vec3d d1 = direction1;
+        Vec3d d2 = direction2;
+        // Solved for s1 + d1 * t1 = s2 + d2 * t2
+        double t2 = ((d1.z * s2.x) - (d1.z * s1.x) - (d1.x * s2.z) + (d1.x * s1.z)) / ((d1.x * d2.z) - (d1.z * d2.x));
+        return start2.add(direction2.multiply(t2));
     }
 
     @Override
@@ -44,7 +55,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
 
     }
 
-   public boolean isSearching() {
+    public boolean isSearching() {
         return _cachedEyeDirection != null;
     }
 
@@ -70,7 +81,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
                 if (_cachedEyeDirection2 != null) {
                     _cachedEyeDirection = null;
                     _cachedEyeDirection2 = null;
-                } else if (_cachedEyeDirection == null){
+                } else if (_cachedEyeDirection == null) {
                     _cachedEyeDirection = new LocateStrongholdCoordinatesTask.EyeDirection(_currentThrownEye.getPos());
                 } else {
                     _cachedEyeDirection2 = new LocateStrongholdCoordinatesTask.EyeDirection(_currentThrownEye.getPos());
@@ -78,8 +89,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
             }
             if (_cachedEyeDirection2 != null) {
                 _cachedEyeDirection2.updateEyePos(_currentThrownEye.getPos());
-            }
-            else if (_cachedEyeDirection != null) {
+            } else if (_cachedEyeDirection != null) {
                 _cachedEyeDirection.updateEyePos(_currentThrownEye.getPos());
             }
 
@@ -88,8 +98,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
         }
 
         // Calculate stronghold position
-        if (_cachedEyeDirection2 != null && !mod.getEntityTracker().entityFound(EyeOfEnderEntity.class) && _strongholdEstimatePos == null)
-        {
+        if (_cachedEyeDirection2 != null && !mod.getEntityTracker().entityFound(EyeOfEnderEntity.class) && _strongholdEstimatePos == null) {
             if (_cachedEyeDirection2.getAngle() >= _cachedEyeDirection.getAngle()) {
                 Debug.logMessage("2nd eye thrown at wrong position, or points to different stronghold. Rethrowing");
                 _cachedEyeDirection = _cachedEyeDirection2;
@@ -102,14 +111,14 @@ public class LocateStrongholdCoordinatesTask extends Task {
 
 
                 _strongholdEstimatePos = calculateIntersection(throwOrigin, throwDelta, throwOrigin2, throwDelta2); // stronghold estimate
-                Debug.logMessage("Stronghold is at " + (int) _strongholdEstimatePos.getX() + ", " + (int) _strongholdEstimatePos.getZ() + " (" + (int) mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos)+ " blocks away)");
+                Debug.logMessage("Stronghold is at " + (int) _strongholdEstimatePos.getX() + ", " + (int) _strongholdEstimatePos.getZ() + " (" + (int) mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) + " blocks away)");
             }
         }
 
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD)){
+            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD)) {
                 _strongholdEstimatePos = null;
                 _cachedEyeDirection = null;
                 _cachedEyeDirection2 = null;
@@ -173,8 +182,8 @@ public class LocateStrongholdCoordinatesTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
     }
 
-    public Optional<BlockPos> getStrongholdCoordinates(){
-        if(_strongholdEstimatePos==null){
+    public Optional<BlockPos> getStrongholdCoordinates() {
+        if (_strongholdEstimatePos == null) {
             return Optional.empty();
         }
         return Optional.of(new BlockPos(_strongholdEstimatePos));
@@ -192,7 +201,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _strongholdEstimatePos!=null;
+        return _strongholdEstimatePos != null;
     }
 
     // Represents the direction we need to travel to get to the stronghold.
@@ -226,16 +235,5 @@ public class LocateStrongholdCoordinatesTask extends Task {
         public boolean hasDelta() {
             return _end != null && getDelta().lengthSquared() > 0.00001;
         }
-    }
-
-    @SuppressWarnings("UnnecessaryLocalVariable")
-    static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
-        Vec3d s1 = start1;
-        Vec3d s2 = start2;
-        Vec3d d1 = direction1;
-        Vec3d d2 = direction2;
-        // Solved for s1 + d1 * t1 = s2 + d2 * t2
-        double t2 = ( (d1.z * s2.x) - (d1.z * s1.x) - (d1.x * s2.z) + (d1.x * s1.z) ) / ( (d1.x * d2.z) - (d1.z * d2.x) );
-        return start2.add(direction2.multiply(t2));
     }
 }

@@ -66,7 +66,7 @@ public class SimpleChunkTracker {
      * Loops through every block in a chunk if it is loaded.
      * If the chunk isn't loaded, it doesn't scan anything.
      *
-     * @param chunk The chunk pos to scan
+     * @param chunk       The chunk pos to scan
      * @param onBlockStop Run for every block until it returns true, where it stops scanning.
      * @return whether `onBlockStop` returned true at any point.
      */
@@ -82,6 +82,7 @@ public class SimpleChunkTracker {
         }
         return false;
     }
+
     public void scanChunk(ChunkPos chunk, Consumer<BlockPos> onBlock) {
         scanChunk(chunk, (block) -> {
             onBlock.accept(block);

@@ -276,6 +276,25 @@ public class TerminatorTask extends Task {
         return "Prepare to get punked, kid";
     }
 
+    private static class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
+
+        public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
+            super(toRunAwayFrom, distanceToRun, true, 0.1);
+            // More lenient progress checker
+            _checker = new MovementProgressChecker();
+        }
+
+        @Override
+        protected boolean isEqual(Task other) {
+            return other instanceof RunAwayFromPlayersTask;
+        }
+
+        @Override
+        protected String toDebugString() {
+            return "Running away from players";
+        }
+    }
+
     private class ScanChunksInRadius extends SearchChunksExploreTask {
 
         private final BlockPos _center;
@@ -335,25 +354,6 @@ public class TerminatorTask extends Task {
         @Override
         protected String toDebugString() {
             return "Scanning around a radius";
-        }
-    }
-
-    private static class RunAwayFromPlayersTask extends RunAwayFromEntitiesTask {
-
-        public RunAwayFromPlayersTask(Supplier<List<Entity>> toRunAwayFrom, double distanceToRun) {
-            super(toRunAwayFrom, distanceToRun, true, 0.1);
-            // More lenient progress checker
-            _checker = new MovementProgressChecker();
-        }
-
-        @Override
-        protected boolean isEqual(Task other) {
-            return other instanceof RunAwayFromPlayersTask;
-        }
-
-        @Override
-        protected String toDebugString() {
-            return "Running away from players";
         }
     }
 }

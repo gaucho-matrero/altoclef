@@ -29,7 +29,7 @@ public class ContainerCache {
         _itemCounts.clear();
         _emptySlots = 0;
         int start = 0;
-        int end = screenHandler.slots.size() - (4*9); // subtract by player inventory
+        int end = screenHandler.slots.size() - (4 * 9); // subtract by player inventory
         // do NOT count the furnace output slot as an empty slot, it cannot be used.
         boolean isFurnace = (screenHandler instanceof FurnaceScreenHandler);
 
@@ -51,23 +51,26 @@ public class ContainerCache {
         }
     }
 
-    public int getItemCount(Item ...items) {
+    public int getItemCount(Item... items) {
         int result = 0;
         for (Item item : items) {
             result += _itemCounts.getOrDefault(item, 0);
         }
         return result;
     }
-    public boolean hasItem(Item ...items) {
+
+    public boolean hasItem(Item... items) {
         for (Item item : items) {
             if (_itemCounts.containsKey(item) && _itemCounts.get(item) > 0)
                 return true;
         }
         return false;
     }
+
     public int getEmptySlotCount() {
         return _emptySlots;
     }
+
     public boolean isFull() {
         return _emptySlots == 0;
     }
@@ -75,9 +78,11 @@ public class ContainerCache {
     public BlockPos getBlockPos() {
         return _blockPos;
     }
+
     public ContainerType getContainerType() {
         return _containerType;
     }
+
     public Dimension getDimension() {
         return _dimension;
     }

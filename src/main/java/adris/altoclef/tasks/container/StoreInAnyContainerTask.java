@@ -27,20 +27,16 @@ import java.util.stream.Stream;
  */
 public class StoreInAnyContainerTask extends Task {
 
+    private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);
     private final ItemTarget[] _toStore;
     private final boolean _getIfNotPresent;
-
     private final HashSet<BlockPos> _dungeonChests = new HashSet<>();
     private final HashSet<BlockPos> _nonDungeonChests = new HashSet<>();
-
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private final ContainerStoredTracker _storedItems = new ContainerStoredTracker(slot -> true);
     private BlockPos _currentChestTry = null;
 
-    private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);
-
-    private final ContainerStoredTracker _storedItems = new ContainerStoredTracker(slot -> true);
-
-    public StoreInAnyContainerTask(boolean getIfNotPresent, ItemTarget ...toStore) {
+    public StoreInAnyContainerTask(boolean getIfNotPresent, ItemTarget... toStore) {
         _getIfNotPresent = getIfNotPresent;
         _toStore = toStore;
     }
@@ -73,7 +69,8 @@ public class StoreInAnyContainerTask extends Task {
 
             // If it's a chest and the block above can't be broken, we can't open this one.
             boolean isChest = WorldHelper.isChest(mod, containerPos);
-            if (isChest && WorldHelper.isSolid(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up())) return false;
+            if (isChest && WorldHelper.isSolid(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up()))
+                return false;
 
             //if (!_acceptableContainer.test(containerPos))
             //    return false;

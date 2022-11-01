@@ -55,6 +55,7 @@ public interface WorldHelper {
     static Vec3i toVec3i(Vec3d pos) {
         return new Vec3i(pos.getX(), pos.getY(), pos.getZ());
     }
+
     static BlockPos toBlockPos(Vec3d pos) {
         return new BlockPos(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -75,23 +76,29 @@ public interface WorldHelper {
 
     static double distanceXZSquared(Vec3d from, Vec3d to) {
         Vec3d delta = to.subtract(from);
-        return delta.x*delta.x + delta.z*delta.z;
+        return delta.x * delta.x + delta.z * delta.z;
     }
+
     static double distanceXZ(Vec3d from, Vec3d to) {
         return Math.sqrt(distanceXZSquared(from, to));
     }
+
     static boolean inRangeXZ(Vec3d from, Vec3d to, double range) {
-        return distanceXZSquared(from, to) < range*range;
+        return distanceXZSquared(from, to) < range * range;
     }
+
     static boolean inRangeXZ(BlockPos from, BlockPos to, double range) {
         return inRangeXZ(toVec3d(from), toVec3d(to), range);
     }
+
     static boolean inRangeXZ(Entity entity, Vec3d to, double range) {
         return inRangeXZ(entity.getPos(), to, range);
     }
+
     static boolean inRangeXZ(Entity entity, BlockPos to, double range) {
         return inRangeXZ(entity, toVec3d(to), range);
     }
+
     static boolean inRangeXZ(Entity entity, Entity to, double range) {
         return inRangeXZ(entity, to.getPos(), range);
     }
@@ -123,6 +130,7 @@ public interface WorldHelper {
         }
         return null;
     }
+
     /**
      * Get the "foot" of a block with a bed, if the block is a bed.
      */
@@ -211,7 +219,7 @@ public interface WorldHelper {
     static boolean isInNetherPortal(AltoClef mod) {
         if (mod.getPlayer() == null)
             return false;
-        return ((EntityAccessor)mod.getPlayer()).isInNetherPortal();
+        return ((EntityAccessor) mod.getPlayer()).isInNetherPortal();
     }
 
     static boolean dangerousToBreakIfRightAbove(AltoClef mod, BlockPos toBreak) {
@@ -259,7 +267,7 @@ public interface WorldHelper {
         return !mod.getBlockTracker().unreachable(pos);
     }
 
-    static boolean isOcean(RegistryEntry<Biome> b){
+    static boolean isOcean(RegistryEntry<Biome> b) {
         return (b.matchesKey(BiomeKeys.OCEAN)
                 || b.matchesKey(BiomeKeys.COLD_OCEAN)
                 || b.matchesKey(BiomeKeys.DEEP_COLD_OCEAN)
@@ -369,9 +377,10 @@ public interface WorldHelper {
         }
         return pos;
     }
+
     static BlockPos getOverworldPosition(BlockPos pos) {
         if (getCurrentDimension() == Dimension.NETHER) {
-            pos = new BlockPos(pos.getX()*8, pos.getY(), pos.getZ()*8);
+            pos = new BlockPos(pos.getX() * 8, pos.getY(), pos.getZ() * 8);
         }
         return pos;
     }
@@ -380,6 +389,7 @@ public interface WorldHelper {
         Block b = mod.getWorld().getBlockState(block).getBlock();
         return isChest(b);
     }
+
     static boolean isChest(Block b) {
         return b instanceof ChestBlock || b instanceof EnderChestBlock;
     }
@@ -395,7 +405,7 @@ public interface WorldHelper {
             // You can sleep during thunderstorms
             if (world.isThundering() && world.isRaining())
                 return true;
-            time = (int)(world.getTimeOfDay() % 24000);
+            time = (int) (world.getTimeOfDay() % 24000);
         }
         // https://minecraft.fandom.com/wiki/Daylight_cycle
         return 12542 <= time && time <= 23992;

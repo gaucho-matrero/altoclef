@@ -20,11 +20,14 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
     }
 
     protected abstract String getTypeName();
-    protected abstract String[] getComponents();
-    protected abstract UnitType parseUnit(String unit) throws Exception;
-    protected abstract T deserializeFromUnits(List<UnitType> units);
-    protected abstract boolean isUnitTokenValid(JsonToken unitToken);
 
+    protected abstract String[] getComponents();
+
+    protected abstract UnitType parseUnit(String unit) throws Exception;
+
+    protected abstract T deserializeFromUnits(List<UnitType> units);
+
+    protected abstract boolean isUnitTokenValid(JsonToken unitToken);
 
 
     UnitType trySet(JsonParser p, Map<String, UnitType> map, String key) throws JsonParseException {
@@ -74,7 +77,7 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
                     }
                     p.nextToken();
                 } else {
-                    throw new JsonParseException(p, "Invalid structure, expected field name (like " + String.join(",",neededComponents) + ")");
+                    throw new JsonParseException(p, "Invalid structure, expected field name (like " + String.join(",", neededComponents) + ")");
                 }
             }
             if (parts.size() != neededComponents.length) {

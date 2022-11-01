@@ -1,6 +1,5 @@
 package adris.altoclef.util;
 
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
@@ -11,7 +10,7 @@ import java.util.Set;
 
 /**
  * Defines an item and a count.
- *
+ * <p>
  * Multiple Minecraft Items can meet the criteria of an "item" (ex. "wooden planks" can be satisfied by oak, acacia, spruce, jungle, etc.)
  */
 public class ItemTarget {
@@ -62,11 +61,6 @@ public class ItemTarget {
         _infinite = toCopy._infinite;
     }
 
-    public ItemTarget infinite() {
-        _infinite = true;
-        return this;
-    }
-
     public static boolean nullOrEmpty(ItemTarget target) {
         return target == null || target == EMPTY;
     }
@@ -79,8 +73,13 @@ public class ItemTarget {
         return result.toArray(Item[]::new);
     }
 
+    public ItemTarget infinite() {
+        _infinite = true;
+        return this;
+    }
+
     public Item[] getMatches() {
-        return _itemMatches != null? _itemMatches : new Item[0];
+        return _itemMatches != null ? _itemMatches : new Item[0];
     }
 
     public int getTargetCount() {

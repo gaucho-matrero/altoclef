@@ -25,9 +25,9 @@ import java.util.function.Function;
 
 /**
  * Contains a hardcoded list of ALL obtainable resources.
- *
+ * <p>
  * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
- *
+ * <p>
  * Call `TaskCatalogue.getItemTask` to return a task given a resource key.
  * Call `TaskCatalogue.getSquashedItemTask` to return a task that gets multiple resources, combining their steps.
  */
@@ -64,8 +64,8 @@ public class TaskCatalogue {
             mine("soul_sand", Items.SOUL_SAND).forceDimension(Dimension.NETHER);
             mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
             mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
-            mine("coal", MiningRequirement.WOOD, new Block[] {Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE}, Items.COAL);
-            mine("raw_iron", MiningRequirement.STONE, new Block[] {Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE}, Items.RAW_IRON);
+            mine("coal", MiningRequirement.WOOD, new Block[]{Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE}, Items.COAL);
+            mine("raw_iron", MiningRequirement.STONE, new Block[]{Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE}, Items.RAW_IRON);
             mine("raw_gold", MiningRequirement.IRON, new Block[]{Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE}, Items.RAW_GOLD);
             mine("raw_copper", MiningRequirement.STONE, new Block[]{Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE}, Items.RAW_COPPER);
             mine("diamond", MiningRequirement.IRON, new Block[]{Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE}, Items.DIAMOND);
@@ -418,7 +418,7 @@ public class TaskCatalogue {
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
-            
+
             simple("honeycomb", Items.HONEYCOMB, CollectHoneycombTask::new);
             {
                 String h = "honeycomb";
@@ -690,6 +690,7 @@ public class TaskCatalogue {
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
     }
+
     public static boolean taskExists(Item item) {
         return _itemToResourceTask.containsKey(item);
     }
@@ -770,17 +771,18 @@ public class TaskCatalogue {
         return shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
 
-    private static CataloguedResource smelt(String name, Item[] matches, String materials, Item ...optionalMaterials) {
+    private static CataloguedResource smelt(String name, Item[] matches, String materials, Item... optionalMaterials) {
         return put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count), optionalMaterials)));
     }
 
-    private static CataloguedResource smelt(String name, Item match, String materials, Item ...optionalMaterials) {
+    private static CataloguedResource smelt(String name, Item match, String materials, Item... optionalMaterials) {
         return smelt(name, new Item[]{match}, materials, optionalMaterials);
     }
 
     private static CataloguedResource smith(String name, Item[] matches, String materials, String tool) {
         return put(name, matches, count -> new UpgradeInSmithingTableTask(new ItemTarget(tool, count), new ItemTarget(materials, count), new ItemTarget(matches, count)));//new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
+
     private static CataloguedResource smith(String name, Item match, String materials, String tool) {
         return smith(name, new Item[]{match}, materials, tool);
     }
@@ -839,6 +841,7 @@ public class TaskCatalogue {
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
         return woodTasks(woodItem -> woodItem.prefix + "_" + baseName, getMatch, getTask, requireNetherForNetherStuff);
     }
+
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }

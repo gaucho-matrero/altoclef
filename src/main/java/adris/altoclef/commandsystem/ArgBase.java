@@ -45,6 +45,8 @@ public abstract class ArgBase {
         return false;
     }
 
-    public boolean isArbitrarilyLong() {return false;}
+    public boolean isArbitrarilyLong() {
+        return false;
+    }
 
 }

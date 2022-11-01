@@ -16,13 +16,12 @@ public class DeathMenuChain extends TaskChain {
 
     // Sometimes we fuck up, so we might want to retry considering the death screen.
     private final TimerReal _deathRetryTimer = new TimerReal(8);
+    private final TimerGame _reconnectTimer = new TimerGame(1);
+    private final TimerGame _waitOnDeathScreenBeforeRespawnTimer = new TimerGame(2);
     private ServerInfo _prevServerEntry = null;
     private boolean _reconnecting = false;
-    private final TimerGame _reconnectTimer = new TimerGame(1);
     private int _deathCount = 0;
     private Class _prevScreen = null;
-
-    private final TimerGame _waitOnDeathScreenBeforeRespawnTimer = new TimerGame(2);
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);

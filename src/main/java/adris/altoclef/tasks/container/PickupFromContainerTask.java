@@ -32,39 +32,6 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
         _targetContainer = targetContainer;
     }
 
-    @Override
-    protected boolean isEqual(Task other) {
-        if (other instanceof PickupFromContainerTask task) {
-            return Objects.equals(_targetContainer, task._targetContainer) && Arrays.equals(_targets, task._targets);
-        }
-        return false;
-    }
-
-    @Override
-    protected String toDebugString() {
-        return "Picking up from container at (" + _targetContainer.toShortString() + "): " + Arrays.toString(_targets);
-    }
-
-    @Override
-    protected Optional<BlockPos> getContainerTarget() {
-        return Optional.of(_targetContainer);
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-        // Free inventory while we're doing it.
-        if (_freeInventoryTask.isActive() && !_freeInventoryTask.isFinished(mod) && !mod.getItemStorage().hasEmptyInventorySlot()) {
-            setDebugState("Freeing inventory.");
-            return _freeInventoryTask;
-        }
-        return super.onTick(mod);
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
-    }
-
     public static Optional<Slot> getBestSlotToTransfer(AltoClef mod, ItemTarget itemToMove, int currentItemQuantity, List<Slot> grabPotentials, Function<ItemStack, Boolean> canStackFit) {
         Slot bestPotential = null;
         int leftNeeded = itemToMove.getTargetCount() - currentItemQuantity;
@@ -98,6 +65,39 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
             }
         }
         return Optional.ofNullable(bestPotential);
+    }
+
+    @Override
+    protected boolean isEqual(Task other) {
+        if (other instanceof PickupFromContainerTask task) {
+            return Objects.equals(_targetContainer, task._targetContainer) && Arrays.equals(_targets, task._targets);
+        }
+        return false;
+    }
+
+    @Override
+    protected String toDebugString() {
+        return "Picking up from container at (" + _targetContainer.toShortString() + "): " + Arrays.toString(_targets);
+    }
+
+    @Override
+    protected Optional<BlockPos> getContainerTarget() {
+        return Optional.of(_targetContainer);
+    }
+
+    @Override
+    protected Task onTick(AltoClef mod) {
+        // Free inventory while we're doing it.
+        if (_freeInventoryTask.isActive() && !_freeInventoryTask.isFinished(mod) && !mod.getItemStorage().hasEmptyInventorySlot()) {
+            setDebugState("Freeing inventory.");
+            return _freeInventoryTask;
+        }
+        return super.onTick(mod);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
     @Override

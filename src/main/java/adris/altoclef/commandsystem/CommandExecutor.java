@@ -16,7 +16,7 @@ public class CommandExecutor {
         _mod = mod;
     }
 
-    public void registerNewCommand(Command ...commands) {
+    public void registerNewCommand(Command... commands) {
         for (Command command : commands) {
             if (_commandSheet.containsKey(command.getName())) {
                 Debug.logInternal("Command with name " + command.getName() + " already exists! Can't register that name twice.");
@@ -35,7 +35,7 @@ public class CommandExecutor {
     }
 
     // This is how we "nest" command finishes so we can complete them in order.
-    private void executeRecursive(Command[] commands, String[] parts, int index, Runnable onFinish, Consumer<CommandException> getException){
+    private void executeRecursive(Command[] commands, String[] parts, int index, Runnable onFinish, Consumer<CommandException> getException) {
         if (index >= commands.length) {
             onFinish.run();
             return;
@@ -71,11 +71,14 @@ public class CommandExecutor {
     }
 
     public void execute(String line, Consumer<CommandException> getException) {
-        execute(line, ()->{}, getException);
+        execute(line, () -> {
+        }, getException);
     }
+
     public void execute(String line) {
         execute(line, ex -> Debug.logWarning(ex.getMessage()));
     }
+
     public void executeWithPrefix(String line) {
         if (!line.startsWith(getCommandPrefix())) {
             line = getCommandPrefix() + line;

@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 
 /**
  * Place a type of block nearby, anywhere.
- *
+ * <p>
  * Also known as the "bear strats" task.
  */
 public class PlaceBlockNearbyTask extends Task {

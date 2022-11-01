@@ -20,33 +20,6 @@ public class GotoTarget {
         _type = type;
     }
 
-    public int getX() {
-        return _x;
-    }
-    public int getY() {
-        return _y;
-    }
-    public int getZ() {
-        return _z;
-    }
-    public Dimension getDimension() {
-        return _dimension;
-    }
-    public boolean hasDimension() {
-        return _dimension != null;
-    }
-    public GotoTargetCoordType getType() {
-        return _type;
-    }
-
-    // Combination of types we can have
-    public enum GotoTargetCoordType {
-        XYZ, // [x, y, z]
-        XZ,  // [x, z]
-        Y,   // [y]
-        NONE // []
-    }
-
     public static GotoTarget parseRemainder(String line) throws CommandException {
         line = line.trim();
         if (line.startsWith("(") && line.endsWith(")")) {
@@ -83,8 +56,41 @@ public class GotoTarget {
                 z = numbers.get(2);
                 coordType = GotoTargetCoordType.XYZ;
             }
-            default -> throw new CommandException("Unexpected number of integers passed to coordinate: " + numbers.size());
+            default ->
+                    throw new CommandException("Unexpected number of integers passed to coordinate: " + numbers.size());
         }
         return new GotoTarget(x, y, z, dimension, coordType);
+    }
+
+    public int getX() {
+        return _x;
+    }
+
+    public int getY() {
+        return _y;
+    }
+
+    public int getZ() {
+        return _z;
+    }
+
+    public Dimension getDimension() {
+        return _dimension;
+    }
+
+    public boolean hasDimension() {
+        return _dimension != null;
+    }
+
+    public GotoTargetCoordType getType() {
+        return _type;
+    }
+
+    // Combination of types we can have
+    public enum GotoTargetCoordType {
+        XYZ, // [x, y, z]
+        XZ,  // [x, z]
+        Y,   // [y]
+        NONE // []
     }
 }

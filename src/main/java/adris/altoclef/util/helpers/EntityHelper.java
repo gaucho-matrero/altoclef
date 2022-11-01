@@ -26,6 +26,7 @@ public class EntityHelper {
         }
         return hostile;
     }
+
     public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
         if (hostile instanceof MobEntity entity) {
             if (entity instanceof HostileEntity entity1) {
@@ -74,7 +75,7 @@ public class EntityHelper {
                 //noinspection ConstantConditions
                 k = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - k;
-                double f = damageAmount * (double)j;
+                double f = damageAmount * (double) j;
                 double g = damageAmount;
                 damageAmount = Math.max(f / 25.0F, 0.0F);
             }
@@ -84,7 +85,7 @@ public class EntityHelper {
             } else {
                 k = EnchantmentHelper.getProtectionAmount(player.getArmorItems(), source);
                 if (k > 0) {
-                    damageAmount = DamageUtil.getInflictedDamage((float)damageAmount, (float)k);
+                    damageAmount = DamageUtil.getInflictedDamage((float) damageAmount, (float) k);
                 }
             }
         }

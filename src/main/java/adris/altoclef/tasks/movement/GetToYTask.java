@@ -12,10 +12,11 @@ public class GetToYTask extends CustomBaritoneGoalTask {
     private final int _yLevel;
     private final Dimension _dimension;
 
-    public GetToYTask(int ylevel, Dimension dimension ) {
+    public GetToYTask(int ylevel, Dimension dimension) {
         _yLevel = ylevel;
         _dimension = dimension;
     }
+
     public GetToYTask(int ylevel) {
         this(ylevel, null);
     }
@@ -43,6 +44,6 @@ public class GetToYTask extends CustomBaritoneGoalTask {
 
     @Override
     protected String toDebugString() {
-        return "Going to y=" + _yLevel + (_dimension != null? ("in dimension" + _dimension) : "");
+        return "Going to y=" + _yLevel + (_dimension != null ? ("in dimension" + _dimension) : "");
     }
 }

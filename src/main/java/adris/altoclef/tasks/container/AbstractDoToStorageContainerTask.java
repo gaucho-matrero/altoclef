@@ -43,10 +43,10 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
 
             // Optional<BlockPos> lastInteracted = mod.getItemStorage().getLastBlockPosInteraction();
             //if (lastInteracted.isPresent() && lastInteracted.get().equals(targetPos)) {
-                Optional<ContainerCache> cache = mod.getItemStorage().getContainerAtPosition(targetPos);
-                if (cache.isPresent()) {
-                    return onContainerOpenSubtask(mod, cache.get());
-                }
+            Optional<ContainerCache> cache = mod.getItemStorage().getContainerAtPosition(targetPos);
+            if (cache.isPresent()) {
+                return onContainerOpenSubtask(mod, cache.get());
+            }
             //}
         }
 

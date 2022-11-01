@@ -37,9 +37,11 @@ public class EnterNetherPortalTask extends Task {
     public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> goodPortal) {
         this(null, targetDimension, goodPortal);
     }
+
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
         this(getPortalTask, targetDimension, blockPos -> true);
     }
+
     public EnterNetherPortalTask(Dimension targetDimension) {
         this(null, targetDimension);
     }

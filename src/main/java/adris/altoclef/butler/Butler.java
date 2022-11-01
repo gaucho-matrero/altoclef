@@ -61,7 +61,7 @@ public class Butler {
         WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
-        } else if (ButlerConfig.getInstance().whisperFormatDebug){
+        } else if (ButlerConfig.getInstance().whisperFormatDebug) {
             Debug.logMessage("    Not Parsing: MSG format not found.");
         }
     }

@@ -83,6 +83,13 @@ public class AltoClef implements ModInitializer {
         return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
     }
 
+    /**
+     * Executes commands (ex. `@get`/`@gamer`)
+     */
+    public static CommandExecutor getCommandExecutor() {
+        return _commandExecutor;
+    }
+
     @Override
     public void onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -204,11 +211,11 @@ public class AltoClef implements ModInitializer {
         _inputControls.onTickPost();
     }
 
+    /// GETTERS AND SETTERS
+
     private void onClientRenderOverlay(MatrixStack matrixStack) {
         _commandStatusOverlay.render(this, matrixStack);
     }
-
-    /// GETTERS AND SETTERS
 
     private void initializeBaritoneSettings() {
         getClientBaritoneSettings().freeLook.value = false;
@@ -223,9 +230,9 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().blocksToAvoid.value = List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
-                Blocks.WARPED_ROOTS, Blocks.CAVE_AIR, Blocks.VOID_AIR, Blocks.VINE, Blocks.GRASS, Blocks.FERN,
-                Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD,
-                Blocks.LARGE_AMETHYST_BUD, Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN);
+                Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.GRASS, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
+                Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
+                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN);
         // Let baritone move items to hotbar to use them
         // Reduces a bit of far rendering to save FPS
         getClientBaritoneSettings().fadePath.value = true;
@@ -254,13 +261,6 @@ public class AltoClef implements ModInitializer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Executes commands (ex. `@get`/`@gamer`)
-     */
-    public static CommandExecutor getCommandExecutor() {
-        return _commandExecutor;
     }
 
     /**
@@ -411,7 +411,8 @@ public class AltoClef implements ModInitializer {
      * Run a user task
      */
     public void runUserTask(Task task) {
-        runUserTask(task, () -> { });
+        runUserTask(task, () -> {
+        });
     }
 
     /**
@@ -434,6 +435,7 @@ public class AltoClef implements ModInitializer {
     public FoodChain getFoodChain() {
         return _foodChain;
     }
+
     /**
      * Takes control away to defend against mobs
      */

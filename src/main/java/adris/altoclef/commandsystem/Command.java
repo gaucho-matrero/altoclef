@@ -5,13 +5,10 @@ import adris.altoclef.Debug;
 
 public abstract class Command {
 
-    private AltoClef _mod;
-
     private final ArgParser parser;
-
     private final String _name;
     private final String _description;
-
+    private AltoClef _mod;
     private Runnable _onFinish = null;
 
     public Command(String name, String description, ArgBase... args) {

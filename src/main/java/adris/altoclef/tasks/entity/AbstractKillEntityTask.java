@@ -32,6 +32,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     public AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
+
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
         if (!invStacks.isEmpty()) {
@@ -52,6 +53,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
             }
         }
     }
+
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
         if (!mod.getFoodChain().isTryingToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&

@@ -94,12 +94,14 @@ public class StorageHelper {
         }
         return MiningRequirement.HAND;
     }
-    private static boolean h(AltoClef mod, boolean inventoryOnly, Item ...items) {
+
+    private static boolean h(AltoClef mod, boolean inventoryOnly, Item... items) {
         if (inventoryOnly) {
             return mod.getItemStorage().hasItemInventoryOnly(items);
         }
         return mod.getItemStorage().hasItem(items);
     }
+
     private static boolean miningRequirementMetInner(AltoClef mod, boolean inventoryOnly, MiningRequirement requirement) {
         switch (requirement) {
             case HAND:
@@ -117,9 +119,11 @@ public class StorageHelper {
                 return false;
         }
     }
+
     public static boolean miningRequirementMet(AltoClef mod, MiningRequirement requirement) {
         return miningRequirementMetInner(mod, false, requirement);
     }
+
     public static boolean miningRequirementMetInventory(AltoClef mod, MiningRequirement requirement) {
         return miningRequirementMetInner(mod, true, requirement);
     }
@@ -288,22 +292,23 @@ public class StorageHelper {
     /**
      * @return whether EVERY item target in {@code targetsToMeet} is met in our inventory or conversion slots.
      */
-    public static boolean itemTargetsMet(AltoClef mod, ItemTarget ...targetsToMeet) {
+    public static boolean itemTargetsMet(AltoClef mod, ItemTarget... targetsToMeet) {
         return Arrays.stream(targetsToMeet).allMatch(target -> mod.getItemStorage().getItemCount(target.getMatches()) >= target.getTargetCount());
     }
 
     /**
      * AVOID using this unless it's the end goal to keep an item in our inventory.
+     *
      * @return whether EVERY item target in {@code targetsToMeet} is strictly in our inventory.
      */
-    public static boolean itemTargetsMetInventory(AltoClef mod, ItemTarget ...targetsToMeet) {
+    public static boolean itemTargetsMetInventory(AltoClef mod, ItemTarget... targetsToMeet) {
         return Arrays.stream(targetsToMeet).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
     /**
      * Same as {@code itemTargetsMetInventory} but it ignores the cursor slot.
      */
-    public static boolean itemTargetsMetInventoryNoCursor(AltoClef mod, ItemTarget ...targetsToMeet) {
+    public static boolean itemTargetsMetInventoryNoCursor(AltoClef mod, ItemTarget... targetsToMeet) {
         ItemStack cursorStack = getItemStackInCursorSlot();
         return Arrays.stream(targetsToMeet).allMatch(target -> {
             int count = mod.getItemStorage().getItemCountInventoryOnly(target.getMatches());
@@ -376,6 +381,7 @@ public class StorageHelper {
         }
         return result;
     }
+
     public static double calculateInventoryFuelCount(AltoClef mod) {
         double result = 0;
         for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
@@ -462,7 +468,7 @@ public class StorageHelper {
 
     /**
      * There are slots in our inventory that can't be accessed by containers
-     *
+     * <p>
      * Mainly the crafting + armor + shield slot.
      *
      * @return A slot of {@code withItem} that is inaccessible to open containers, or {@code Optional.empty} if there
@@ -492,6 +498,7 @@ public class StorageHelper {
         }
         return Optional.empty();
     }
+
     public static boolean isItemInaccessibleToContainer(AltoClef mod, ItemTarget item) {
         return getFilledInventorySlotInaccessibleToContainer(mod, item).isPresent();
     }

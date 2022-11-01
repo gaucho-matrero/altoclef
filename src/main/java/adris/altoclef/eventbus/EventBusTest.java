@@ -2,13 +2,6 @@ package adris.altoclef.eventbus;
 
 public class EventBusTest {
 
-    static class TestEvent {
-        public int val;
-        public TestEvent(int val) {
-            this.val = val;
-        }
-    }
-
     public static void test() {
         Subscription<TestEvent> a = EventBus.subscribe(TestEvent.class, evt -> System.out.println("A: " + evt.val));
         EventBus.publish(new TestEvent(1));
@@ -18,5 +11,13 @@ public class EventBusTest {
         EventBus.publish(new TestEvent(3));
         EventBus.unsubscribe(b);
         EventBus.publish(new TestEvent(4));
+    }
+
+    static class TestEvent {
+        public int val;
+
+        public TestEvent(int val) {
+            this.val = val;
+        }
     }
 }

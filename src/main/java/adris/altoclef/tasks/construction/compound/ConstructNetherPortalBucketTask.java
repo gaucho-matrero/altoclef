@@ -28,7 +28,7 @@ import java.util.HashSet;
 
 /**
  * Build a nether portal by casting each piece with water + lava.
- *
+ * <p>
  * Currently the most reliable portal building method.
  */
 public class ConstructNetherPortalBucketTask extends Task {

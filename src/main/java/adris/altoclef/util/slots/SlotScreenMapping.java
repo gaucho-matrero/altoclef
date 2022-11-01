@@ -55,6 +55,7 @@ public class SlotScreenMapping {
         public Class type;
         public Predicate<Screen> inScreen;
         public BiFunction<Integer, Boolean, Slot> getSlot;
+
         public SlotScreenMappingEntry(Class type, Predicate<Screen> inScreen, BiFunction<Integer, Boolean, Slot> getSlot) {
             this.type = type;
             this.inScreen = inScreen;

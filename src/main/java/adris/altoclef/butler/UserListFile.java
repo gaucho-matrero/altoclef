@@ -10,6 +10,10 @@ public class UserListFile implements IListConfigFile {
 
     private final HashSet<String> _users = new HashSet<>();
 
+    public static void load(String path, Consumer<UserListFile> onLoad) {
+        ConfigHelper.loadListConfig(path, UserListFile::new, onLoad);
+    }
+
     public boolean containsUser(String username) {
         return _users.contains(username);
     }
@@ -22,9 +26,5 @@ public class UserListFile implements IListConfigFile {
     @Override
     public void addLine(String line) {
         _users.add(line);
-    }
-
-    public static void load(String path, Consumer<UserListFile> onLoad) {
-        ConfigHelper.loadListConfig(path, UserListFile::new, onLoad);
     }
 }
