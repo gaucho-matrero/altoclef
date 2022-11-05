@@ -21,11 +21,17 @@ public class EnsureFreeInventorySlotTask extends Task {
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
         Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
         if (cursorStack.isEmpty()) {
-            garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            if (garbage.isPresent()) {
+                mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                return null;
+            }
+        }
+        if (!cursorStack.isEmpty()) {
+            LookHelper.randomOrientation(mod);
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
             return null;
         }
-        LookHelper.randomOrientation(mod);
-        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        setDebugState("All items are protected.");
         return null;
     }
 

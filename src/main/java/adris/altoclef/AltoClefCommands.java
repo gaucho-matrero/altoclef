@@ -31,6 +31,7 @@ public class AltoClefCommands {
                 new GamerCommand(),
                 new MarvionCommand(),
                 new PunkCommand(),
+                new HeroCommand(),
                 new SetGammaCommand(),
                 new ListCommand()
                 //new TestMoveInventoryCommand(),

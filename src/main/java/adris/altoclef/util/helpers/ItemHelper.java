@@ -325,6 +325,8 @@ public class ItemHelper {
     }
 
     private static boolean isStackProtected(AltoClef mod, ItemStack stack) {
+        if (stack.hasEnchantments() && mod.getModSettings().getDontThrowAwayEnchantedItems())
+            return true;
         if (stack.hasCustomName() && mod.getModSettings().getDontThrowAwayCustomNameItems())
             return true;
         return mod.getBehaviour().isProtected(stack.getItem()) || mod.getModSettings().isImportant(stack.getItem());
@@ -336,8 +338,7 @@ public class ItemHelper {
             return false;
         if (isStackProtected(mod, stack))
             return false;
-        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems() ||
-                !mod.getBehaviour().isProtected(stack.getItem());
+        return mod.getModSettings().isThrowaway(stack.getItem()) || mod.getModSettings().shouldThrowawayUnusedItems();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

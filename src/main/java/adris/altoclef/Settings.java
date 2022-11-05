@@ -325,7 +325,8 @@ public class Settings implements IFailableConfigFile {
      * If true, items with custom names will be protected/marked as "important"
      * so they won't be thrown away.
      */
-    private boolean dontThrowAwayCustomNameItems = false;
+    private boolean dontThrowAwayCustomNameItems = true;
+    private boolean dontThrowAwayEnchantedItems = true;
 
     /**
      * If we need to throw away something but we don't have any "throwaway Items",
@@ -343,6 +344,7 @@ public class Settings implements IFailableConfigFile {
     @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> importantItems = Streams.concat(
             Stream.of(
+                    Items.TOTEM_OF_UNDYING,
                     Items.ENCHANTED_GOLDEN_APPLE,
                     Items.ENDER_EYE,
                     Items.TRIDENT,
@@ -555,6 +557,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean getDontThrowAwayCustomNameItems() {
         return this.dontThrowAwayCustomNameItems;
+    }
+
+    public boolean getDontThrowAwayEnchantedItems() {
+        return this.dontThrowAwayEnchantedItems;
     }
 
     public float getEntityReachRange() {

@@ -130,6 +130,13 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        // Summary:
+        // If we find a bed nearby, sleep in it.
+        // Otherwise, place bed:
+        //      Collect bed if we don't have one.
+        //      Find a 3x2x1 region and clear it
+        //      Stand on the edge of the long (3) side
+        //      Place on the middle block, reliably placing the bed.
         if (!_progressChecker.check(mod) && _currentBedRegion != null) {
             _progressChecker.reset();
             Debug.logMessage("Searching new bed region.");
@@ -145,14 +152,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
             _currentBedRegion = null;
             return new TimeoutWanderTask();
         }
-        // Summary:
-        // If we find a bed nearby, sleep in it.
-        // Otherwise, place bed:
-        //      Collect bed if we don't have one.
-        //      Find a 3x2x1 region and clear it
-        //      Stand on the edge of the long (3) side
-        //      Place on the middle block, reliably placing the bed.
-
         // We cannot do this anywhere but the overworld.
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");

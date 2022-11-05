@@ -223,7 +223,8 @@ public class StorageHelper {
                 ItemStack stack = StorageHelper.getItemStackInSlot(slot);
                 // If we're an armor slot, don't count us.
                 if (slot instanceof PlayerSlot playerSlot) {
-                    if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot)) {
+                    if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot) ||
+                            playerSlot.getWindowSlot() == PlayerSlot.OFFHAND_SLOT.getWindowSlot()) {
                         continue;
                     }
                 }
