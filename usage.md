@@ -14,6 +14,7 @@ Commands are prefixed with `@`. Here's a list along with their functions:
 | `coords` | Prints the bot's current coordinates. This is here in cases where the `F3` menu gets too crowded.|
 | `equip {material}` or `equip [items...]` | Equips a `material` armor set or `[items...]`. If not in the bot's inventory, bot will obtain it. | `@equip [diamond_chestplate, gold_leggings]` `@equip netherite`|
 | `follow {player = <you>}` | Follow a player. If sent via `/msg`, will follow the player who sent the command. | `@follow TacoTechnica` `/msg Bot follow` |
+| `hero` | Kills all hostile mobs | `@hero` |
 | `food {amount}` | Collects `amount` units of food (1 unit = 1/2 drumstick). Collects from various sources (animals, crops) | `@food 20` |
 | `gamer` | Beats the game epic style | `@gamer` |
 | `get [items...]` | Gets all items in `[items...]`. Can either do one item or pass a comma-separated list to get multiple items. Not every resource is get-able. | `@get diamond 3` `@get [cobblestone 40, wooden_door, glass 4]` |
