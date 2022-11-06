@@ -1,13 +1,12 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.resources.KillAndLootTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 
 import java.util.Optional;
@@ -23,12 +22,15 @@ public class HeroTask extends Task {
         assert MinecraftClient.getInstance().world != null;
         Iterable<Entity> hostiles = MinecraftClient.getInstance().world.getEntities();
         for (Entity hostile : hostiles) {
-            Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(hostile.getClass());
+            double playerCurrentY = mod.getPlayer().getY();
+            double hostileCurrentY = hostile.getY();
+            double hostileDistanceY = playerCurrentY - hostileCurrentY;
+            Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(entity -> hostileDistanceY > -5 &&
+                    hostileDistanceY < 5, hostile.getClass());
             if (closestHostile.isPresent()) {
-                if (((hostile instanceof HostileEntity) || hostile instanceof SlimeEntity) &&
-                        ((MobEntity) hostile).canSee(mod.getPlayer())) {
+                if (hostile instanceof HostileEntity || hostile instanceof SlimeEntity) {
                     setDebugState("Killing hostile mob.");
-                    return new KillEntitiesTask(hostile.getClass());
+                    return new KillAndLootTask(hostile.getClass());
                 }
             }
         }
