@@ -66,6 +66,7 @@ public class InteractWithBlockTask extends Task {
     };
     private Task _unstuckTask = null;
     private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
+
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
         _direction = direction;

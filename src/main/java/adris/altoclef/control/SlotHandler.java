@@ -128,7 +128,7 @@ public class SlotHandler {
 
     public void forceDeequipRightClickableItem() {
         forceDeequip(stack -> {
-            Item item = stack.getItem();
+                    Item item = stack.getItem();
                     return item instanceof BucketItem // water,lava,milk,fishes
                             || item instanceof EnderEyeItem
                             || item == Items.BOW
