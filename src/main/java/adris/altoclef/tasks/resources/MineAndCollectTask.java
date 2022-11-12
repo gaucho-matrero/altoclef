@@ -98,7 +98,7 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         // Wrong dimension check.
-        if (_subtask.wasWandering() && isInWrongDimension(mod)) {
+        if (_subtask.wasWandering() && isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(_blocksToMine)) {
             return getToCorrectDimensionTask(mod);
         }
 

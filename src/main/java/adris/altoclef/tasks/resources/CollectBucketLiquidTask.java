@@ -92,7 +92,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
             _progressChecker.reset();
         }
         // If we're standing inside a liquid, go pick it up.
-        if (_tryImmediatePickupTimer.elapsed()) {
+        if (_tryImmediatePickupTimer.elapsed() && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
             Block standingInside = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock();
             if (standingInside == _toCollect) {
                 setDebugState("Trying to collect (we are in it)");
@@ -129,15 +129,10 @@ public class CollectBucketLiquidTask extends ResourceTask {
             if (!WorldHelper.canReach(mod, blockPos)) return false;
             if (!WorldHelper.canReach(mod, blockPos.up())) return false; // We may try reaching the block above.
             assert MinecraftClient.getInstance().world != null;
-
             // We break the block above. If it's bedrock, ignore.
             if (mod.getWorld().getBlockState(blockPos.up()).getBlock() == Blocks.BEDROCK) {
                 return false;
             }
-            if (_toCollect == Blocks.WATER && !WorldHelper.canBreak(mod, blockPos.up())) {
-                return false;
-            }
-
             return WorldHelper.isSourceBlock(mod, blockPos, false);
         };
 

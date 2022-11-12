@@ -9,6 +9,7 @@ import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -124,6 +125,10 @@ public class ConstructNetherPortalBucketTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
+            MinecraftClient.getInstance().options.getViewDistance().setValue(2);
+            MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+        }
         if (_portalOrigin != null) {
             if (mod.getWorld().getBlockState(_portalOrigin.up()).getBlock() == Blocks.NETHER_PORTAL) {
                 setDebugState("Done constructing nether portal.");
@@ -314,7 +319,6 @@ public class ConstructNetherPortalBucketTask extends Task {
                 }
             }
         }
-
         return nearestLake;
     }
 
