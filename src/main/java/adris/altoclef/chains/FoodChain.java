@@ -116,8 +116,7 @@ public class FoodChain extends SingleTaskChain {
          */
         // We're in danger, don't eat now!!
         if (!mod.getMLGBucketChain().doneMLG() || mod.getMLGBucketChain().isFallingOhNo(mod) ||
-                mod.getMobDefenseChain().isDoingAcrobatics() || mod.getMobDefenseChain().isKillingEntity() ||
-                mod.getMobDefenseChain().isShielding() || shouldStop) {
+                mod.getPlayer().isBlocking() || shouldStop) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
@@ -136,7 +135,6 @@ public class FoodChain extends SingleTaskChain {
         if (!hasFood) {
             _requestFillup = false;
         }
-
         if (hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
                 !mod.getMLGBucketChain().isChorusFruiting() && !mod.getPlayer().isBlocking() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {

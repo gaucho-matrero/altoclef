@@ -72,11 +72,11 @@ public class KillAura {
 
     public void tickEnd(AltoClef mod) {
         Optional<Entity> entities = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
-        if (entities.isPresent() && mod.getPlayer().getHealth() >= 10 && !mod.getEntityTracker().entityFound(PotionEntity.class) &&
-                !mod.getFoodChain().isTryingToEat() && (mod.getItemStorage().hasItem(Items.SHIELD) ||
-                mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
+        if (entities.isPresent() && mod.getPlayer().getHealth() >= 10 &&
+                !mod.getEntityTracker().entityFound(PotionEntity.class) && !mod.getFoodChain().needsToEat() &&
+                (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
                 (Double.isInfinite(_forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange ||
-                        entities.get().squaredDistanceTo(mod.getPlayer()) < 40) && !mod.getFoodChain().isTryingToEat() &&
+                        entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
                 !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
                 !mod.getMLGBucketChain().isChorusFruiting() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {

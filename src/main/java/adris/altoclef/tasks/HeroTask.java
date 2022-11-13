@@ -1,11 +1,16 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.movement.GetToEntityTask;
+import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.KillAndLootTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 
@@ -19,22 +24,31 @@ public class HeroTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (mod.getFoodChain().needsToEat()) {
+            setDebugState("Eat first.");
+            return null;
+        }
+        Optional<Entity> experienceOrb = mod.getEntityTracker().getClosestEntity(ExperienceOrbEntity.class);
+        if (experienceOrb.isPresent()) {
+            setDebugState("Getting experience.");
+            return new GetToEntityTask(experienceOrb.get());
+        }
         assert MinecraftClient.getInstance().world != null;
         Iterable<Entity> hostiles = MinecraftClient.getInstance().world.getEntities();
         for (Entity hostile : hostiles) {
-            double playerCurrentY = mod.getPlayer().getY();
-            double hostileCurrentY = hostile.getY();
-            double hostileDistanceY = playerCurrentY - hostileCurrentY;
-            Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(entity -> hostileDistanceY > -5 &&
-                    hostileDistanceY < 5, hostile.getClass());
-            if (closestHostile.isPresent()) {
-                if (hostile instanceof HostileEntity || hostile instanceof SlimeEntity) {
-                    setDebugState("Killing hostile mob.");
-                    return new KillAndLootTask(hostile.getClass());
+            if (hostile instanceof HostileEntity || hostile instanceof SlimeEntity) {
+                Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(hostile.getClass());
+                if (closestHostile.isPresent()) {
+                    setDebugState("Killing hostiles or picking hostile drops.");
+                    return new KillAndLootTask(hostile.getClass(), new ItemTarget(ItemHelper.HOSTILE_MOB_DROPS));
                 }
             }
         }
-        setDebugState("Searching for hostile mob.");
+        if (mod.getEntityTracker().itemDropped(ItemHelper.HOSTILE_MOB_DROPS)) {
+            setDebugState("Picking hostile drops.");
+            return new PickupDroppedItemTask(new ItemTarget(ItemHelper.HOSTILE_MOB_DROPS), true);
+        }
+        setDebugState("Searching for hostile mobs.");
         return new TimeoutWanderTask();
     }
 

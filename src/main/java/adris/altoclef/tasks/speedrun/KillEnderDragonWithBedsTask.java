@@ -3,7 +3,6 @@ package adris.altoclef.tasks.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.InteractWithBlockTask;
-import adris.altoclef.tasks.construction.PutOutFireTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasksystem.Task;
@@ -112,14 +111,6 @@ public class KillEnderDragonWithBedsTask extends Task {
             BlockPos bedTargetPosition = _endPortalTop.up();
             boolean bedPlaced = mod.getBlockTracker().blockIsValid(bedTargetPosition, ItemHelper.itemsToBlocks(ItemHelper.BED));
             if (!bedPlaced) {
-                if (mod.getWorld().getBlockState(bedTargetPosition).getBlock() == Blocks.FIRE) {
-                    setDebugState("Taking out fire.");
-                    if (mod.getPlayer().isOnGround()) {
-                        // Jump
-                        mod.getInputControls().tryPress(Input.JUMP);
-                    }
-                    return new PutOutFireTask(bedTargetPosition);
-                }
                 setDebugState("Placing bed");
                 // If no bed, place bed.
                 // Fire messes up our "reach" so we just assume we're good when we're above a height.

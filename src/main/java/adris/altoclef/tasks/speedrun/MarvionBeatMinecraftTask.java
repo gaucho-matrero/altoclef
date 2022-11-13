@@ -54,6 +54,7 @@ import static net.minecraft.client.MinecraftClient.getInstance;
 
 @SuppressWarnings("ALL")
 public class MarvionBeatMinecraftTask extends Task {
+    private boolean _dragonIsDead = false;
     private static final Block[] TRACK_BLOCKS = new Block[]{
             Blocks.BLAST_FURNACE,
             Blocks.FURNACE,
@@ -220,7 +221,8 @@ public class MarvionBeatMinecraftTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return getInstance().currentScreen instanceof CreditsScreen;
+        return getInstance().currentScreen instanceof CreditsScreen ||
+                (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && _dragonIsDead);
     }
 
     private boolean needsBuildingMaterials(AltoClef mod) {
@@ -812,6 +814,7 @@ public class MarvionBeatMinecraftTask extends Task {
             // If we find an ender portal, just GO to it!!!
             if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
+                _dragonIsDead = true;
                 _enterindEndPortal = true;
                 return new DoToClosestBlockTask(
                         blockPos -> new GetToBlockTask(blockPos.up()),

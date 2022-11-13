@@ -148,8 +148,9 @@ public class MobDefenseChain extends SingleTaskChain {
             _wasPuttingOutFire = false;
         }
 
-        if (isTryingToEat(mod) || mod.getMLGBucketChain().isFallingOhNo(mod) || !mod.getMLGBucketChain().doneMLG() ||
+        if (mod.getFoodChain().needsToEat() || mod.getMLGBucketChain().isFallingOhNo(mod) || !mod.getMLGBucketChain().doneMLG() ||
                 mod.getMLGBucketChain().isChorusFruiting()) {
+            stopShielding(mod);
             return Float.NEGATIVE_INFINITY;
         }
 
@@ -391,11 +392,6 @@ public class MobDefenseChain extends SingleTaskChain {
             b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         }
     }
-
-    private boolean isTryingToEat(AltoClef mod) {
-        return mod.getFoodChain().isTryingToEat();
-    }
-
     private void doForceField(AltoClef mod) {
 
         _killAura.tickStart();
@@ -605,19 +601,9 @@ public class MobDefenseChain extends SingleTaskChain {
     public boolean isDoingAcrobatics() {
         return _doingFunkyStuff;
     }
-
-    public boolean isShielding() {
-        return _shielding;
-    }
-
     public boolean isPuttingOutFire() {
         return _wasPuttingOutFire;
     }
-
-    public boolean isKillingEntity() {
-        return wasKillingEntity;
-    }
-
     @Override
     public boolean isActive() {
         // We're always checking for mobs
