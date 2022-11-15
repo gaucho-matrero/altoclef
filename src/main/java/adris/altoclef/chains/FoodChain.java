@@ -165,11 +165,6 @@ public class FoodChain extends SingleTaskChain {
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
     }
-
-    public boolean isTryingToEat() {
-        return _isTryingToEat;
-    }
-
     @Override
     public boolean isActive() {
         // We're always checking for food.
@@ -188,6 +183,9 @@ public class FoodChain extends SingleTaskChain {
     }
 
     public boolean needsToEat() {
+        if (!hasFood()) {
+            return false;
+        }
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         assert player != null;
         int foodLevel = player.getHungerManager().getFoodLevel();

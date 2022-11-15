@@ -56,7 +56,7 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
-        if (!mod.getFoodChain().isTryingToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
                 mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             float hitProg = mod.getPlayer().getAttackCooldownProgress(0);

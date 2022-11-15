@@ -1506,7 +1506,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     }
                 }
                 // Then get shield
-                if (_config.getShield && !shieldSatisfied && !mod.getFoodChain().isTryingToEat()) {
+                if (_config.getShield && !shieldSatisfied && !mod.getFoodChain().needsToEat()) {
                     ItemTarget shield = new ItemTarget(COLLECT_SHIELD);
                     if (mod.getItemStorage().hasItem(shield) && !StorageHelper.isArmorEquipped(mod, COLLECT_SHIELD)) {
                         setDebugState("Equipping shield.");

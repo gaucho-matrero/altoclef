@@ -133,7 +133,7 @@ public abstract class DoStuffInContainerTask extends Task {
         // Walk to it and open it
 
         // Wait for food
-        if (mod.getFoodChain().isTryingToEat()) {
+        if (mod.getFoodChain().needsToEat()) {
             setDebugState("Waiting for eating...");
             return null;
         }

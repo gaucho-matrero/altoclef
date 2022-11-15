@@ -125,7 +125,7 @@ public class MineAndCollectTask extends ResourceTask {
     }
 
     private void makeSureToolIsEquipped(AltoClef mod) {
-        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().isTryingToEat()) {
+        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().needsToEat()) {
             assert MinecraftClient.getInstance().player != null;
             ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
             if (cursorStack != null && !cursorStack.isEmpty()) {

@@ -21,6 +21,7 @@ import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -50,7 +51,6 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean _shielding = false;
     private boolean _doingFunkyStuff = false;
     private boolean _wasPuttingOutFire = false;
-    private boolean wasKillingEntity = false;
     private CustomBaritoneGoalTask _runAwayTask;
 
     private float _cachedLastPriority;
@@ -148,8 +148,9 @@ public class MobDefenseChain extends SingleTaskChain {
             _wasPuttingOutFire = false;
         }
 
-        if (mod.getFoodChain().needsToEat() || mod.getMLGBucketChain().isFallingOhNo(mod) || !mod.getMLGBucketChain().doneMLG() ||
-                mod.getMLGBucketChain().isChorusFruiting()) {
+        if (mod.getFoodChain().needsToEat() || mod.getMLGBucketChain().isFallingOhNo(mod) ||
+                !mod.getMLGBucketChain().doneMLG() || mod.getMLGBucketChain().isChorusFruiting()) {
+            _killAura.stopShielding(mod);
             stopShielding(mod);
             return Float.NEGATIVE_INFINITY;
         }
@@ -171,11 +172,10 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         _doingFunkyStuff = false;
-        wasKillingEntity = false;
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
-            if (!mod.getFoodChain().isTryingToEat() && (mod.getItemStorage().hasItem(Items.SHIELD) ||
+            if (!mod.getFoodChain().needsToEat() && (mod.getItemStorage().hasItem(Items.SHIELD) ||
                     mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
                     !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null &&
                     mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
@@ -201,7 +201,7 @@ public class MobDefenseChain extends SingleTaskChain {
             }
         }
         // Block projectiles with shield
-        if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod) &&
+        if (!mod.getFoodChain().needsToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod) &&
                 (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
                 !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
@@ -219,7 +219,7 @@ public class MobDefenseChain extends SingleTaskChain {
         // Dodge projectiles
         if (mod.getPlayer().getHealth() <= 10 || _runAwayTask != null || mod.getEntityTracker().entityFound(PotionEntity.class) ||
                 (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD))) {
-            if (!mod.getFoodChain().isTryingToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+            if (!mod.getFoodChain().needsToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
                 _doingFunkyStuff = true;
                 //Debug.logMessage("DODGING");
                 _runAwayTask = new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL);
@@ -266,14 +266,16 @@ public class MobDefenseChain extends SingleTaskChain {
                 // Give each hostile a timer, if they're close for too long deal with them.
                 if (isClose) {
                     if (!_closeAnnoyingEntities.containsKey(hostile)) {
+                        boolean wardenAttacking = hostile instanceof WardenEntity;
+                        boolean witherAttacking = hostile instanceof WitherEntity;
                         boolean endermanAttacking = hostile instanceof EndermanEntity;
                         boolean blazeAttacking = hostile instanceof BlazeEntity;
-                        boolean witherAttacking = hostile instanceof WitherSkeletonEntity;
+                        boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
                         boolean hoglinAttacking = hostile instanceof HoglinEntity;
                         boolean zoglinAttacking = hostile instanceof ZoglinEntity;
                         boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
-                        if (blazeAttacking || witherAttacking || hoglinAttacking ||
-                                zoglinAttacking || piglinBruteAttacking || endermanAttacking) {
+                        if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking ||
+                                piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking) {
                             if (mod.getPlayer().getHealth() <= 10) {
                                 _closeAnnoyingEntities.put(hostile, new TimerGame(0));
                             } else {
@@ -337,7 +339,6 @@ public class MobDefenseChain extends SingleTaskChain {
                 int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8) + (shield));
                 canDealWith += 1;
                 if (canDealWith > numberOfProblematicEntities) {
-                    wasKillingEntity = true;
                     // We can deal with it.
                     _runAwayTask = null;
                     setTask(new KillEntitiesTask(toDealWith.get(0).getClass()));
@@ -505,42 +506,48 @@ public class MobDefenseChain extends SingleTaskChain {
     private Optional<Entity> getUniversallyDangerousMob(AltoClef mod) {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
-        if (mod.getEntityTracker().entityFound(WitherSkeletonEntity.class)) {
-            Optional<Entity> entity = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), WitherSkeletonEntity.class);
-            if (entity.isPresent()) {
-                double range = SAFE_KEEP_DISTANCE - 2;
-                if (entity.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, entity.get())) {
-                    return entity;
-                }
+        Optional<Entity> warden = mod.getEntityTracker().getClosestEntity(WardenEntity.class);
+        if (warden.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (warden.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, warden.get())) {
+                return warden;
+            }
+        }
+        Optional<Entity> wither = mod.getEntityTracker().getClosestEntity(WitherEntity.class);
+        if (wither.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (wither.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, wither.get())) {
+                return wither;
+            }
+        }
+        Optional<Entity> witherSkeleton = mod.getEntityTracker().getClosestEntity(WitherSkeletonEntity.class);
+        if (witherSkeleton.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (witherSkeleton.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, witherSkeleton.get())) {
+                return witherSkeleton;
             }
         }
         // Hoglins are dangerous because we can't push them with the force field.
         // If we merely force field them and stand still our health will slowly be chipped away until we die
-        if (mod.getEntityTracker().entityFound(HoglinEntity.class)) {
-            Optional<Entity> hoglin = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), HoglinEntity.class);
-            if (hoglin.isPresent()) {
-                double range = SAFE_KEEP_DISTANCE - 2;
-                if (hoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, hoglin.get())) {
-                    return hoglin;
-                }
+        Optional<Entity> hoglin = mod.getEntityTracker().getClosestEntity(HoglinEntity.class);
+        if (hoglin.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (hoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, hoglin.get())) {
+                return hoglin;
             }
         }
-        if (mod.getEntityTracker().entityFound(ZoglinEntity.class)) {
-            Optional<Entity> zoglin = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), ZoglinEntity.class);
-            if (zoglin.isPresent()) {
-                double range = SAFE_KEEP_DISTANCE - 2;
-                if (zoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, zoglin.get())) {
-                    return zoglin;
-                }
+        Optional<Entity> zoglin = mod.getEntityTracker().getClosestEntity(ZoglinEntity.class);
+        if (zoglin.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (zoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, zoglin.get())) {
+                return zoglin;
             }
         }
-        if (mod.getEntityTracker().entityFound(PiglinBruteEntity.class)) {
-            Optional<Entity> piglinBrute = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), PiglinBruteEntity.class);
-            if (piglinBrute.isPresent()) {
-                double range = SAFE_KEEP_DISTANCE - 2;
-                if (piglinBrute.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, piglinBrute.get())) {
-                    return piglinBrute;
-                }
+        Optional<Entity> piglinBrute = mod.getEntityTracker().getClosestEntity(PiglinBruteEntity.class);
+        if (piglinBrute.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (piglinBrute.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, piglinBrute.get())) {
+                return piglinBrute;
             }
         }
         return Optional.empty();

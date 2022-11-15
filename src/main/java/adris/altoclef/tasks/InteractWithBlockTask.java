@@ -346,7 +346,7 @@ public class InteractWithBlockTask extends Task {
     private ClickResponse rightClick(AltoClef mod) {
 
         // Don't interact if baritone can't interact.
-        if (mod.getExtraBaritoneSettings().isInteractionPaused() || mod.getFoodChain().isTryingToEat() ||
+        if (mod.getExtraBaritoneSettings().isInteractionPaused() || mod.getFoodChain().needsToEat() ||
                 mod.getPlayer().isBlocking() || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel())
             return ClickResponse.WAIT_FOR_CLICK;
 

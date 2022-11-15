@@ -9,6 +9,7 @@ import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
@@ -26,7 +27,6 @@ import java.util.Optional;
  * Controls and applies killaura
  */
 public class KillAura {
-
     // Smart aura data
     private final List<Entity> _targets = new ArrayList<>();
     private final TimerGame _hitDelay = new TimerGame(0.2);
@@ -81,7 +81,8 @@ public class KillAura {
                 !mod.getMLGBucketChain().isChorusFruiting() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             if (entities.get().getClass() != CreeperEntity.class && entities.get().getClass() != HoglinEntity.class &&
-                    entities.get().getClass() != ZoglinEntity.class) {
+                    entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
+                    entities.get().getClass() != WitherEntity.class) {
                 LookHelper.lookAt(mod, entities.get().getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
@@ -109,7 +110,7 @@ public class KillAura {
                         _targets.stream().allMatch(entity -> entity instanceof BlazeEntity)) {
                     performDelayedAttack(mod);
                 } else {
-                    if (!mod.getFoodChain().isTryingToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+                    if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
                             mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
                             mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                         // Attack force mobs ALWAYS.
@@ -135,7 +136,7 @@ public class KillAura {
     }
 
     private void performDelayedAttack(AltoClef mod) {
-        if (!mod.getFoodChain().isTryingToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
                 mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             if (_forceHit != null) {
@@ -157,7 +158,7 @@ public class KillAura {
     }
 
     private void performFastestAttack(AltoClef mod) {
-        if (!mod.getFoodChain().isTryingToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
                 mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             // Just attack whenever you can
@@ -197,7 +198,7 @@ public class KillAura {
         }
     }
 
-    private void startShielding(AltoClef mod) {
+    public void startShielding(AltoClef mod) {
         ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
         ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
         if (handItem.isFood()) {
@@ -217,7 +218,7 @@ public class KillAura {
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
 
-    private void stopShielding(AltoClef mod) {
+    public void stopShielding(AltoClef mod) {
         if (_shielding) {
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
             if (cursor.isFood()) {

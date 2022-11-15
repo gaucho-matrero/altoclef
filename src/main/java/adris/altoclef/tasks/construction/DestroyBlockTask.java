@@ -190,7 +190,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         // We're trying to mine
         Optional<Rotation> reach = LookHelper.getReach(_pos);
         if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround()) &&
-                !mod.getFoodChain().isTryingToEat() && !WorldHelper.isInNetherPortal(mod) &&
+                !mod.getFoodChain().needsToEat() && !WorldHelper.isInNetherPortal(mod) &&
                 mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             setDebugState("Block in range, mining...");
             stuckCheck.reset();
@@ -219,7 +219,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             boolean isCloseToMoveBack = _pos.isWithinDistance(mod.getPlayer().getPos(), 2);
             if (isCloseToMoveBack) {
                 if (!mod.getClientBaritone().getPathingBehavior().isPathing() && !mod.getPlayer().isTouchingWater() &&
-                        !mod.getFoodChain().isTryingToEat()) {
+                        !mod.getFoodChain().needsToEat()) {
                     mod.getInputControls().hold(Input.SNEAK);
                     mod.getInputControls().hold(Input.MOVE_BACK);
                 } else {
