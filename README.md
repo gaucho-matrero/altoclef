@@ -33,6 +33,10 @@ Start by downloading [the Latest Long Term Release](https://github.com/gaucho-ma
 
 If the Nightly Link doesn't work, check the latest [Build Action](https://github.com/gaucho-matrero/altoclef/actions) that succeeded and download `Artifacts.zip` (you must be signed into GitHub). Replace your existing `altoclef-4.0-SNAPSHOT.jar` with the one found in `Artifacts.zip`
 
+Then, copy `altoclef-4.0-SNAPSHOT.jar` from `Artifacts.zip` to `./mods`.
+
+Then, copy the `baritone-unoptimized-fabric-1.XX.X.jar` from the long term release zip file to `./mods`
+
 ### Long Term Release
 
 [Check releases](https://github.com/gaucho-matrero/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
