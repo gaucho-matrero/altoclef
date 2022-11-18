@@ -183,7 +183,7 @@ public class FoodChain extends SingleTaskChain {
     }
 
     public boolean needsToEat() {
-        if (!hasFood()) {
+        if (!hasFood() || shouldStop) {
             return false;
         }
         ClientPlayerEntity player = MinecraftClient.getInstance().player;

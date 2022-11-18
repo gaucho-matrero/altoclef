@@ -10,6 +10,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
@@ -44,8 +45,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             Blocks.GRASS,
             Blocks.SWEET_BERRY_BUSH
     };
-    int timer1 = 1;
-    int timer2;
+    private final TimerGame _timer = new TimerGame(60);
     private Vec3d _origin;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
     private boolean _forceExplore;
@@ -126,6 +126,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStart(AltoClef mod) {
+        _timer.reset();
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         _origin = mod.getPlayer().getPos();
         _progressChecker.reset();
@@ -190,29 +191,27 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         setDebugState("Exploring.");
         switch (WorldHelper.getCurrentDimension()) {
             case END -> {
-                timer2 = timer2 + timer1;
-                if (timer2 >= 500) {
+                if (_timer.getDuration() > 29) {
                     if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
-                    timer2 = 0;
+                    _timer.reset();
                 }
             }
             case OVERWORLD, NETHER -> {
-                timer2 = timer2 + timer1;
-                if (timer2 >= 500) {
+                if (_timer.getDuration() > 29) {
                     if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
                 }
-                if (timer2 >= 1000) {
+                if (_timer.elapsed()) {
                     if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(32);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
                     }
-                    timer2 = 0;
+                    _timer.reset();
                 }
             }
         }

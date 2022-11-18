@@ -47,7 +47,7 @@ public class InteractWithBlockTask extends Task {
     private final Input _interactInput;
     private final boolean _shiftClick;
     private final TimerGame _clickTimer = new TimerGame(5);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,

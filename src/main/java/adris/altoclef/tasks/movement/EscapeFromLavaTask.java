@@ -30,8 +30,7 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
         mod.getBehaviour().allowSwimThroughLava(true);
         // Encourage placing of all blocks!
         mod.getBehaviour().setBlockPlacePenalty(0);
-        mod.getBehaviour().setBlockBreakAdditionalPenalty(20); // Normally 2
-
+        mod.getBehaviour().setBlockBreakAdditionalPenalty(0); // Normally 2
         // do NOT ever wander
         _checker = new MovementProgressChecker((int) Float.POSITIVE_INFINITY);
     }

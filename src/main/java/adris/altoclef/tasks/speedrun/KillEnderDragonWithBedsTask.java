@@ -90,7 +90,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         }
 
         if (perching) {
-            mod.getFoodChain().shouldStop(true);
+            mod.getFoodChain().shouldStop(mod.getPlayer().getHealth() > 10);
             BlockPos targetStandPosition = _endPortalTop.add(-1, -1, 0);
             BlockPos playerPosition = mod.getPlayer().getBlockPos();
 
@@ -118,7 +118,7 @@ public class KillEnderDragonWithBedsTask extends Task {
                 //Optional<Rotation> placeReach = LookHelper.getReach(bedTargetPosition.down(), Direction.UP);
                 if (canPlace) {
                     // Look at and place!
-                    if (mod.getSlotHandler().forceEquipItem(ItemHelper.BED)) {
+                    if (mod.getSlotHandler().forceEquipItem(ItemHelper.BED, true)) {
                         LookHelper.lookAt(mod, bedTargetPosition.down(), Direction.UP);
                         //mod.getClientBaritone().getLookBehavior().updateTarget(placeReach.get(), true);
                         //if (mod.getClientBaritone().getPlayerContext().isLookingAt(bedTargetPosition.down())) {

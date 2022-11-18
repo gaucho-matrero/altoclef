@@ -38,10 +38,7 @@ public class DragonBreathTracker {
         protected void onStart(AltoClef mod) {
             super.onStart(mod);
             mod.getBehaviour().push();
-            // Encourage placing of all blocks!
-            mod.getBehaviour().setBlockPlacePenalty(0);
-            mod.getBehaviour().setBlockBreakAdditionalPenalty(10); // Normally 2
-
+            mod.getBehaviour().setBlockPlacePenalty(Double.POSITIVE_INFINITY);
             // do NOT ever wander
             _checker = new MovementProgressChecker((int) Float.POSITIVE_INFINITY);
         }

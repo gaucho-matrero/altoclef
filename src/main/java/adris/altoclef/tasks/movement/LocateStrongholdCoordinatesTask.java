@@ -21,9 +21,6 @@ import java.util.Optional;
 
 public class LocateStrongholdCoordinatesTask extends Task {
 
-
-    private static final int EYE_THROW_MINIMUM_Y_POSITION = 68;
-
     private static final int EYE_RETHROW_DISTANCE = 10; // target distance to stronghold guess before rethrowing
 
     private static final int SECOND_EYE_THROW_DISTANCE = 30; // target distance between first throw and second throw
@@ -140,17 +137,12 @@ public class LocateStrongholdCoordinatesTask extends Task {
             // First get to a proper throwing height
             if (_cachedEyeDirection == null) {
                 setDebugState("Throwing first eye.");
-                if (mod.getPlayer().getPos().y < EYE_THROW_MINIMUM_Y_POSITION) {
-                    return new GetToYTask(EYE_THROW_MINIMUM_Y_POSITION + 1);
-                }
             } else {
                 setDebugState("Throwing second eye.");
                 double sqDist = mod.getPlayer().squaredDistanceTo(_cachedEyeDirection.getOrigin());
                 // If first eye thrown, go perpendicular from eye direction until a good distance away
                 if (sqDist < SECOND_EYE_THROW_DISTANCE * SECOND_EYE_THROW_DISTANCE && _cachedEyeDirection != null) {
                     return new GoInDirectionXZTask(_cachedEyeDirection.getOrigin(), _cachedEyeDirection.getDelta().rotateY(MathHelper.PI / 2), 1);
-                } else if (mod.getPlayer().getPos().y < 62) {
-                    return new GetToYTask(63);
                 }
             }
             // Throw it

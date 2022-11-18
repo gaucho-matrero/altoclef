@@ -23,6 +23,7 @@ import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -129,9 +130,9 @@ public class MarvionBeatMinecraftTask extends Task {
     private final Task _killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
     // End specific dragon breath avoidance
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
-    int timer1;
-    int timer2;
-    int timer3;
+    private final TimerGame _timer1 = new TimerGame(5);
+    private final TimerGame _timer2 = new TimerGame(35);
+    private final TimerGame _timer3 = new TimerGame(60);
     boolean _weHaveEyes;
     private BlockPos _endPortalCenterLocation;
     private boolean _isEquippingDiamondArmor;
@@ -146,7 +147,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private Task _gearTask;
     private Task _lootTask;
     private boolean _collectingEyes;
-    private boolean _escapingDragonsBreath;
+    private boolean _escapingDragonsBreath = false;
     private boolean isGettingBlazeRods = false;
     private boolean isGettingEnderPearls = false;
     private Task searchBiomeTask;
@@ -334,6 +335,9 @@ public class MarvionBeatMinecraftTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        _timer1.reset();
+        _timer2.reset();
+        _timer3.reset();
         mod.getBehaviour().push();
         // Add a warning to make sure the user at least knows to change the settings.
         String settingsWarningTail = "in \".minecraft/altoclef_settings.json\". @gamer may break if you don't add this! (sorry!)";
@@ -376,7 +380,7 @@ public class MarvionBeatMinecraftTask extends Task {
         if (mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) {
             mod.getBehaviour().setBlockBreakAdditionalPenalty(0);
         } else {
-            mod.getBehaviour().setBlockBreakAdditionalPenalty(2);
+            mod.getBehaviour().setBlockBreakAdditionalPenalty(mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.defaultValue);
         }
         Predicate<Task> isCraftingTableTask = task -> {
             if (task instanceof DoStuffInContainerTask cont) {
@@ -554,13 +558,14 @@ public class MarvionBeatMinecraftTask extends Task {
         if (_locateStrongholdTask.isActive()) {
             if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                    timer1++;
-                    if (timer1 >= 500) {
+                    if (_timer1.elapsed()) {
                         if (_config.renderDistanceManipulation) {
                             MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         }
-                        timer1 = 0;
+                        _timer1.reset();
                     }
+                } else {
+                    _timer1.reset();
                 }
             }
         }
@@ -568,20 +573,21 @@ public class MarvionBeatMinecraftTask extends Task {
                 (_sleepThroughNightTask.isActive() && !mod.getItemStorage().hasItem(ItemHelper.BED))) &&
                 getBedTask == null) {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                timer3++;
-                if (timer3 >= 1000) {
-                    if (_config.renderDistanceManipulation) {
-                        MinecraftClient.getInstance().options.getViewDistance().setValue(32);
-                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
-                    }
-                    timer3 = 0;
-                }
-                if (timer3 >= 500) {
+                if (_timer3.getDuration() > 29) {
                     if (_config.renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
                 }
+                if (_timer3.elapsed()) {
+                    if (_config.renderDistanceManipulation) {
+                        MinecraftClient.getInstance().options.getViewDistance().setValue(32);
+                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                    }
+                    _timer3.reset();
+                }
+            } else {
+                _timer3.reset();
             }
         }
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && _foodTask == null && !_getOneBedTask.isActive()
@@ -589,27 +595,29 @@ public class MarvionBeatMinecraftTask extends Task {
                 _getPorkchopTask == null && searchBiomeTask == null && _config.renderDistanceManipulation &&
                 !_ranStrongholdLocator && getBedTask == null && !_sleepThroughNightTask.isActive()) {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                timer1++;
-                if (timer1 >= 500) {
+                if (_timer1.elapsed()) {
                     if (_config.renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(2);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
                     }
-                    timer1 = 0;
+                    _timer1.reset();
                 }
+            } else {
+                _timer1.reset();
             }
         }
         if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             if (!mod.getClientBaritone().getExploreProcess().isActive() && !_locateStrongholdTask.isActive() &&
                     _config.renderDistanceManipulation) {
-                timer1++;
-                if (timer1 >= 500) {
+                if (_timer1.elapsed()) {
                     if (_config.renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
-                    timer1 = 0;
+                    _timer1.reset();
                 }
+            } else {
+                _timer1.reset();
             }
         }
         List<Slot> hastorch = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
@@ -907,19 +915,19 @@ public class MarvionBeatMinecraftTask extends Task {
                 _gearTask = null;
                 if (_config.renderDistanceManipulation && mod.getItemStorage().hasItem(ItemHelper.BED)) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                        timer1++;
-                        if (timer1 >= 500) {
+                        if (_timer1.elapsed()) {
                             MinecraftClient.getInstance().options.getViewDistance().setValue(2);
                             MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
-                            timer1 = 0;
+                            _timer1.reset();
                         }
+                    } else {
+                        _timer1.reset();
                     }
                 }
-                timer2++;
-                if (timer2 >= 1100) {
-                    timer2 = 0;
+                if (_timer2.elapsed()) {
+                    _timer2.reset();
                 }
-                if (timer2 >= 1000) {
+                if (_timer2.getDuration() > 29) {
                     if (mod.getEntityTracker().itemDropped(ItemHelper.BED) && needsBeds(mod)) {
                         setDebugState("Resetting sleep through night task.");
                         return new PickupDroppedItemTask(new ItemTarget(ItemHelper.BED), true);
@@ -932,7 +940,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 setDebugState("Sleeping through night");
                 return _sleepThroughNightTask;
             } else {
-                timer2 = 0;
+                _timer2.reset();
             }
             if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
                 if (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
@@ -947,12 +955,13 @@ public class MarvionBeatMinecraftTask extends Task {
                 setDebugState("A bed was found, getting it.");
                 if (_config.renderDistanceManipulation) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                        timer1++;
-                        if (timer1 >= 500) {
+                        if (_timer1.elapsed()) {
                             MinecraftClient.getInstance().options.getViewDistance().setValue(2);
                             MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
-                            timer1 = 0;
+                            _timer1.reset();
                         }
+                    } else {
+                        _timer1.reset();
                     }
                 }
                 getBedTask = getBedTask(mod);
@@ -1040,6 +1049,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
                         _enterindEndPortal = true;
+                        mod.getInputControls().tryPress(Input.MOVE_FORWARD);
                         return new DoToClosestBlockTask(
                                 blockPos -> new GetToBlockTask(blockPos.up()),
                                 Blocks.END_PORTAL
@@ -1059,14 +1069,15 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
                         setDebugState("Getting beds before stronghold search.");
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                            timer1++;
-                            if (timer1 >= 500) {
+                            if (_timer1.elapsed()) {
                                 if (_config.renderDistanceManipulation) {
                                     MinecraftClient.getInstance().options.getViewDistance().setValue(32);
                                     MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
                                 }
-                                timer1 = 0;
+                                _timer1.reset();
                             }
+                        } else {
+                            _timer1.reset();
                         }
                         getBedTask = getBedTask(mod);
                         return getBedTask;
@@ -1313,12 +1324,13 @@ public class MarvionBeatMinecraftTask extends Task {
                     setDebugState("A bed was found, getting it.");
                     if (_config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                            timer1++;
-                            if (timer1 >= 500) {
+                            if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(2);
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
-                                timer1 = 0;
+                                _timer1.reset();
                             }
+                        } else {
+                            _timer1.reset();
                         }
                     }
                     getBedTask = getBedTask(mod);
@@ -1365,12 +1377,13 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (shouldForce(mod, _smeltTask)) {
                     if (_config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                            timer1++;
-                            if (timer1 >= 500) {
+                            if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(2);
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
-                                timer1 = 0;
+                                _timer1.reset();
                             }
+                        } else {
+                            _timer1.reset();
                         }
                     }
                     return _smeltTask;
@@ -1456,12 +1469,13 @@ public class MarvionBeatMinecraftTask extends Task {
                     setDebugState("Searching a better place to start with.");
                     if (_config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                            timer1++;
-                            if (timer1 >= 500) {
+                            if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(32);
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
-                                timer1 = 0;
+                                _timer1.reset();
                             }
+                        } else {
+                            _timer1.reset();
                         }
                     }
                     searchBiomeTask = new SearchWithinBiomeTask(BiomeKeys.PLAINS);

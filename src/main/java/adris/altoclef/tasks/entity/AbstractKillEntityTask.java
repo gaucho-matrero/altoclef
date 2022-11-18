@@ -56,17 +56,13 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
-        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
-                mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
-                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-            float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
-            // Equip weapon
-            equipWeapon(mod);
-            if (hitProg >= 1) {
-                if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
-                    LookHelper.lookAt(mod, entity.getEyePos());
-                    mod.getControllerExtras().attack(entity);
-                }
+        float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
+        // Equip weapon
+        equipWeapon(mod);
+        if (hitProg >= 1) {
+            if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
+                LookHelper.lookAt(mod, entity.getEyePos());
+                mod.getControllerExtras().attack(entity);
             }
         }
         return null;

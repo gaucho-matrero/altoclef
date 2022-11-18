@@ -238,9 +238,8 @@ public class MobDefenseChain extends SingleTaskChain {
 
         if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // Deal with hostiles because they are annoying.
-            List<Entity> hostiles;
+            List<Entity> hostiles = mod.getEntityTracker().getHostiles();
             // TODO: I don't think this lock is necessary at all.
-            hostiles = mod.getEntityTracker().getHostiles();//mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class;
 
             SwordItem bestSword = null;
             Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
@@ -254,43 +253,45 @@ public class MobDefenseChain extends SingleTaskChain {
             List<Entity> toDealWith = new ArrayList<>();
 
             // TODO: I don't think this lock is necessary at all.
-            for (Entity hostile : hostiles) {
-                int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity || hostile
-                        instanceof PillagerEntity || hostile instanceof PiglinEntity || hostile instanceof StrayEntity) ? 15 : 8;
-                boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
+            if (!hostiles.isEmpty()) {
+                for (Entity hostile : hostiles) {
+                    int annoyingRange = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity || hostile
+                            instanceof PillagerEntity || hostile instanceof PiglinEntity || hostile instanceof StrayEntity) ? 15 : 8;
+                    boolean isClose = hostile.isInRange(mod.getPlayer(), annoyingRange);
 
-                if (isClose) {
-                    isClose = LookHelper.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
-                }
+                    if (isClose) {
+                        isClose = LookHelper.seesPlayer(hostile, mod.getPlayer(), annoyingRange);
+                    }
 
-                // Give each hostile a timer, if they're close for too long deal with them.
-                if (isClose) {
-                    if (!_closeAnnoyingEntities.containsKey(hostile)) {
-                        boolean wardenAttacking = hostile instanceof WardenEntity;
-                        boolean witherAttacking = hostile instanceof WitherEntity;
-                        boolean endermanAttacking = hostile instanceof EndermanEntity;
-                        boolean blazeAttacking = hostile instanceof BlazeEntity;
-                        boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
-                        boolean hoglinAttacking = hostile instanceof HoglinEntity;
-                        boolean zoglinAttacking = hostile instanceof ZoglinEntity;
-                        boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
-                        if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking ||
-                                piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking) {
-                            if (mod.getPlayer().getHealth() <= 10) {
-                                _closeAnnoyingEntities.put(hostile, new TimerGame(0));
+                    // Give each hostile a timer, if they're close for too long deal with them.
+                    if (isClose) {
+                        if (!_closeAnnoyingEntities.containsKey(hostile)) {
+                            boolean wardenAttacking = hostile instanceof WardenEntity;
+                            boolean witherAttacking = hostile instanceof WitherEntity;
+                            boolean endermanAttacking = hostile instanceof EndermanEntity;
+                            boolean blazeAttacking = hostile instanceof BlazeEntity;
+                            boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
+                            boolean hoglinAttacking = hostile instanceof HoglinEntity;
+                            boolean zoglinAttacking = hostile instanceof ZoglinEntity;
+                            boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
+                            if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking ||
+                                    piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking) {
+                                if (mod.getPlayer().getHealth() <= 10) {
+                                    _closeAnnoyingEntities.put(hostile, new TimerGame(0));
+                                } else {
+                                    _closeAnnoyingEntities.put(hostile, new TimerGame(Float.POSITIVE_INFINITY));
+                                }
                             } else {
-                                _closeAnnoyingEntities.put(hostile, new TimerGame(Float.POSITIVE_INFINITY));
+                                _closeAnnoyingEntities.put(hostile, new TimerGame(0));
                             }
-                        } else {
-                            _closeAnnoyingEntities.put(hostile, new TimerGame(0));
+                            _closeAnnoyingEntities.get(hostile).reset();
                         }
-                        _closeAnnoyingEntities.get(hostile).reset();
+                        if (_closeAnnoyingEntities.get(hostile).elapsed()) {
+                            toDealWith.add(hostile);
+                        }
+                    } else {
+                        _closeAnnoyingEntities.remove(hostile);
                     }
-                    if (_closeAnnoyingEntities.get(hostile).elapsed()) {
-                        toDealWith.add(hostile);
-                    }
-                } else {
-                    _closeAnnoyingEntities.remove(hostile);
                 }
             }
 

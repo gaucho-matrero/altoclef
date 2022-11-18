@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
     private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
     // Not clean practice, but it helps keep things self contained I think.
     private static boolean isGettingPickaxeFirstFlag = false;
@@ -130,6 +131,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected void onStart(AltoClef mod) {
+        _wanderTask.reset();
         _progressChecker.reset();
         stuckCheck.reset();
     }
@@ -141,6 +143,10 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+            setDebugState("Wandering.");
+            return _wanderTask;
+        }
         if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
             _progressChecker.reset();
         }
@@ -175,10 +181,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         }
 
         if (!_progressChecker.check(mod)) {
-            mod.getClientBaritone().getPathingBehavior().cancelEverything();
             mod.getClientBaritone().getPathingBehavior().forceCancel();
-            mod.getClientBaritone().getExploreProcess().onLostControl();
-            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             if (_currentDrop != null && !_currentDrop.getStack().isEmpty()) {
                 // We might want to get a pickaxe first.
                 if (!isGettingPickaxeFirstFlag && mod.getModSettings().shouldCollectPickaxeFirst() && !StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
@@ -187,14 +190,11 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
                     isGettingPickaxeFirstFlag = true;
                     return getPickaxeFirstTask;
                 }
-
                 Debug.logMessage(StlHelper.toString(_blacklist, element -> element == null ? "(null)" : element.getStack().getItem().getTranslationKey()));
                 Debug.logMessage("Failed to pick up drop, suggesting it's unreachable.");
                 _blacklist.add(_currentDrop);
-                TimeoutWanderTask wanderTask = new TimeoutWanderTask(5);
-                _progressChecker.reset();
                 mod.getEntityTracker().requestEntityUnreachable(_currentDrop);
-                return wanderTask;
+                return _wanderTask;
             }
         }
 
