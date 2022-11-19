@@ -44,12 +44,12 @@ public class ConstructNetherPortalBucketTask extends Task {
             new Vec3i(0, 0, 2),
             new Vec3i(0, 1, 2),
             new Vec3i(0, 2, 2),
-            // Bottom
-            new Vec3i(0, -1, 0),
-            new Vec3i(0, -1, 1),
             // Top
             new Vec3i(0, 3, 0),
-            new Vec3i(0, 3, 1)
+            new Vec3i(0, 3, 1),
+            // Bottom
+            new Vec3i(0, -1, 0),
+            new Vec3i(0, -1, 1)
     };
 
     private static final Vec3i[] PORTAL_INTERIOR = new Vec3i[]{

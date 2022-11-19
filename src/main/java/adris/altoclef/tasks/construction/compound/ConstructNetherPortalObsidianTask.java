@@ -30,9 +30,6 @@ public class ConstructNetherPortalObsidianTask extends Task {
 
     // Order here matters
     private static final Vec3i[] PORTAL_FRAME = new Vec3i[]{
-            // Bottom
-            new Vec3i(0, -1, 0),
-            new Vec3i(0, -1, 1),
             // Left side
             new Vec3i(0, 0, -1),
             new Vec3i(0, 1, -1),
@@ -43,7 +40,10 @@ public class ConstructNetherPortalObsidianTask extends Task {
             new Vec3i(0, 2, 2),
             // Top
             new Vec3i(0, 3, 0),
-            new Vec3i(0, 3, 1)
+            new Vec3i(0, 3, 1),
+            // Bottom
+            new Vec3i(0, -1, 0),
+            new Vec3i(0, -1, 1)
     };
 
     private static final Vec3i[] PORTAL_INTERIOR = new Vec3i[]{

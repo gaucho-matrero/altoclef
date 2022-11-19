@@ -45,8 +45,8 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
 //    if (getProject().hasProperty("altoclef.development")) {
     // Must run build from baritone-plus once
-    modImplementation 'baritone-api-fabric:baritone-fabric-unoptimized-1.19.2-SNAPSHOT'
-    include "baritone-api-fabric:baritone-fabric-unoptimized-1.19.2-SNAPSHOT"
+    modImplementation 'baritone-api-fabric:baritone-fabric-unoptimized-1.19.2-beta4'
+    include "baritone-api-fabric:baritone-fabric-unoptimized-1.19.2-beta4"
     //} else {
     //    modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
     //    include "cabaletta:baritone-unoptimized-fabric:1.18.2"
