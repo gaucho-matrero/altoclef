@@ -25,10 +25,10 @@ import java.util.Optional;
 import java.util.Set;
 
 public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEntity> implements ITaskRequiresGrounded {
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
     private static final Task getPickaxeFirstTask = new SatisfyMiningRequirementTask(MiningRequirement.STONE);
     // Not clean practice, but it helps keep things self contained I think.
     private static boolean isGettingPickaxeFirstFlag = false;
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final ItemTarget[] _itemTargets;

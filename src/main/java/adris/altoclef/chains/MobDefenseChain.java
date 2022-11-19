@@ -394,6 +394,7 @@ public class MobDefenseChain extends SingleTaskChain {
             b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         }
     }
+
     private void doForceField(AltoClef mod) {
 
         _killAura.tickStart();
@@ -609,9 +610,11 @@ public class MobDefenseChain extends SingleTaskChain {
     public boolean isDoingAcrobatics() {
         return _doingFunkyStuff;
     }
+
     public boolean isPuttingOutFire() {
         return _wasPuttingOutFire;
     }
+
     @Override
     public boolean isActive() {
         // We're always checking for mobs

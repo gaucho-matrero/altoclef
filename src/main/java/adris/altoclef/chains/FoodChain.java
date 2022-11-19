@@ -165,6 +165,7 @@ public class FoodChain extends SingleTaskChain {
         // Food eating is handled asynchronously.
         return Float.NEGATIVE_INFINITY;
     }
+
     @Override
     public boolean isActive() {
         // We're always checking for food.

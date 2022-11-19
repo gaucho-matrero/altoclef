@@ -29,6 +29,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private final float _distanceToWander;
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final boolean _increaseRange;
+    private final TimerGame _timer = new TimerGame(60);
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -45,7 +46,6 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             Blocks.GRASS,
             Blocks.SWEET_BERRY_BUSH
     };
-    private final TimerGame _timer = new TimerGame(60);
     private Vec3d _origin;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
     private boolean _forceExplore;

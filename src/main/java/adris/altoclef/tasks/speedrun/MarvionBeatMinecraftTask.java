@@ -55,7 +55,6 @@ import static net.minecraft.client.MinecraftClient.getInstance;
 
 @SuppressWarnings("ALL")
 public class MarvionBeatMinecraftTask extends Task {
-    private boolean _dragonIsDead = false;
     private static final Block[] TRACK_BLOCKS = new Block[]{
             Blocks.BLAST_FURNACE,
             Blocks.FURNACE,
@@ -134,6 +133,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private final TimerGame _timer2 = new TimerGame(35);
     private final TimerGame _timer3 = new TimerGame(60);
     boolean _weHaveEyes;
+    private boolean _dragonIsDead = false;
     private BlockPos _endPortalCenterLocation;
     private boolean _isEquippingDiamondArmor;
     private boolean _ranStrongholdLocator;
