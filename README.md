@@ -7,7 +7,7 @@ A client side bot that can accomplish any Minecraft task that is relatively simp
 
 Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baAa6s8tahA) on May 24, 2021.
 
-**Join the [Discord Server](https://discord.gg/fUUEHeNmXb)** for discussions/updates/goofs & gaffs
+**Join the [Discord Server](https://discord.gg/JdFP4Kqdqc)** for discussions/updates/goofs & gaffs
 
 ## How it works
 
