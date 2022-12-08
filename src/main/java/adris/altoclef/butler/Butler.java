@@ -7,7 +7,6 @@ import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.MessageType;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
