@@ -83,10 +83,7 @@ public class PlaceObsidianBucketTask extends Task {
             }
         }
         if (!_progressChecker.check(mod)) {
-            mod.getClientBaritone().getPathingBehavior().cancelEverything();
             mod.getClientBaritone().getPathingBehavior().forceCancel();
-            mod.getClientBaritone().getExploreProcess().onLostControl();
-            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getBlockTracker().requestBlockUnreachable(_pos);
             _progressChecker.reset();
             return new TimeoutWanderTask(5);

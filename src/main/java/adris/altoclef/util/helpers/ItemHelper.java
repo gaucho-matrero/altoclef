@@ -11,10 +11,10 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.TagKey;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.registry.Registry;
 
 import java.util.*;
 
@@ -333,7 +333,7 @@ public class ItemHelper {
     }
 
     public static boolean isOfBlockType(Block b, TagKey<Block> tag) {
-        return Registry.BLOCK.getKey(b).map(e -> Registry.BLOCK.entryOf(e).streamTags().anyMatch(t -> t == tag)).orElse(false);
+        return Registries.BLOCK.getKey(b).map(e -> Registries.BLOCK.entryOf(e).streamTags().anyMatch(t -> t == tag)).orElse(false);
     }
 
     private static boolean isStackProtected(AltoClef mod, ItemStack stack) {

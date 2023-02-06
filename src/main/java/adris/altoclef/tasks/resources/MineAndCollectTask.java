@@ -217,10 +217,7 @@ public class MineAndCollectTask extends ResourceTask {
                 _progressChecker.reset();
             }
             if (_miningPos != null && !_progressChecker.check(mod)) {
-                mod.getClientBaritone().getPathingBehavior().cancelEverything();
                 mod.getClientBaritone().getPathingBehavior().forceCancel();
-                mod.getClientBaritone().getExploreProcess().onLostControl();
-                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
                 mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);

@@ -1,16 +1,14 @@
 package adris.altoclef.eventbus.events;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.packet.s2c.play.ChatMessageS2CPacket;
 
 /**
  * Whenever chat appears
  */
 public class ChatMessageEvent {
-    public String message;
-    public Text preview;
+    ChatMessageS2CPacket packet;
 
-    public ChatMessageEvent(String message, Text preview) {
-        this.message = message;
-        this.preview = preview;
+    public ChatMessageEvent(ChatMessageS2CPacket packet) {
+        this.packet = packet;
     }
 }

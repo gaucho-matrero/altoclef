@@ -1,4 +1,4 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.GetToEntityTask;

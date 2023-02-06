@@ -90,7 +90,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         }
 
         if (perching) {
-            mod.getFoodChain().shouldStop(mod.getPlayer().getHealth() > 10);
+            mod.getFoodChain().shouldStop(true);
             BlockPos targetStandPosition = _endPortalTop.add(-1, -1, 0);
             BlockPos playerPosition = mod.getPlayer().getBlockPos();
 
@@ -99,9 +99,9 @@ public class KillEnderDragonWithBedsTask extends Task {
                 setDebugState("Going to position for bed cycle...");
                 return _positionTask;
             }
-            if (!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 1)
-                    || playerPosition.getY() < targetStandPosition.getY()
-            ) {
+            if ((!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 1)
+                    || playerPosition.getY() < targetStandPosition.getY()) && mod.getPlayer().getVelocity().getX() == 0 &&
+                    mod.getPlayer().getVelocity().getY() == 0 && mod.getPlayer().getVelocity().getZ() == 0) {
                 _positionTask = new GetToBlockTask(targetStandPosition);
                 setDebugState("Moving to target stand position");
                 return _positionTask;

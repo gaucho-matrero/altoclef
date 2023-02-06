@@ -203,7 +203,7 @@ public class BlockTracker extends Tracker {
     }
 
     public Optional<BlockPos> getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
-        return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
+        return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), isValidTest, blocks);
     }
 
     /**

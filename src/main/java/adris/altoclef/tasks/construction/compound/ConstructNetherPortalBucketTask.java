@@ -146,10 +146,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         }
 
         if (!_progressChecker.check(mod)) {
-            mod.getClientBaritone().getPathingBehavior().cancelEverything();
             mod.getClientBaritone().getPathingBehavior().forceCancel();
-            mod.getClientBaritone().getExploreProcess().onLostControl();
-            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             if (_portalOrigin != null && _currentDestroyTarget != null) {
                 mod.getBlockTracker().requestBlockUnreachable(_portalOrigin);
                 mod.getBlockTracker().requestBlockUnreachable(_currentDestroyTarget);
@@ -302,7 +299,6 @@ public class ConstructNetherPortalBucketTask extends Task {
 
     private BlockPos findLavaLake(AltoClef mod, BlockPos playerPos) {
         HashSet<BlockPos> alreadyExplored = new HashSet<>();
-
         double nearestSqDistance = Double.POSITIVE_INFINITY;
         BlockPos nearestLake = null;
         for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.LAVA)) {
