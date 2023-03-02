@@ -56,9 +56,9 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
-        float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
         // Equip weapon
         equipWeapon(mod);
+        float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
         if (hitProg >= 1) {
             if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
                 LookHelper.lookAt(mod, entity.getEyePos());
