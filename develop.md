@@ -22,7 +22,7 @@ Clone project and import. I'd suggest using JetBrain's IntelliJ to import the pr
  
 If the gradle tab doesn't exist, try `View > Tool Windows > Gradle`
 
-## Get it Running (Command line, Linux & maxOS)
+## Get it Running (Command line, Linux & macOS)
 
 1) Git Clone project
 2) `cd` into cloned local repo
