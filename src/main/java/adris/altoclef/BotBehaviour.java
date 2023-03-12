@@ -81,8 +81,10 @@ public class BotBehaviour {
     }
 
     public boolean shouldExcludeFromForcefield(Entity entity) {
-        for (Predicate<Entity> pred : current().excludeFromForceField) {
-            if (pred.test(entity)) return true;
+        if (!current().excludeFromForceField.isEmpty()) {
+            for (Predicate<Entity> pred : current().excludeFromForceField) {
+                if (pred.test(entity)) return true;
+            }
         }
         return false;
     }
@@ -211,8 +213,10 @@ public class BotBehaviour {
     }
 
     public boolean shouldAvoidDodgingProjectile(Entity entity) {
-        for (Predicate<Entity> test : current().avoidDodgingProjectile) {
-            if (test.test(entity)) return true;
+        if (!current().avoidDodgingProjectile.isEmpty()) {
+            for (Predicate<Entity> test : current().avoidDodgingProjectile) {
+                if (test.test(entity)) return true;
+            }
         }
         return false;
     }

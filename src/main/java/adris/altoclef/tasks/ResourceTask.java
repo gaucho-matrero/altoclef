@@ -227,10 +227,12 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         StringBuilder result = new StringBuilder();
         result.append(toDebugStringName()).append(": [");
         int c = 0;
-        for (ItemTarget target : _itemTargets) {
-            result.append(target != null ? target.toString() : "(null)");
-            if (++c != _itemTargets.length) {
-                result.append(", ");
+        if (_itemTargets != null) {
+            for (ItemTarget target : _itemTargets) {
+                result.append(target != null ? target.toString() : "(null)");
+                if (++c != _itemTargets.length) {
+                    result.append(", ");
+                }
             }
         }
         result.append("]");

@@ -28,6 +28,7 @@ public class EntityHelper {
     }
 
     public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
+        // This is only temporary.
         if (hostile instanceof MobEntity entity) {
             if (entity instanceof HostileEntity entity1) {
                 return entity1.isAttacking() || !(entity1 instanceof EndermanEntity || entity1 instanceof PiglinEntity ||
@@ -43,10 +44,12 @@ public class EntityHelper {
 
     public static boolean isTradingPiglin(Entity entity) {
         if (entity instanceof PiglinEntity pig) {
-            for (ItemStack stack : pig.getHandItems()) {
-                if (stack.getItem().equals(Items.GOLD_INGOT)) {
-                    // We're trading with this one, ignore it.
-                    return true;
+            if (pig.getHandItems() != null) {
+                for (ItemStack stack : pig.getHandItems()) {
+                    if (stack.getItem().equals(Items.GOLD_INGOT)) {
+                        // We're trading with this one, ignore it.
+                        return true;
+                    }
                 }
             }
         }

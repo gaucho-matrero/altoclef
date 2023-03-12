@@ -2,6 +2,7 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
@@ -14,11 +15,14 @@ import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -180,6 +184,14 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             return _unstuckTask;
         }
         if (!_progressChecker.check(mod) || !stuckCheck.check(mod)) {
+            List<Entity> closeEntities = mod.getEntityTracker().getCloseEntities();
+            for (Entity CloseEntities : closeEntities) {
+                if (CloseEntities instanceof MobEntity &&
+                        CloseEntities.getPos().isInRange(mod.getPlayer().getPos(), 1)) {
+                    setDebugState("Killing annoying entity.");
+                    return new KillEntitiesTask(CloseEntities.getClass());
+                }
+            }
             BlockPos blockStuck = stuckInBlock(mod);
             if (blockStuck != null) {
                 _failCounter++;
@@ -191,7 +203,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         setDebugState("Exploring.");
         switch (WorldHelper.getCurrentDimension()) {
             case END -> {
-                if (_timer.getDuration() > 29) {
+                if (_timer.getDuration() >= 30) {
                     if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
@@ -200,7 +212,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
                 }
             }
             case OVERWORLD, NETHER -> {
-                if (_timer.getDuration() > 29) {
+                if (_timer.getDuration() >= 30) {
                     if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
                         MinecraftClient.getInstance().options.getViewDistance().setValue(12);
                         MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);

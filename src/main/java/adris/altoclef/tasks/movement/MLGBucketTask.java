@@ -188,10 +188,12 @@ public class MLGBucketTask extends Task {
             boolean hasClutch = (!mod.getWorld().getDimension().ultrawarm() && mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET));
             if (!hasClutch) {
                 // Go through our "clutch" items and see if any fit
-                for (Item tryEquip : _config.clutchItems) {
-                    if (mod.getSlotHandler().forceEquipItem(tryEquip)) {
-                        hasClutch = true;
-                        break;
+                if (!_config.clutchItems.isEmpty()) {
+                    for (Item tryEquip : _config.clutchItems) {
+                        if (mod.getSlotHandler().forceEquipItem(tryEquip)) {
+                            hasClutch = true;
+                            break;
+                        }
                     }
                 }
             }

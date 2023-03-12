@@ -265,99 +265,98 @@ public class KillEnderDragonTask extends Task {
 
         @Override
         protected Task onTick(AltoClef mod) {
-
             if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
                 setDebugState("No dragon found.");
                 return null;
             }
-            EnderDragonEntity dragon = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class).get(0);
-
-            Phase dragonPhase = dragon.getPhaseManager().getCurrent();
-            //Debug.logInternal("PHASE: " + dragonPhase);
-
-            boolean perchingOrGettingReady = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering();
-
-            switch (_mode) {
-                case RAILING -> {
-                    if (!perchingOrGettingReady) {
-                        Debug.logMessage("Dragon no longer perching.");
-                        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                        _mode = Mode.WAITING_FOR_PERCH;
-                        break;
-                    }
-
-                    //DamageSource.DRAGON_BREATH
-                    Entity head = dragon.head;
-                    // Go for the head
-                    if (head.isInRange(mod.getPlayer(), 7.5) && dragon.ticksSinceDeath <= 1) {
-                        // Equip weapon
-                        AbstractKillEntityTask.equipWeapon(mod);
-                        // Look torwards da dragon
-                        Vec3d targetLookPos = head.getPos().add(0, 3, 0);
-                        Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
-                        mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
-                        // Also look towards da dragon
-                        MinecraftClient.getInstance().options.getAutoJump().setValue(false);
-                        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
-                        hit(mod);
-                    } else {
-                        stopHitting(mod);
-                    }
-                    if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                        // Set goal to closest block within the pillar that's by the head.
-                        if (_exitPortalTop != null) {
-                            int bottomYDelta = -3;
-                            BlockPos closest = null;
-                            double closestDist = Double.POSITIVE_INFINITY;
-                            for (int dx = -2; dx <= 2; ++dx) {
-                                for (int dz = -2; dz <= 2; ++dz) {
-                                    // We have sort of a rounded circle here.
-                                    if (Math.abs(dx) == 2 && Math.abs(dz) == 2) continue;
-                                    BlockPos toCheck = _exitPortalTop.add(dx, bottomYDelta, dz);
-                                    double distSq = toCheck.getSquaredDistance(head.getPos());
-                                    if (distSq < closestDist) {
-                                        closest = toCheck;
-                                        closestDist = distSq;
+            List<EnderDragonEntity> dragons = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class);
+            if (!dragons.isEmpty()) {
+                for (EnderDragonEntity dragon : dragons) {
+                    Phase dragonPhase = dragon.getPhaseManager().getCurrent();
+                    //Debug.logInternal("PHASE: " + dragonPhase);
+                    boolean perchingOrGettingReady = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering();
+                    switch (_mode) {
+                        case RAILING -> {
+                            if (!perchingOrGettingReady) {
+                                Debug.logMessage("Dragon no longer perching.");
+                                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                                _mode = Mode.WAITING_FOR_PERCH;
+                                break;
+                            }
+                            //DamageSource.DRAGON_BREATH
+                            Entity head = dragon.head;
+                            // Go for the head
+                            if (head.isInRange(mod.getPlayer(), 7.5) && dragon.ticksSinceDeath <= 1) {
+                                // Equip weapon
+                                AbstractKillEntityTask.equipWeapon(mod);
+                                // Look torwards da dragon
+                                Vec3d targetLookPos = head.getPos().add(0, 3, 0);
+                                Rotation targetRotation = RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), targetLookPos, mod.getClientBaritone().getPlayerContext().playerRotations());
+                                mod.getClientBaritone().getLookBehavior().updateTarget(targetRotation, true);
+                                // Also look towards da dragon
+                                MinecraftClient.getInstance().options.getAutoJump().setValue(false);
+                                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+                                hit(mod);
+                            } else {
+                                stopHitting(mod);
+                            }
+                            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+                                // Set goal to closest block within the pillar that's by the head.
+                                if (_exitPortalTop != null) {
+                                    int bottomYDelta = -3;
+                                    BlockPos closest = null;
+                                    double closestDist = Double.POSITIVE_INFINITY;
+                                    for (int dx = -2; dx <= 2; ++dx) {
+                                        for (int dz = -2; dz <= 2; ++dz) {
+                                            // We have sort of a rounded circle here.
+                                            if (Math.abs(dx) == 2 && Math.abs(dz) == 2) continue;
+                                            BlockPos toCheck = _exitPortalTop.add(dx, bottomYDelta, dz);
+                                            double distSq = toCheck.getSquaredDistance(head.getPos());
+                                            if (distSq < closestDist) {
+                                                closest = toCheck;
+                                                closestDist = distSq;
+                                            }
+                                        }
+                                    }
+                                    if (closest != null) {
+                                        mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(
+                                                new GoalGetToBlock(closest)
+                                        );
                                     }
                                 }
                             }
-                            if (closest != null) {
+                            setDebugState("Railing on dragon");
+                        }
+                        case WAITING_FOR_PERCH -> {
+                            stopHitting(mod);
+                            if (perchingOrGettingReady) {
+                                // We're perching!!
+                                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                                Debug.logMessage("Dragon perching detected. Dabar duosiu į snuki.");
+                                _mode = Mode.RAILING;
+                                break;
+                            }
+                            // Run around aimlessly, dodging dragon fire
+                            if (_randomWanderPos != null && WorldHelper.inRangeXZ(mod.getPlayer(), _randomWanderPos, 2)) {
+                                _randomWanderPos = null;
+                            }
+                            if (_randomWanderPos != null && _randomWanderChangeTimeout.elapsed()) {
+                                _randomWanderPos = null;
+                                Debug.logMessage("Reset wander pos after timeout, oof");
+                            }
+                            if (_randomWanderPos == null) {
+                                _randomWanderPos = getRandomWanderPos(mod);
+                                _randomWanderChangeTimeout.reset();
+                                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+                            }
+                            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
                                 mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(
-                                        new GoalGetToBlock(closest)
+                                        new GoalGetToBlock(_randomWanderPos)
                                 );
                             }
+                            setDebugState("Waiting for perch");
                         }
                     }
-                    setDebugState("Railing on dragon");
-                }
-                case WAITING_FOR_PERCH -> {
-                    stopHitting(mod);
-                    if (perchingOrGettingReady) {
-                        // We're perching!!
-                        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                        Debug.logMessage("Dragon perching detected. Dabar duosiu į snuki.");
-                        _mode = Mode.RAILING;
-                        break;
-                    }
-                    // Run around aimlessly, dodging dragon fire
-                    if (_randomWanderPos != null && WorldHelper.inRangeXZ(mod.getPlayer(), _randomWanderPos, 2)) {
-                        _randomWanderPos = null;
-                    }
-                    if (_randomWanderPos != null && _randomWanderChangeTimeout.elapsed()) {
-                        _randomWanderPos = null;
-                        Debug.logMessage("Reset wander pos after timeout, oof");
-                    }
-                    if (_randomWanderPos == null) {
-                        _randomWanderPos = getRandomWanderPos(mod);
-                        _randomWanderChangeTimeout.reset();
-                        mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-                    }
-                    if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                        mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(
-                                new GoalGetToBlock(_randomWanderPos)
-                        );
-                    }
-                    setDebugState("Waiting for perch");
                 }
             }
             return null;

@@ -36,8 +36,10 @@ public class ConfigHelper {
     }
 
     public static void reloadAllConfigs() {
-        for (Runnable reload : _loadedConfigs.values()) {
-            reload.run();
+        if (!_loadedConfigs.values().isEmpty()) {
+            for (Runnable reload : _loadedConfigs.values()) {
+                reload.run();
+            }
         }
     }
 

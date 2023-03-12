@@ -97,7 +97,10 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 }
             }
             // Don't ever break beds. If one exists, we will sleep in it.
-            return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
+            if (mod.getWorld() != null) {
+                return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
+            }
+            return false;
         });
         _spawnSet = false;
         _sleepAttemptMade = false;
@@ -175,7 +178,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }
         }
         if (mod.getBlockTracker().anyFound(blockPos -> (WorldHelper.canReach(mod, blockPos) &&
-                blockPos.isWithinDistance(mod.getPlayer().getPos(), 30) &&
+                blockPos.isWithinDistance(mod.getPlayer().getPos(), 40) &&
                 mod.getItemStorage().hasItem(ItemHelper.BED)) || (WorldHelper.canReach(mod, blockPos) &&
                 !mod.getItemStorage().hasItem(ItemHelper.BED)), ItemHelper.itemsToBlocks(ItemHelper.BED))) {
             // Sleep in the nearest bed

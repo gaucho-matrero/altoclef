@@ -28,9 +28,11 @@ public class SlotScreenMapping {
     @SuppressWarnings("unchecked")
     public static boolean isScreenOpen(Class slotType) {
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        for (SlotScreenMappingEntry entry : _classList) {
-            if (slotType == entry.type || slotType.isAssignableFrom(entry.type)) {
-                return entry.inScreen.test(screen);
+        if (!_classList.isEmpty()) {
+            for (SlotScreenMappingEntry entry : _classList) {
+                if (slotType == entry.type || slotType.isAssignableFrom(entry.type)) {
+                    return entry.inScreen.test(screen);
+                }
             }
         }
         throw new NotImplementedException("Slot type class not registered in SlotScreenMapping: " + slotType + ". Please register! (current screen = " + screen + ")");
@@ -38,9 +40,11 @@ public class SlotScreenMapping {
 
     public static Slot getFromScreen(int slot, boolean inventory) {
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        for (SlotScreenMappingEntry entry : _classList) {
-            if (entry.inScreen.test(screen)) {
-                return entry.getSlot.apply(slot, inventory);
+        if (!_classList.isEmpty()) {
+            for (SlotScreenMappingEntry entry : _classList) {
+                if (entry.inScreen.test(screen)) {
+                    return entry.getSlot.apply(slot, inventory);
+                }
             }
         }
         throw new NotImplementedException("We should never get here, _classList should be filled with a predicate that always returns true at the bottom (for PlayerSlot & CursorSlot)");

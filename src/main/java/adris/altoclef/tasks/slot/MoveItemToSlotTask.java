@@ -112,22 +112,24 @@ public class MoveItemToSlotTask extends Task {
 
     private Optional<Slot> getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
-        for (Slot slot : _getMovableSlots.apply(mod)) {
-            if (Slot.isCursor(slot))
-                continue;
-            if (!_toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
-                continue;
-            if (bestMatch == null) {
-                bestMatch = slot;
-                continue;
-            }
-            int countBest = StorageHelper.getItemStackInSlot(bestMatch).getCount();
-            int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
-            if ((countBest < _toMove.getTargetCount() && countCheck > countBest)
-                    || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest)) {
-                // If we don't have enough, go for largest
-                // If we have too much, go for smallest over the limit.
-                bestMatch = slot;
+        if (!_getMovableSlots.apply(mod).isEmpty()) {
+            for (Slot slot : _getMovableSlots.apply(mod)) {
+                if (Slot.isCursor(slot))
+                    continue;
+                if (!_toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
+                    continue;
+                if (bestMatch == null) {
+                    bestMatch = slot;
+                    continue;
+                }
+                int countBest = StorageHelper.getItemStackInSlot(bestMatch).getCount();
+                int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
+                if ((countBest < _toMove.getTargetCount() && countCheck > countBest)
+                        || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest)) {
+                    // If we don't have enough, go for largest
+                    // If we have too much, go for smallest over the limit.
+                    bestMatch = slot;
+                }
             }
         }
         return Optional.ofNullable(bestMatch);

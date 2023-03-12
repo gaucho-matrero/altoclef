@@ -16,44 +16,45 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CoverWithSandTask extends Task {
-    private static final TimerGame _timer = new TimerGame(30);
-    private static final Task _getSand = TaskCatalogue.getItemTask(Items.SAND, 128);
-    private static final Task _goToNether = new DefaultGoToDimensionTask(Dimension.NETHER);
-    private static final Task _goToOverworld = new DefaultGoToDimensionTask(Dimension.OVERWORLD);
-    private BlockPos _lavaPos;
+    private static final TimerGame timer = new TimerGame(30);
+    private static final Task getSand = TaskCatalogue.getItemTask(Items.SAND, 128);
+    private static final Task goToNether = new DefaultGoToDimensionTask(Dimension.NETHER);
+    private static final Task goToOverworld = new DefaultGoToDimensionTask(Dimension.OVERWORLD);
+    private BlockPos lavaPos;
 
     @Override
     protected void onStart(AltoClef mod) {
-        _timer.reset();
+        timer.reset();
         mod.getBlockTracker().trackBlock(Blocks.LAVA);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_getSand != null && _getSand.isActive() && !_getSand.isFinished(mod)) {
+        if (getSand != null && getSand.isActive() && !getSand.isFinished(mod)) {
             setDebugState("Getting sands to cover nether lava.");
-            _timer.reset();
-            return _getSand;
+            timer.reset();
+            return getSand;
         }
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD &&
                 mod.getItemStorage().getItemCount(Items.SAND) < 64) {
-            return _getSand;
+            timer.reset();
+            return getSand;
         }
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD &&
                 mod.getItemStorage().getItemCount(Items.SAND) > 64) {
             setDebugState("Going to nether.");
-            _timer.reset();
-            return _goToNether;
+            timer.reset();
+            return goToNether;
         }
         if (WorldHelper.getCurrentDimension() == Dimension.NETHER &&
                 !mod.getItemStorage().hasItem(Items.SAND)) {
             setDebugState("Going to overworld to get sand.");
-            _timer.reset();
-            return _goToOverworld;
+            timer.reset();
+            return goToOverworld;
         }
         if (coverLavaWithSand(mod) == null) {
             setDebugState("Searching valid lava.");
-            _timer.reset();
+            timer.reset();
             return new TimeoutWanderTask();
         }
         setDebugState("Covering lava with sand");
@@ -62,27 +63,33 @@ public class CoverWithSandTask extends Task {
 
     private Task coverLavaWithSand(AltoClef mod) {
         Predicate<BlockPos> validLava = blockPos ->
-                WorldHelper.isAir(mod, blockPos.up()) &&
+                mod.getWorld().getBlockState(blockPos).getFluidState().isStill() &&
+                        WorldHelper.isAir(mod, blockPos.up()) &&
                         (!WorldHelper.isBlock(mod, blockPos.north(), Blocks.LAVA) ||
                                 !WorldHelper.isBlock(mod, blockPos.south(), Blocks.LAVA) ||
                                 !WorldHelper.isBlock(mod, blockPos.east(), Blocks.LAVA) ||
-                                !WorldHelper.isBlock(mod, blockPos.west(), Blocks.LAVA));
+                                !WorldHelper.isBlock(mod, blockPos.west(), Blocks.LAVA) ||
+                                !WorldHelper.isBlock(mod, blockPos.north().up(), Blocks.LAVA) ||
+                                !WorldHelper.isBlock(mod, blockPos.south().up(), Blocks.LAVA) ||
+                                !WorldHelper.isBlock(mod, blockPos.east().up(), Blocks.LAVA) ||
+                                !WorldHelper.isBlock(mod, blockPos.west().up(), Blocks.LAVA));
         Optional<BlockPos> lava = mod.getBlockTracker().getNearestTracking(validLava, Blocks.LAVA);
         if (lava.isPresent()) {
-            if (_lavaPos == null) {
-                _lavaPos = lava.get();
+            if (lavaPos == null) {
+                lavaPos = lava.get();
+                timer.reset();
             }
-            if (_timer.elapsed()) {
-                _lavaPos = lava.get();
-                _timer.reset();
+            if (timer.elapsed()) {
+                lavaPos = lava.get();
+                timer.reset();
             }
-            if (!WorldHelper.isBlock(mod, _lavaPos, Blocks.LAVA)) {
-                _lavaPos = lava.get();
+            if (!WorldHelper.isBlock(mod, lavaPos, Blocks.LAVA) || (!WorldHelper.isAir(mod, lavaPos.up()) &&
+                    !WorldHelper.isFallingBlock(lavaPos.up())) ||
+                    !mod.getWorld().getBlockState(lavaPos).getFluidState().isStill()) {
+                lavaPos = lava.get();
+                timer.reset();
             }
-            if (!WorldHelper.isBlock(mod, _lavaPos.down(), Blocks.LAVA)) {
-                return new PlaceBlockTask(_lavaPos, Blocks.SAND);
-            }
-            return new PlaceBlockTask(_lavaPos.up(), Blocks.SAND);
+            return new PlaceBlockTask(lavaPos.up(), Blocks.SAND);
         }
         return null;
     }

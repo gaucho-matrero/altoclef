@@ -67,7 +67,9 @@ public abstract class SingleTaskChain extends TaskChain {
 
     @Override
     public void onInterrupt(AltoClef mod, TaskChain other) {
-        Debug.logInternal("Chain Interrupted: " + this + " by " + other.toString());
+        if (other != null) {
+            Debug.logInternal("Chain Interrupted: " + this + " by " + other);
+        }
         // Stop our task. When we're started up again, let our task know we need to run.
         _interrupted = true;
         if (_mainTask != null && _mainTask.isActive()) {

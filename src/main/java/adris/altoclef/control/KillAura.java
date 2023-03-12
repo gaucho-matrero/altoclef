@@ -199,23 +199,27 @@ public class KillAura {
     }
 
     public void startShielding(AltoClef mod) {
-        ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
-        ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-        if (handItem.isFood()) {
-            mod.getSlotHandler().clickSlot(PlayerSlot.getEquipSlot(), 0, SlotActionType.PICKUP);
-        }
-        if (cursor.isFood()) {
-            Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
-            if (toMoveTo.isPresent()) {
-                Slot garbageSlot = toMoveTo.get();
-                mod.getSlotHandler().clickSlot(garbageSlot, 0, SlotActionType.PICKUP);
-            }
-        }
+        _shielding = true;
         mod.getInputControls().hold(Input.SNEAK);
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
-        _shielding = true;
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
+        if (!mod.getPlayer().isBlocking()) {
+            ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
+            if (handItem.isFood()) {
+                List<ItemStack> spaceSlots = mod.getItemStorage().getItemStacksPlayerInventory(false);
+                if (!spaceSlots.isEmpty()) {
+                    for (ItemStack spaceSlot : spaceSlots) {
+                        if (spaceSlot.isEmpty()) {
+                            mod.getSlotHandler().clickSlot(PlayerSlot.getEquipSlot(), 0, SlotActionType.QUICK_MOVE);
+                            return;
+                        }
+                    }
+                }
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                garbage.ifPresent(slot -> mod.getSlotHandler().forceEquipItem(StorageHelper.getItemStackInSlot(slot).getItem()));
+            }
+        }
     }
 
     public void stopShielding(AltoClef mod) {

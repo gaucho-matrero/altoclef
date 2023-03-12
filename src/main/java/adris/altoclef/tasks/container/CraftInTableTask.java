@@ -183,7 +183,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
         mod.getBehaviour().addProtectedItems(getMaterialsArray());
         List<BlockPos> craftingTablePos = mod.getBlockTracker().getKnownLocations(Blocks.CRAFTING_TABLE);
         if (!craftingTablePos.isEmpty()) {
-            mod.getBehaviour().avoidBlockBreaking(craftingTablePos.get(0));
+            for (BlockPos CraftingTablePos : craftingTablePos) {
+                mod.getBehaviour().avoidBlockBreaking(CraftingTablePos);
+            }
         }
         // TODO: This shouldn't be here.
         // This is duct tape for the following scenario:
@@ -282,6 +284,12 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
+        Optional<BlockPos> closestCraftingTable = mod.getBlockTracker().getNearestTracking(Blocks.CRAFTING_TABLE);
+        if (closestCraftingTable.isPresent()) {
+            if (closestCraftingTable.get().isWithinDistance(mod.getPlayer().getPos(), 40)) {
+                return Double.POSITIVE_INFINITY;
+            }
+        }
         // TODO: If we have an axe, lower the cost.
         if (mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 4) {
             // We can craft it right now, so it's real cheap

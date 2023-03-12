@@ -388,87 +388,89 @@ public class MarvionBeatMinecraftTask extends Task {
             }
             return false;
         };
-        List<BlockPos> craftingTablePos = mod.getBlockTracker().getKnownLocations(Blocks.CRAFTING_TABLE);
-        if (!craftingTablePos.isEmpty()) {
-            if (mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)) {
-                if (!mod.getBlockTracker().unreachable(craftingTablePos.get(0))) {
-                    Debug.logMessage("Blacklisting extra crafting table.");
-                    mod.getBlockTracker().requestBlockUnreachable(craftingTablePos.get(0), 0);
-                }
-            }
-            if (!mod.getBlockTracker().unreachable(craftingTablePos.get(0))) {
-                BlockState craftingTablePosUp = mod.getWorld().getBlockState(craftingTablePos.get(0).up(2));
-                if (mod.getEntityTracker().entityFound(WitchEntity.class)) {
-                    Optional<Entity> witch = mod.getEntityTracker().getClosestEntity(WitchEntity.class);
-                    if (witch.isPresent()) {
-                        if (craftingTablePos.get(0).isWithinDistance(witch.get().getPos(), 15)) {
-                            Debug.logMessage("Blacklisting witch crafting table.");
-                            mod.getBlockTracker().requestBlockUnreachable(craftingTablePos.get(0), 0);
-                        }
+        List<BlockPos> craftingTables = mod.getBlockTracker().getKnownLocations(Blocks.CRAFTING_TABLE);
+        if (!craftingTables.isEmpty()) {
+            for (BlockPos craftingTable : craftingTables) {
+                if (mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)) {
+                    if (!mod.getBlockTracker().unreachable(craftingTable)) {
+                        Debug.logMessage("Blacklisting extra crafting table.");
+                        mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
                     }
                 }
-                if (craftingTablePosUp.getBlock() == Blocks.WHITE_WOOL) {
-                    Debug.logMessage("Blacklisting pillage crafting table.");
-                    mod.getBlockTracker().requestBlockUnreachable(craftingTablePos.get(0), 0);
+                if (!mod.getBlockTracker().unreachable(craftingTable)) {
+                    BlockState craftingTablePosUp = mod.getWorld().getBlockState(craftingTable.up(2));
+                    if (mod.getEntityTracker().entityFound(WitchEntity.class)) {
+                        Optional<Entity> witch = mod.getEntityTracker().getClosestEntity(WitchEntity.class);
+                        if (witch.isPresent()) {
+                            if (craftingTable.isWithinDistance(witch.get().getPos(), 15)) {
+                                Debug.logMessage("Blacklisting witch crafting table.");
+                                mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
+                            }
+                        }
+                    }
+                    if (craftingTablePosUp.getBlock() == Blocks.WHITE_WOOL) {
+                        Debug.logMessage("Blacklisting pillage crafting table.");
+                        mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
+                    }
                 }
             }
         }
-        List<BlockPos> smokerPos = mod.getBlockTracker().getKnownLocations(Blocks.SMOKER);
-        if (!smokerPos.isEmpty()) {
-            if (mod.getItemStorage().hasItem(Items.SMOKER) && _smeltTask == null && _foodTask == null) {
-                if (!mod.getBlockTracker().unreachable(smokerPos.get(0))) {
-                    Debug.logMessage("Blacklisting extra smoker.");
-                    mod.getBlockTracker().requestBlockUnreachable(smokerPos.get(0), 0);
+        List<BlockPos> smokers = mod.getBlockTracker().getKnownLocations(Blocks.SMOKER);
+        if (!smokers.isEmpty()) {
+            for (BlockPos smoker : smokers) {
+                if (mod.getItemStorage().hasItem(Items.SMOKER) && _smeltTask == null && _foodTask == null) {
+                    if (!mod.getBlockTracker().unreachable(smoker)) {
+                        Debug.logMessage("Blacklisting extra smoker.");
+                        mod.getBlockTracker().requestBlockUnreachable(smoker, 0);
+                    }
                 }
             }
         }
-        List<BlockPos> furnacePos = mod.getBlockTracker().getKnownLocations(Blocks.FURNACE);
-        if (!furnacePos.isEmpty()) {
-            if ((mod.getItemStorage().hasItem(Items.FURNACE) || mod.getItemStorage().hasItem(Items.BLAST_FURNACE)) &&
-                    _starterGearTask == null && _shieldTask == null && _ironGearTask == null && _gearTask == null &&
-                    !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
-                if (!mod.getBlockTracker().unreachable(furnacePos.get(0))) {
-                    Debug.logMessage("Blacklisting extra furnace.");
-                    mod.getBlockTracker().requestBlockUnreachable(furnacePos.get(0), 0);
+        List<BlockPos> furnaces = mod.getBlockTracker().getKnownLocations(Blocks.FURNACE);
+        if (!furnaces.isEmpty()) {
+            for (BlockPos furnace : furnaces) {
+                if ((mod.getItemStorage().hasItem(Items.FURNACE) || mod.getItemStorage().hasItem(Items.BLAST_FURNACE)) &&
+                        _starterGearTask == null && _shieldTask == null && _ironGearTask == null && _gearTask == null &&
+                        !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
+                    if (!mod.getBlockTracker().unreachable(furnace)) {
+                        Debug.logMessage("Blacklisting extra furnace.");
+                        mod.getBlockTracker().requestBlockUnreachable(furnace, 0);
+                    }
                 }
             }
         }
-        List<BlockPos> blastFurnacePos = mod.getBlockTracker().getKnownLocations(Blocks.BLAST_FURNACE);
-        if (!blastFurnacePos.isEmpty()) {
-            if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && _starterGearTask == null && _shieldTask == null &&
-                    _ironGearTask == null && _gearTask == null && !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
-                if (!mod.getBlockTracker().unreachable(blastFurnacePos.get(0))) {
-                    Debug.logMessage("Blacklisting extra blast furnace.");
-                    mod.getBlockTracker().requestBlockUnreachable(blastFurnacePos.get(0), 0);
+        List<BlockPos> blastFurnaces = mod.getBlockTracker().getKnownLocations(Blocks.BLAST_FURNACE);
+        if (!blastFurnaces.isEmpty()) {
+            for (BlockPos blastFurnace : blastFurnaces) {
+                if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && _starterGearTask == null && _shieldTask == null &&
+                        _ironGearTask == null && _gearTask == null && !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
+                    if (!mod.getBlockTracker().unreachable(blastFurnace)) {
+                        Debug.logMessage("Blacklisting extra blast furnace.");
+                        mod.getBlockTracker().requestBlockUnreachable(blastFurnace, 0);
+                    }
                 }
             }
         }
-        Block[] logs = ItemHelper.itemsToBlocks(ItemHelper.LOG);
-        for (Block log : logs) {
-            if (mod.getBlockTracker().isTracking(log)) {
-                Optional<BlockPos> logPos = mod.getBlockTracker().getNearestTracking(log);
-                if (logPos.isPresent()) {
-                    Iterable<Entity> entities = mod.getWorld().getEntities();
-                    for (Entity entity : entities) {
-                        if (entity instanceof PillagerEntity) {
-                            if (!mod.getBlockTracker().unreachable(logPos.get())) {
-                                if (logPos.get().isWithinDistance(entity.getPos(), 30)) {
-                                    Debug.logMessage("Blacklisting pillage log.");
-                                    mod.getBlockTracker().requestBlockUnreachable(logPos.get(), 0);
-                                }
+        List<BlockPos> logs = mod.getBlockTracker().getKnownLocations(ItemHelper.itemsToBlocks(ItemHelper.LOG));
+        if (!logs.isEmpty()) {
+            for (BlockPos log : logs) {
+                Iterable<Entity> entities = mod.getWorld().getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof PillagerEntity) {
+                        if (!mod.getBlockTracker().unreachable(log)) {
+                            if (log.isWithinDistance(entity.getPos(), 40)) {
+                                Debug.logMessage("Blacklisting pillage log.");
+                                mod.getBlockTracker().requestBlockUnreachable(log, 0);
                             }
                         }
                     }
                 }
-            }
-        }
-        List<BlockPos> logPos = mod.getBlockTracker().getKnownLocations(ItemHelper.itemsToBlocks(ItemHelper.LOG));
-        if (!logPos.isEmpty()) {
-            if (logPos.get(0).getY() < 62) {
-                if (!mod.getBlockTracker().unreachable(logPos.get(0))) {
-                    if (!ironGearSatisfied && !eyeGearSatisfied) {
-                        Debug.logMessage("Blacklisting dangerous log.");
-                        mod.getBlockTracker().requestBlockUnreachable(logPos.get(0), 0);
+                if (log.getY() < 62) {
+                    if (!mod.getBlockTracker().unreachable(log)) {
+                        if (!ironGearSatisfied && !eyeGearSatisfied) {
+                            Debug.logMessage("Blacklisting dangerous log.");
+                            mod.getBlockTracker().requestBlockUnreachable(log, 0);
+                        }
                     }
                 }
             }
@@ -560,12 +562,10 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                     if (_timer1.elapsed()) {
                         if (_config.renderDistanceManipulation) {
-                            MinecraftClient.getInstance().options.getViewDistance().setValue(12);
+                            getInstance().options.getViewDistance().setValue(12);
                         }
                         _timer1.reset();
                     }
-                } else {
-                    _timer1.reset();
                 }
             }
         }
@@ -573,21 +573,19 @@ public class MarvionBeatMinecraftTask extends Task {
                 (_sleepThroughNightTask.isActive() && !mod.getItemStorage().hasItem(ItemHelper.BED))) &&
                 getBedTask == null) {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                if (_timer3.getDuration() > 29) {
+                if (_timer3.getDuration() >= 30) {
                     if (_config.renderDistanceManipulation) {
-                        MinecraftClient.getInstance().options.getViewDistance().setValue(12);
-                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                        getInstance().options.getViewDistance().setValue(12);
+                        getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
                 }
                 if (_timer3.elapsed()) {
                     if (_config.renderDistanceManipulation) {
-                        MinecraftClient.getInstance().options.getViewDistance().setValue(32);
-                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                        getInstance().options.getViewDistance().setValue(32);
+                        getInstance().options.getEntityDistanceScaling().setValue(5.0);
                     }
                     _timer3.reset();
                 }
-            } else {
-                _timer3.reset();
             }
         }
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && _foodTask == null && !_getOneBedTask.isActive()
@@ -597,13 +595,11 @@ public class MarvionBeatMinecraftTask extends Task {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 if (_timer1.elapsed()) {
                     if (_config.renderDistanceManipulation) {
-                        MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                        getInstance().options.getViewDistance().setValue(2);
+                        getInstance().options.getEntityDistanceScaling().setValue(0.5);
                     }
                     _timer1.reset();
                 }
-            } else {
-                _timer1.reset();
             }
         }
         if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
@@ -611,128 +607,134 @@ public class MarvionBeatMinecraftTask extends Task {
                     _config.renderDistanceManipulation) {
                 if (_timer1.elapsed()) {
                     if (_config.renderDistanceManipulation) {
-                        MinecraftClient.getInstance().options.getViewDistance().setValue(12);
-                        MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                        getInstance().options.getViewDistance().setValue(12);
+                        getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
                     _timer1.reset();
                 }
-            } else {
-                _timer1.reset();
             }
         }
-        List<Slot> hastorch = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> torches = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.TORCH);
-        List<Slot> hasbed = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> beds = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 ItemHelper.BED);
-        List<Slot> excessWaterBucket = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> excessWaterBuckets = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.WATER_BUCKET);
-        List<Slot> excessLighter = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> excessLighters = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.FLINT_AND_STEEL);
-        List<Slot> hasSand = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> sands = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.SAND);
-        List<Slot> hasGravel = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> gravels = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.GRAVEL);
-        List<Slot> hasFurnace = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> furnaceSlots = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.FURNACE);
-        List<Slot> hasShears = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+        List<Slot> shears = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                 Items.SHEARS);
         if (!StorageHelper.isBigCraftingOpen() && !StorageHelper.isFurnaceOpen() &&
                 !StorageHelper.isSmokerOpen() && !StorageHelper.isBlastFurnaceOpen()) {
-            if (!hasShears.isEmpty() && !needsBeds(mod)) {
-                Slot shearsInSlot = hasShears.get(0);
-                if (Slot.isCursor(shearsInSlot)) {
-                    if (!mod.getControllerExtras().isBreakingBlock()) {
-                        LookHelper.randomOrientation(mod);
+            if (!shears.isEmpty() && !needsBeds(mod)) {
+                for (Slot shear : shears) {
+                    if (Slot.isCursor(shear)) {
+                        if (!mod.getControllerExtras().isBreakingBlock()) {
+                            LookHelper.randomOrientation(mod);
+                        }
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    } else {
+                        mod.getSlotHandler().clickSlot(shear, 0, SlotActionType.PICKUP);
                     }
-                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                } else {
-                    mod.getSlotHandler().clickSlot(shearsInSlot, 0, SlotActionType.PICKUP);
                 }
             }
-            if (!hasFurnace.isEmpty() && mod.getItemStorage().hasItem(Items.SMOKER) &&
+            if (!furnaceSlots.isEmpty() && mod.getItemStorage().hasItem(Items.SMOKER) &&
                     mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && mod.getModSettings().shouldUseBlastFurnace()) {
-                Slot furnaceInSlot = hasFurnace.get(0);
-                if (Slot.isCursor(furnaceInSlot)) {
-                    if (!mod.getControllerExtras().isBreakingBlock()) {
-                        LookHelper.randomOrientation(mod);
+                for (Slot furnace : furnaceSlots) {
+                    if (Slot.isCursor(furnace)) {
+                        if (!mod.getControllerExtras().isBreakingBlock()) {
+                            LookHelper.randomOrientation(mod);
+                        }
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    } else {
+                        mod.getSlotHandler().clickSlot(furnace, 0, SlotActionType.PICKUP);
                     }
-                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                } else {
-                    mod.getSlotHandler().clickSlot(furnaceInSlot, 0, SlotActionType.PICKUP);
                 }
             }
-            if (!hasSand.isEmpty()) {
-                Slot sandInSlot = hasSand.get(0);
-                if (Slot.isCursor(sandInSlot)) {
-                    if (!mod.getControllerExtras().isBreakingBlock()) {
-                        LookHelper.randomOrientation(mod);
+            if (!sands.isEmpty()) {
+                for (Slot sand : sands) {
+                    if (Slot.isCursor(sand)) {
+                        if (!mod.getControllerExtras().isBreakingBlock()) {
+                            LookHelper.randomOrientation(mod);
+                        }
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                    } else {
+                        mod.getSlotHandler().clickSlot(sand, 0, SlotActionType.PICKUP);
                     }
-                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                } else {
-                    mod.getSlotHandler().clickSlot(sandInSlot, 0, SlotActionType.PICKUP);
                 }
             }
             if (mod.getItemStorage().hasItem(Items.FLINT) || mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                if (!hasGravel.isEmpty()) {
-                    Slot gravelInSlot = hasGravel.get(0);
-                    if (Slot.isCursor(gravelInSlot)) {
+                if (!gravels.isEmpty()) {
+                    for (Slot gravel : gravels) {
+                        if (Slot.isCursor(gravel)) {
+                            if (!mod.getControllerExtras().isBreakingBlock()) {
+                                LookHelper.randomOrientation(mod);
+                            }
+                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        } else {
+                            mod.getSlotHandler().clickSlot(gravel, 0, SlotActionType.PICKUP);
+                        }
+                    }
+                }
+            }
+            if (!torches.isEmpty()) {
+                for (Slot torch : torches) {
+                    if (Slot.isCursor(torch)) {
                         if (!mod.getControllerExtras().isBreakingBlock()) {
                             LookHelper.randomOrientation(mod);
                         }
                         mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
                     } else {
-                        mod.getSlotHandler().clickSlot(gravelInSlot, 0, SlotActionType.PICKUP);
+                        mod.getSlotHandler().clickSlot(torch, 0, SlotActionType.PICKUP);
                     }
-                }
-            }
-            if (!hastorch.isEmpty()) {
-                Slot torchinslot = hastorch.get(0);
-                if (Slot.isCursor(torchinslot)) {
-                    if (!mod.getControllerExtras().isBreakingBlock()) {
-                        LookHelper.randomOrientation(mod);
-                    }
-                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                } else {
-                    mod.getSlotHandler().clickSlot(torchinslot, 0, SlotActionType.PICKUP);
                 }
             }
             if (mod.getItemStorage().getItemCount(Items.WATER_BUCKET) > 1) {
-                if (!excessWaterBucket.isEmpty()) {
-                    Slot waterBucketInSlot = excessWaterBucket.get(0);
-                    if (Slot.isCursor(waterBucketInSlot)) {
-                        if (!mod.getControllerExtras().isBreakingBlock()) {
-                            LookHelper.randomOrientation(mod);
+                if (!excessWaterBuckets.isEmpty()) {
+                    for (Slot excessWaterBucket : excessWaterBuckets) {
+                        if (Slot.isCursor(excessWaterBucket)) {
+                            if (!mod.getControllerExtras().isBreakingBlock()) {
+                                LookHelper.randomOrientation(mod);
+                            }
+                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        } else {
+                            mod.getSlotHandler().clickSlot(excessWaterBucket, 0, SlotActionType.PICKUP);
                         }
-                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                    } else {
-                        mod.getSlotHandler().clickSlot(waterBucketInSlot, 0, SlotActionType.PICKUP);
                     }
                 }
             }
             if (mod.getItemStorage().getItemCount(Items.FLINT_AND_STEEL) > 1) {
-                if (!excessLighter.isEmpty()) {
-                    Slot lighterInSlot = excessLighter.get(0);
-                    if (Slot.isCursor(lighterInSlot)) {
-                        if (!mod.getControllerExtras().isBreakingBlock()) {
-                            LookHelper.randomOrientation(mod);
+                if (!excessLighters.isEmpty()) {
+                    for (Slot excessLighter : excessLighters) {
+                        if (Slot.isCursor(excessLighter)) {
+                            if (!mod.getControllerExtras().isBreakingBlock()) {
+                                LookHelper.randomOrientation(mod);
+                            }
+                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        } else {
+                            mod.getSlotHandler().clickSlot(excessLighter, 0, SlotActionType.PICKUP);
                         }
-                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                    } else {
-                        mod.getSlotHandler().clickSlot(lighterInSlot, 0, SlotActionType.PICKUP);
                     }
                 }
             }
             if (mod.getItemStorage().getItemCount(ItemHelper.BED) > getTargetBeds(mod) &&
                     !endPortalFound(mod, _endPortalCenterLocation) && WorldHelper.getCurrentDimension() != Dimension.END) {
-                if (!hasbed.isEmpty()) {
-                    Slot bedinslot = hasbed.get(0);
-                    if (Slot.isCursor(bedinslot)) {
-                        if (!mod.getControllerExtras().isBreakingBlock()) {
-                            LookHelper.randomOrientation(mod);
+                if (!beds.isEmpty()) {
+                    for (Slot bed : beds) {
+                        if (Slot.isCursor(bed)) {
+                            if (!mod.getControllerExtras().isBreakingBlock()) {
+                                LookHelper.randomOrientation(mod);
+                            }
+                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        } else {
+                            mod.getSlotHandler().clickSlot(bed, 0, SlotActionType.PICKUP);
                         }
-                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                    } else {
-                        mod.getSlotHandler().clickSlot(bedinslot, 0, SlotActionType.PICKUP);
                     }
                 }
             }
@@ -773,8 +775,8 @@ public class MarvionBeatMinecraftTask extends Task {
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
             if (_config.renderDistanceManipulation) {
-                MinecraftClient.getInstance().options.getViewDistance().setValue(12);
-                MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                getInstance().options.getViewDistance().setValue(12);
+                getInstance().options.getEntityDistanceScaling().setValue(1.0);
             }
             // If we have bed, do bed strats, otherwise punk normally.
             updateCachedEndItems(mod);
@@ -916,18 +918,16 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (_config.renderDistanceManipulation && mod.getItemStorage().hasItem(ItemHelper.BED)) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
-                            MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                            MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                            getInstance().options.getViewDistance().setValue(2);
+                            getInstance().options.getEntityDistanceScaling().setValue(0.5);
                             _timer1.reset();
                         }
-                    } else {
-                        _timer1.reset();
                     }
                 }
                 if (_timer2.elapsed()) {
                     _timer2.reset();
                 }
-                if (_timer2.getDuration() > 29) {
+                if (_timer2.getDuration() >= 30) {
                     if (mod.getEntityTracker().itemDropped(ItemHelper.BED) && needsBeds(mod)) {
                         setDebugState("Resetting sleep through night task.");
                         return new PickupDroppedItemTask(new ItemTarget(ItemHelper.BED), true);
@@ -939,8 +939,6 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
                 setDebugState("Sleeping through night");
                 return _sleepThroughNightTask;
-            } else {
-                _timer2.reset();
             }
             if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
                 if (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
@@ -956,12 +954,10 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (_config.renderDistanceManipulation) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
-                            MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                            MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                            getInstance().options.getViewDistance().setValue(2);
+                            getInstance().options.getEntityDistanceScaling().setValue(0.5);
                             _timer1.reset();
                         }
-                    } else {
-                        _timer1.reset();
                     }
                 }
                 getBedTask = getBedTask(mod);
@@ -990,35 +986,37 @@ public class MarvionBeatMinecraftTask extends Task {
         switch (WorldHelper.getCurrentDimension()) {
             case OVERWORLD -> {
                 if (mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) {
-                    Item[] throwGear = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
-                    List<Slot> hasIronArmor = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                    Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
+                    List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                             COLLECT_IRON_ARMOR);
-                    List<Slot> hasThrowGear = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
-                            throwGear);
+                    List<Slot> throwGears = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                            throwGearItems);
                     if (!StorageHelper.isBigCraftingOpen() && !StorageHelper.isFurnaceOpen() &&
                             !StorageHelper.isSmokerOpen() && !StorageHelper.isBlastFurnaceOpen() &&
                             (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) ||
                                     mod.getItemStorage().hasItem(Items.FIRE_CHARGE))) {
-                        if (!hasThrowGear.isEmpty()) {
-                            Slot throwGearInSlot = hasThrowGear.get(0);
-                            if (Slot.isCursor(throwGearInSlot)) {
-                                if (!mod.getControllerExtras().isBreakingBlock()) {
-                                    LookHelper.randomOrientation(mod);
+                        if (!throwGears.isEmpty()) {
+                            for (Slot throwGear : throwGears) {
+                                if (Slot.isCursor(throwGear)) {
+                                    if (!mod.getControllerExtras().isBreakingBlock()) {
+                                        LookHelper.randomOrientation(mod);
+                                    }
+                                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                                } else {
+                                    mod.getSlotHandler().clickSlot(throwGear, 0, SlotActionType.PICKUP);
                                 }
-                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                            } else {
-                                mod.getSlotHandler().clickSlot(throwGearInSlot, 0, SlotActionType.PICKUP);
                             }
                         }
-                        if (!hasIronArmor.isEmpty()) {
-                            Slot ironArmorInSlot = hasIronArmor.get(0);
-                            if (Slot.isCursor(ironArmorInSlot)) {
-                                if (!mod.getControllerExtras().isBreakingBlock()) {
-                                    LookHelper.randomOrientation(mod);
+                        if (!ironArmors.isEmpty()) {
+                            for (Slot ironArmor : ironArmors) {
+                                if (Slot.isCursor(ironArmor)) {
+                                    if (!mod.getControllerExtras().isBreakingBlock()) {
+                                        LookHelper.randomOrientation(mod);
+                                    }
+                                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                                } else {
+                                    mod.getSlotHandler().clickSlot(ironArmor, 0, SlotActionType.PICKUP);
                                 }
-                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                            } else {
-                                mod.getSlotHandler().clickSlot(ironArmorInSlot, 0, SlotActionType.PICKUP);
                             }
                         }
                     }
@@ -1071,13 +1069,11 @@ public class MarvionBeatMinecraftTask extends Task {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
                                 if (_config.renderDistanceManipulation) {
-                                    MinecraftClient.getInstance().options.getViewDistance().setValue(32);
-                                    MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                                    getInstance().options.getViewDistance().setValue(32);
+                                    getInstance().options.getEntityDistanceScaling().setValue(5.0);
                                 }
                                 _timer1.reset();
                             }
-                        } else {
-                            _timer1.reset();
                         }
                         getBedTask = getBedTask(mod);
                         return getBedTask;
@@ -1102,35 +1098,37 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
             }
             case NETHER -> {
-                Item[] throwGear = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
-                List<Slot> hasIronArmor = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
+                List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                         COLLECT_IRON_ARMOR);
-                List<Slot> hasThrowGear = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
-                        throwGear);
+                List<Slot> throwGears = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                        throwGearItems);
                 if (!StorageHelper.isBigCraftingOpen() && !StorageHelper.isFurnaceOpen() &&
                         !StorageHelper.isSmokerOpen() && !StorageHelper.isBlastFurnaceOpen() &&
                         (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) ||
                                 mod.getItemStorage().hasItem(Items.FIRE_CHARGE))) {
-                    if (!hasThrowGear.isEmpty()) {
-                        Slot throwGearInSlot = hasThrowGear.get(0);
-                        if (Slot.isCursor(throwGearInSlot)) {
-                            if (!mod.getControllerExtras().isBreakingBlock()) {
-                                LookHelper.randomOrientation(mod);
+                    if (!throwGears.isEmpty()) {
+                        for (Slot throwGear : throwGears) {
+                            if (Slot.isCursor(throwGear)) {
+                                if (!mod.getControllerExtras().isBreakingBlock()) {
+                                    LookHelper.randomOrientation(mod);
+                                }
+                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                            } else {
+                                mod.getSlotHandler().clickSlot(throwGear, 0, SlotActionType.PICKUP);
                             }
-                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                        } else {
-                            mod.getSlotHandler().clickSlot(throwGearInSlot, 0, SlotActionType.PICKUP);
                         }
                     }
-                    if (!hasIronArmor.isEmpty()) {
-                        Slot ironArmorInSlot = hasIronArmor.get(0);
-                        if (Slot.isCursor(ironArmorInSlot)) {
-                            if (!mod.getControllerExtras().isBreakingBlock()) {
-                                LookHelper.randomOrientation(mod);
+                    if (!ironArmors.isEmpty()) {
+                        for (Slot ironArmor : ironArmors) {
+                            if (Slot.isCursor(ironArmor)) {
+                                if (!mod.getControllerExtras().isBreakingBlock()) {
+                                    LookHelper.randomOrientation(mod);
+                                }
+                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                            } else {
+                                mod.getSlotHandler().clickSlot(ironArmor, 0, SlotActionType.PICKUP);
                             }
-                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                        } else {
-                            mod.getSlotHandler().clickSlot(ironArmorInSlot, 0, SlotActionType.PICKUP);
                         }
                     }
                 }
@@ -1329,8 +1327,6 @@ public class MarvionBeatMinecraftTask extends Task {
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
                                 _timer1.reset();
                             }
-                        } else {
-                            _timer1.reset();
                         }
                     }
                     getBedTask = getBedTask(mod);
@@ -1382,8 +1378,6 @@ public class MarvionBeatMinecraftTask extends Task {
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
                                 _timer1.reset();
                             }
-                        } else {
-                            _timer1.reset();
                         }
                     }
                     return _smeltTask;
@@ -1474,8 +1468,6 @@ public class MarvionBeatMinecraftTask extends Task {
                                 MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
                                 _timer1.reset();
                             }
-                        } else {
-                            _timer1.reset();
                         }
                     }
                     searchBiomeTask = new SearchWithinBiomeTask(BiomeKeys.PLAINS);
@@ -1558,35 +1550,37 @@ public class MarvionBeatMinecraftTask extends Task {
                     return _gearTask;
                 } else {
                     _gearTask = null;
-                    Item[] throwGear = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
-                    List<Slot> hasIronArmor = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                    Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
+                    List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                             COLLECT_IRON_ARMOR);
-                    List<Slot> hasThrowGear = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
-                            throwGear);
+                    List<Slot> throwGears = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
+                            throwGearItems);
                     if (!StorageHelper.isBigCraftingOpen() && !StorageHelper.isFurnaceOpen() &&
                             !StorageHelper.isSmokerOpen() && !StorageHelper.isBlastFurnaceOpen() &&
                             (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) ||
                                     mod.getItemStorage().hasItem(Items.FIRE_CHARGE))) {
-                        if (!hasThrowGear.isEmpty()) {
-                            Slot throwGearInSlot = hasThrowGear.get(0);
-                            if (Slot.isCursor(throwGearInSlot)) {
-                                if (!mod.getControllerExtras().isBreakingBlock()) {
-                                    LookHelper.randomOrientation(mod);
+                        if (!throwGears.isEmpty()) {
+                            for (Slot throwGear : throwGears) {
+                                if (Slot.isCursor(throwGear)) {
+                                    if (!mod.getControllerExtras().isBreakingBlock()) {
+                                        LookHelper.randomOrientation(mod);
+                                    }
+                                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                                } else {
+                                    mod.getSlotHandler().clickSlot(throwGear, 0, SlotActionType.PICKUP);
                                 }
-                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                            } else {
-                                mod.getSlotHandler().clickSlot(throwGearInSlot, 0, SlotActionType.PICKUP);
                             }
                         }
-                        if (!hasIronArmor.isEmpty()) {
-                            Slot ironArmorInSlot = hasIronArmor.get(0);
-                            if (Slot.isCursor(ironArmorInSlot)) {
-                                if (!mod.getControllerExtras().isBreakingBlock()) {
-                                    LookHelper.randomOrientation(mod);
+                        if (!ironArmors.isEmpty()) {
+                            for (Slot ironArmor : ironArmors) {
+                                if (Slot.isCursor(ironArmor)) {
+                                    if (!mod.getControllerExtras().isBreakingBlock()) {
+                                        LookHelper.randomOrientation(mod);
+                                    }
+                                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                                } else {
+                                    mod.getSlotHandler().clickSlot(ironArmor, 0, SlotActionType.PICKUP);
                                 }
-                                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                            } else {
-                                mod.getSlotHandler().clickSlot(ironArmorInSlot, 0, SlotActionType.PICKUP);
                             }
                         }
                     }

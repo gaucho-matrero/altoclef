@@ -32,15 +32,17 @@ public abstract class GoalRunAwayFromEntities implements Goal {
     public boolean isInGoal(int x, int y, int z) {
         List<Entity> entities = getEntities(_mod);
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            for (Entity entity : entities) {
-                if (entity == null || !entity.isAlive()) continue;
-                double sqDistance;
-                if (_xzOnly) {
-                    sqDistance = entity.getPos().subtract(x, y, z).multiply(1, 0, 1).lengthSquared();
-                } else {
-                    sqDistance = entity.squaredDistanceTo(x, y, z);
+            if (!entities.isEmpty()) {
+                for (Entity entity : entities) {
+                    if (entity == null || !entity.isAlive()) continue;
+                    double sqDistance;
+                    if (_xzOnly) {
+                        sqDistance = entity.getPos().subtract(x, y, z).multiply(1, 0, 1).lengthSquared();
+                    } else {
+                        sqDistance = entity.squaredDistanceTo(x, y, z);
+                    }
+                    if (sqDistance < _distance * _distance) return false;
                 }
-                if (sqDistance < _distance * _distance) return false;
             }
         }
         return true;
@@ -54,18 +56,20 @@ public abstract class GoalRunAwayFromEntities implements Goal {
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             int max = 10; // If we have 100 players, this will never calculate.
             int counter = 0;
-            for (Entity entity : entities) {
-                counter++;
-                if (entity == null || !entity.isAlive()) continue;
-                double cost = getCostOfEntity(entity, x, y, z);
-                if (cost != 0) {
-                    // We want the CLOSER entities to have a bigger weight than the further ones.
-                    costSum += 1 / cost;
-                } else {
-                    // Bad >:(
-                    costSum += 1000;
+            if (!entities.isEmpty()) {
+                for (Entity entity : entities) {
+                    counter++;
+                    if (entity == null || !entity.isAlive()) continue;
+                    double cost = getCostOfEntity(entity, x, y, z);
+                    if (cost != 0) {
+                        // We want the CLOSER entities to have a bigger weight than the further ones.
+                        costSum += 1 / cost;
+                    } else {
+                        // Bad >:(
+                        costSum += 1000;
+                    }
+                    if (counter >= max) break;
                 }
-                if (counter >= max) break;
             }
             if (counter > 0) {
                 costSum /= counter;

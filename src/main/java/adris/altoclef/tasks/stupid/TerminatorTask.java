@@ -320,22 +320,24 @@ public class TerminatorTask extends Task {
             if (_closestPlayerLastPos != null) {
                 double lowestScore = Double.POSITIVE_INFINITY;
                 ChunkPos bestChunk = null;
-                for (ChunkPos toSearch : chunks) {
-                    double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
-                    double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
-                    double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
-                    double pdx = _closestPlayerLastPos.getX() - cx, pdz = _closestPlayerLastPos.getZ() - cz;
-                    double distanceToLastPlayerPos = pdx * pdx + pdz * pdz;
-                    Vec3d direction = _closestPlayerLastPos.subtract(_closestPlayerLastObservePos).multiply(1, 0, 1).normalize();
-                    double dirx = direction.x, dirz = direction.z;
-                    double correctDistance = pdx * dirx + pdz * dirz;
-                    double tempX = dirx * correctDistance,
-                            tempZ = dirz * correctDistance;
-                    double perpendicularDistance = ((pdx - tempX) * (pdx - tempX)) + ((pdz - tempZ) * (pdz - tempZ));
-                    double score = distanceSq + distanceToLastPlayerPos * 0.6 - correctDistance * 2 + perpendicularDistance * 0.5;
-                    if (score < lowestScore) {
-                        lowestScore = score;
-                        bestChunk = toSearch;
+                if (!chunks.isEmpty()) {
+                    for (ChunkPos toSearch : chunks) {
+                        double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
+                        double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
+                        double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
+                        double pdx = _closestPlayerLastPos.getX() - cx, pdz = _closestPlayerLastPos.getZ() - cz;
+                        double distanceToLastPlayerPos = pdx * pdx + pdz * pdz;
+                        Vec3d direction = _closestPlayerLastPos.subtract(_closestPlayerLastObservePos).multiply(1, 0, 1).normalize();
+                        double dirx = direction.x, dirz = direction.z;
+                        double correctDistance = pdx * dirx + pdz * dirz;
+                        double tempX = dirx * correctDistance,
+                                tempZ = dirz * correctDistance;
+                        double perpendicularDistance = ((pdx - tempX) * (pdx - tempX)) + ((pdz - tempZ) * (pdz - tempZ));
+                        double score = distanceSq + distanceToLastPlayerPos * 0.6 - correctDistance * 2 + perpendicularDistance * 0.5;
+                        if (score < lowestScore) {
+                            lowestScore = score;
+                            bestChunk = toSearch;
+                        }
                     }
                 }
                 return bestChunk;

@@ -71,6 +71,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+        mod.getBlockTracker().trackBlock(Blocks.FURNACE);
         mod.getBehaviour().push();
         if (_targets.length != 1) {
             Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
@@ -79,15 +80,14 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        List<BlockPos> furnacePos = mod.getBlockTracker().getKnownLocations(Blocks.FURNACE);
-        if (!furnacePos.isEmpty()) {
-            mod.getBehaviour().avoidBlockBreaking(furnacePos.get(0));
-        }
+        Optional<BlockPos> furnacePos = mod.getBlockTracker().getNearestTracking(Blocks.FURNACE);
+        furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
         return _doTask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
+        mod.getBlockTracker().stopTracking(Blocks.FURNACE);
         mod.getBehaviour().pop();
         // Close furnace screen
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();

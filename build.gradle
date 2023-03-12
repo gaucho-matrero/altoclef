@@ -1,7 +1,7 @@
 plugins {
     id "fabric-loom" version "1.1-SNAPSHOT"
     id "maven-publish"
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -56,7 +56,6 @@ dependencies {
 }
 shadowJar {
     configurations = [project.configurations.shadow]
-    classifier = 'shadow'
 }
 
 remapJar {
@@ -90,7 +89,6 @@ tasks.withType(JavaCompile) {
 // if it is present.
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
     from sourceSets.main.allSource
 }
 

@@ -90,11 +90,12 @@ public class SlotHandler {
         }
         List<Slot> currentItemSlot = _mod.getItemStorage().getSlotsWithItemPlayerInventory(false,
                 toEquip);
-        Slot itemInSlot = currentItemSlot.get(0);
-        if (!Slot.isCursor(itemInSlot)) {
-            _mod.getSlotHandler().clickSlot(itemInSlot, 0, SlotActionType.PICKUP);
-        } else {
-            _mod.getSlotHandler().clickSlot(PlayerSlot.OFFHAND_SLOT, 0, SlotActionType.PICKUP);
+        for (Slot CurrentItemSlot : currentItemSlot) {
+            if (!Slot.isCursor(CurrentItemSlot)) {
+                _mod.getSlotHandler().clickSlot(CurrentItemSlot, 0, SlotActionType.PICKUP);
+            } else {
+                _mod.getSlotHandler().clickSlot(PlayerSlot.OFFHAND_SLOT, 0, SlotActionType.PICKUP);
+            }
         }
     }
 
@@ -111,14 +112,14 @@ public class SlotHandler {
 
         List<Slot> itemSlots = _mod.getItemStorage().getSlotsWithItemScreen(toEquip);
         if (itemSlots.size() != 0) {
-            Slot slot = itemSlots.get(0);
-            int hotbar = 1;
-            //_mod.getPlayer().getInventory().swapSlotWithHotbar();
-            clickSlotForce(Objects.requireNonNull(slot), inCursor ? 0 : hotbar, inCursor ? SlotActionType.PICKUP : SlotActionType.SWAP);
-            //registerSlotAction();
+            for (Slot ItemSlots : itemSlots) {
+                int hotbar = 1;
+                //_mod.getPlayer().getInventory().swapSlotWithHotbar();
+                clickSlotForce(Objects.requireNonNull(ItemSlots), inCursor ? 0 : hotbar, inCursor ? SlotActionType.PICKUP : SlotActionType.SWAP);
+                //registerSlotAction();
+            }
             return true;
         }
-
         return false;
     }
 

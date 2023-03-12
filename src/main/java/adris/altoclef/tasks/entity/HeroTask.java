@@ -35,12 +35,14 @@ public class HeroTask extends Task {
         }
         assert MinecraftClient.getInstance().world != null;
         Iterable<Entity> hostiles = MinecraftClient.getInstance().world.getEntities();
-        for (Entity hostile : hostiles) {
-            if (hostile instanceof HostileEntity || hostile instanceof SlimeEntity) {
-                Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(hostile.getClass());
-                if (closestHostile.isPresent()) {
-                    setDebugState("Killing hostiles or picking hostile drops.");
-                    return new KillAndLootTask(hostile.getClass(), new ItemTarget(ItemHelper.HOSTILE_MOB_DROPS));
+        if (hostiles != null) {
+            for (Entity hostile : hostiles) {
+                if (hostile instanceof HostileEntity || hostile instanceof SlimeEntity) {
+                    Optional<Entity> closestHostile = mod.getEntityTracker().getClosestEntity(hostile.getClass());
+                    if (closestHostile.isPresent()) {
+                        setDebugState("Killing hostiles or picking hostile drops.");
+                        return new KillAndLootTask(hostile.getClass(), new ItemTarget(ItemHelper.HOSTILE_MOB_DROPS));
+                    }
                 }
             }
         }

@@ -94,7 +94,9 @@ public class ReplaceBlocksTask extends Task {
         if (!mod.getItemStorage().hasItem(_toReplace.getMatches())) {
             List<BlockPos> locations = mod.getBlockTracker().getKnownLocations(_toFind);
             int need = 0;
-            for (BlockPos loc : locations) if (isWithinRange(loc) && need < MAX_MATERIALS_NEEDED_AT_A_TIME) need++;
+            if (!locations.isEmpty()) {
+                for (BlockPos loc : locations) if (isWithinRange(loc) && need < MAX_MATERIALS_NEEDED_AT_A_TIME) need++;
+            }
             if (need == 0) {
                 setDebugState("No replaceable blocks found, wandering.");
                 return new TimeoutWanderTask();

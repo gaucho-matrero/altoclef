@@ -136,25 +136,26 @@ public class StorageHelper {
         //  }
         Slot bestToolSlot = null;
         double highestSpeed = Double.NEGATIVE_INFINITY;
-
-        for (Slot slot : Slot.getCurrentScreenSlots()) {
-            if (!slot.isSlotInPlayerInventory())
-                continue;
-            ItemStack stack = getItemStackInSlot(slot);
-            if (stack.getItem() instanceof ToolItem) {
-                if (stack.getItem().isSuitableFor(state)) {
-                    double speed = ToolSet.calculateSpeedVsBlock(stack, state);
-                    if (speed > highestSpeed) {
-                        highestSpeed = speed;
-                        bestToolSlot = slot;
+        if (Slot.getCurrentScreenSlots() != null) {
+            for (Slot slot : Slot.getCurrentScreenSlots()) {
+                if (!slot.isSlotInPlayerInventory())
+                    continue;
+                ItemStack stack = getItemStackInSlot(slot);
+                if (stack.getItem() instanceof ToolItem) {
+                    if (stack.getItem().isSuitableFor(state)) {
+                        double speed = ToolSet.calculateSpeedVsBlock(stack, state);
+                        if (speed > highestSpeed) {
+                            highestSpeed = speed;
+                            bestToolSlot = slot;
+                        }
                     }
                 }
-            }
-            if (stack.getItem() == Items.SHEARS) {
-                // Shears take priority over leaf blocks.
-                if (ItemHelper.areShearsEffective(state.getBlock())) {
-                    bestToolSlot = slot;
-                    break;
+                if (stack.getItem() == Items.SHEARS) {
+                    // Shears take priority over leaf blocks.
+                    if (ItemHelper.areShearsEffective(state.getBlock())) {
+                        bestToolSlot = slot;
+                        break;
+                    }
                 }
             }
         }
@@ -166,47 +167,53 @@ public class StorageHelper {
         // Throwaway items, but keep a few for building.
         final List<Slot> throwawayBlockItems = new ArrayList<>();
         int totalBlockThrowaways = 0;
-        for (Slot slot : mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod))) {
-            // Our cursor slot is NOT a garbage slot
-            if (Slot.isCursor(slot))
-                continue;
-            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-            if (!ItemHelper.canThrowAwayStack(mod, stack))
-                continue;
-            if (stack.getItem() instanceof BlockItem) {
-                totalBlockThrowaways += stack.getCount();
-                throwawayBlockItems.add(slot);
-            } else {
-                // Throw away this non-block immediately.
-                return Optional.of(slot);
+        if (!mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod)).isEmpty()) {
+            for (Slot slot : mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod))) {
+                // Our cursor slot is NOT a garbage slot
+                if (Slot.isCursor(slot))
+                    continue;
+                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                if (!ItemHelper.canThrowAwayStack(mod, stack))
+                    continue;
+                if (stack.getItem() instanceof BlockItem) {
+                    totalBlockThrowaways += stack.getCount();
+                    throwawayBlockItems.add(slot);
+                } else {
+                    // Throw away this non-block immediately.
+                    return Optional.of(slot);
+                }
             }
         }
         if (!throwawayBlockItems.isEmpty() && totalBlockThrowaways > mod.getModSettings().getReservedBuildingBlockCount()) {
-            return Optional.of(throwawayBlockItems.get(0));
+            for (Slot throwawayBlockItem : throwawayBlockItems) {
+                return Optional.ofNullable(throwawayBlockItem);
+            }
         }
 
         // Try throwing away lower tier tools
         final HashMap<Class, Integer> bestMaterials = new HashMap<>();
         final HashMap<Class, Slot> bestTool = new HashMap<>();
-        for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
-            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-            if (!ItemHelper.canThrowAwayStack(mod, stack))
-                continue;
-            Item item = stack.getItem();
-            if (item instanceof ToolItem tool) {
-                Class c = tool.getClass();
-                int level = tool.getMaterial().getMiningLevel();
-                int prevBest = bestMaterials.getOrDefault(c, 0);
-                if (level > prevBest) {
-                    // We had a WORSE tool before.
-                    if (bestTool.containsKey(c)) {
-                        return Optional.of(bestTool.get(c));
+        if (PlayerSlot.getCurrentScreenSlots() != null) {
+            for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
+                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                if (!ItemHelper.canThrowAwayStack(mod, stack))
+                    continue;
+                Item item = stack.getItem();
+                if (item instanceof ToolItem tool) {
+                    Class c = tool.getClass();
+                    int level = tool.getMaterial().getMiningLevel();
+                    int prevBest = bestMaterials.getOrDefault(c, 0);
+                    if (level > prevBest) {
+                        // We had a WORSE tool before.
+                        if (bestTool.containsKey(c)) {
+                            return Optional.of(bestTool.get(c));
+                        }
+                        bestMaterials.put(c, level);
+                        bestTool.put(c, slot);
+                    } else if (level < prevBest) {
+                        // We found something WORSE!
+                        return Optional.of(slot);
                     }
-                    bestMaterials.put(c, level);
-                    bestTool.put(c, slot);
-                } else if (level < prevBest) {
-                    // We found something WORSE!
-                    return Optional.of(slot);
                 }
             }
         }
@@ -219,21 +226,23 @@ public class StorageHelper {
 
             // Get all non-important items. For now there is no measure of value.
             final List<Slot> possibleSlots = new ArrayList<>();
-            for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
-                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-                // If we're an armor slot, don't count us.
-                if (slot instanceof PlayerSlot playerSlot) {
-                    if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot) ||
-                            playerSlot.getWindowSlot() == PlayerSlot.OFFHAND_SLOT.getWindowSlot()) {
-                        continue;
+            if (PlayerSlot.getCurrentScreenSlots() != null) {
+                for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
+                    ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                    // If we're an armor slot, don't count us.
+                    if (slot instanceof PlayerSlot playerSlot) {
+                        if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot) ||
+                                playerSlot.getWindowSlot() == PlayerSlot.OFFHAND_SLOT.getWindowSlot()) {
+                            continue;
+                        }
                     }
-                }
-                // Throw away-able slots are good!
-                if (ItemHelper.canThrowAwayStack(mod, stack)) {
-                    possibleSlots.add(slot);
-                }
-                if (stack.getItem().isFood()) {
-                    calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
+                    // Throw away-able slots are good!
+                    if (ItemHelper.canThrowAwayStack(mod, stack)) {
+                        possibleSlots.add(slot);
+                    }
+                    if (stack.getItem().isFood()) {
+                        calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
+                    }
                 }
             }
 
@@ -376,18 +385,22 @@ public class StorageHelper {
 
     public static int calculateInventoryFoodScore(AltoClef mod) {
         int result = 0;
-        for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
-            if (stack.isFood())
-                result += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
+        if (!mod.getItemStorage().getItemStacksPlayerInventory(true).isEmpty()) {
+            for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
+                if (stack.isFood())
+                    result += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
+            }
         }
         return result;
     }
 
     public static double calculateInventoryFuelCount(AltoClef mod) {
         double result = 0;
-        for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
-            if (mod.getModSettings().isSupportedFuel(stack.getItem())) {
-                result += ItemHelper.getFuelAmount(stack.getItem()) * stack.getCount();
+        if (!mod.getItemStorage().getItemStacksPlayerInventory(true).isEmpty()) {
+            for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
+                if (mod.getModSettings().isSupportedFuel(stack.getItem())) {
+                    result += ItemHelper.getFuelAmount(stack.getItem()) * stack.getCount();
+                }
             }
         }
         return result;
@@ -436,19 +449,21 @@ public class StorageHelper {
 
                     // Try to satisfy THIS slot.
                     boolean satisfied = false;
-                    for (Slot checkSlot : slotsWithItem) {
-                        int windowSlot = checkSlot.getWindowSlot();
-                        if (!slotUsedCounts.containsKey(windowSlot)) {
-                            slotUsedCounts.put(windowSlot, 0);
-                        }
-                        int usedFromSlot = slotUsedCounts.get(windowSlot);
-                        ItemStack stack = StorageHelper.getItemStackInSlot(checkSlot);
+                    if (!slotsWithItem.isEmpty()) {
+                        for (Slot checkSlot : slotsWithItem) {
+                            int windowSlot = checkSlot.getWindowSlot();
+                            if (!slotUsedCounts.containsKey(windowSlot)) {
+                                slotUsedCounts.put(windowSlot, 0);
+                            }
+                            int usedFromSlot = slotUsedCounts.get(windowSlot);
+                            ItemStack stack = StorageHelper.getItemStackInSlot(checkSlot);
 
-                        if (usedFromSlot < stack.getCount()) {
-                            slotUsedCounts.put(windowSlot, slotUsedCounts.get(windowSlot) + 1);
-                            //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
-                            satisfied = true;
-                            break;
+                            if (usedFromSlot < stack.getCount()) {
+                                slotUsedCounts.put(windowSlot, slotUsedCounts.get(windowSlot) + 1);
+                                //Debug.logMessage("Satisfied " + slot + " with " + checkInvSlot);
+                                satisfied = true;
+                                break;
+                            }
                         }
                     }
 
@@ -588,24 +603,28 @@ public class StorageHelper {
 
     public static ItemTarget[] getAllInventoryItemsAsTargets(Predicate<Slot> accept) {
         HashMap<Item, Integer> counts = new HashMap<>();
-        for (Slot slot : Slot.getCurrentScreenSlots()) {
-            if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
-                ItemStack stack = getItemStackInSlot(slot);
-                if (!stack.isEmpty()) {
-                    counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
+        if (Slot.getCurrentScreenSlots() != null) {
+            for (Slot slot : Slot.getCurrentScreenSlots()) {
+                if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
+                    ItemStack stack = getItemStackInSlot(slot);
+                    if (!stack.isEmpty()) {
+                        counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
+                    }
                 }
             }
         }
         ItemTarget[] results = new ItemTarget[counts.size()];
         int i = 0;
-        for (Item item : counts.keySet()) {
-            results[i++] = new ItemTarget(item, counts.get(item));
+        if (!counts.keySet().isEmpty()) {
+            for (Item item : counts.keySet()) {
+                results[i++] = new ItemTarget(item, counts.get(item));
+            }
         }
         return results;
     }
 
     public static void instantFillRecipeViaBook(AltoClef mod, CraftingRecipe recipe, Item output, boolean craftAll) {
-        Optional<Recipe> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(recipe, output);
+        Optional<Recipe<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(recipe, output);
         if (recipeToSend.isPresent()) {
             mod.getController().clickRecipe(MinecraftClient.getInstance().player.currentScreenHandler.syncId, recipeToSend.get(), craftAll);
         } else {

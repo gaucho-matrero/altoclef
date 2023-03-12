@@ -68,9 +68,11 @@ public class CraftInInventoryTask extends ResourceTask {
         if (StorageHelper.isPlayerInventoryOpen()) {
             if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
                 Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
-                for (ItemTarget target : _itemTargets) {
-                    if (target.matches(outputItem)) {
-                        return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                if (_itemTargets != null) {
+                    for (ItemTarget target : _itemTargets) {
+                        if (target.matches(outputItem)) {
+                            return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                        }
                     }
                 }
             }
@@ -98,7 +100,9 @@ public class CraftInInventoryTask extends ResourceTask {
         if (!cursorStack.isEmpty()) {
             List<Slot> moveTo = mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(cursorStack, false);
             if (!moveTo.isEmpty()) {
-                mod.getSlotHandler().clickSlot(moveTo.get(0), 0, SlotActionType.PICKUP);
+                for (Slot MoveTo : moveTo) {
+                    mod.getSlotHandler().clickSlot(MoveTo, 0, SlotActionType.PICKUP);
+                }
             } else {
                 Optional<Slot> garbageSlot = StorageHelper.getGarbageSlot(mod);
                 if (garbageSlot.isPresent()) {

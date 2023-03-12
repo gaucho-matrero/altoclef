@@ -26,6 +26,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Build a nether portal by casting each piece with water + lava.
@@ -301,16 +302,19 @@ public class ConstructNetherPortalBucketTask extends Task {
         HashSet<BlockPos> alreadyExplored = new HashSet<>();
         double nearestSqDistance = Double.POSITIVE_INFINITY;
         BlockPos nearestLake = null;
-        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.LAVA)) {
-            if (alreadyExplored.contains(pos)) continue;
-            double sqDist = playerPos.getSquaredDistance(pos);
-            if (sqDist < nearestSqDistance) {
-                int depth = getNumberOfBlocksAdjacent(alreadyExplored, pos);
-                if (depth != 0) {
-                    Debug.logMessage("Found with depth " + depth);
-                    if (depth >= 12) {
-                        nearestSqDistance = sqDist;
-                        nearestLake = pos;
+        List<BlockPos> lavas = mod.getBlockTracker().getKnownLocations(Blocks.LAVA);
+        if (!lavas.isEmpty()) {
+            for (BlockPos pos : lavas) {
+                if (alreadyExplored.contains(pos)) continue;
+                double sqDist = playerPos.getSquaredDistance(pos);
+                if (sqDist < nearestSqDistance) {
+                    int depth = getNumberOfBlocksAdjacent(alreadyExplored, pos);
+                    if (depth != 0) {
+                        Debug.logMessage("Found with depth " + depth);
+                        if (depth >= 12) {
+                            nearestSqDistance = sqDist;
+                            nearestLake = pos;
+                        }
                     }
                 }
             }

@@ -88,7 +88,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-
         if (!StorageHelper.miningRequirementMet(mod, _requirement)) {
             return new SatisfyMiningRequirementTask(_requirement);
         }
@@ -250,8 +249,10 @@ public class MineAndCollectTask extends ResourceTask {
             }
             if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();
-                for (ItemTarget target : _targets) {
-                    if (target.matches(item)) return true;
+                if (_targets != null) {
+                    for (ItemTarget target : _targets) {
+                        if (target.matches(item)) return true;
+                    }
                 }
                 return false;
             }

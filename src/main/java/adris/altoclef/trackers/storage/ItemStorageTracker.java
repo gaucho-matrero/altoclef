@@ -152,17 +152,17 @@ public class ItemStorageTracker extends Tracker {
      * Returns all slots in our player inventory containing any item given.
      */
     public List<Slot> getSlotsWithItemPlayerInventory(boolean includeCraftArmorOffhand, Item... items) {
-        List<Slot> result = _inventory.getSlotsWithItems(true, false, items);
+        List<Slot> results = _inventory.getSlotsWithItems(true, false, items);
         // Check other slots
         if (includeCraftArmorOffhand) {
             HashSet<Item> toCheck = new HashSet<>(Arrays.asList(items));
             for (Slot otherSlot : StorageHelper.INACCESSIBLE_PLAYER_SLOTS) {
                 if (toCheck.contains(StorageHelper.getItemStackInSlot(otherSlot).getItem())) {
-                    result.add(otherSlot);
+                    results.add(otherSlot);
                 }
             }
         }
-        return result;
+        return results;
     }
 
     public List<ItemStack> getItemStacksPlayerInventory(boolean includeCursorSlot) {
@@ -181,7 +181,12 @@ public class ItemStorageTracker extends Tracker {
 
     public Optional<Slot> getSlotThatCanFitInPlayerInventory(ItemStack stack, boolean acceptPartial) {
         List<Slot> slots = getSlotsThatCanFitInPlayerInventory(stack, acceptPartial);
-        return Optional.ofNullable(slots.isEmpty() ? null : slots.get(0));
+        if (!slots.isEmpty()) {
+            for (Slot slot : slots) {
+                return Optional.ofNullable(slot);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -196,7 +201,12 @@ public class ItemStorageTracker extends Tracker {
 
     public Optional<Slot> getSlotThatCanFitInOpenContainer(ItemStack stack, boolean acceptPartial) {
         List<Slot> slots = getSlotsThatCanFitInOpenContainer(stack, acceptPartial);
-        return Optional.ofNullable(slots.isEmpty() ? null : slots.get(0));
+        if (!slots.isEmpty()) {
+            for (Slot slot : slots) {
+                return Optional.ofNullable(slot);
+            }
+        }
+        return Optional.empty();
     }
 
     /**

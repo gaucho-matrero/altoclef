@@ -253,7 +253,6 @@ public class PlaceBlockNearbyTask extends Task {
         double smallestScore = Double.POSITIVE_INFINITY;
         BlockPos start = mod.getPlayer().getBlockPos().add(-range, -range, -range);
         BlockPos end = mod.getPlayer().getBlockPos().add(range, range, range);
-
         for (BlockPos blockPos : WorldHelper.scanRegion(mod, start, end)) {
             boolean solid = WorldHelper.isSolid(mod, blockPos);
             boolean inside = WorldHelper.isInsidePlayer(mod, blockPos);

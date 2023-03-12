@@ -593,8 +593,10 @@ public class Settings implements IFailableConfigFile {
     }
 
     public boolean isPositionExplicitlyProtected(BlockPos pos) {
-        for (BlockRange protection : areasToProtect) {
-            if (protection.contains(pos)) return true;
+        if (!areasToProtect.isEmpty()) {
+            for (BlockRange protection : areasToProtect) {
+                if (protection.contains(pos)) return true;
+            }
         }
         return false;
     }

@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.List;
 import java.util.Optional;
 
 public class LocateStrongholdCoordinatesTask extends Task {
@@ -74,7 +75,12 @@ public class LocateStrongholdCoordinatesTask extends Task {
         if (mod.getEntityTracker().entityFound(EyeOfEnderEntity.class)) {
             if (_currentThrownEye == null || !_currentThrownEye.isAlive()) {
                 Debug.logMessage("New eye direction");
-                _currentThrownEye = mod.getEntityTracker().getTrackedEntities(EyeOfEnderEntity.class).get(0);
+                List<EyeOfEnderEntity> enderEyes = mod.getEntityTracker().getTrackedEntities(EyeOfEnderEntity.class);
+                if (!enderEyes.isEmpty()) {
+                    for (EyeOfEnderEntity enderEye : enderEyes) {
+                        _currentThrownEye = enderEye;
+                    }
+                }
                 if (_cachedEyeDirection2 != null) {
                     _cachedEyeDirection = null;
                     _cachedEyeDirection2 = null;

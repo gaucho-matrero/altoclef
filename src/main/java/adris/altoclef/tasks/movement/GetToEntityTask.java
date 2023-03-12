@@ -58,12 +58,14 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     }
 
     private boolean isAnnoying(AltoClef mod, BlockPos pos) {
-        for (Block AnnoyingBlocks : annoyingBlocks) {
-            return mod.getWorld().getBlockState(pos).getBlock() == AnnoyingBlocks ||
-                    mod.getWorld().getBlockState(pos).getBlock() instanceof DoorBlock ||
-                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock ||
-                    mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock ||
-                    mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
+        if (annoyingBlocks != null) {
+            for (Block AnnoyingBlocks : annoyingBlocks) {
+                return mod.getWorld().getBlockState(pos).getBlock() == AnnoyingBlocks ||
+                        mod.getWorld().getBlockState(pos).getBlock() instanceof DoorBlock ||
+                        mod.getWorld().getBlockState(pos).getBlock() instanceof FenceBlock ||
+                        mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock ||
+                        mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
+            }
         }
         return false;
     }

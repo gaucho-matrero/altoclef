@@ -190,13 +190,15 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
         public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> available) {
             if (x == 0 && y == 0 && z == 0) {
                 // Place!!
-                for (BlockState possible : available) {
-                    if (possible == null) continue;
-                    if (_useThrowaways && _mod.getClientBaritoneSettings().acceptableThrowawayItems.value.contains(possible.getBlock().asItem())) {
-                        return possible;
-                    }
-                    if (Arrays.asList(_toPlace).contains(possible.getBlock())) {
-                        return possible;
+                if (!available.isEmpty()) {
+                    for (BlockState possible : available) {
+                        if (possible == null) continue;
+                        if (_useThrowaways && _mod.getClientBaritoneSettings().acceptableThrowawayItems.value.contains(possible.getBlock().asItem())) {
+                            return possible;
+                        }
+                        if (Arrays.asList(_toPlace).contains(possible.getBlock())) {
+                            return possible;
+                        }
                     }
                 }
                 Debug.logInternal("Failed to find throwaway block");

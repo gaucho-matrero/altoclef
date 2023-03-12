@@ -61,10 +61,12 @@ public class CommandStatusOverlay {
                     dy += fontHeight + 2;
                 }
             } else {
-                for (Task task : tasks) {
-                    renderer.draw(stack, task.toString(), dx, dy, color);
-                    dx += 8;
-                    dy += fontHeight + 2;
+                if (!tasks.isEmpty()) {
+                    for (Task task : tasks) {
+                        renderer.draw(stack, task.toString(), dx, dy, color);
+                        dx += 8;
+                        dy += fontHeight + 2;
+                    }
                 }
             }
 

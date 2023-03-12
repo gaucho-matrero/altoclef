@@ -180,11 +180,14 @@ public interface WorldHelper {
     }
 
     static BlockPos getADesertTemple(AltoClef mod) {
-        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE)) {
-            if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
-                    mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
-                    mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
-                return pos;
+        List<BlockPos> stonePressurePlates = mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE);
+        if (!stonePressurePlates.isEmpty()) {
+            for (BlockPos pos : stonePressurePlates) {
+                if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
+                        mod.getWorld().getBlockState(pos.down()).getBlock() == Blocks.CUT_SANDSTONE &&
+                        mod.getWorld().getBlockState(pos.down(2)).getBlock() == Blocks.TNT) {
+                    return pos;
+                }
             }
         }
         return null;

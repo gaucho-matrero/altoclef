@@ -73,6 +73,7 @@ public class SmeltInSmokerTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+        mod.getBlockTracker().trackBlock(Blocks.SMOKER);
         mod.getBehaviour().push();
         if (_targets.length != 1) {
             Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
@@ -81,15 +82,14 @@ public class SmeltInSmokerTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        List<BlockPos> smokerPos = mod.getBlockTracker().getKnownLocations(Blocks.SMOKER);
-        if (!smokerPos.isEmpty()) {
-            mod.getBehaviour().avoidBlockBreaking(smokerPos.get(0));
-        }
+        Optional<BlockPos> smokerPos = mod.getBlockTracker().getNearestTracking(Blocks.SMOKER);
+        smokerPos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
         return _doTask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
+        mod.getBlockTracker().stopTracking(Blocks.SMOKER);
         mod.getBehaviour().pop();
         // Close smoker screen
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();

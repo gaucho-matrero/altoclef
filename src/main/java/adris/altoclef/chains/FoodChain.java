@@ -54,7 +54,6 @@ public class FoodChain extends SingleTaskChain {
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
-
     private void stopEat(AltoClef mod) {
         if (_isTryingToEat) {
             if (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) {
@@ -71,6 +70,10 @@ public class FoodChain extends SingleTaskChain {
             mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
+    }
+
+    public boolean isTryingToEat() {
+        return _isTryingToEat;
     }
 
     @Override

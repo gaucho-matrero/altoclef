@@ -147,14 +147,16 @@ public class ItemTarget {
         } else {
             result.append("[");
             int counter = 0;
-            for (Item item : _itemMatches) {
-                if (item == null) {
-                    result.append("(null??)");
-                } else {
-                    result.append(ItemHelper.trimItemName(item.getTranslationKey()));
-                }
-                if (++counter != _itemMatches.length) {
-                    result.append(",");
+            if (_itemMatches != null) {
+                for (Item item : _itemMatches) {
+                    if (item == null) {
+                        result.append("(null??)");
+                    } else {
+                        result.append(ItemHelper.trimItemName(item.getTranslationKey()));
+                    }
+                    if (++counter != _itemMatches.length) {
+                        result.append(",");
+                    }
                 }
             }
             result.append("]");

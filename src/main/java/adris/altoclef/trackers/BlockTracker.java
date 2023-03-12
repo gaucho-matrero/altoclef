@@ -102,8 +102,10 @@ public class BlockTracker extends Tracker {
     @Override
     protected void reset() {
         // Tasks will handle de-tracking blocks.
-        for (PosCache cache : _caches.values()) {
-            cache.clear();
+        if (!_caches.values().isEmpty()) {
+            for (PosCache cache : _caches.values()) {
+                cache.clear();
+            }
         }
     }
 
@@ -345,11 +347,13 @@ public class BlockTracker extends Tracker {
         }
 
         // Clear invalid block pos before rescan
-        for (BlockPos check : knownBlocks) {
-            if (!blockIsValid(check, blocksToScan)) {
-                //Debug.logInternal("Removed at " + check);
-                synchronized (_scanMutex) {
-                    currentCache().removeBlock(check, blocksToScan);
+        if (!knownBlocks.isEmpty()) {
+            for (BlockPos check : knownBlocks) {
+                if (!blockIsValid(check, blocksToScan)) {
+                    //Debug.logInternal("Removed at " + check);
+                    synchronized (_scanMutex) {
+                        currentCache().removeBlock(check, blocksToScan);
+                    }
                 }
             }
         }
@@ -360,12 +364,14 @@ public class BlockTracker extends Tracker {
 
         synchronized (_scanMutex) {
             if (MinecraftClient.getInstance().world != null) {
-                for (BlockPos pos : found) {
-                    Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
-                    synchronized (_trackingBlocks) {
-                        if (_trackingBlocks.containsKey(block)) {
-                            //Debug.logInternal("Good: " + block + " at " + pos);
-                            currentCache().addBlock(block, pos);
+                if (!found.isEmpty()) {
+                    for (BlockPos pos : found) {
+                        Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+                        synchronized (_trackingBlocks) {
+                            if (_trackingBlocks.containsKey(block)) {
+                                //Debug.logInternal("Good: " + block + " at " + pos);
+                                currentCache().addBlock(block, pos);
+                            }
                         }
                     }
                 }
@@ -527,8 +533,10 @@ public class BlockTracker extends Tracker {
 
         public int getBlockTrackCount() {
             int count = 0;
-            for (List<BlockPos> list : _cachedBlocks.values()) {
-                count += list.size();
+            if (!_cachedBlocks.values().isEmpty()) {
+                for (List<BlockPos> list : _cachedBlocks.values()) {
+                    count += list.size();
+                }
             }
             return count;
         }
@@ -556,42 +564,43 @@ public class BlockTracker extends Tracker {
             int toPurge = blockList.size() - _config.maxCacheSizePerBlockType;
 
             boolean closestPurged = false;
-
-            for (BlockPos pos : blockList) {
-                // If our current block isn't valid, fix it up. This cleans while we're iterating.
-                if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
-                    removeBlock(pos, blocks);
-                    continue;
-                }
-                if (!isValid.test(pos)) continue;
-
-                double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
-
-                boolean currentlyClosest = false;
-                boolean purged = false;
-
-                if (score < minScore) {
-                    minScore = score;
-                    closest = pos;
-                    currentlyClosest = true;
-                }
-
-                if (toPurge > 0) {
-                    double sqDist = position.squaredDistanceTo(WorldHelper.toVec3d(pos));
-                    if (sqDist > _config.cutoffDistance * _config.cutoffDistance) {
-                        // cut this one off.
-                        for (Block block : blocks) {
-                            if (_cachedBlocks.containsKey(block)) {
-                                removeBlock(pos, block);
-                            }
-                        }
-                        toPurge--;
-                        purged = true;
+            if (!blockList.isEmpty()) {
+                for (BlockPos pos : blockList) {
+                    // If our current block isn't valid, fix it up. This cleans while we're iterating.
+                    if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
+                        removeBlock(pos, blocks);
+                        continue;
                     }
-                }
+                    if (!isValid.test(pos)) continue;
 
-                if (currentlyClosest) {
-                    closestPurged = purged;
+                    double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
+
+                    boolean currentlyClosest = false;
+                    boolean purged = false;
+
+                    if (score < minScore) {
+                        minScore = score;
+                        closest = pos;
+                        currentlyClosest = true;
+                    }
+
+                    if (toPurge > 0) {
+                        double sqDist = position.squaredDistanceTo(WorldHelper.toVec3d(pos));
+                        if (sqDist > _config.cutoffDistance * _config.cutoffDistance) {
+                            // cut this one off.
+                            for (Block block : blocks) {
+                                if (_cachedBlocks.containsKey(block)) {
+                                    removeBlock(pos, block);
+                                }
+                            }
+                            toPurge--;
+                            purged = true;
+                        }
+                    }
+
+                    if (currentlyClosest) {
+                        closestPurged = purged;
+                    }
                 }
             }
 
@@ -625,14 +634,18 @@ public class BlockTracker extends Tracker {
                 if (_cachedByPosition.size() > MAX_CACHE_SIZE) {
                     List<BlockPos> toRemoveList = new ArrayList<>(_cachedByPosition.size() - MAX_CACHE_SIZE);
                     // Just purge randomly.
-                    for (BlockPos pos : _cachedByPosition.keySet()) {
-                        if (_cachedByPosition.size() - toRemoveList.size() < MAX_CACHE_SIZE) {
-                            break;
+                    if (!_cachedByPosition.keySet().isEmpty()) {
+                        for (BlockPos pos : _cachedByPosition.keySet()) {
+                            if (_cachedByPosition.size() - toRemoveList.size() < MAX_CACHE_SIZE) {
+                                break;
+                            }
+                            toRemoveList.add(pos);
                         }
-                        toRemoveList.add(pos);
                     }
-                    for (BlockPos toDelete : toRemoveList) {
-                        _cachedByPosition.remove(toDelete);
+                    if (!toRemoveList.isEmpty()) {
+                        for (BlockPos toDelete : toRemoveList) {
+                            _cachedByPosition.remove(toDelete);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -641,29 +654,30 @@ public class BlockTracker extends Tracker {
 
             // ^^^ TODO: Something about that feels fishy, particularly how it's disconnected from the _cachedBlocks purging.
             // I smell a dangerous edge case bug.
+            if (!_cachedBlocks.keySet().isEmpty()) {
+                for (Block block : _cachedBlocks.keySet()) {
+                    List<BlockPos> tracking = _cachedBlocks.get(block);
 
-            for (Block block : _cachedBlocks.keySet()) {
-                List<BlockPos> tracking = _cachedBlocks.get(block);
-
-                // Clear blacklisted blocks
-                try {
-                    // Untrack the blocks further away
-                    tracking = tracking.stream()
-                            .filter(pos -> !_blacklist.unreachable(pos))
-                            // This is invalid, because some blocks we may want to GO TO not BREAK.
-                            //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
-                            .distinct()
-                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos)))
-                            .collect(Collectors.toList());
-                    tracking = tracking.stream()
-                            .limit(_config.maxCacheSizePerBlockType)
-                            .collect(Collectors.toList());
-                    // This won't update otherwise.
-                    _cachedBlocks.put(block, tracking);
-                } catch (IllegalArgumentException e) {
-                    // Comparison method violates its general contract: Sometimes transitivity breaks.
-                    // In which case, ignore it.
-                    Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
+                    // Clear blacklisted blocks
+                    try {
+                        // Untrack the blocks further away
+                        tracking = tracking.stream()
+                                .filter(pos -> !_blacklist.unreachable(pos))
+                                // This is invalid, because some blocks we may want to GO TO not BREAK.
+                                //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
+                                .distinct()
+                                .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos)))
+                                .collect(Collectors.toList());
+                        tracking = tracking.stream()
+                                .limit(_config.maxCacheSizePerBlockType)
+                                .collect(Collectors.toList());
+                        // This won't update otherwise.
+                        _cachedBlocks.put(block, tracking);
+                    } catch (IllegalArgumentException e) {
+                        // Comparison method violates its general contract: Sometimes transitivity breaks.
+                        // In which case, ignore it.
+                        Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
+                    }
                 }
             }
         }
