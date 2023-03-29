@@ -139,8 +139,7 @@ public class FoodChain extends SingleTaskChain {
             _requestFillup = false;
         }
         if (hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
-                !mod.getMLGBucketChain().isChorusFruiting() && !mod.getPlayer().isBlocking() &&
-                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                !mod.getMLGBucketChain().isChorusFruiting() && !mod.getPlayer().isBlocking()) {
             Item toUse = _cachedPerfectFood.get();
             // Make sure we're not facing a container
             if (!LookHelper.tryAvoidingInteractable(mod)) {

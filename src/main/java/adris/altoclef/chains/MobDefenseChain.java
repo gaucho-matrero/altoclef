@@ -182,10 +182,8 @@ public class MobDefenseChain extends SingleTaskChain {
         if (blowingUp != null) {
             if (!mod.getFoodChain().needsToEat() && (mod.getItemStorage().hasItem(Items.SHIELD) ||
                     mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
-                    !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null &&
-                    mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                    !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null) {
                 _doingFunkyStuff = true;
-                mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
                 LookHelper.lookAt(mod, blowingUp.getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
@@ -206,9 +204,12 @@ public class MobDefenseChain extends SingleTaskChain {
             }
         }
         // Block projectiles with shield
+        PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
+        Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
         if (!mod.getFoodChain().needsToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod) &&
                 (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
-                !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null) {
+                !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null &&
+                !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
             ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
             if (shieldSlot.getItem() != Items.SHIELD) {
                 mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);

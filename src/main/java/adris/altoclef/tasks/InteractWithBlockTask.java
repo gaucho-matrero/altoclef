@@ -349,7 +349,7 @@ public class InteractWithBlockTask extends Task {
 
         // Don't interact if baritone can't interact.
         if (mod.getExtraBaritoneSettings().isInteractionPaused() || mod.getFoodChain().needsToEat() ||
-                mod.getPlayer().isBlocking() || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel())
+                mod.getPlayer().isBlocking())
             return ClickResponse.WAIT_FOR_CLICK;
 
         // We can't interact while a screen is open.

@@ -71,6 +71,8 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
+        PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
+        Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
         Optional<Entity> entities = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
         if (entities.isPresent() && mod.getPlayer().getHealth() >= 10 &&
                 !mod.getEntityTracker().entityFound(PotionEntity.class) && !mod.getFoodChain().needsToEat() &&
@@ -79,7 +81,7 @@ public class KillAura {
                         entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
                 !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
                 !mod.getMLGBucketChain().isChorusFruiting() &&
-                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
             if (entities.get().getClass() != CreeperEntity.class && entities.get().getClass() != HoglinEntity.class &&
                     entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
                     entities.get().getClass() != WitherEntity.class) {
@@ -111,8 +113,7 @@ public class KillAura {
                     performDelayedAttack(mod);
                 } else {
                     if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
-                            mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
-                            mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                            mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
                         // Attack force mobs ALWAYS.
                         if (_forceHit != null) {
                             attack(mod, _forceHit, true);
@@ -137,8 +138,7 @@ public class KillAura {
 
     private void performDelayedAttack(AltoClef mod) {
         if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
-                mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
-                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
             if (_forceHit != null) {
                 attack(mod, _forceHit, true);
             }
@@ -159,8 +159,7 @@ public class KillAura {
 
     private void performFastestAttack(AltoClef mod) {
         if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
-                mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting() &&
-                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
             // Just attack whenever you can
             for (Entity entity : _targets) {
                 attack(mod, entity);

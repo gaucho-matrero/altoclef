@@ -232,7 +232,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                         Blocks.SNOW ? new GoalBlock(_pos) : new GoalNear(_pos, 1));
             }
         }
-
         return null;
     }
 
