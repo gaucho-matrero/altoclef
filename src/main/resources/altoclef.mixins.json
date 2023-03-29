@@ -25,6 +25,7 @@
     "ClientTickMixin",
     "EntryMixin",
     "LoadChunkMixin",
+    "MixinLocalPlayer",
     "PlayerCollidesWithEntityMixin"
   ],
   "injectors": {
