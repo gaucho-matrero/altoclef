@@ -16,6 +16,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,21 +32,22 @@ public class LocateStrongholdCoordinatesTask extends Task {
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection = null;
     private LocateStrongholdCoordinatesTask.EyeDirection _cachedEyeDirection2 = null;
     private Entity _currentThrownEye = null;
-    private Vec3d _strongholdEstimatePos = null;
+    private Vec3i _strongholdEstimatePos = null;
 
     public LocateStrongholdCoordinatesTask(int targetEyes) {
         _targetEyes = targetEyes;
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    static Vec3d calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
+    static Vec3i calculateIntersection(Vec3d start1, Vec3d direction1, Vec3d start2, Vec3d direction2) {
         Vec3d s1 = start1;
         Vec3d s2 = start2;
         Vec3d d1 = direction1;
         Vec3d d2 = direction2;
         // Solved for s1 + d1 * t1 = s2 + d2 * t2
         double t2 = ((d1.z * s2.x) - (d1.z * s1.x) - (d1.x * s2.z) + (d1.x * s1.z)) / ((d1.x * d2.z) - (d1.z * d2.x));
-        return start2.add(direction2.multiply(t2));
+        BlockPos blockPos = BlockPos.ofFloored(start2.add(direction2.multiply(t2)));
+        return new Vec3i(blockPos.getX(), blockPos.getY(), blockPos.getZ());
     }
 
     @Override
@@ -114,14 +116,14 @@ public class LocateStrongholdCoordinatesTask extends Task {
 
 
                 _strongholdEstimatePos = calculateIntersection(throwOrigin, throwDelta, throwOrigin2, throwDelta2); // stronghold estimate
-                Debug.logMessage("Stronghold is at " + (int) _strongholdEstimatePos.getX() + ", " + (int) _strongholdEstimatePos.getZ() + " (" + (int) mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) + " blocks away)");
+                Debug.logMessage("Stronghold is at " + (int) _strongholdEstimatePos.getX() + ", " + (int) _strongholdEstimatePos.getZ() + " (" + (int) mod.getPlayer().getPos().distanceTo(Vec3d.of(_strongholdEstimatePos)) + " blocks away)");
             }
         }
 
 
         // Re-throw the eyes after reaching the estimation to get a more accurate estimate of where the stronghold is.
         if (_strongholdEstimatePos != null) {
-            if (((mod.getPlayer().getPos().distanceTo(_strongholdEstimatePos) < EYE_RETHROW_DISTANCE) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD)) {
+            if (((mod.getPlayer().getPos().distanceTo(Vec3d.of(_strongholdEstimatePos)) < EYE_RETHROW_DISTANCE) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD)) {
                 _strongholdEstimatePos = null;
                 _cachedEyeDirection = null;
                 _cachedEyeDirection2 = null;

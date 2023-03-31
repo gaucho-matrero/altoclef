@@ -23,7 +23,6 @@ import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
-import baritone.api.utils.input.Input;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -42,7 +41,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.BiomeKeys;
 import org.apache.commons.lang3.ArrayUtils;
@@ -293,6 +291,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getExtraBaritoneSettings().canWalkOnEndPortal(false);
         mod.getBehaviour().pop();
         mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
         mod.getBlockTracker().stopTracking(TRACK_BLOCKS);
@@ -315,7 +314,7 @@ public class MarvionBeatMinecraftTask extends Task {
         if (endPortalOpened(mod, endPortalCenter)) {
             return true;
         }
-        return getFrameBlocks(endPortalCenter).stream().allMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
+        return getFrameBlocks(endPortalCenter).stream().anyMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
     }
 
     private boolean endPortalOpened(AltoClef mod, BlockPos endPortalCenter) {
@@ -826,6 +825,9 @@ public class MarvionBeatMinecraftTask extends Task {
                 setDebugState("WOOHOO");
                 _dragonIsDead = true;
                 _enterindEndPortal = true;
+                if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
+                    mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
+                }
                 return new DoToClosestBlockTask(
                         blockPos -> new GetToBlockTask(blockPos.up()),
                         Blocks.END_PORTAL
@@ -1047,7 +1049,9 @@ public class MarvionBeatMinecraftTask extends Task {
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
                         _enterindEndPortal = true;
-                        mod.getInputControls().tryPress(Input.MOVE_FORWARD);
+                        if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
+                            mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
+                        }
                         return new DoToClosestBlockTask(
                                 blockPos -> new GetToBlockTask(blockPos.up()),
                                 Blocks.END_PORTAL
@@ -1247,14 +1251,13 @@ public class MarvionBeatMinecraftTask extends Task {
         List<BlockPos> frames = mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME);
         if (frames.size() >= END_PORTAL_FRAME_COUNT) {
             // Get the center of the frames.
-            Vec3d average = frames.stream()
-                    .reduce(Vec3d.ZERO, (accum, bpos) -> accum.add(bpos.getX() + 0.5, bpos.getY() + 0.5, bpos.getZ() + 0.5), Vec3d::add)
-                    .multiply(1.0f / frames.size());
-            return new BlockPos(average.x, average.y, average.z);
+            Vec3i average = frames.stream()
+                    .reduce(Vec3i.ZERO, (accum, bpos) -> accum.add((int) Math.round(bpos.getX() + 0.5), (int) Math.round(bpos.getY() + 0.5), (int) Math.round(bpos.getZ() + 0.5)), Vec3i::add)
+                    .multiply(1 / frames.size());
+            return new BlockPos(average);
         }
         return null;
     }
-
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
         // If we have our end portal, this doesn't matter.
         if (endPortalFound(mod, endPortalCenter)) {

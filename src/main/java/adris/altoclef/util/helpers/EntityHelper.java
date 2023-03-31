@@ -7,11 +7,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.DamageTypeTags;
 
 /**
  * Helper functions to interpret entity state
@@ -67,14 +69,14 @@ public class EntityHelper {
             return 0;
 
         // Armor Base
-        if (!source.bypassesArmor()) {
+        if (!source.isIn(DamageTypeTags.BYPASSES_ARMOR)) {
             damageAmount = DamageUtil.getDamageLeft((float) damageAmount, (float) player.getArmor(), (float) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
         }
 
         // Enchantments & Potions
-        if (!source.isUnblockable()) {
+        if (!source.isIn(DamageTypeTags.BYPASSES_SHIELD)) {
             int k;
-            if (player.hasStatusEffect(StatusEffects.RESISTANCE) && source != DamageSource.OUT_OF_WORLD) {
+            if (player.hasStatusEffect(StatusEffects.RESISTANCE) && source.isOf(DamageTypes.OUT_OF_WORLD)) {
                 //noinspection ConstantConditions
                 k = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - k;

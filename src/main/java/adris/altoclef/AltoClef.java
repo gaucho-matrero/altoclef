@@ -218,6 +218,7 @@ public class AltoClef implements ModInitializer {
     }
 
     private void initializeBaritoneSettings() {
+        getExtraBaritoneSettings().canWalkOnEndPortal(false);
         getClientBaritoneSettings().freeLook.value = false;
         getClientBaritoneSettings().overshootTraverse.value = false;
         getClientBaritoneSettings().allowOvershootDiagonalDescend.value = true;

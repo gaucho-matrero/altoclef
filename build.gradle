@@ -1,7 +1,7 @@
 plugins {
     id "fabric-loom" version "1.1-SNAPSHOT"
     id "maven-publish"
-    id 'com.github.johnrengelman.shadow' version '8.1.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -32,21 +32,21 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.14.2')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.14.2')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.14.2')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.15.0-rc1')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1')
 
     // Thank you georgeagostino for fixing my garbage
 //    if (getProject().hasProperty("altoclef.development")) {
     // Must run build from baritone-plus once
-    modImplementation 'baritone-api-fabric:baritone-fabric-unoptimized-1.19.3-beta1'
-    include "baritone-api-fabric:baritone-fabric-unoptimized-1.19.3-beta1"
+    modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric-1.19.4-beta1'
+    include "baritone-api-fabric:baritone-unoptimized-fabric-1.19.4-beta1"
     //} else {
     //    modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
     //    include "cabaletta:baritone-unoptimized-fabric:1.18.2"

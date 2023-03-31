@@ -194,7 +194,8 @@ public interface LookHelper {
         HitResult result = MinecraftClient.getInstance().crosshairTarget;
         if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
-            return WorldHelper.isInteractableBlock(mod, new BlockPos(result.getPos()));
+            Vec3i resultGetPosOrigin = new Vec3i((int) result.getPos().getX(), (int) result.getPos().getY(), (int) result.getPos().getZ());
+            return WorldHelper.isInteractableBlock(mod, new BlockPos(resultGetPosOrigin));
         } else if (result.getType() == HitResult.Type.ENTITY) {
             if (result instanceof EntityHitResult) {
                 Entity entity = ((EntityHitResult) result).getEntity();

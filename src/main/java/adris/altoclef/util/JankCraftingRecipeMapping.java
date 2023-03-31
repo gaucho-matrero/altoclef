@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.DynamicRegistryManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ public class JankCraftingRecipeMapping {
             RecipeManager recipes = MinecraftClient.getInstance().getNetworkHandler().getRecipeManager();
             if (recipes != null) {
                 for (Recipe<?> recipe : recipes.values()) {
-                    Item output = recipe.getOutput().getItem();
+                    Item output = recipe.getOutput(DynamicRegistryManager.EMPTY).getItem();
                     if (!_recipeMapping.containsKey(output)) {
                         _recipeMapping.put(output, new ArrayList<>());
                     }

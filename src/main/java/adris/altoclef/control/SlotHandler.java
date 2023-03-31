@@ -148,7 +148,7 @@ public class SlotHandler {
                             || item instanceof OnAStickItem
                             || item == Items.COMPASS
                             || item instanceof EmptyMapItem
-                            || item instanceof Wearable
+                            || item instanceof Equipment
                             || item == Items.LEAD
                             || item == Items.SHIELD;
                 }

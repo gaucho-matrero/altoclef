@@ -16,8 +16,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -99,13 +99,15 @@ public class MLGBucketTask extends Task {
     }
 
     private static double calculateFallDamageToLandOn(BlockPos pos) {
+        ClientWorld world = MinecraftClient.getInstance().world;
         PlayerEntity player = MinecraftClient.getInstance().player;
         assert player != null;
         double totalFallDistance = player.fallDistance + (player.getY() - pos.getY() - 1);
         // Copied from living entity I think, somewhere idk you get the picture.
         double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
         // Be a bit conservative, assume MORE damage
-        return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
+        assert world != null;
+        return EntityHelper.calculateResultingPlayerDamage(player, world.getDamageSources().fall(), baseFallDamage);
     }
 
     private static void moveLeftRight(AltoClef mod, int delta) {

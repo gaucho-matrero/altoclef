@@ -54,11 +54,11 @@ public interface WorldHelper {
     }
 
     static Vec3i toVec3i(Vec3d pos) {
-        return new Vec3i(pos.getX(), pos.getY(), pos.getZ());
+        return new Vec3i((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
     }
 
     static BlockPos toBlockPos(Vec3d pos) {
-        return new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        return new BlockPos((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
     }
 
     static boolean isSourceBlock(AltoClef mod, BlockPos pos, boolean onlyAcceptStill) {
@@ -315,8 +315,8 @@ public interface WorldHelper {
     }
 
     static Iterable<BlockPos> getBlocksTouchingBox(AltoClef mod, Box box) {
-        BlockPos min = new BlockPos(box.minX, box.minY, box.minZ);
-        BlockPos max = new BlockPos(box.maxX, box.maxY, box.maxZ);
+        BlockPos min = new BlockPos((int) box.minX, (int) box.minY, (int) box.minZ);
+        BlockPos max = new BlockPos((int) box.maxX, (int) box.maxY, (int) box.maxZ);
         return scanRegion(mod, min, max);
     }
 

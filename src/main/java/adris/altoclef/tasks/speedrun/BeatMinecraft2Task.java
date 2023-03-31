@@ -801,7 +801,7 @@ public class BeatMinecraft2Task extends Task {
             Vec3d average = frames.stream()
                     .reduce(Vec3d.ZERO, (accum, bpos) -> accum.add(bpos.getX() + 0.5, bpos.getY() + 0.5, bpos.getZ() + 0.5), Vec3d::add)
                     .multiply(1.0f / frames.size());
-            return new BlockPos(average.x, average.y, average.z);
+            return new BlockPos((int) average.x, (int) average.y, (int) average.z);
         }
         return null;
     }
