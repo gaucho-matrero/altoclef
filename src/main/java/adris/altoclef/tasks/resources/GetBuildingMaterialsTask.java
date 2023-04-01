@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 
 public class GetBuildingMaterialsTask extends Task {
     private final int _count;
+
     public GetBuildingMaterialsTask(int count) {
         _count = count;
     }
@@ -21,7 +22,7 @@ public class GetBuildingMaterialsTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         Item[] throwaways = mod.getModSettings().getThrowawayItems(mod, true);
-        return new MineAndCollectTask(new ItemTarget[] {new ItemTarget(throwaways, _count)}, MiningRequirement.WOOD);
+        return new MineAndCollectTask(new ItemTarget[]{new ItemTarget(throwaways, _count)}, MiningRequirement.WOOD);
     }
 
     @Override

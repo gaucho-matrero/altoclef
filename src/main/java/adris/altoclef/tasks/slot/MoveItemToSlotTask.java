@@ -9,6 +9,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,17 +69,19 @@ public class MoveItemToSlotTask extends Task {
                     Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
                     return null;
                 }
-                return new ClickSlotTask(toPlace.get());
+                mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                return null;
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
             if (currentHeld.getCount() + currentlyPlaced <= _toMove.getTargetCount()) {
                 // Just place all of 'em
-                return new ClickSlotTask(_destination);
+                mod.getSlotHandler().clickSlot(_destination, 0, SlotActionType.PICKUP);
             } else {
                 // Place one at a time.
-                return new ClickSlotTask(_destination, 1);
+                mod.getSlotHandler().clickSlot(_destination, 1, SlotActionType.PICKUP);
             }
+            return null;
         }
         return null;
     }
@@ -109,22 +112,24 @@ public class MoveItemToSlotTask extends Task {
 
     private Optional<Slot> getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
-        for (Slot slot : _getMovableSlots.apply(mod)) {
-            if (Slot.isCursor(slot))
-                continue;
-            if (!_toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
-                continue;
-            if (bestMatch == null) {
-                bestMatch = slot;
-                continue;
-            }
-            int countBest  = StorageHelper.getItemStackInSlot(bestMatch).getCount();
-            int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
-            if (   (countBest < _toMove.getTargetCount() && countCheck > countBest)
-                    || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest) ) {
-                // If we don't have enough, go for largest
-                // If we have too much, go for smallest over the limit.
-                bestMatch = slot;
+        if (!_getMovableSlots.apply(mod).isEmpty()) {
+            for (Slot slot : _getMovableSlots.apply(mod)) {
+                if (Slot.isCursor(slot))
+                    continue;
+                if (!_toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
+                    continue;
+                if (bestMatch == null) {
+                    bestMatch = slot;
+                    continue;
+                }
+                int countBest = StorageHelper.getItemStackInSlot(bestMatch).getCount();
+                int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
+                if ((countBest < _toMove.getTargetCount() && countCheck > countBest)
+                        || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest)) {
+                    // If we don't have enough, go for largest
+                    // If we have too much, go for smallest over the limit.
+                    bestMatch = slot;
+                }
             }
         }
         return Optional.ofNullable(bestMatch);

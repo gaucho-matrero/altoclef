@@ -9,9 +9,11 @@ public class SmithingTableSlot extends Slot {
     public SmithingTableSlot(int slot) {
         this(slot, false);
     }
+
     SmithingTableSlot(int slot, boolean inventory) {
         super(slot, inventory);
     }
+
     @Override
     public int inventorySlotToWindowSlot(int inventorySlot) {
         if (inventorySlot < 9) {

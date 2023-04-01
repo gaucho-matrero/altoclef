@@ -12,10 +12,10 @@ import net.minecraft.util.math.BlockPos;
 public class GoToStrongholdPortalTask extends Task {
 
     private final LocateStrongholdCoordinatesTask _locateCoordsTask;
-    private BlockPos _strongholdCoordinates;
     private final int _targetEyes;
+    private BlockPos _strongholdCoordinates;
 
-    public GoToStrongholdPortalTask(int targetEyes){
+    public GoToStrongholdPortalTask(int targetEyes) {
         _targetEyes = targetEyes;
         _strongholdCoordinates = null;
         _locateCoordsTask = new LocateStrongholdCoordinatesTask(targetEyes);
@@ -57,7 +57,7 @@ public class GoToStrongholdPortalTask extends Task {
 
             @Override
             protected Task getWanderTask(AltoClef mod) {
-                return new FastTravelTask(_strongholdCoordinates, 300,true);
+                return new FastTravelTask(_strongholdCoordinates, 300, true);
             }
         };
     }

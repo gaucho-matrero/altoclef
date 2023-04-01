@@ -1,6 +1,7 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.util.slots.Slot;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.RayTraceUtils;
@@ -11,7 +12,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -84,6 +87,7 @@ public interface LookHelper {
         Vec3d start = getCameraPos(entity);
         return cleanLineOfSight(entity, start, end, maxRange);
     }
+
     static boolean cleanLineOfSight(Vec3d end, double maxRange) {
         return cleanLineOfSight(MinecraftClient.getInstance().player, end, maxRange);
     }
@@ -121,9 +125,10 @@ public interface LookHelper {
         float yaw = entity.getYaw();
         return new Rotation(yaw, pitch);
     }
+
     static Rotation getLookRotation() {
         if (MinecraftClient.getInstance().player == null) {
-            return new Rotation(0,0);
+            return new Rotation(0, 0);
         }
         return getLookRotation(MinecraftClient.getInstance().player);
     }
@@ -135,6 +140,7 @@ public interface LookHelper {
         }
         return isSneaking ? RayTraceUtils.inferSneakingEyePosition(entity) : entity.getCameraPosVec(1.0F);
     }
+
     static Vec3d getCameraPos(AltoClef mod) {
         IPlayerContext ctx = BaritoneAPI.getProvider().getPrimaryBaritone().getPlayerContext();
         return ctx.player().getCameraPosVec(1);
@@ -168,14 +174,28 @@ public interface LookHelper {
     private static boolean isCollidingInteractable(AltoClef mod) {
 
         if (!(mod.getPlayer().currentScreenHandler instanceof PlayerScreenHandler)) {
-            StorageHelper.closeScreen();
+            ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+            if (!cursorStack.isEmpty()) {
+                Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+                moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+                if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                }
+                Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+                // Try throwing away cursor slot if it's garbage
+                garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            } else {
+                StorageHelper.closeScreen();
+            }
             return true;
         }
 
         HitResult result = MinecraftClient.getInstance().crosshairTarget;
         if (result == null) return false;
         if (result.getType() == HitResult.Type.BLOCK) {
-            return WorldHelper.isInteractableBlock(mod, new BlockPos(result.getPos()));
+            Vec3i resultGetPosOrigin = new Vec3i((int) result.getPos().getX(), (int) result.getPos().getY(), (int) result.getPos().getZ());
+            return WorldHelper.isInteractableBlock(mod, new BlockPos(resultGetPosOrigin));
         } else if (result.getType() == HitResult.Type.ENTITY) {
             if (result instanceof EntityHitResult) {
                 Entity entity = ((EntityHitResult) result).getEntity();
@@ -193,6 +213,7 @@ public interface LookHelper {
     static boolean isLookingAt(AltoClef mod, Rotation rotation) {
         return rotation.isReallyCloseTo(getLookRotation());
     }
+
     static boolean isLookingAt(AltoClef mod, BlockPos blockPos) {
         return mod.getClientBaritone().getPlayerContext().isLookingAt(blockPos);
     }
@@ -202,10 +223,12 @@ public interface LookHelper {
         mod.getPlayer().setYaw(rotation.getYaw());
         mod.getPlayer().setPitch(rotation.getPitch());
     }
+
     static void lookAt(AltoClef mod, Vec3d toLook) {
         Rotation targetRotation = getLookRotation(mod, toLook);
         lookAt(mod, targetRotation);
     }
+
     static void lookAt(AltoClef mod, BlockPos toLook, Direction side) {
         Vec3d target = new Vec3d(toLook.getX() + 0.5, toLook.getY() + 0.5, toLook.getZ() + 0.5);
         if (side != null) {
@@ -213,6 +236,7 @@ public interface LookHelper {
         }
         lookAt(mod, target);
     }
+
     static void lookAt(AltoClef mod, BlockPos toLook) {
         lookAt(mod, toLook, null);
     }
@@ -220,6 +244,7 @@ public interface LookHelper {
     static Rotation getLookRotation(AltoClef mod, Vec3d toLook) {
         return RotationUtils.calcRotationFromVec3d(mod.getClientBaritone().getPlayerContext().playerHead(), toLook, mod.getClientBaritone().getPlayerContext().playerRotations());
     }
+
     static Rotation getLookRotation(AltoClef mod, BlockPos toLook) {
         return getLookRotation(mod, WorldHelper.toVec3d(toLook));
     }

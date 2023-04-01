@@ -38,9 +38,11 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, Optional<BlockPos>> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
         this(null, getTargetTask, getClosestBlock, isValid, blocks);
     }
+
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Predicate<BlockPos> isValid, Block... blocks) {
         this(null, getTargetTask, null, isValid, blocks);
     }
+
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Block... blocks) {
         this(getTargetTask, null, blockPos -> true, blocks);
     }

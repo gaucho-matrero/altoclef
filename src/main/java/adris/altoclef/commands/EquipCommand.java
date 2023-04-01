@@ -7,9 +7,6 @@ import adris.altoclef.util.ItemTarget;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.tag.ItemTags;
-
-import java.util.Locale;
 
 public class EquipCommand extends Command {
     public EquipCommand() throws CommandException {
@@ -19,7 +16,7 @@ public class EquipCommand extends Command {
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         ItemTarget[] items;
-        if(parser.getArgUnits().length == 1) {
+        if (parser.getArgUnits().length == 1) {
             switch (parser.getArgUnits()[0].toLowerCase()) { //Hot commands for the default full armor sets
                 case "leather" -> items =
                         new ItemTarget[]{new ItemTarget(Items.LEATHER_HELMET),
@@ -47,23 +44,23 @@ public class EquipCommand extends Command {
                     items = parser.get(ItemList.class).items;          // if only one thing was provided, and it isn't an armor set, try to work it out.
                 }
             }
-        }else{
+        } else {
             items = parser.get(ItemList.class).items; // a list of items was provided
         }
-        for(ItemTarget item : items){
-            for(Item i : item.getMatches()){
-                if(!(i instanceof ArmorItem)){
-                    items=null; // flag items as "bad" if any of the items are not ArmorItems
+        for (ItemTarget item : items) {
+            for (Item i : item.getMatches()) {
+                if (!(i instanceof ArmorItem)) {
+                    items = null; // flag items as "bad" if any of the items are not ArmorItems
                     break;
                 }
             }
-            if(items==null){
+            if (items == null) {
                 break;
             }
         }
 
 
-        if(items != null)
+        if (items != null)
             mod.runUserTask(new EquipArmorTask(items), this::finish); // do not run the equip task with non armor items.
         else
             throw new CommandException("You must provide armor items."); //inform the user that they can only use armor items.

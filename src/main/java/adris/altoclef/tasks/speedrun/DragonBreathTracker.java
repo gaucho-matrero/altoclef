@@ -38,12 +38,9 @@ public class DragonBreathTracker {
         protected void onStart(AltoClef mod) {
             super.onStart(mod);
             mod.getBehaviour().push();
-            // Encourage placing of all blocks!
-            mod.getBehaviour().setBlockPlacePenalty(0);
-            mod.getBehaviour().setBlockBreakAdditionalPenalty(10); // Normally 2
-
+            mod.getBehaviour().setBlockPlacePenalty(Double.POSITIVE_INFINITY);
             // do NOT ever wander
-            _checker = new MovementProgressChecker(999999);
+            _checker = new MovementProgressChecker((int) Float.POSITIVE_INFINITY);
         }
 
         @Override
@@ -54,7 +51,7 @@ public class DragonBreathTracker {
 
         @Override
         protected Goal newGoal(AltoClef mod) {
-            return new GoalRunAway(2, _breathBlocks.toArray(BlockPos[]::new));
+            return new GoalRunAway(10, _breathBlocks.toArray(BlockPos[]::new));
         }
 
         @Override

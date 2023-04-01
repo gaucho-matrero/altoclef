@@ -2,10 +2,13 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
+import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
+import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
@@ -13,12 +16,11 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 public class EnterNetherPortalTask extends Task {
-
     private final Task _getPortalTask;
     private final Dimension _targetDimension;
 
     private final TimerGame _portalTimeout = new TimerGame(10);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(2);
+    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
 
     private final Predicate<BlockPos> _goodPortal;
 
@@ -35,9 +37,11 @@ public class EnterNetherPortalTask extends Task {
     public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> goodPortal) {
         this(null, targetDimension, goodPortal);
     }
+
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension) {
         this(getPortalTask, targetDimension, blockPos -> true);
     }
+
     public EnterNetherPortalTask(Dimension targetDimension) {
         this(null, targetDimension);
     }
@@ -47,7 +51,6 @@ public class EnterNetherPortalTask extends Task {
         mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
         _leftPortal = false;
         _portalTimeout.reset();
-
         _wanderTask.resetWander();
     }
 
@@ -67,12 +70,25 @@ public class EnterNetherPortalTask extends Task {
                 return _wanderTask;
             }
             setDebugState("Waiting inside portal");
+            mod.getClientBaritone().getExploreProcess().onLostControl();
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
+            mod.getClientBaritone().getMineProcess().onLostControl();
+            mod.getClientBaritone().getFarmProcess().onLostControl();
+            mod.getClientBaritone().getGetToBlockProcess();
+            mod.getClientBaritone().getBuilderProcess();
+            mod.getClientBaritone().getFollowProcess();
+            mod.getInputControls().release(Input.SNEAK);
+            mod.getInputControls().release(Input.MOVE_BACK);
+            mod.getInputControls().release(Input.MOVE_FORWARD);
             return null;
         } else {
             _portalTimeout.reset();
         }
 
         Predicate<BlockPos> standablePortal = blockPos -> {
+            if (mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.NETHER_PORTAL) {
+                return true;
+            }
             // REQUIRE that there be solid ground beneath us, not more portal.
             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
                 // Eh just assume it's good for now
@@ -86,6 +102,14 @@ public class EnterNetherPortalTask extends Task {
         if (mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
             setDebugState("Going to found portal");
             return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos, false), standablePortal, Blocks.NETHER_PORTAL);
+        }
+        if (!mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
+            setDebugState("Making new nether portal.");
+            if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
+                return new ConstructNetherPortalBucketTask();
+            } else {
+                return new ConstructNetherPortalObsidianTask();
+            }
         }
         setDebugState("Getting our portal");
         return _getPortalTask;

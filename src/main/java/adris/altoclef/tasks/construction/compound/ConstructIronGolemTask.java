@@ -145,10 +145,12 @@ public class ConstructIronGolemTask extends Task {
     }
 
     private ItemTarget[] golemMaterials(AltoClef mod) {
-        if (_position == null || mod.getWorld().getBlockState(_position.up(2)).getBlock() != Blocks.CARVED_PUMPKIN) return new ItemTarget[]{
-                new ItemTarget(Items.IRON_BLOCK, ironBlocksNeeded(mod)),
-                new ItemTarget(Items.CARVED_PUMPKIN, 1)
-        }; else return new ItemTarget[]{
+        if (_position == null || mod.getWorld().getBlockState(_position.up(2)).getBlock() != Blocks.CARVED_PUMPKIN)
+            return new ItemTarget[]{
+                    new ItemTarget(Items.IRON_BLOCK, ironBlocksNeeded(mod)),
+                    new ItemTarget(Items.CARVED_PUMPKIN, 1)
+            };
+        else return new ItemTarget[]{
                 new ItemTarget(Items.IRON_BLOCK, ironBlocksNeeded(mod))
         };
     }

@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class CollectWoodenStairsTask extends CraftWithMatchingPlanksTask {
 
     public CollectWoodenStairsTask(Item[] targets, ItemTarget planks, int count) {
-        super(targets,  woodItems -> woodItems.stairs, createRecipe(planks), new boolean[]{true, false, false, true, true, false, true, true, true}, count);
+        super(targets, woodItems -> woodItems.stairs, createRecipe(planks), new boolean[]{true, false, false, true, true, false, true, true, true}, count);
     }
 
     public CollectWoodenStairsTask(Item target, String plankCatalogueName, int count) {

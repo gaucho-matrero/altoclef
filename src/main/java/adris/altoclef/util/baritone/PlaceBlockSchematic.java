@@ -58,8 +58,9 @@ public class PlaceBlockSchematic extends AbstractSchematic {
             return _targetPlace;
         }
         //System.out.print("oof: [");
-        for (BlockState possible : list) {
-            if (possible == null) {
+        if (!list.isEmpty()) {
+            for (BlockState possible : list) {
+                if (possible == null) {
                 /*
                 if (ToolSet.areShearsEffective(blockState.getBlock()) || BlockTags.FLOWERS.contains(blockState.getBlock())) {
                     // Sheering items/flowers results in this issue, but it works fine!
@@ -67,13 +68,14 @@ public class PlaceBlockSchematic extends AbstractSchematic {
                     Debug.logWarning("Weird issue, given possible state is null. Will ignore.");
                 }
                  */
-                continue;
-            }
-            //System.out.print(possible.getBlock().getTranslationKey() + " ");
-            if (blockIsTarget(possible.getBlock())) {
-                //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
-                _targetPlace = possible;
-                return possible;
+                    continue;
+                }
+                //System.out.print(possible.getBlock().getTranslationKey() + " ");
+                if (blockIsTarget(possible.getBlock())) {
+                    //System.out.print("PlaceBlockNearbySchematic  ( FOUND! )");
+                    _targetPlace = possible;
+                    return possible;
+                }
             }
         }
         //System.out.println("] ( :(((((( )");
@@ -82,8 +84,10 @@ public class PlaceBlockSchematic extends AbstractSchematic {
 
 
     private boolean blockIsTarget(Block block) {
-        for (Block check : _blockToPlace) {
-            if (check == block) return true;
+        if (_blockToPlace != null) {
+            for (Block check : _blockToPlace) {
+                if (check == block) return true;
+            }
         }
         return false;
     }

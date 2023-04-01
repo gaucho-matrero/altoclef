@@ -26,8 +26,10 @@ public class GoalAnd implements Goal {
 
     public double heuristic(int x, int y, int z) {
         double sum = 0;
-        for (Goal goal : this.goals) {
-            sum += goal.heuristic(x, y, z);
+        if (this.goals != null) {
+            for (Goal goal : this.goals) {
+                sum += goal.heuristic(x, y, z);
+            }
         }
         return sum;
         /*double min = 1.7976931348623157E308D;

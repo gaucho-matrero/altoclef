@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.squashed;
 
-import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.util.RecipeTarget;
 
 import java.util.ArrayList;

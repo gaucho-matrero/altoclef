@@ -88,11 +88,13 @@ abstract class ChunkSearchTask extends Task {
 
         synchronized (_searchMutex) {
             // Search all items from _justLoaded that we ought to search.
-            for (ChunkPos justLoaded : _justLoaded) {
-                if (_searchLater.contains(justLoaded)) {
-                    // Search this one. If we succeed, we no longer need to search.
-                    if (trySearchChunk(mod, justLoaded)) {
-                        _searchLater.remove(justLoaded);
+            if (!_justLoaded.isEmpty()) {
+                for (ChunkPos justLoaded : _justLoaded) {
+                    if (_searchLater.contains(justLoaded)) {
+                        // Search this one. If we succeed, we no longer need to search.
+                        if (trySearchChunk(mod, justLoaded)) {
+                            _searchLater.remove(justLoaded);
+                        }
                     }
                 }
             }
@@ -116,15 +118,17 @@ abstract class ChunkSearchTask extends Task {
     protected ChunkPos getBestChunk(AltoClef mod, List<ChunkPos> chunks) {
         double lowestScore = Double.POSITIVE_INFINITY;
         ChunkPos bestChunk = null;
-        for (ChunkPos toSearch : chunks) {
-            double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
-            double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
-            double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
-            double distanceToCenterSq = new Vec3d(_startPoint.getX() - cx, 0, _startPoint.getZ() - cz).lengthSquared();
-            double score = distanceSq + distanceToCenterSq * 0.8;
-            if (score < lowestScore) {
-                lowestScore = score;
-                bestChunk = toSearch;
+        if (!chunks.isEmpty()) {
+            for (ChunkPos toSearch : chunks) {
+                double cx = (toSearch.getStartX() + toSearch.getEndX() + 1) / 2.0, cz = (toSearch.getStartZ() + toSearch.getEndZ() + 1) / 2.0;
+                double px = mod.getPlayer().getX(), pz = mod.getPlayer().getZ();
+                double distanceSq = (cx - px) * (cx - px) + (cz - pz) * (cz - pz);
+                double distanceToCenterSq = new Vec3d(_startPoint.getX() - cx, 0, _startPoint.getZ() - cz).lengthSquared();
+                double score = distanceSq + distanceToCenterSq * 0.8;
+                if (score < lowestScore) {
+                    lowestScore = score;
+                    bestChunk = toSearch;
+                }
             }
         }
         return bestChunk;

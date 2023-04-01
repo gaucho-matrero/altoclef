@@ -18,12 +18,15 @@ public class ClickSlotTask extends Task {
         _mouseButton = mouseButton;
         _type = type;
     }
+
     public ClickSlotTask(Slot slot, SlotActionType type) {
         this(slot, 0, type);
     }
+
     public ClickSlotTask(Slot slot, int mouseButton) {
         this(slot, mouseButton, SlotActionType.PICKUP);
     }
+
     public ClickSlotTask(Slot slot) {
         this(slot, SlotActionType.PICKUP);
     }

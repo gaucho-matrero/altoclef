@@ -3,6 +3,7 @@ package adris.altoclef.tasks.movement;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
+import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -28,18 +29,16 @@ public class FastTravelTask extends Task {
     private final boolean _collectPortalMaterialsIfAbsent;
     private final BlockPos _target;
     private final Integer _threshold;
-
-    private boolean _forceOverworldWalking;
-
     // If we fail to move to the precise center after we're "close enough" to our threshold, just call it quits and place the portal.
     private final TimerGame _attemptToMoveToIdealNetherCoordinateTimeout = new TimerGame(15);
-
+    private boolean _forceOverworldWalking;
     private Task _goToOverworldTask;
 
     /**
      * Creates fast travel task instance.
-     * @param overworldTarget target location in overworld after post travel
-     * @param threshold Threshold for when to fast travel vs when to walk
+     *
+     * @param overworldTarget                target location in overworld after post travel
+     * @param threshold                      Threshold for when to fast travel vs when to walk
      * @param collectPortalMaterialsIfAbsent if we don't have (10 obsidian or a diamond pickaxe) and (a flint and steel or fire charge), collect these items. Otherwise just walk the whole way.
      */
     public FastTravelTask(BlockPos overworldTarget, Integer threshold, boolean collectPortalMaterialsIfAbsent) {
@@ -50,8 +49,9 @@ public class FastTravelTask extends Task {
 
     /**
      * Creates fast travel task instance
-     * @param overworldTarget target location in overworld after post travel
-     *                               Bot will use nether travel based on the threshold value in settings.
+     *
+     * @param overworldTarget                target location in overworld after post travel
+     *                                       Bot will use nether travel based on the threshold value in settings.
      * @param collectPortalMaterialsIfAbsent if we don't have (10 obsidian or a diamond pickaxe) and (a flint and steel or fire charge), collect these items. Otherwise just walk the whole way.
      */
     public FastTravelTask(BlockPos overworldTarget, boolean collectPortalMaterialsIfAbsent) {
@@ -118,6 +118,9 @@ public class FastTravelTask extends Task {
                 // If we're going to the overworld, keep going.
                 if (_goToOverworldTask.isActive() && !_goToOverworldTask.isFinished(mod)) {
                     setDebugState("Going back to overworld");
+                    if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
+                        MinecraftClient.getInstance().options.getViewDistance().setValue(32);
+                    }
                     return _goToOverworldTask;
                 }
 
@@ -131,7 +134,8 @@ public class FastTravelTask extends Task {
                     return new PickupDroppedItemTask(new ItemTarget(new Item[]{Items.FLINT_AND_STEEL, Items.FIRE_CHARGE}), true);
                 }
 
-                if (WorldHelper.inRangeXZ(mod.getPlayer(), netherTarget, IN_NETHER_CLOSE_ENOUGH_THRESHOLD)) {
+                if (WorldHelper.inRangeXZ(mod.getPlayer(), netherTarget, IN_NETHER_CLOSE_ENOUGH_THRESHOLD) &&
+                        mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                     // If we're precisely at our target XZ or if we've tried long enough
                     if ((mod.getPlayer().getBlockX() == netherTarget.getX() && mod.getPlayer().getBlockZ() == netherTarget.getZ()) || _attemptToMoveToIdealNetherCoordinateTimeout.elapsed()) {
                         return _goToOverworldTask;

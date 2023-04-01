@@ -9,16 +9,15 @@ import java.util.function.Consumer;
 
 /**
  * A static class to solve dependency issues. Lets us send and receive events globally, decoupling our codebase.
- *
+ * <p>
  * Technically `ConfigHelper` does something like this, but here is a more general case.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EventBus {
 
-    private static boolean _lock;
-
     private static final HashMap<Class, List<Subscription>> _topics = new HashMap<>();
     private static final List<Pair<Class, Subscription>> _toAdd = new ArrayList<>();
+    private static boolean _lock;
 
     public static <T> void publish(T event) {
         Class type = event.getClass();

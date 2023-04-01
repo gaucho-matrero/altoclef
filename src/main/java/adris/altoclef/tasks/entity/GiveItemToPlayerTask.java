@@ -5,8 +5,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.FollowPlayerTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
-import adris.altoclef.tasks.slot.ClickSlotTask;
-import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -15,6 +13,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -77,11 +76,11 @@ public class GiveItemToPlayerTask extends Task {
                             target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
                             _throwTarget.set(i, target);
                             Debug.logMessage("THROWING: " + has.get());
-                            _throwTask = new ThrowCursorTask();
-                            return _throwTask;
+                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
                         } else {
-                            return new ClickSlotTask(currentlyPresent);
+                            mod.getSlotHandler().clickSlot(currentlyPresent, 0, SlotActionType.PICKUP);
                         }
+                        return null;
                     }
                 }
             }

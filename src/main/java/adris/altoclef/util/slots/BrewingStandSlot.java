@@ -10,7 +10,11 @@ public class BrewingStandSlot extends Slot {
     public BrewingStandSlot(int slot) {
         this(slot, false);
     }
-    protected BrewingStandSlot(int slot, boolean inventory) { super(slot, inventory); }
+
+    protected BrewingStandSlot(int slot, boolean inventory) {
+        super(slot, inventory);
+    }
+
     @Override
     public int inventorySlotToWindowSlot(int inventorySlot) {
         if (inventorySlot < 9) {
@@ -18,6 +22,7 @@ public class BrewingStandSlot extends Slot {
         }
         return inventorySlot - 4;
     }
+
     @Override
     protected int windowSlotToInventorySlot(int windowSlot) {
         if (windowSlot >= 32) {

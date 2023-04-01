@@ -1,7 +1,7 @@
 plugins {
-    id "fabric-loom" version "0.10-SNAPSHOT"
+    id "fabric-loom" version "1.1-SNAPSHOT"
     id "maven-publish"
-    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -18,7 +18,7 @@ repositories {
         url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
-        dirs '../baritone/build/libs'
+        dirs '../baritone/dist'
     }
 }
 
@@ -32,30 +32,30 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.10.1'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.10.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.10.1')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.10.1')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.10.1')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.15.0-rc1')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1')
 
     // Thank you georgeagostino for fixing my garbage
-    if (getProject().hasProperty("altoclef.development")) {
-        // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric:1.18.2'
-    } else {
-        modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
-        include "cabaletta:baritone-unoptimized-fabric:1.18.2"
-    }
+//    if (getProject().hasProperty("altoclef.development")) {
+    // Must run build from baritone-plus once
+    modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric-1.19.4-beta1'
+    include "baritone-api-fabric:baritone-unoptimized-fabric-1.19.4-beta1"
+    //} else {
+    //    modImplementation "cabaletta:baritone-unoptimized-fabric:1.18.2"
+    //    include "cabaletta:baritone-unoptimized-fabric:1.18.2"
+    //}
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
 }
 shadowJar {
     configurations = [project.configurations.shadow]
-    classifier = 'shadow'
 }
 
 remapJar {
@@ -89,7 +89,6 @@ tasks.withType(JavaCompile) {
 // if it is present.
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
     from sourceSets.main.allSource
 }
 

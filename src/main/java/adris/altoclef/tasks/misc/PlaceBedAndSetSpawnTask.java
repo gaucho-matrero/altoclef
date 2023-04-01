@@ -14,7 +14,6 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -39,13 +38,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
-    private boolean _stayInBed;
-
-    private static final Block[] BEDS = CollectBedTask.BEDS;
-
     private final TimerGame _regionScanTimer = new TimerGame(9);
-
-    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 1);
+    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 2);
     private final Vec3i[] BED_BOTTOM_PLATFORM = new Vec3i[]{
             new Vec3i(0, -1, 0),
             new Vec3i(1, -1, 0),
@@ -57,8 +51,8 @@ public class PlaceBedAndSetSpawnTask extends Task {
     private final Direction BED_PLACE_DIRECTION = Direction.UP;
     private final TimerGame _bedInteractTimeout = new TimerGame(5);
     private final TimerGame _inBedTimer = new TimerGame(1);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private boolean _stayInBed;
     private BlockPos _currentBedRegion;
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
@@ -79,10 +73,12 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        mod.getBehaviour().push();
+        _progressChecker.reset();
         _currentBedRegion = null;
 
         // Don't break our bed thing.
-        mod.getBehaviour().push();
         mod.getBehaviour().avoidBlockPlacing(pos -> {
             if (_currentBedRegion != null) {
                 BlockPos start = _currentBedRegion,
@@ -101,17 +97,16 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 }
             }
             // Don't ever break beds. If one exists, we will sleep in it.
-            return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
+            if (mod.getWorld() != null) {
+                return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
+            }
+            return false;
         });
-
-        mod.getBlockTracker().trackBlock(BEDS);
-
         _spawnSet = false;
         _sleepAttemptMade = false;
         _wasSleeping = false;
-
         _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            String msg = evt.message.asString();
+            String msg = evt.toString();
             if (msg.contains("Respawn point set")) {
                 _spawnSet = true;
                 _inBedTimer.reset();
@@ -145,33 +140,47 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Find a 3x2x1 region and clear it
         //      Stand on the edge of the long (3) side
         //      Place on the middle block, reliably placing the bed.
-
+        if (!_progressChecker.check(mod) && _currentBedRegion != null) {
+            _progressChecker.reset();
+            Debug.logMessage("Searching new bed region.");
+            _currentBedRegion = null;
+        }
+        if (mod.getPlayer().isTouchingWater() && mod.getItemStorage().hasItem(ItemHelper.BED)) {
+            setDebugState("We are in water. Wandering");
+            _currentBedRegion = null;
+            return new TimeoutWanderTask();
+        }
+        if (WorldHelper.isInNetherPortal(mod)) {
+            setDebugState("We are in nether portal. Wandering");
+            _currentBedRegion = null;
+            return new TimeoutWanderTask();
+        }
         // We cannot do this anywhere but the overworld.
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
+        if (screen instanceof SleepingChatScreen) {
             _progressChecker.reset();
             setDebugState("Sleeping...");
             _wasSleeping = true;
             //Debug.logMessage("Closing sleeping thing");
             _spawnSet = true;
-            screen.close(); // may be chat empty ??
             return null;
         }
 
-        if (_sleepAttemptMade && !_stayInBed) {
+        if (_sleepAttemptMade) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
                 return null;
             }
         }
-
-        if (mod.getBlockTracker().anyFound(BEDS)) {
+        if (mod.getBlockTracker().anyFound(blockPos -> (WorldHelper.canReach(mod, blockPos) &&
+                blockPos.isWithinDistance(mod.getPlayer().getPos(), 40) &&
+                mod.getItemStorage().hasItem(ItemHelper.BED)) || (WorldHelper.canReach(mod, blockPos) &&
+                !mod.getItemStorage().hasItem(ItemHelper.BED)), ItemHelper.itemsToBlocks(ItemHelper.BED))) {
             // Sleep in the nearest bed
             setDebugState("Going to bed to sleep...");
             return new DoToClosestBlockTask(toSleepIn -> {
@@ -183,7 +192,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                     // TODO: Kinda ugly, but I'm tired and fixing for the 2nd attempt speedrun so I will fix this block later
                     closeEnough = false;
                     if (hit.getType() != HitResult.Type.MISS) {
-                        // At this point, if we miss, we probably are close enough.
+                        // At this poinAt, if we miss, we probably are close enough.
                         BlockPos p = hit.getBlockPos();
                         if (ArrayUtils.contains(ItemHelper.itemsToBlocks(ItemHelper.BED), mod.getWorld().getBlockState(p).getBlock())) {
                             // We have a bed!
@@ -215,9 +224,14 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 // Keep track of where our spawn point is
                 _progressChecker.reset();
                 return new InteractWithBlockTask(_bedForSpawnPoint);
-            }, BEDS);
+            }, ItemHelper.itemsToBlocks(ItemHelper.BED));
         }
-
+        if (_currentBedRegion != null) {
+            Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BED_PLACE_POS)).getBlock();
+            if (getBlock instanceof BedBlock) {
+                mod.getBlockTracker().addBlock(getBlock, _currentBedRegion.add(BED_PLACE_POS));
+            }
+        }
         // Get a bed if we don't have one.
         if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
             setDebugState("Getting a bed first");
@@ -292,8 +306,11 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
         setDebugState("Filling in Portal");
         if (!_progressChecker.check(mod)) {
+            mod.getClientBaritone().getPathingBehavior().cancelEverything();
+            mod.getClientBaritone().getPathingBehavior().forceCancel();
+            mod.getClientBaritone().getExploreProcess().onLostControl();
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             _progressChecker.reset();
-            return _wanderTask;
         }
 
         // Scoot backwards if we're trying to place and fail
@@ -304,14 +321,13 @@ public class PlaceBedAndSetSpawnTask extends Task {
         })) {
             mod.getInputControls().tryPress(Input.MOVE_BACK);
         }
-
         return new InteractWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
         mod.getBehaviour().pop();
-        mod.getBlockTracker().stopTracking(BEDS);
         EventBus.unsubscribe(_respawnPointSetMessageCheck);
         EventBus.unsubscribe(_respawnFailureMessageCheck);
     }

@@ -4,12 +4,15 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.PutOutFireTask;
-import adris.altoclef.tasks.movement.*;
+import adris.altoclef.tasks.movement.EnterNetherPortalTask;
+import adris.altoclef.tasks.movement.EscapeFromLavaTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
+import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.AbstractFireBlock;
@@ -60,7 +63,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
         // Extinguish with water
         if (mod.getModSettings().shouldExtinguishSelfWithWater()) {
-            if (!(_mainTask instanceof EscapeFromLavaTask && isCurrentlyRunning(mod)) && mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE) && !mod.getWorld().getDimension().isUltrawarm()) {
+            if (!(_mainTask instanceof EscapeFromLavaTask && isCurrentlyRunning(mod)) && mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE) && !mod.getWorld().getDimension().ultrawarm()) {
                 // Extinguish ourselves
                 if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                     BlockPos targetWaterPos = mod.getPlayer().getBlockPos();
@@ -138,6 +141,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
         }
         return mod.getPlayer().isOnFire() && !_wasInLavaTimer.elapsed();
     }
+
     private boolean isInFire(AltoClef mod) {
         if (mod.getPlayer().isOnFire() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
             for (BlockPos pos : WorldHelper.getBlocksTouchingPlayer(mod)) {

@@ -5,7 +5,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 
 public class LocateDesertTempleTask extends Task {

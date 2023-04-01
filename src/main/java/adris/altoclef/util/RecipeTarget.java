@@ -23,6 +23,7 @@ public class RecipeTarget {
     public Item getOutputItem() {
         return _item;
     }
+
     public int getTargetCount() {
         return _targetCount;
     }
@@ -40,7 +41,7 @@ public class RecipeTarget {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RecipeTarget that = (RecipeTarget) o;
-        return _targetCount == that._targetCount && _recipe.equals(that._recipe) && Objects.equals (_item, that._item);
+        return _targetCount == that._targetCount && _recipe.equals(that._recipe) && Objects.equals(_item, that._item);
     }
 
     @Override

@@ -6,6 +6,8 @@ import net.minecraft.text.Text;
 // TODO: Debug library or use Minecraft's built in debugger
 public class Debug {
 
+    public static AltoClef jankModInstance;
+
     public static void logInternal(String message) {
         System.out.println("ALTO CLEF: " + message);
     }
@@ -13,8 +15,6 @@ public class Debug {
     public static void logInternal(String format, Object... args) {
         logInternal(String.format(format, args));
     }
-
-    public static AltoClef jankModInstance;
 
     private static String getLogPrefix() {
         if (jankModInstance != null) {

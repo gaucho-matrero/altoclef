@@ -61,7 +61,7 @@ public class ItemList {
                 } else if (items.length > 2) {
                     throw new CommandException("Invalid item argument structure: Must be of form `<item>` or `<item> <count>`");
                 }
-                return new ItemList(new ItemTarget[] {new ItemTarget(name, count)});
+                return new ItemList(new ItemTarget[]{new ItemTarget(name, count)});
             }
         }
         return new ItemList(new ItemTarget[0]);

@@ -1,6 +1,7 @@
 package adris.altoclef;
 
-import adris.altoclef.tasks.*;
+import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;
@@ -24,9 +25,9 @@ import java.util.function.Function;
 
 /**
  * Contains a hardcoded list of ALL obtainable resources.
- *
+ * <p>
  * Most resources correspond to a single item, but some resources (like "log" or "door") include a range of items.
- *
+ * <p>
  * Call `TaskCatalogue.getItemTask` to return a task given a resource key.
  * Call `TaskCatalogue.getSquashedItemTask` to return a task that gets multiple resources, combining their steps.
  */
@@ -63,8 +64,8 @@ public class TaskCatalogue {
             mine("soul_sand", Items.SOUL_SAND).forceDimension(Dimension.NETHER);
             mine("soul_soil", Items.SOUL_SOIL).forceDimension(Dimension.NETHER);
             mine("glowstone_dust", Blocks.GLOWSTONE, Items.GLOWSTONE_DUST).forceDimension(Dimension.NETHER);
-            mine("coal", MiningRequirement.WOOD, new Block[] {Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE}, Items.COAL);
-            mine("raw_iron", MiningRequirement.STONE, new Block[] {Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE}, Items.RAW_IRON);
+            mine("coal", MiningRequirement.WOOD, new Block[]{Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE}, Items.COAL);
+            mine("raw_iron", MiningRequirement.STONE, new Block[]{Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE}, Items.RAW_IRON);
             mine("raw_gold", MiningRequirement.IRON, new Block[]{Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE}, Items.RAW_GOLD);
             mine("raw_copper", MiningRequirement.STONE, new Block[]{Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE}, Items.RAW_COPPER);
             mine("diamond", MiningRequirement.IRON, new Block[]{Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE}, Items.DIAMOND);
@@ -80,6 +81,14 @@ public class TaskCatalogue {
             mine("clay_ball", Blocks.CLAY, Items.CLAY_BALL);
             mine("ancient_debris", MiningRequirement.DIAMOND, Blocks.ANCIENT_DEBRIS, Items.ANCIENT_DEBRIS).forceDimension(Dimension.NETHER);
             mine("gilded_blackstone", MiningRequirement.STONE, Blocks.GILDED_BLACKSTONE, Items.GILDED_BLACKSTONE).forceDimension(Dimension.NETHER);
+            mine("oak_sapling", Blocks.OAK_LEAVES, Items.OAK_SAPLING);
+            mine("spruce_sapling", Blocks.SPRUCE_LEAVES, Items.SPRUCE_SAPLING);
+            mine("birch_sapling", Blocks.BIRCH_LEAVES, Items.BIRCH_SAPLING);
+            mine("jungle_sapling", Blocks.JUNGLE_LEAVES, Items.JUNGLE_SAPLING);
+            mine("acacia_sapling", Blocks.ACACIA_LEAVES, Items.ACACIA_SAPLING);
+            mine("dark_oak_sapling", Blocks.DARK_OAK_LEAVES, Items.DARK_OAK_SAPLING);
+            mine("mangrove_propagule", Blocks.MANGROVE_PROPAGULE, Items.MANGROVE_PROPAGULE);
+            simple("sapling", ItemHelper.SAPLINGS, CollectSaplingsTask::new);
             simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("red_sandstone", Items.RED_SANDSTONE, CollectRedSandstoneTask::new).dontMineIfPresent();
             simple("coarse_dirt", Items.COARSE_DIRT, CollectCoarseDirtTask::new).dontMineIfPresent();
@@ -202,7 +211,7 @@ public class TaskCatalogue {
             smelt("smooth_quartz", Items.SMOOTH_QUARTZ, "quartz_block");
             smelt("smooth_basalt", Items.SMOOTH_BASALT, "basalt");
             smelt("glass", Items.GLASS, "sand").dontMineIfPresent();
-            smelt("iron_ingot", Items.IRON_INGOT, "raw_iron", Items.IRON_ORE);
+            simple("iron_ingot", Items.IRON_INGOT, CollectIronIngotTask::new).forceDimension(Dimension.OVERWORLD);
             smelt("copper_ingot", Items.COPPER_INGOT, "raw_copper", Items.COPPER_ORE);
             smelt("charcoal", Items.CHARCOAL, "log");
             smelt("brick", Items.BRICK, "clay_ball");
@@ -417,7 +426,7 @@ public class TaskCatalogue {
             simple("boat", ItemHelper.WOOD_BOAT, CollectBoatTask::new);
             woodTasks("boat", woodItems -> woodItems.boat, (woodItems, count) -> new CollectBoatTask(woodItems.boat, woodItems.prefix + "_planks", count));
             shapedRecipe3x3("lead", Items.LEAD, 1, "string", "string", o, "string", "slime_ball", o, o, o, "string");
-            
+
             simple("honeycomb", Items.HONEYCOMB, CollectHoneycombTask::new);
             {
                 String h = "honeycomb";
@@ -689,6 +698,7 @@ public class TaskCatalogue {
     public static boolean taskExists(String name) {
         return _nameToResourceTask.containsKey(name);
     }
+
     public static boolean taskExists(Item item) {
         return _itemToResourceTask.containsKey(item);
     }
@@ -769,17 +779,18 @@ public class TaskCatalogue {
         return shapedRecipe3x3(name, match, 6, material, material, material, material, material, material, null, null, null);
     }
 
-    private static CataloguedResource smelt(String name, Item[] matches, String materials, Item ...optionalMaterials) {
+    private static CataloguedResource smelt(String name, Item[] matches, String materials, Item... optionalMaterials) {
         return put(name, matches, count -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count), optionalMaterials)));
     }
 
-    private static CataloguedResource smelt(String name, Item match, String materials, Item ...optionalMaterials) {
+    private static CataloguedResource smelt(String name, Item match, String materials, Item... optionalMaterials) {
         return smelt(name, new Item[]{match}, materials, optionalMaterials);
     }
 
     private static CataloguedResource smith(String name, Item[] matches, String materials, String tool) {
         return put(name, matches, count -> new UpgradeInSmithingTableTask(new ItemTarget(tool, count), new ItemTarget(materials, count), new ItemTarget(matches, count)));//new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
+
     private static CataloguedResource smith(String name, Item match, String materials, String tool) {
         return smith(name, new Item[]{match}, materials, tool);
     }
@@ -838,6 +849,7 @@ public class TaskCatalogue {
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask, boolean requireNetherForNetherStuff) {
         return woodTasks(woodItem -> woodItem.prefix + "_" + baseName, getMatch, getTask, requireNetherForNetherStuff);
     }
+
     private static CataloguedResource[] woodTasks(String baseName, Function<ItemHelper.WoodItems, Item> getMatch, BiFunction<ItemHelper.WoodItems, Integer, ResourceTask> getTask) {
         return woodTasks(baseName, getMatch, getTask, false);
     }
