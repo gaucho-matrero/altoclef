@@ -87,10 +87,12 @@ public class FoodChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
         _dragonBreathTracker.updateBreath(mod);
-        for (BlockPos playerIn : WorldHelper.getBlocksTouchingPlayer(mod)) {
-            if (_dragonBreathTracker.isTouchingDragonBreath(playerIn)) {
-                stopEat(mod);
-                return Float.NEGATIVE_INFINITY;
+        if (WorldHelper.getBlocksTouchingPlayer(mod) != null) {
+            for (BlockPos playerIn : WorldHelper.getBlocksTouchingPlayer(mod)) {
+                if (_dragonBreathTracker.isTouchingDragonBreath(playerIn)) {
+                    stopEat(mod);
+                    return Float.NEGATIVE_INFINITY;
+                }
             }
         }
 

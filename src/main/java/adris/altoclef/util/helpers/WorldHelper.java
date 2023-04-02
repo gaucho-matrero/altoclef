@@ -311,7 +311,10 @@ public interface WorldHelper {
     }
 
     static Iterable<BlockPos> getBlocksTouchingPlayer(AltoClef mod) {
-        return getBlocksTouchingBox(mod, mod.getPlayer().getBoundingBox());
+        if (mod.getPlayer() != null && mod.getWorld() != null) {
+            return getBlocksTouchingBox(mod, mod.getPlayer().getBoundingBox());
+        }
+        return null;
     }
 
     static Iterable<BlockPos> getBlocksTouchingBox(AltoClef mod, Box box) {
