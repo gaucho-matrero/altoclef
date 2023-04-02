@@ -61,7 +61,7 @@ out now if you'd like:
 
 ### Versions
 
-This is a **fabric only** mod, currently only available for **Minecraft 1.19.2-1.19.3**.
+This is a **fabric only** mod, currently only available for **Minecraft 1.19.2-1.19.4**.
 
 For older MC versions, try [multiconnect](https://www.curseforge.com/minecraft/mc-mods/multiconnect) (NOTE: multiconnect
 is untested and not affiliated with altoclef, use at your own risk!)
