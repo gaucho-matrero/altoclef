@@ -11,6 +11,9 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -27,6 +30,8 @@ public class CraftInInventoryTask extends ResourceTask {
         _target = target;
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
+        private Screen invScreen;
+        private MinecraftClient client = MinecraftClient.getInstance();
     }
 
     public CraftInInventoryTask(RecipeTarget target) {
@@ -40,6 +45,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
+        invScreen = new InventoryScreen(mod.getPlayer());
         mod.getBehaviour().push();
         // Our inventory slots are here for conversion
         int recSlot = 0;
@@ -77,6 +83,7 @@ public class CraftInInventoryTask extends ResourceTask {
         // No need to free inventory, output gets picked up.
 
             setDebugState("Crafting in inventory... for " + toGet);
+            if(mod.getModSettings().openInvDuringCrafting() && client != null && (client.currentScreen == null || !client.currentScreen.equals(invScreen))) client.setScreen(invScreen);
             return mod.getModSettings().shouldUseCraftingBookToCraft() ? new CraftGenericWithRecipeBooksTask(_target) : new CraftGenericManuallyTask(_target);
 
 
@@ -84,6 +91,7 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
+        if(mod.getModSettings().openInvDuringCrafting() && (client != null && client.currentScreen != null && client.currentScreen.equals(invScreen))) client.setScreen(null);
         mod.getBehaviour().pop();
     }
 

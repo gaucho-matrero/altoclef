@@ -414,6 +414,12 @@ public class Settings implements IFailableConfigFile {
      * ],
      */
     private List<BlockRange> areasToProtect = Collections.emptyList();
+    
+    
+    /*
+     * If true open inventory during crafting in 2x2
+     */
+    private boolean openInvDuringCrafting = true;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -609,6 +615,11 @@ public class Settings implements IFailableConfigFile {
     public BlockPos getHomeBasePosition() {
         return homeBasePosition;
     }
+    
+    
+	public boolean openInvDuringCrafting() {
+		return openInvDuringCrafting;
+	}
 
     @Override
     public void onFailLoad() {
