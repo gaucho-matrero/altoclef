@@ -8,11 +8,13 @@ import java.lang.String;
  */
 public class ChatMessageEvent {
     ChatMessageS2CPacket packet;
-    public String messageString;
 
 
     public ChatMessageEvent(ChatMessageS2CPacket packet) {
         this.packet = packet;
-        this.messageString = packet.body().content();
+    
+    public String messageContent() {
+        return packet.body().content();
+    }
     }
 }
