@@ -12,9 +12,9 @@ public class ChatMessageEvent {
 
     public ChatMessageEvent(ChatMessageS2CPacket packet) {
         this.packet = packet;
+    }
     
     public String messageContent() {
         return packet.body().content();
-    }
     }
 }
