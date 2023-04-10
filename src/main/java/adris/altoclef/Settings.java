@@ -286,6 +286,7 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * If set, will run this command after death.
+     * Also {deathmessage} will be replaced with the death message.
      * <p>
      * For example, try setting this to "@goto <Your base coords>" to make the bot go to the base before continuing the task it was given.
      * Or setting it to "I died!" will send the i died message
