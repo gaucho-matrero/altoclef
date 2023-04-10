@@ -15,7 +15,7 @@ repositories {
     mavenCentral()
     maven {
         name = "MarvionKiritoRepo"
-        url = "https://github.com/MarvionKirito/maven"
+        url = "https://marvionkirito.github.io/maven/"
     }
     flatDir {
         dirs '../baritone/dist'
