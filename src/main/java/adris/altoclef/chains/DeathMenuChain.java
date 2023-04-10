@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
+import adris.altoclef.mixins.DeathScreenAccessor;
 
 public class DeathMenuChain extends TaskChain {
 
@@ -22,6 +23,8 @@ public class DeathMenuChain extends TaskChain {
     private boolean _reconnecting = false;
     private int _deathCount = 0;
     private Class _prevScreen = null;
+    private String _deathMessage = "first_run";
+
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
@@ -78,10 +81,10 @@ public class DeathMenuChain extends TaskChain {
                     _deathCount++;
                     Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
                     assert MinecraftClient.getInstance().player != null;
-                    String deathreason = "(not implemented yet)"; //screen.children().toString();
+                    String deathmessage = ((DeathScreenAccessor) screen).getMessage().getString(); //"(not implemented yet)"; //screen.children().toString();
                     MinecraftClient.getInstance().player.requestRespawn();
                     MinecraftClient.getInstance().setScreen(null);
-                    String command = mod.getModSettings().getDeathCommand().replace("{deathreason}", deathreason);
+                    String command = mod.getModSettings().getDeathCommand().replace("{deathmessage}", deathmessage);
                     String prefix = mod.getModSettings().getCommandPrefix();
                     while (MinecraftClient.getInstance().player.isAlive());
                     if (command != ""){
