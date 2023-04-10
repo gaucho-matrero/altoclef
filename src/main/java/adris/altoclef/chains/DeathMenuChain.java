@@ -23,7 +23,6 @@ public class DeathMenuChain extends TaskChain {
     private boolean _reconnecting = false;
     private int _deathCount = 0;
     private Class _prevScreen = null;
-    private String _deathMessage = "first_run";
 
 
     public DeathMenuChain(TaskRunner runner) {
