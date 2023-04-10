@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.text.Text;
 
 public class DeathMenuChain extends TaskChain {
 
@@ -80,6 +81,21 @@ public class DeathMenuChain extends TaskChain {
                     assert MinecraftClient.getInstance().player != null;
                     MinecraftClient.getInstance().player.requestRespawn();
                     MinecraftClient.getInstance().setScreen(null);
+                    String command = mod.getModSettings().getDeathCommand();
+                    String prefix = mod.getModSettings().getCommandPrefix();
+                    while (MinecraftClient.getInstance().player.isAlive());
+                    if (command != ""){
+                        Debug.logMessage("executing: "+command);
+                        if (command.startsWith(prefix)) {
+                            AltoClef.getCommandExecutor().execute(command, () -> {}, e -> {e.printStackTrace();});
+                        } else if (command.startsWith("/")) {
+                            MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
+                        } else {
+                            MinecraftClient.getInstance().player.networkHandler.sendChatMessage(command);
+                        }
+                    } else {
+                        Debug.logMessage("skipping, command is \"\"");
+                    }
                 } else {
                     // Cancel if we die and are not auto-respawning.
                     mod.cancelUserTask();

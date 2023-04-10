@@ -283,6 +283,17 @@ public class Settings implements IFailableConfigFile {
      */
     private String idleCommand = "";
 
+
+    /**
+     * If set, will run this command after death.
+     * <p>
+     * For example, try setting this to "@goto <Your base coords>" to make the bot go to the base before continuing the task it was given.
+     * Or setting it to "I died!" will send the i died message
+     * Or setting it to "/back" will execute /back on the server
+     * When running altoclef commands, if the prefix is not @, the set prefix should be used for the command and not @
+     */
+    private String deathCommand = "";
+
     /**
      * If we need to throw away something, throw away these items first.
      */
@@ -505,6 +516,10 @@ public class Settings implements IFailableConfigFile {
 
     public String getIdleCommand() {
         return idleCommand;
+    }
+
+    public String getDeathCommand() {
+        return deathCommand;
     }
 
     public boolean shouldRunIdleCommandWhenNotActive() {
