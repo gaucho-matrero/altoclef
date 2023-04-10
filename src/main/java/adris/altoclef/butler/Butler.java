@@ -46,7 +46,7 @@ public class Butler {
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
             boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.messageString;
+            String message = evt.messageContent();
             if (debug) {
                 Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
             }
