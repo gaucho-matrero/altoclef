@@ -84,20 +84,19 @@ public class DeathMenuChain extends TaskChain {
                     String deathmessage = ((DeathScreenAccessor) screen).getMessage().getString(); //"(not implemented yet)"; //screen.children().toString();
                     MinecraftClient.getInstance().player.requestRespawn();
                     MinecraftClient.getInstance().setScreen(null);
-                    String command = mod.getModSettings().getDeathCommand().replace("{deathmessage}", deathmessage);
-                    String prefix = mod.getModSettings().getCommandPrefix();
-                    while (MinecraftClient.getInstance().player.isAlive());
-                    if (command != ""){
-                        Debug.logMessage("executing: "+command);
-                        if (command.startsWith(prefix)) {
-                            AltoClef.getCommandExecutor().execute(command, () -> {}, e -> {e.printStackTrace();});
-                        } else if (command.startsWith("/")) {
-                            MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
-                        } else {
-                            MinecraftClient.getInstance().player.networkHandler.sendChatMessage(command);
+                    for (String i :  mod.getModSettings().getDeathCommand().split(" & ")) {
+                        String command = i.replace("{deathmessage}", deathmessage);
+                        String prefix = mod.getModSettings().getCommandPrefix();
+                        while (MinecraftClient.getInstance().player.isAlive());
+                        if (command != ""){
+                            if (command.startsWith(prefix)) {
+                                AltoClef.getCommandExecutor().execute(command, () -> {}, e -> {e.printStackTrace();});
+                            } else if (command.startsWith("/")) {
+                                MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
+                            } else {
+                                MinecraftClient.getInstance().player.networkHandler.sendChatMessage(command);
+                            }
                         }
-                    } else {
-                        Debug.logMessage("skipping, command is \"\"");
                     }
                 } else {
                     // Cancel if we die and are not auto-respawning.

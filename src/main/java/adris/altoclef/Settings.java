@@ -291,6 +291,7 @@ public class Settings implements IFailableConfigFile {
      * Or setting it to "I died!" will send the i died message
      * Or setting it to "/back" will execute /back on the server
      * When running altoclef commands, if the prefix is not @, the set prefix should be used for the command and not @
+     * You may run multiple commands even commands of differet type by splitting them with " & ". Example: /home & i died with message: {deathmessage} & @get diamond
      */
     private String deathCommand = "";
 
