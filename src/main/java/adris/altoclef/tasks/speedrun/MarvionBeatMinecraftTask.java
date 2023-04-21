@@ -1258,6 +1258,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         return null;
     }
+
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
         // If we have our end portal, this doesn't matter.
         if (endPortalFound(mod, endPortalCenter)) {

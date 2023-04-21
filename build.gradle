@@ -32,15 +32,15 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0-rc1'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0-rc2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0-rc2'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.15.0-rc1')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc1')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.15.0-rc1')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.15.0-rc2')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.15.0-rc2')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.15.0-rc2')
 
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
