@@ -120,7 +120,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(10);
     private final Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
-    private final GoToStrongholdPortalTask _locateStrongholdTask;
+    private static GoToStrongholdPortalTask _locateStrongholdTask;
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();

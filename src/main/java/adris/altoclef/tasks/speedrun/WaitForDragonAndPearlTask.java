@@ -4,7 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
-import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasks.movement.GetToYTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
@@ -18,7 +17,6 @@ import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -72,17 +70,6 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        Iterable<Entity> entities = mod.getWorld().getEntities();
-        if (entities != null) {
-            for (Entity entity : entities) {
-                if (entity instanceof EndermanEntity enderman) {
-                    if (enderman.isAngryAt(mod.getPlayer()) && enderman.isAngry()) {
-                        setDebugState("Kill angry enderman first.");
-                        return new KillEntitiesTask(enderman.getClass());
-                    }
-                }
-            }
-        }
         if (_throwPearlTask != null && _throwPearlTask.isActive() && !_throwPearlTask.isFinished(mod)) {
             setDebugState("Throwing pearl!");
             return _throwPearlTask;
