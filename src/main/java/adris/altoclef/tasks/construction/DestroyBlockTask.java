@@ -190,7 +190,8 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         // We're trying to mine
         Optional<Rotation> reach = LookHelper.getReach(_pos);
         if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround()) &&
-                !mod.getFoodChain().needsToEat() && !WorldHelper.isInNetherPortal(mod)) {
+                !mod.getFoodChain().needsToEat() && !WorldHelper.isInNetherPortal(mod) &&
+                mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             setDebugState("Block in range, mining...");
             stuckCheck.reset();
             isMining = true;
@@ -200,10 +201,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             // Break the block, force it.
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getBuilderProcess().onLostControl();
-            if (!LookHelper.isLookingAt(mod, _pos)) {
+            if (!LookHelper.isLookingAt(mod, reach.get())) {
                 reach.ifPresent(rotation -> LookHelper.lookAt(mod, rotation));
             }
-            if (LookHelper.isLookingAt(mod, _pos)) {
+            if (LookHelper.isLookingAt(mod, reach.get())) {
                 // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             }

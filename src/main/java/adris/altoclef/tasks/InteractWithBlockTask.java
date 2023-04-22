@@ -381,7 +381,7 @@ public class InteractWithBlockTask extends Task {
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
             LookHelper.lookAt(mod, reachable.get());
-            if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
+            if (LookHelper.isLookingAt(mod, reachable.get())) {
                 if (_toUse != null) {
                     mod.getSlotHandler().forceEquipItem(_toUse, false);
                 } else {
