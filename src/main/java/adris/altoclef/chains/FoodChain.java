@@ -30,7 +30,7 @@ public class FoodChain extends SingleTaskChain {
     }
 
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
-    boolean _hasFood;
+    private static boolean _hasFood;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
@@ -121,19 +121,16 @@ public class FoodChain extends SingleTaskChain {
         Pair<Integer, Optional<Item>> calculation = calculateFood(mod);
         int _cachedFoodScore = calculation.getLeft();
         _cachedPerfectFood = calculation.getRight();
-
-        boolean hasFood = _cachedFoodScore > 0;
-        _hasFood = hasFood;
-
+        _hasFood = _cachedFoodScore > 0;
         // If we requested a fillup but we're full, stop.
         if (_requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() >= 20) {
             _requestFillup = false;
         }
         // If we no longer have food, we no longer can eat.
-        if (!hasFood) {
+        if (!_hasFood) {
             _requestFillup = false;
         }
-        if (hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
+        if (_hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
                 !mod.getMLGBucketChain().isChorusFruiting() && !mod.getPlayer().isBlocking()) {
             Item toUse = _cachedPerfectFood.get();
             // Make sure we're not facing a container
