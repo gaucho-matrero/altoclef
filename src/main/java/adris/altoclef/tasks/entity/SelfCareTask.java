@@ -38,13 +38,14 @@ public class SelfCareTask extends Task {
     private static final Item[] beds = ItemHelper.BED;
     private static Task getToolSet;
     private static final Task getBed = TaskCatalogue.getItemTask("bed", 1);
-    private static final Task getFoods = new CollectFoodTask(100);
+    private static final Task getFood = new CollectFoodTask(100);
     private static final Task sleepThroughNight = new SleepThroughNightTask();
     private static final Task equipShield = new EquipArmorTask(Items.SHIELD);
     private static final Task equipIronArmorSet = new EquipArmorTask(ironArmorSet);
     private static boolean isTaskNotFinished(AltoClef mod, Task task){
         return task != null && task.isActive() && !task.isFinished(mod);
     }
+    private static String debugStateName;
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -59,48 +60,54 @@ public class SelfCareTask extends Task {
         boolean hasShield = StorageHelper.isArmorEquipped(mod, Items.SHIELD);
         boolean hasIronArmorSet = StorageHelper.isArmorEquippedAll(mod, ironArmorSet);
         if (hasBed && WorldHelper.canSleep()){
-            setDebugState("Sleep through night");
+            setDebugState("Sleeping through night");
             return sleepThroughNight;
         }
         if (isTaskNotFinished(mod, getToolSet)){
-            setDebugState("Getting tools");
+            setDebugState(debugStateName);
             return getToolSet;
         }
         if (isTaskNotFinished(mod, equipShield)){
-            setDebugState("Getting shield");
+            setDebugState(debugStateName);
             return equipShield;
         }
         if (isTaskNotFinished(mod, equipIronArmorSet)){
-            setDebugState("Getting iron armor set");
+            setDebugState(debugStateName);
             return equipIronArmorSet;
         }
         if (isTaskNotFinished(mod, getBed)){
-            setDebugState("Getting bed");
+            setDebugState(debugStateName);
             return getBed;
         }
-        if (isTaskNotFinished(mod, getFoods)){
-            setDebugState("Getting foods");
-            return getFoods;
+        if (isTaskNotFinished(mod, getFood)){
+            setDebugState(debugStateName);
+            return getFood;
         }
         if (!hasWoodToolSet){
+            debugStateName = "Getting wood tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(woodToolSet);
             return getToolSet;
         }
         if (!hasStoneToolSet){
+            debugStateName = "Getting stone tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(stoneToolSet);
             return getToolSet;
         }
         if (!hasBed){
+            debugStateName = "Getting bed";
             return getBed;
         }
         if (!mod.getFoodChain().hasFood()){
-            return getFoods;
+            debugStateName = "Getting food";
+            return getFood;
         }
         if (!hasIronToolSet){
+            debugStateName = "Getting iron tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(ironToolSet);
             return getToolSet;
         }
         if (!hasShield){
+            debugStateName = "Getting shield";
             return equipShield;
         }
         if (!hasIronArmorSet){
