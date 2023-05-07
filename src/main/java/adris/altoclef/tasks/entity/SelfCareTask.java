@@ -32,6 +32,9 @@ public class SelfCareTask extends Task {
             new ItemTarget(Items.IRON_AXE, 1),
             new ItemTarget(Items.IRON_SHOVEL, 1),
     };
+    private static final ItemTarget[] diamondToolSet = new ItemTarget[]{
+            new ItemTarget(Items.DIAMOND_SWORD, 1)
+    };
     private static final Item[] ironArmorSet = new Item[]{
             Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS
     };
@@ -41,7 +44,7 @@ public class SelfCareTask extends Task {
     private static final Task getFood = new CollectFoodTask(100);
     private static final Task sleepThroughNight = new SleepThroughNightTask();
     private static final Task equipShield = new EquipArmorTask(Items.SHIELD);
-    private static final Task equipIronArmorSet = new EquipArmorTask(ironArmorSet);
+    private static Task equipArmorSet;
     private static boolean isTaskNotFinished(AltoClef mod, Task task){
         return task != null && task.isActive() && !task.isFinished(mod);
     }
@@ -59,6 +62,7 @@ public class SelfCareTask extends Task {
         boolean hasBed = mod.getItemStorage().hasItem(beds);
         boolean hasShield = StorageHelper.isArmorEquipped(mod, Items.SHIELD);
         boolean hasIronArmorSet = StorageHelper.isArmorEquippedAll(mod, ironArmorSet);
+        boolean hasDiamondToolSet = mod.getItemStorage().hasItem(diamondToolSet);
         if (hasBed && WorldHelper.canSleep()){
             setDebugState("Sleeping through night");
             return sleepThroughNight;
@@ -71,9 +75,9 @@ public class SelfCareTask extends Task {
             setDebugState(debugStateName);
             return equipShield;
         }
-        if (isTaskNotFinished(mod, equipIronArmorSet)){
+        if (isTaskNotFinished(mod, equipArmorSet)){
             setDebugState(debugStateName);
-            return equipIronArmorSet;
+            return equipArmorSet;
         }
         if (isTaskNotFinished(mod, getBed)){
             setDebugState(debugStateName);
@@ -111,7 +115,9 @@ public class SelfCareTask extends Task {
             return equipShield;
         }
         if (!hasIronArmorSet){
-            return equipIronArmorSet;
+            debugStateName = "Getting and equipping iron armor set";
+            equipArmorSet = new EquipArmorTask(ironArmorSet);
+            return equipArmorSet;
         }
         return null;
     }
