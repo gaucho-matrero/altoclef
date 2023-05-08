@@ -6,6 +6,7 @@ import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -33,10 +34,25 @@ public class SelfCareTask extends Task {
             new ItemTarget(Items.IRON_SHOVEL, 1),
     };
     private static final ItemTarget[] diamondToolSet = new ItemTarget[]{
-            new ItemTarget(Items.DIAMOND_SWORD, 1)
+            new ItemTarget(Items.DIAMOND_SWORD, 1),
+            new ItemTarget(Items.DIAMOND_PICKAXE, 1),
+            new ItemTarget(Items.DIAMOND_AXE, 1),
+            new ItemTarget(Items.DIAMOND_SHOVEL, 1)
+    };
+    private static final ItemTarget[] netheriteToolSet = new ItemTarget[]{
+            new ItemTarget(Items.NETHERITE_SWORD, 1),
+            new ItemTarget(Items.NETHERITE_PICKAXE, 1),
+            new ItemTarget(Items.NETHERITE_AXE, 1),
+            new ItemTarget(Items.NETHERITE_SHOVEL, 1)
     };
     private static final Item[] ironArmorSet = new Item[]{
             Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS
+    };
+    private static final Item[] diamondArmorSet = new Item[]{
+            Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS
+    };
+    private static final Item[] netheriteArmorSet = new Item[]{
+            Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS
     };
     private static final Item[] beds = ItemHelper.BED;
     private static Task getToolSet;
@@ -63,6 +79,9 @@ public class SelfCareTask extends Task {
         boolean hasShield = StorageHelper.isArmorEquipped(mod, Items.SHIELD);
         boolean hasIronArmorSet = StorageHelper.isArmorEquippedAll(mod, ironArmorSet);
         boolean hasDiamondToolSet = mod.getItemStorage().hasItem(diamondToolSet);
+        boolean hasDiamondArmorSet = StorageHelper.isArmorEquippedAll(mod, diamondArmorSet);
+        boolean hasNetheriteToolSet = mod.getItemStorage().hasItem(netheriteToolSet);
+        boolean hasNetheriteArmorSet = StorageHelper.isArmorEquippedAll(mod, netheriteArmorSet);
         if (hasBed && WorldHelper.canSleep()){
             setDebugState("Sleeping through night");
             return sleepThroughNight;
@@ -117,6 +136,26 @@ public class SelfCareTask extends Task {
         if (!hasIronArmorSet){
             debugStateName = "Getting and equipping iron armor set";
             equipArmorSet = new EquipArmorTask(ironArmorSet);
+            return equipArmorSet;
+        }
+        if (!hasDiamondToolSet){
+            debugStateName = "Getting diamond tool set";
+            getToolSet = TaskCatalogue.getSquashedItemTask(diamondToolSet);
+            return getToolSet;
+        }
+        if (!hasDiamondArmorSet){
+            debugStateName = "Getting and equipping diamond armor set";
+            equipArmorSet = new EquipArmorTask(diamondArmorSet);
+            return equipArmorSet;
+        }
+        if (!hasNetheriteToolSet){
+            debugStateName = "Getting netherite tool set";
+            getToolSet = TaskCatalogue.getSquashedItemTask(netheriteToolSet);
+            return getToolSet;
+        }
+        if (!hasNetheriteArmorSet){
+            debugStateName = "Getting and equipping netherite armor set";
+            equipArmorSet = new EquipArmorTask(netheriteArmorSet);
             return equipArmorSet;
         }
         return null;
