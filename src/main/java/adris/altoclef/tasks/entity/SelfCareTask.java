@@ -4,15 +4,19 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
+import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+
+import java.util.Optional;
 
 public class SelfCareTask extends Task {
     private static final ItemTarget[] woodToolSet = new ItemTarget[]{
@@ -64,7 +68,9 @@ public class SelfCareTask extends Task {
     private static boolean isTaskNotFinished(AltoClef mod, Task task){
         return task != null && task.isActive() && !task.isFinished(mod);
     }
+
     private static String debugStateName;
+    private static Task goToPlayer;
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -82,6 +88,7 @@ public class SelfCareTask extends Task {
         boolean hasDiamondArmorSet = StorageHelper.isArmorEquippedAll(mod, diamondArmorSet);
         boolean hasNetheriteToolSet = mod.getItemStorage().hasItem(netheriteToolSet);
         boolean hasNetheriteArmorSet = StorageHelper.isArmorEquippedAll(mod, netheriteArmorSet);
+        Optional<Entity> player = mod.getEntityTracker().getClosestEntity(PlayerEntity.class);
         if (hasBed && WorldHelper.canSleep()){
             setDebugState("Sleeping through night");
             return sleepThroughNight;
@@ -133,31 +140,37 @@ public class SelfCareTask extends Task {
             debugStateName = "Getting shield";
             return equipShield;
         }
-        if (!hasIronArmorSet){
+        if (!hasIronArmorSet) {
             debugStateName = "Getting and equipping iron armor set";
             equipArmorSet = new EquipArmorTask(ironArmorSet);
             return equipArmorSet;
         }
-        if (!hasDiamondToolSet){
+        if (!hasDiamondToolSet) {
             debugStateName = "Getting diamond tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(diamondToolSet);
             return getToolSet;
         }
-        if (!hasDiamondArmorSet){
+        if (!hasDiamondArmorSet) {
             debugStateName = "Getting and equipping diamond armor set";
             equipArmorSet = new EquipArmorTask(diamondArmorSet);
             return equipArmorSet;
         }
-        if (!hasNetheriteToolSet){
+        if (!hasNetheriteToolSet) {
             debugStateName = "Getting netherite tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(netheriteToolSet);
             return getToolSet;
         }
-        if (!hasNetheriteArmorSet){
+        if (!hasNetheriteArmorSet) {
             debugStateName = "Getting and equipping netherite armor set";
             equipArmorSet = new EquipArmorTask(netheriteArmorSet);
             return equipArmorSet;
         }
+        if (player.isPresent()) {
+            setDebugState("Following player");
+            goToPlayer = new GetToEntityTask(player.get(), 2);
+            return goToPlayer;
+        }
+        setDebugState("Doing nothing until a player is found");
         return null;
     }
 
