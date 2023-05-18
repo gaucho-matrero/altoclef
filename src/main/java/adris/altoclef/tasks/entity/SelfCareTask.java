@@ -70,7 +70,7 @@ public class SelfCareTask extends Task {
     }
 
     private static String debugStateName;
-    private static Task goToPlayer;
+
     @Override
     protected void onStart(AltoClef mod) {
 
@@ -167,8 +167,7 @@ public class SelfCareTask extends Task {
         }
         if (player.isPresent()) {
             setDebugState("Following player");
-            goToPlayer = new GetToEntityTask(player.get(), 2);
-            return goToPlayer;
+            return new GetToEntityTask(player.get(), 2);
         }
         setDebugState("Doing nothing until a player is found");
         return null;
