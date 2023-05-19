@@ -114,7 +114,14 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
                 // Pick the best slot to grab from.
                 Optional<Slot> bestPotential = getBestSlotToTransfer(mod, target, count, potentials, stack -> mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false).isPresent());
-
+                ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+                if (!cursorStack.isEmpty()) {
+                    Optional<Slot> toPlace = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
+                    if (toPlace.isPresent()) {
+                        mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                }
                 if (bestPotential.isPresent()) {
                     // Just pick it up, it's now ours.
                     mod.getSlotHandler().clickSlot(bestPotential.get(), 0, SlotActionType.PICKUP);
