@@ -2,6 +2,7 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.DeathScreenAccessor;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.time.TimerGame;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
-import adris.altoclef.mixins.DeathScreenAccessor;
 
 public class DeathMenuChain extends TaskChain {
 
@@ -83,13 +83,16 @@ public class DeathMenuChain extends TaskChain {
                     String deathmessage = ((DeathScreenAccessor) screen).getMessage().getString(); //"(not implemented yet)"; //screen.children().toString();
                     MinecraftClient.getInstance().player.requestRespawn();
                     MinecraftClient.getInstance().setScreen(null);
-                    for (String i :  mod.getModSettings().getDeathCommand().split(" & ")) {
+                    for (String i : mod.getModSettings().getDeathCommand().split(" & ")) {
                         String command = i.replace("{deathmessage}", deathmessage);
                         String prefix = mod.getModSettings().getCommandPrefix();
-                        while (MinecraftClient.getInstance().player.isAlive());
-                        if (command != ""){
+                        while (MinecraftClient.getInstance().player.isAlive()) ;
+                        if (command != "") {
                             if (command.startsWith(prefix)) {
-                                AltoClef.getCommandExecutor().execute(command, () -> {}, e -> {e.printStackTrace();});
+                                AltoClef.getCommandExecutor().execute(command, () -> {
+                                }, e -> {
+                                    e.printStackTrace();
+                                });
                             } else if (command.startsWith("/")) {
                                 MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
                             } else {

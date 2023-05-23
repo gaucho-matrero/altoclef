@@ -110,6 +110,7 @@ public class MarvionBeatMinecraftTask extends Task {
         return true;
     };
     private static BeatMinecraftConfig _config;
+    private static GoToStrongholdPortalTask _locateStrongholdTask;
 
     static {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
@@ -120,7 +121,6 @@ public class MarvionBeatMinecraftTask extends Task {
     private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(10);
     private final Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
-    private static GoToStrongholdPortalTask _locateStrongholdTask;
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();

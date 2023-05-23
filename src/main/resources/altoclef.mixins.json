@@ -11,12 +11,12 @@
     "ClientInteractWithBlockMixin",
     "ClientPlayerInteractionAccessor",
     "ClientUIMixin",
+    "DeathScreenAccessor",
     "EntityAccessor",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",
     "SlotClickMixin",
-    "WorldBlockModifiedMixin",
-    "DeathScreenAccessor"
+    "WorldBlockModifiedMixin"
   ],
   "client": [
     "ChatInputMixin",

@@ -24,13 +24,13 @@ import java.util.Optional;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class FoodChain extends SingleTaskChain {
     private static FoodChainConfig _config;
+    private static boolean _hasFood;
 
     static {
         ConfigHelper.loadConfig("configs/food_chain_settings.json", FoodChainConfig::new, FoodChainConfig.class, newConfig -> _config = newConfig);
     }
 
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
-    private static boolean _hasFood;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
