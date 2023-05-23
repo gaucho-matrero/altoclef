@@ -5,6 +5,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.GetToEntityTask;
+import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -169,8 +170,8 @@ public class SelfCareTask extends Task {
             setDebugState("Following player");
             return new GetToEntityTask(player.get(), 2);
         }
-        setDebugState("Doing nothing until a player is found");
-        return null;
+        setDebugState("Wandering until a player is found");
+        return new TimeoutWanderTask();
     }
 
     @Override
