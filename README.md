@@ -29,7 +29,7 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 ### Alternate Versions (Recommended) (Unofficial)
 
-If you are looking for 1.19.2 - 1.19.4 support, check out this [gist](https://gist.github.com/JustaSqu1d/171df3ff386859da31d37534122d3b10). Note that these projects are forks of this original project and not directly affliated with Alto Clef. It is also more up-to-date with bug fixes.
+If you are looking for 1.19.2 - 1.19.4 support, check out this [gist](https://gist.github.com/JustaSqu1d/171df3ff386859da31d37534122d3b10). Note that these projects are forks of this original project and not directly affliated with Alto Clef. It is also more up-to-date with bug fixes and features.
 
 ### Nightly Release (has the latest bug fixes)
 
