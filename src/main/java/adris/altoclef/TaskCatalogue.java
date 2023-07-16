@@ -371,15 +371,15 @@ public class TaskCatalogue {
             armor("iron", "iron_ingot", Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS);
             armor("golden", "gold_ingot", Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
             armor("diamond", "diamond", Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
-            smith("netherite_helmet", Items.NETHERITE_HELMET, "netherite_ingot", "diamond_helmet");
-            smith("netherite_chestplate", Items.NETHERITE_CHESTPLATE, "netherite_ingot", "diamond_chestplate");
-            smith("netherite_leggings", Items.NETHERITE_LEGGINGS, "netherite_ingot", "diamond_leggings");
-            smith("netherite_boots", Items.NETHERITE_BOOTS, "netherite_ingot", "diamond_boots");
-            smith("netherite_pickaxe", Items.NETHERITE_PICKAXE, "netherite_ingot", "diamond_pickaxe");
-            smith("netherite_axe", Items.NETHERITE_AXE, "netherite_ingot", "diamond_axe");
-            smith("netherite_shovel", Items.NETHERITE_SHOVEL, "netherite_ingot", "diamond_shovel");
-            smith("netherite_sword", Items.NETHERITE_SWORD, "netherite_ingot", "diamond_sword");
-            smith("netherite_hoe", Items.NETHERITE_HOE, "netherite_ingot", "diamond_hoe");
+            smith("netherite_helmet", Items.NETHERITE_HELMET, "smithing_template", "netherite_ingot", "diamond_helmet"); // this has to be changed to work with smithing templates
+            smith("netherite_chestplate", Items.NETHERITE_CHESTPLATE, "smithing_template", "netherite_ingot", "diamond_chestplate");
+            smith("netherite_leggings", Items.NETHERITE_LEGGINGS, "smithing_template", "netherite_ingot", "diamond_leggings");
+            smith("netherite_boots", Items.NETHERITE_BOOTS, "smithing_template", "netherite_ingot", "diamond_boots");
+            smith("netherite_pickaxe", Items.NETHERITE_PICKAXE, "smithing_template", "netherite_ingot", "diamond_pickaxe");
+            smith("netherite_axe", Items.NETHERITE_AXE, "smithing_template", "netherite_ingot", "diamond_axe");
+            smith("netherite_shovel", Items.NETHERITE_SHOVEL, "smithing_template", "netherite_ingot", "diamond_shovel");
+            smith("netherite_sword", Items.NETHERITE_SWORD, "smithing_template", "netherite_ingot", "diamond_sword");
+            smith("netherite_hoe", Items.NETHERITE_HOE, "smithing_template", "netherite_ingot", "diamond_hoe");
             shapedRecipe3x3("bow", Items.BOW, 1, "string", s, o, "string", o, s, "string", s, o);
             shapedRecipe3x3("arrow", Items.ARROW, 4, "flint", o, o, s, o, o, "feather", o, o);
             {
@@ -780,8 +780,8 @@ public class TaskCatalogue {
     private static CataloguedResource smith(String name, Item[] matches, String materials, String tool) {
         return put(name, matches, count -> new UpgradeInSmithingTableTask(new ItemTarget(tool, count), new ItemTarget(materials, count), new ItemTarget(matches, count)));//new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(matches, count), new ItemTarget(materials, count))));
     }
-    private static CataloguedResource smith(String name, Item match, String materials, String tool) {
-        return smith(name, new Item[]{match}, materials, tool);
+    private static CataloguedResource smith(String name, Item match, String smithingTemplate String materials, String tool) {
+        return smith(name, new Item[]{match}, materials, tool); // this too will have to be changed to work with the smithing template, for now this may work
     }
 
     private static CataloguedResource mob(String name, Item[] matches, Class mobClass) {
