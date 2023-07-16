@@ -279,6 +279,7 @@ public class TaskCatalogue {
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
             shapedRecipe2x2("flower_banner_pattern", Items.FLOWER_BANNER_PATTERN, 1, "paper", "oxeye_daisy", o, o);
             simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
+            shapedRecipe3x3("smithing_template", Items.SMITHING_TEMPLATE, 2, "diamond", "smithing_template", "diamond", "diamond", "netherrack", "diamond", "diamond", "diamond", "diamond");
             // Slabs + Stairs + Walls
             shapedRecipeSlab("cobblestone_slab", Items.COBBLESTONE_SLAB, "cobblestone");
             shapedRecipeStairs("cobblestone_stairs", Items.COBBLESTONE_STAIRS, "cobblestone");
