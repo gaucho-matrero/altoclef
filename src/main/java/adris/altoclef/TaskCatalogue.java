@@ -279,7 +279,10 @@ public class TaskCatalogue {
             shapedRecipe3x3("fire_charge", Items.FIRE_CHARGE, 3, o, "blaze_powder", o, o, "coal", o, o, "gunpowder", o);
             shapedRecipe2x2("flower_banner_pattern", Items.FLOWER_BANNER_PATTERN, 1, "paper", "oxeye_daisy", o, o);
             simple("magma_cream", Items.MAGMA_CREAM, CollectMagmaCreamTask::new);
+            simple("blaze_rod", Items.SMITHING_TEMPLATE, CollectSmithingTemplateTask::new); // this might work, but i'll need to write the task too
             shapedRecipe3x3("smithing_template", Items.SMITHING_TEMPLATE, 2, "diamond", "smithing_template", "diamond", "diamond", "netherrack", "diamond", "diamond", "diamond", "diamond");
+            // I am not sure whether this is called item.minecraft.smithing_template or item.minecraft.netherite_upgrade_smithing_template
+
             // Slabs + Stairs + Walls
             shapedRecipeSlab("cobblestone_slab", Items.COBBLESTONE_SLAB, "cobblestone");
             shapedRecipeStairs("cobblestone_stairs", Items.COBBLESTONE_STAIRS, "cobblestone");
