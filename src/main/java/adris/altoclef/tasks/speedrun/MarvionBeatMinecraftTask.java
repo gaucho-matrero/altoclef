@@ -70,33 +70,34 @@ public class MarvionBeatMinecraftTask extends Task {
             Items.GOLDEN_BOOTS
     };
     private static final ItemTarget[] COLLECT_STONE_GEAR = combine(
-            toItemTargets(Items.STONE_SWORD, 1),
-            toItemTargets(Items.STONE_PICKAXE, 2));
+            toItemTargets(Items.STONE_SWORD),
+            toItemTargets(Items.STONE_PICKAXE)
+    );
     private static final Item COLLECT_SHIELD = Items.SHIELD;
     private static final Item[] COLLECT_IRON_ARMOR = ItemHelper.IRON_ARMORS;
     private static final Item[] COLLECT_EYE_ARMOR_END = ItemHelper.DIAMOND_ARMORS;
     private static final ItemTarget[] COLLECT_IRON_GEAR = combine(
-            toItemTargets(Items.IRON_SWORD, 2),
-            toItemTargets(Items.IRON_PICKAXE, 3)
+            toItemTargets(Items.IRON_SWORD),
+            toItemTargets(Items.IRON_PICKAXE)
     );
     private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE, 3),
+            toItemTargets(Items.DIAMOND_PICKAXE, 2),
             toItemTargets(Items.CRAFTING_TABLE)
     );
     private static final ItemTarget[] COLLECT_IRON_GEAR_MIN = combine(
-            toItemTargets(Items.IRON_SWORD, 2)
+            toItemTargets(Items.IRON_SWORD)
     );
     private static final ItemTarget[] COLLECT_EYE_GEAR_MIN = combine(
             toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE, 3)
+            toItemTargets(Items.DIAMOND_PICKAXE, 2)
     );
     private static final ItemTarget[] IRON_GEAR = combine(
-            toItemTargets(Items.IRON_SWORD, 2),
-            toItemTargets(Items.IRON_PICKAXE, 3)
+            toItemTargets(Items.IRON_SWORD),
+            toItemTargets(Items.IRON_PICKAXE)
     );
     private static final ItemTarget[] IRON_GEAR_MIN = combine(
-            toItemTargets(Items.IRON_SWORD, 2)
+            toItemTargets(Items.IRON_SWORD)
     );
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
