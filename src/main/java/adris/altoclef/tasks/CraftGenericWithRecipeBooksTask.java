@@ -5,13 +5,17 @@ import adris.altoclef.tasks.slot.EnsureFreePlayerCraftingGridTask;
 import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.JankCraftingRecipeMapping;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CraftingTableSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
@@ -92,9 +96,14 @@ public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCr
             }
         }
         setDebugState("Crafting.");
-        if (mod.getSlotHandler().canDoSlotAction()) {
-            StorageHelper.instantFillRecipeViaBook(mod, _target.getRecipe(), _target.getOutputItem(), true);
-            mod.getSlotHandler().registerSlotAction();
+        Optional<Recipe<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(_target.getRecipe(), _target.getOutputItem());
+        if (recipeToSend.isPresent()) {
+            if (mod.getSlotHandler().canDoSlotAction()) {
+                ClientPlayerEntity player = MinecraftClient.getInstance().player;
+                assert player != null;
+                mod.getController().clickRecipe(player.currentScreenHandler.syncId, recipeToSend.get(), true);
+                mod.getSlotHandler().registerSlotAction();
+            }
         }
         return null;
     }

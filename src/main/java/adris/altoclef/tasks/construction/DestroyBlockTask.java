@@ -202,12 +202,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getBuilderProcess().onLostControl();
             if (!LookHelper.isLookingAt(mod, reach.get())) {
-                reach.ifPresent(rotation -> LookHelper.lookAt(mod, rotation));
+                LookHelper.lookAt(mod, reach.get());
             }
-            if (LookHelper.isLookingAt(mod, reach.get())) {
-                // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
-                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
-            }
+            // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
+            mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         } else {
             setDebugState("Getting to block...");
             if (isMining && mod.getPlayer().isTouchingWater()) {

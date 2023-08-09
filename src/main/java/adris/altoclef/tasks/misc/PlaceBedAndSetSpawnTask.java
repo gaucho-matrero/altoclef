@@ -39,15 +39,44 @@ import org.apache.commons.lang3.ArrayUtils;
 public class PlaceBedAndSetSpawnTask extends Task {
 
     private final TimerGame _regionScanTimer = new TimerGame(9);
-    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 2);
+    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 3);
     private final Vec3i[] BED_BOTTOM_PLATFORM = new Vec3i[]{
             new Vec3i(0, -1, 0),
             new Vec3i(1, -1, 0),
             new Vec3i(2, -1, 0),
+            new Vec3i(0, -1, -1),
+            new Vec3i(1, -1, -1),
+            new Vec3i(2, -1, -1),
+            new Vec3i(0, -1, 1),
+            new Vec3i(1, -1, 1),
+            new Vec3i(2, -1, 1)
     };
     // Kinda silly but who knows if we ever want to change it.
-    private final Vec3i BED_PLACE_STAND_POS = new Vec3i(0, 0, 0);
-    private final Vec3i BED_PLACE_POS = new Vec3i(1, 0, 0);
+    private final Vec3i BED_PLACE_STAND_POS = new Vec3i(0, 0, 1);
+    private final Vec3i BED_PLACE_POS = new Vec3i(1, 0, 1);
+    private final Vec3i[] BED_PLACE_POS_OFFSET = new Vec3i[]{
+            BED_PLACE_POS,
+            BED_PLACE_POS.north(),
+            BED_PLACE_POS.south(),
+            BED_PLACE_POS.east(),
+            BED_PLACE_POS.west(),
+            BED_PLACE_POS.add(-1, 0, 1),
+            BED_PLACE_POS.add(1, 0, 1),
+            BED_PLACE_POS.add(-1, 0, -1),
+            BED_PLACE_POS.add(1, 0, -1),
+            BED_PLACE_POS.north(2),
+            BED_PLACE_POS.south(2),
+            BED_PLACE_POS.east(2),
+            BED_PLACE_POS.west(2),
+            BED_PLACE_POS.add(-2, 0, 1),
+            BED_PLACE_POS.add(-2, 0, 2),
+            BED_PLACE_POS.add(2, 0, 1),
+            BED_PLACE_POS.add(2, 0, 2),
+            BED_PLACE_POS.add(-2, 0, -1),
+            BED_PLACE_POS.add(-2, 0, -2),
+            BED_PLACE_POS.add(2, 0, -1),
+            BED_PLACE_POS.add(2, 0, -2)
+    };
     private final Direction BED_PLACE_DIRECTION = Direction.UP;
     private final TimerGame _bedInteractTimeout = new TimerGame(5);
     private final TimerGame _inBedTimer = new TimerGame(1);
@@ -227,9 +256,12 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }, ItemHelper.itemsToBlocks(ItemHelper.BED));
         }
         if (_currentBedRegion != null) {
-            Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BED_PLACE_POS)).getBlock();
-            if (getBlock instanceof BedBlock) {
-                mod.getBlockTracker().addBlock(getBlock, _currentBedRegion.add(BED_PLACE_POS));
+            for (Vec3i BedPlacePos : BED_PLACE_POS_OFFSET) {
+                Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BedPlacePos)).getBlock();
+                if (getBlock instanceof BedBlock) {
+                    mod.getBlockTracker().addBlock(getBlock, _currentBedRegion.add(BedPlacePos));
+                    break;
+                }
             }
         }
         // Get a bed if we don't have one.

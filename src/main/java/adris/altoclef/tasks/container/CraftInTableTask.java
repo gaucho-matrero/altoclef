@@ -12,6 +12,7 @@ import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.JankCraftingRecipeMapping;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -19,8 +20,11 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
@@ -267,12 +271,14 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
                 continue;
             // No need to free, handled automatically I believe.
             setDebugState("Crafting");
-
-            return mod.getModSettings().shouldUseCraftingBookToCraft()
-                    ? new CraftGenericWithRecipeBooksTask(target)
-                    : new CraftGenericManuallyTask(target);
+            Optional<Recipe<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(target.getRecipe(), target.getOutputItem());
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            assert player != null;
+            if (mod.getModSettings().shouldUseCraftingBookToCraft() && recipeToSend.isPresent() && player.getRecipeBook().contains(recipeToSend.get())) {
+                return new CraftGenericWithRecipeBooksTask(target);
+            }
+            return new CraftGenericManuallyTask(target);
         }
-
         setDebugState("DONE? Shouldn't be here");
         return null;
     }

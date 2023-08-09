@@ -23,7 +23,7 @@ public class BlockModifiedByPlayerMixin {
             at = @At("HEAD")
     )
     public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
-        if (player.world == world) {
+        if (player.getWorld() == world) {
             BlockBrokenEvent evt = new BlockBrokenEvent();
             evt.blockPos = pos;
             evt.blockState = state;
