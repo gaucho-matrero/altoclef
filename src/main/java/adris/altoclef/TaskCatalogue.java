@@ -88,6 +88,7 @@ public class TaskCatalogue {
             mine("acacia_sapling", Blocks.ACACIA_LEAVES, Items.ACACIA_SAPLING);
             mine("dark_oak_sapling", Blocks.DARK_OAK_LEAVES, Items.DARK_OAK_SAPLING);
             mine("mangrove_propagule", Blocks.MANGROVE_PROPAGULE, Items.MANGROVE_PROPAGULE);
+            mine("cherry_sapling", Blocks.CHERRY_LEAVES, Items.CHERRY_SAPLING);
             simple("sapling", ItemHelper.SAPLINGS, CollectSaplingsTask::new);
             simple("sandstone", Items.SANDSTONE, CollectSandstoneTask::new).dontMineIfPresent();
             simple("red_sandstone", Items.RED_SANDSTONE, CollectRedSandstoneTask::new).dontMineIfPresent();
@@ -203,6 +204,11 @@ public class TaskCatalogue {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
             }
+            simple("stripped_logs", ItemHelper.STRIPPED_LOGS, CollectStrippedLogTask::new).dontMineIfPresent();
+            for (CataloguedResource woodCatalogue : woodTasks("stripped_logs", wood -> wood.strippedLog,
+                    (wood, count) -> new CollectStrippedLogTask(wood.strippedLog, count))) {
+                woodCatalogue.dontMineIfPresent();
+            }
             // shapedRecipe2x2("stick", Items.STICK, 4, p, o, p, o);
             simple("stick", Items.STICK, CollectSticksTask::new);
             smelt("stone", Items.STONE, "cobblestone").dontMineIfPresent();
@@ -243,6 +249,8 @@ public class TaskCatalogue {
             shapedRecipe2x2("sugar", Items.SUGAR, 1, "sugar_cane", o, o, o);
             shapedRecipe2x2("bone_meal", Items.BONE_MEAL, 3, "bone", o, o, o);
             shapedRecipe2x2("melon_seeds", Items.MELON_SEEDS, 1, "melon_slice", o, o, o);
+            shapedRecipe2x2("bamboo_planks", Items.BAMBOO_PLANKS, 2, "bamboo_block", o, o, o);
+            shapedRecipe3x3Block("bamboo_block", Items.BAMBOO_BLOCK, "bamboo");
             simple("hay_block", Items.HAY_BLOCK, CollectHayBlockTask::new).dontMineIfPresent();
             shapedRecipe2x2Block("polished_andesite", Items.POLISHED_ANDESITE, 4, "andesite");
             shapedRecipe2x2Block("polished_diorite", Items.POLISHED_DIORITE, 4, "diorite");
@@ -276,6 +284,7 @@ public class TaskCatalogue {
                 String b = "nether_brick";
                 shapedRecipe3x3("nether_brick_fence", Items.NETHER_BRICK_FENCE, 6, o, o, o, B, b, B, B, b, B);
             }
+            shapedRecipe3x3("brush", Items.BRUSH, 1, o, "feather", o, o, "copper_ingot", o, o, s, o);
             shapedRecipe3x3("paper", Items.PAPER, 3, "sugar_cane", "sugar_cane", "sugar_cane", o, o, o, o, o, o);
             shapedRecipe2x2("book", Items.BOOK, 1, "paper", "paper", "paper", "leather");
             shapedRecipe2x2("writable_book", Items.WRITABLE_BOOK, 1, "book", "ink_sac", o, "feather");
@@ -459,6 +468,8 @@ public class TaskCatalogue {
                 shapedRecipe3x3("observer", Items.OBSERVER, 1, c, c, c, "redstone", "redstone", "quartz", c, c, c);
                 shapedRecipe2x2("lever", Items.LEVER, 1, s, o, c, o);
             }
+            simple("hanging_sign", ItemHelper.WOOD_HANGING_SIGN, CollectHangingSignTask::new).dontMineIfPresent();
+            woodTasks("hanging_sign", woodItems -> woodItems.hangingSign, (woodItems, count) -> new CollectHangingSignTask(woodItems.hangingSign, woodItems.prefix + "_stripped_logs", count));
             shapedRecipe3x3("chest", Items.CHEST, 1, p, p, p, p, o, p, p, p, p).dontMineIfPresent();
             shapedRecipe2x2("torch", Items.TORCH, 4, "coal", o, s, o);
             simple("bed", ItemHelper.BED, CollectBedTask::new);
@@ -483,6 +494,7 @@ public class TaskCatalogue {
             }
             {
                 String b = "brick";
+                shapedRecipe3x3("decorated_pot", Items.DECORATED_POT, 1, o, b, o, b, o, b, o, b, o);
                 shapedRecipe3x3("flower_pot", Items.FLOWER_POT, 1, b, o, b, o, b, o, o, o, o);
                 shapedRecipe2x2Block("bricks", Items.BRICKS, b);
                 shapedRecipeSlab("brick_slab", Items.BRICK_SLAB, b);
@@ -537,6 +549,7 @@ public class TaskCatalogue {
             woodTasks("fence_gate", woodItems -> woodItems.fenceGate, (woodItems, count) -> new CollectFenceGateTask(woodItems.fenceGate, woodItems.prefix + "_planks", count));
             {
                 String r = "wooden_slab";
+                shapedRecipe3x3("chiseled_bookshelf", Items.CHISELED_BOOKSHELF, 1, p, p, p, r, r, r, p, p, p).dontMineIfPresent();
                 shapedRecipe3x3("barrel", Items.BARREL, 1, p, r, p, p, o, p, p, r, p);
                 shapedRecipe3x3("cartography_table", Items.CARTOGRAPHY_TABLE, 1, "paper", "paper", o, p, p, o, p, p, o);
                 shapedRecipe3x3("composter", Items.COMPOSTER, 1, r, o, r, r, o, r, r, r, r);

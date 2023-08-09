@@ -127,6 +127,9 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
                 return new GetToEntityTask(entity, maintainDistance);
             }
         }
+        if (!mod.getClientBaritone().getPathingBehavior().isSafeToCancel()){
+            return null;
+        }
         return new TimeoutWanderTask();
     }
 

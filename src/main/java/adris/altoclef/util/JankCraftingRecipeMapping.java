@@ -1,12 +1,12 @@
 package adris.altoclef.util;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.DynamicRegistryManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,9 +20,11 @@ public class JankCraftingRecipeMapping {
     private static void reloadRecipeMapping() {
         if (MinecraftClient.getInstance().getNetworkHandler() != null) {
             RecipeManager recipes = MinecraftClient.getInstance().getNetworkHandler().getRecipeManager();
+            ClientWorld world = MinecraftClient.getInstance().world;
             if (recipes != null) {
                 for (Recipe<?> recipe : recipes.values()) {
-                    Item output = recipe.getOutput(DynamicRegistryManager.EMPTY).getItem();
+                    assert world != null;
+                    Item output = recipe.getOutput(world.getRegistryManager()).getItem();
                     if (!_recipeMapping.containsKey(output)) {
                         _recipeMapping.put(output, new ArrayList<>());
                     }

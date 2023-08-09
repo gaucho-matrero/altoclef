@@ -7,7 +7,7 @@ import adris.altoclef.tasks.entity.SelfCareTask;
 
 public class SelfCareCommand extends Command {
     public SelfCareCommand() {
-        super("selfcare", "Care for self");
+        super("selfcare", "Care for self (Not finished and tested yet)");
     }
 
     @Override

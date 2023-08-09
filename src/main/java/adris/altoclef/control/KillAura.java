@@ -90,7 +90,9 @@ public class KillAura {
                 if (shieldSlot.getItem() != Items.SHIELD) {
                     mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
                 } else {
-                    startShielding(mod);
+                    if (mod.getClientBaritone().getPathingBehavior().isSafeToCancel()){
+                        startShielding(mod);
+                    }
                     performDelayedAttack(mod);
                     return;
                 }
@@ -201,7 +203,7 @@ public class KillAura {
         _shielding = true;
         mod.getInputControls().hold(Input.SNEAK);
         mod.getInputControls().hold(Input.CLICK_RIGHT);
-        mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
+        mod.getClientBaritone().getPathingBehavior().requestPause();
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());

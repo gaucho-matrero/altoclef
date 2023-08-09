@@ -16,6 +16,7 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
@@ -78,7 +79,7 @@ public class MobDefenseChain extends SingleTaskChain {
         _shielding = true;
         mod.getInputControls().hold(Input.SNEAK);
         mod.getInputControls().hold(Input.CLICK_RIGHT);
-        mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
+        mod.getClientBaritone().getPathingBehavior().requestPause();
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
@@ -189,7 +190,9 @@ public class MobDefenseChain extends SingleTaskChain {
                 if (shieldSlot.getItem() != Items.SHIELD) {
                     mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
                 } else {
-                    startShielding(mod);
+                    if (mod.getClientBaritone().getPathingBehavior().isSafeToCancel()){
+                        startShielding(mod);
+                    }
                 }
             } else {
                 _doingFunkyStuff = true;
@@ -214,7 +217,9 @@ public class MobDefenseChain extends SingleTaskChain {
             if (shieldSlot.getItem() != Items.SHIELD) {
                 mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
             } else {
-                startShielding(mod);
+                if (mod.getClientBaritone().getPathingBehavior().isSafeToCancel()){
+                    startShielding(mod);
+                }
             }
         } else {
             if (blowingUp == null) {
@@ -408,11 +413,15 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void putOutFire(AltoClef mod, BlockPos pos) {
-        LookHelper.lookAt(mod, pos);
-        Baritone b = mod.getClientBaritone();
-        if (LookHelper.isLookingAt(mod, pos)) {
-            b.getPathingBehavior().requestPause();
-            b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+        Optional<Rotation> reach = LookHelper.getReach(pos);
+        if (reach.isPresent()){
+            Baritone b = mod.getClientBaritone();
+            if (LookHelper.isLookingAt(mod, pos)) {
+                b.getPathingBehavior().requestPause();
+                b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                return;
+            }
+            LookHelper.lookAt(mod, reach.get());
         }
     }
 

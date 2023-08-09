@@ -112,7 +112,7 @@ public interface LookHelper {
         if (delta.lengthSquared() > maxRange * maxRange) {
             end = start.add(delta.normalize().multiply(maxRange));
         }
-        return entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+        return entity.getWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
     }
 
     static BlockHitResult raycast(Entity entity, Vec3d end, double maxRange) {

@@ -41,6 +41,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.BiomeKeys;
 import org.apache.commons.lang3.ArrayUtils;
@@ -554,6 +555,9 @@ public class MarvionBeatMinecraftTask extends Task {
                 WorldHelper.getCurrentDimension() == Dimension.NETHER && !isGettingBlazeRods &&
                 !isGettingEnderPearls) {
             setDebugState("Getting netherrack.");
+            if (mod.getEntityTracker().itemDropped(Items.NETHERRACK)){
+                return new PickupDroppedItemTask(Items.NETHERRACK, 1, true);
+            }
             return TaskCatalogue.getItemTask(Items.NETHERRACK, 1);
         }
         if (_locateStrongholdTask.isActive()) {

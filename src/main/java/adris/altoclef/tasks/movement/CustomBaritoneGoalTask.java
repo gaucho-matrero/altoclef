@@ -162,8 +162,8 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
                 }
             }
         }
-
-        if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive()
+                && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(_cachedGoal);
         }
         setDebugState("Completing goal.");

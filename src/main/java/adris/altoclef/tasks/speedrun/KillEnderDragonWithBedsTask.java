@@ -136,7 +136,7 @@ public class KillEnderDragonWithBedsTask extends Task {
                             // Wait to fall
                             return null;
                         }
-                        // Wait for dragon head to be close enough to the bed's head...
+                        // Wait for dragon head to be close enough to the bed's foot...
                         BlockPos bedfoot = WorldHelper.getBedFoot(mod, bedTargetPosition);
                         assert bedfoot != null;
                         Vec3d headPos = dragon.head.getBoundingBox().getCenter(); // dragon.head.getPos();
