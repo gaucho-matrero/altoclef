@@ -31,6 +31,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.PigEntity;
@@ -1356,7 +1357,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     _stoneGearTask = null;
                 }
                 if (shouldForce(mod, _getPorkchopTask)) {
-                    setDebugState("Getting porkchop just for fun.");
+                    setDebugState("Getting pork chop just for fun.");
                     if (_config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             MinecraftClient.getInstance().options.getViewDistance().setValue(32);
@@ -1463,8 +1464,8 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (mod.getEntityTracker().entityFound(PigEntity.class) && (StorageHelper.itemTargetsMet(mod,
                             COLLECT_STONE_GEAR) || StorageHelper.itemTargetsMet(mod, IRON_GEAR_MIN) ||
                             eyeGearSatisfied || ironGearSatisfied)) {
-                        _getPorkchopTask = new KillAndLootTask(PigEntity.class, new
-                                ItemTarget(Items.PORKCHOP, 1));
+                        Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
+                        _getPorkchopTask = new KillAndLootTask(PigEntity.class, notBaby, new ItemTarget(Items.PORKCHOP, 1));
                         return _getPorkchopTask;
                     } else {
                         _getPorkchopTask = null;
