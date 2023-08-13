@@ -71,32 +71,30 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
-        PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
-        Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
         Optional<Entity> entities = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
         if (entities.isPresent() && mod.getPlayer().getHealth() >= 10 &&
                 !mod.getEntityTracker().entityFound(PotionEntity.class) && !mod.getFoodChain().needsToEat() &&
-                (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
                 (Double.isInfinite(_forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange ||
                         entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
                 !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
-                !mod.getMLGBucketChain().isChorusFruiting() &&
-                !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
+                !mod.getMLGBucketChain().isChorusFruiting()) {
+            PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
+            Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
             if (entities.get().getClass() != CreeperEntity.class && entities.get().getClass() != HoglinEntity.class &&
                     entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
-                    entities.get().getClass() != WitherEntity.class) {
+                    entities.get().getClass() != WitherEntity.class
+                    && (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
+                    && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)
+                    && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                 LookHelper.lookAt(mod, entities.get().getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
                     mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
                 } else {
-                    if (mod.getClientBaritone().getPathingBehavior().isSafeToCancel()){
-                        startShielding(mod);
-                    }
-                    performDelayedAttack(mod);
-                    return;
+                    startShielding(mod);
                 }
             }
+            performDelayedAttack(mod);
         } else {
             stopShielding(mod);
         }
