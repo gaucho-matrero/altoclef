@@ -779,6 +779,10 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
+            if (!mod.getWorld().isChunkLoaded(0, 0)){
+                setDebugState("Waiting for chunks to load");
+                return null;
+            }
             if (_config.renderDistanceManipulation) {
                 getInstance().options.getViewDistance().setValue(12);
                 getInstance().options.getEntityDistanceScaling().setValue(1.0);
