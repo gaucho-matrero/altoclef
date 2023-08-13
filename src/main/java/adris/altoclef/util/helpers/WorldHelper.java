@@ -77,7 +77,7 @@ public interface WorldHelper {
 
     static double distanceXZSquared(Vec3d from, Vec3d to) {
         Vec3d delta = to.subtract(from);
-        return delta.x * delta.x + delta.z * delta.z;
+        return (delta.x * delta.x) + (delta.z * delta.z);
     }
 
     static double distanceXZ(Vec3d from, Vec3d to) {
