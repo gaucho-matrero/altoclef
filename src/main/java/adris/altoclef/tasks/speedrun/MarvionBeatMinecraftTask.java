@@ -113,6 +113,9 @@ public class MarvionBeatMinecraftTask extends Task {
     );
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
+
+    private static final int TWISTING_VINES_COUNT = 28;
+    private static final int TWISTING_VINES_COUNT_MIN = 14;
     // We don't want curse of binding
     private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
         for (NbtElement elm : stack.getEnchantments()) {
@@ -1214,7 +1217,7 @@ public class MarvionBeatMinecraftTask extends Task {
         } else {
             if ((mod.getEntityTracker().entityFound(EndermanEntity.class) ||
                     mod.getEntityTracker().itemDropped(Items.ENDER_PEARL)) &&
-                    mod.getItemStorage().getItemCount(Items.TWISTING_VINES) > 14) {
+                    mod.getItemStorage().getItemCount(Items.TWISTING_VINES) > TWISTING_VINES_COUNT_MIN) {
                 Optional<Entity> toKill = mod.getEntityTracker().getClosestEntity(EndermanEntity.class);
                 if (toKill.isPresent()) {
                     if (mod.getEntityTracker().isEntityReachable(toKill.get())) {
@@ -1222,9 +1225,17 @@ public class MarvionBeatMinecraftTask extends Task {
                     }
                 }
             }
-            if (mod.getItemStorage().getItemCount(Items.TWISTING_VINES) < 14) {
-                getTwistingVines = TaskCatalogue.getItemTask(Items.TWISTING_VINES, 28);
-                return getTwistingVines;
+            if (mod.getItemStorage().getItemCount(Items.TWISTING_VINES) < TWISTING_VINES_COUNT_MIN) {
+                if (!mod.getBlockTracker().isTracking(Blocks.TWISTING_VINES) || !mod.getBlockTracker().isTracking(Blocks.TWISTING_VINES_PLANT)) {
+                    mod.getBlockTracker().trackBlock(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT);
+                }
+
+                if (mod.getBlockTracker().anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT)) {
+                    getTwistingVines = TaskCatalogue.getItemTask(Items.TWISTING_VINES, TWISTING_VINES_COUNT);
+                    return getTwistingVines;
+                } else {
+                    return new SearchChunkForBlockTask(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM);
+                }
             }
             // Search for warped forests this way...
             setDebugState("Searching Warped Forest");
