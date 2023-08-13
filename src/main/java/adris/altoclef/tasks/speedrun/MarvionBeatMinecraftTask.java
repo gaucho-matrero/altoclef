@@ -67,38 +67,49 @@ public class MarvionBeatMinecraftTask extends Task {
             Blocks.STONE_PRESSURE_PLATE // For desert temples
     };
     private static final Item[] COLLECT_EYE_ARMOR = new Item[]{
-            Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS,
-            Items.GOLDEN_BOOTS
+            Items.GOLDEN_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS,
+            Items.DIAMOND_BOOTS
     };
     private static final ItemTarget[] COLLECT_STONE_GEAR = combine(
-            toItemTargets(Items.STONE_SWORD),
-            toItemTargets(Items.STONE_PICKAXE)
+            toItemTargets(Items.STONE_SWORD, 1),
+            toItemTargets(Items.STONE_PICKAXE, 2),
+            toItemTargets(Items.STONE_HOE),
+            toItemTargets(Items.COAL, 13)
     );
     private static final Item COLLECT_SHIELD = Items.SHIELD;
     private static final Item[] COLLECT_IRON_ARMOR = ItemHelper.IRON_ARMORS;
     private static final Item[] COLLECT_EYE_ARMOR_END = ItemHelper.DIAMOND_ARMORS;
     private static final ItemTarget[] COLLECT_IRON_GEAR = combine(
-            toItemTargets(Items.IRON_SWORD),
-            toItemTargets(Items.IRON_PICKAXE)
+            toItemTargets(Items.IRON_SWORD, 2),
+            toItemTargets(Items.STONE_SHOVEL),
+            toItemTargets(Items.STONE_AXE),
+            toItemTargets(Items.DIAMOND_PICKAXE)
     );
     private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE, 2),
+            toItemTargets(Items.DIAMOND_PICKAXE, 3),
+            toItemTargets(Items.BUCKET,2),
             toItemTargets(Items.CRAFTING_TABLE)
     );
     private static final ItemTarget[] COLLECT_IRON_GEAR_MIN = combine(
-            toItemTargets(Items.IRON_SWORD)
+            toItemTargets(Items.IRON_SWORD),
+            toItemTargets(Items.DIAMOND_PICKAXE)
     );
     private static final ItemTarget[] COLLECT_EYE_GEAR_MIN = combine(
             toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE, 2)
+            toItemTargets(Items.DIAMOND_PICKAXE)
     );
     private static final ItemTarget[] IRON_GEAR = combine(
-            toItemTargets(Items.IRON_SWORD),
-            toItemTargets(Items.IRON_PICKAXE)
+            toItemTargets(Items.IRON_SWORD, 2),
+            toItemTargets(Items.STONE_SHOVEL),
+            toItemTargets(Items.STONE_AXE),
+            toItemTargets(Items.DIAMOND_PICKAXE),
+            toItemTargets(Items.SHIELD)
     );
     private static final ItemTarget[] IRON_GEAR_MIN = combine(
-            toItemTargets(Items.IRON_SWORD)
+            toItemTargets(Items.IRON_SWORD, 2),
+            toItemTargets(Items.DIAMOND_PICKAXE),
+            toItemTargets(Items.SHIELD)
     );
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
@@ -268,10 +279,10 @@ public class MarvionBeatMinecraftTask extends Task {
         lootable.add(Items.GLISTERING_MELON_SLICE);
         lootable.add(Items.GOLDEN_CARROT);
         lootable.add(Items.OBSIDIAN);
-        if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_BOOTS)) {
-            lootable.add(Items.GOLDEN_BOOTS);
+        if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_HELMET) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_HELMET)) {
+            lootable.add(Items.GOLDEN_HELMET);
         }
-        if ((mod.getItemStorage().getItemCountInventoryOnly(Items.GOLD_INGOT) < 4 && !StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_BOOTS)) || _config.barterPearlsInsteadOfEndermanHunt) {
+        if ((mod.getItemStorage().getItemCountInventoryOnly(Items.GOLD_INGOT) < 5 && !StorageHelper.isArmorEquipped(mod, Items.GOLDEN_HELMET) && !mod.getItemStorage().hasItemInventoryOnly(Items.GOLDEN_HELMET)) || _config.barterPearlsInsteadOfEndermanHunt) {
             lootable.add(Items.GOLD_INGOT);
         }
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT_AND_STEEL)) {
@@ -354,7 +365,7 @@ public class MarvionBeatMinecraftTask extends Task {
         mod.getBlockTracker().trackBlock(TRACK_BLOCKS);
         mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.CRAFTING_TABLE,
                 Items.IRON_INGOT, Items.WATER_BUCKET, Items.FLINT_AND_STEEL, Items.SHIELD, Items.SHEARS, Items.BUCKET,
-                Items.GOLDEN_BOOTS, Items.SMOKER, Items.FURNACE, Items.BLAST_FURNACE);
+                Items.GOLDEN_HELMET, Items.SMOKER, Items.FURNACE, Items.BLAST_FURNACE);
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
         mod.getBehaviour().addProtectedItems(ItemHelper.IRON_ARMORS);
         mod.getBehaviour().addProtectedItems(ItemHelper.LOG);
@@ -1195,9 +1206,9 @@ public class MarvionBeatMinecraftTask extends Task {
             return new PickupDroppedItemTask(Items.ENDER_PEARL, 1);
         }
         if (_config.barterPearlsInsteadOfEndermanHunt) {
-            // Equip golden boots before trading...
-            if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_BOOTS)) {
-                return new EquipArmorTask(Items.GOLDEN_BOOTS);
+            // Equip golden armor before trading...
+            if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_HELMET)) {
+                return new EquipArmorTask(Items.GOLDEN_HELMET);
             }
             return new TradeWithPiglinsTask(32, Items.ENDER_PEARL, count);
         } else {
