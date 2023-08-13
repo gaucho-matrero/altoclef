@@ -284,8 +284,9 @@ public class MobDefenseChain extends SingleTaskChain {
                                 boolean hoglinAttacking = hostile instanceof HoglinEntity;
                                 boolean zoglinAttacking = hostile instanceof ZoglinEntity;
                                 boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
+                                boolean vindicatorAttacking = hostile instanceof VindicatorEntity;
                                 if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking ||
-                                        piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking) {
+                                        piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking || vindicatorAttacking) {
                                     if (mod.getPlayer().getHealth() <= 10) {
                                         _closeAnnoyingEntities.put(hostile, new TimerGame(0));
                                     } else {
@@ -413,7 +414,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
     private void putOutFire(AltoClef mod, BlockPos pos) {
         Optional<Rotation> reach = LookHelper.getReach(pos);
-        if (reach.isPresent()){
+        if (reach.isPresent()) {
             Baritone b = mod.getClientBaritone();
             if (LookHelper.isLookingAt(mod, pos)) {
                 b.getPathingBehavior().requestPause();
@@ -584,6 +585,13 @@ public class MobDefenseChain extends SingleTaskChain {
             double range = SAFE_KEEP_DISTANCE - 2;
             if (piglinBrute.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, piglinBrute.get())) {
                 return piglinBrute;
+            }
+        }
+        Optional<Entity> vindicator = mod.getEntityTracker().getClosestEntity(VindicatorEntity.class);
+        if (vindicator.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (vindicator.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, vindicator.get())) {
+                return vindicator;
             }
         }
         return Optional.empty();
