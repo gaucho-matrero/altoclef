@@ -1207,7 +1207,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 Optional<Entity> toKill = mod.getEntityTracker().getClosestEntity(EndermanEntity.class);
                 if (toKill.isPresent()) {
                     if (mod.getEntityTracker().isEntityReachable(toKill.get())) {
-                        return new KillAndLootTask(toKill.get().getClass(), new ItemTarget(Items.ENDER_PEARL, count));
+                        return new KillEndermanTask(count);
                     }
                 }
             }

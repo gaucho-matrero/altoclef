@@ -101,7 +101,7 @@ public class TaskCatalogue {
             simple("egg", Items.EGG, CollectEggsTask::new);
             mob("bone", Items.BONE, SkeletonEntity.class);
             mob("gunpowder", Items.GUNPOWDER, CreeperEntity.class);
-            mob("ender_pearl", Items.ENDER_PEARL, EndermanEntity.class).anyDimension();
+            simple("ender_pearl", Items.ENDER_PEARL, KillEndermanTask::new);
             mob("spider_eye", Items.SPIDER_EYE, SpiderEntity.class);
             mob("leather", Items.LEATHER, CowEntity.class);
             mob("feather", Items.FEATHER, ChickenEntity.class);
