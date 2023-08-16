@@ -33,10 +33,11 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
-    public static void equipWeapon(AltoClef mod) {
+    public static Item bestWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
         if (!invStacks.isEmpty()) {
             float handDamage = Float.NEGATIVE_INFINITY;
+            Item bestItem = null;
             for (ItemStack invStack : invStacks) {
                 if (invStack.getItem() instanceof SwordItem item) {
                     float itemDamage = item.getMaterial().getAttackDamage();
@@ -45,24 +46,37 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
                         handDamage = handToolItem.getMaterial().getAttackDamage();
                     }
                     if (itemDamage > handDamage) {
-                        mod.getSlotHandler().forceEquipItem(item);
+                        bestItem = item;
                     } else {
-                        mod.getSlotHandler().forceEquipItem(handItem);
+                        bestItem = handItem;
                     }
                 }
             }
+            return bestItem;
         }
+        return null;
+    }
+
+    public static boolean equipWeapon(AltoClef mod) {
+        Item bestWeapon = bestWeapon(mod);
+        Item equipedWeapon = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
+        if (bestWeapon != null && bestWeapon != equipedWeapon) {
+            mod.getSlotHandler().forceEquipItem(bestWeapon);
+            return true;
+        }
+        return false;
     }
 
     @Override
     protected Task onEntityInteract(AltoClef mod, Entity entity) {
         // Equip weapon
-        equipWeapon(mod);
-        float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
-        if (hitProg >= 1) {
-            if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
-                LookHelper.lookAt(mod, entity.getEyePos());
-                mod.getControllerExtras().attack(entity);
+        if (!equipWeapon(mod)) {
+            float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
+            if (hitProg >= 1) {
+                if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
+                    LookHelper.lookAt(mod, entity.getEyePos());
+                    mod.getControllerExtras().attack(entity);
+                }
             }
         }
         return null;
