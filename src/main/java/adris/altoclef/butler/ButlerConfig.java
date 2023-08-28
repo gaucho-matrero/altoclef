@@ -17,7 +17,7 @@ public class ButlerConfig {
     /**
      * If true, will use whitelist to only accept users from said whitelist.
      */
-    public boolean useButlerWhitelist = true;
+    public boolean useButlerWhitelist = false;
     /**
      * Servers have different messaging plugins that change the way messages are displayed.
      * Rather than attempt to implement all of them and introduce a big security risk,
@@ -35,9 +35,7 @@ public class ButlerConfig {
      * create the following messages.
      */
     public String[] whisperFormats = new String[]{
-            "{from} whispers to you: {message}",
-            "{from} whispers: {message}",
-            "\\[{from} -> {to}\\] {message}"
+            "{from} {to} {message}"
     };
     /**
      * If set to true, will print information about whispers that are parsed and those
@@ -45,7 +43,7 @@ public class ButlerConfig {
      * <p>
      * Enable this if you need help setting up the whisper format.
      */
-    public boolean whisperFormatDebug = false;
+    public boolean whisperFormatDebug = true;
     /**
      * Determines if failure messages should be sent to a non-authorized entity attempting to use butler
      * <p>
