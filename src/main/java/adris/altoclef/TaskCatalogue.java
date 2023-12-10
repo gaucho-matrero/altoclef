@@ -191,6 +191,9 @@ public class TaskCatalogue {
 
 
             // MATERIALS
+            //mine("netherite_upgrade_smithing_template", MiningRequirement.HAND, Blocks.CHEST, Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE).forceDimension(Dimension.NETHER);
+            simple("netherite_upgrade_smithing_template", Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, GetSmithingTemplateTask::new);
+            alias("netherite_upgrade", "netherite_upgrade_smithing_template");
             simple("planks", ItemHelper.PLANKS, CollectPlanksTask::new).dontMineIfPresent();
             // Per-tree Planks. At the moment, nether planks need to be specified that their logs are in the nether.
             for (CataloguedResource woodCatalogue : woodTasks("planks", wood -> wood.planks, (wood, count) -> {
@@ -727,6 +730,11 @@ public class TaskCatalogue {
     private static CataloguedResource simple(String name, Item matches, Function<Integer, ResourceTask> getTask) {
         return simple(name, new Item[]{matches}, getTask);
     }
+
+    // TODO: Do I really need this?
+    //private static CataloguedResource task(Item matches, Function<Integer, ResourceTask> getTask){
+    //
+    //}
 
     private static CataloguedResource mine(String name, MiningRequirement requirement, Item[] toMine, Item... targets) {
         Block[] toMineBlocks = new Block[toMine.length];
