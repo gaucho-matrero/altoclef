@@ -87,7 +87,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private static final ItemTarget[] COLLECT_EYE_GEAR = combine(
             toItemTargets(Items.DIAMOND_SWORD),
             toItemTargets(Items.DIAMOND_PICKAXE, 3),
-            toItemTargets(Items.BUCKET,2),
+            toItemTargets(Items.BUCKET, 2),
             toItemTargets(Items.CRAFTING_TABLE)
     );
     private static final ItemTarget[] COLLECT_IRON_GEAR_MIN = combine(
@@ -127,6 +127,7 @@ public class MarvionBeatMinecraftTask extends Task {
     };
     private static BeatMinecraftConfig _config;
     private static GoToStrongholdPortalTask _locateStrongholdTask;
+    private static boolean openingEndPortal = false;
 
     static {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
@@ -174,7 +175,6 @@ public class MarvionBeatMinecraftTask extends Task {
     private Task _smeltTask;
     private Task getBedTask;
     private Task getTwistingVines;
-    private static boolean openingEndPortal = false;
 
     public MarvionBeatMinecraftTask() {
         _locateStrongholdTask = new GoToStrongholdPortalTask(_config.targetEyes);
@@ -1147,7 +1147,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 WorldHelper.getCurrentDimension() == Dimension.NETHER && !isGettingBlazeRods &&
                 !isGettingEnderPearls) {
             setDebugState("Getting netherrack.");
-            if (mod.getEntityTracker().itemDropped(Items.NETHERRACK)){
+            if (mod.getEntityTracker().itemDropped(Items.NETHERRACK)) {
                 return new PickupDroppedItemTask(Items.NETHERRACK, 1, true);
             }
             return TaskCatalogue.getItemTask(Items.NETHERRACK, 1);
@@ -1369,7 +1369,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
-            if (!mod.getWorld().isChunkLoaded(0, 0)){
+            if (!mod.getWorld().isChunkLoaded(0, 0)) {
                 setDebugState("Waiting for chunks to load");
                 return null;
             }

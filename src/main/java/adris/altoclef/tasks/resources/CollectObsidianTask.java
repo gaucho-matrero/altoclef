@@ -147,7 +147,7 @@ public class CollectObsidianTask extends ResourceTask {
 
         if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             final double AVERAGE_GOLD_PER_OBSIDIAN = 11.475;
-            int gold_buffer = (int) (AVERAGE_GOLD_PER_OBSIDIAN*_count);
+            int gold_buffer = (int) (AVERAGE_GOLD_PER_OBSIDIAN * _count);
             setDebugState("We can't place water, so we're trading for obsidian");
             return new TradeWithPiglinsTask(gold_buffer, Items.OBSIDIAN, _count);
         }

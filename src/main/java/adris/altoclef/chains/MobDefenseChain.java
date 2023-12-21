@@ -45,11 +45,11 @@ public class MobDefenseChain extends SingleTaskChain {
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
     private static final double SAFE_KEEP_DISTANCE = 8;
+    private static boolean _shielding = false;
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
     private final KillAura _killAura = new KillAura();
     private final HashMap<Entity, TimerGame> _closeAnnoyingEntities = new HashMap<>();
     private Entity _targetEntity;
-    private static boolean _shielding = false;
     private boolean _doingFunkyStuff = false;
     private boolean _wasPuttingOutFire = false;
     private CustomBaritoneGoalTask _runAwayTask;
@@ -67,12 +67,6 @@ public class MobDefenseChain extends SingleTaskChain {
         // Not fusing.
         if (fuse <= 0.001f) return distance;
         return distance * 0.2; // less is WORSE
-    }
-
-    @Override
-    public float getPriority(AltoClef mod) {
-        _cachedLastPriority = getPriorityInner(mod);
-        return _cachedLastPriority;
     }
 
     private static void startShielding(AltoClef mod) {
@@ -97,6 +91,12 @@ public class MobDefenseChain extends SingleTaskChain {
                 garbage.ifPresent(slot -> mod.getSlotHandler().forceEquipItem(StorageHelper.getItemStackInSlot(slot).getItem()));
             }
         }
+    }
+
+    @Override
+    public float getPriority(AltoClef mod) {
+        _cachedLastPriority = getPriorityInner(mod);
+        return _cachedLastPriority;
     }
 
     private void stopShielding(AltoClef mod) {

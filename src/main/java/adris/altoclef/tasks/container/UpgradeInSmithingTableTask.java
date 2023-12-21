@@ -72,7 +72,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
         if (mod.getItemStorage().getItemCount(_tool) + toolsInSlot < desiredOutput ||
                 mod.getItemStorage().getItemCount(_material) + materialsInSlot < desiredOutput ||
-        mod.getItemStorage().getItemCount(_template) + templatesInSlot < desiredOutput) {
+                mod.getItemStorage().getItemCount(_template) + templatesInSlot < desiredOutput) {
             setDebugState("Getting materials + tools");
             return TaskCatalogue.getSquashedItemTask(_tool, _material, _template);
         }

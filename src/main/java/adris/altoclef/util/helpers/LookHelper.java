@@ -534,7 +534,7 @@ public interface LookHelper {
     /**
      * Adjusts the player's look direction to the specified target position.
      *
-     * @param mod The AltoClef instance.
+     * @param mod    The AltoClef instance.
      * @param toLook The position to look at.
      * @throws IllegalArgumentException if mod or toLook is null.
      */
@@ -550,9 +550,9 @@ public interface LookHelper {
     /**
      * Adjusts the player's view to look at a specific location from a specific direction.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod    The AltoClef mod instance.
      * @param toLook The position to look at.
-     * @param side The direction to look from.
+     * @param side   The direction to look from.
      */
     static void lookAt(AltoClef mod, BlockPos toLook, Direction side) {
         // Calculate the center coordinates of the target location
@@ -580,8 +580,8 @@ public interface LookHelper {
     /**
      * Looks at the specified block position.
      *
-     * @param mod     The AltoClef instance.
-     * @param toLook  The block position to look at.
+     * @param mod    The AltoClef instance.
+     * @param toLook The block position to look at.
      */
     static void lookAt(AltoClef mod, BlockPos toLook) {
         lookAt(mod, toLook, null);
@@ -590,7 +590,7 @@ public interface LookHelper {
     /**
      * Calculates the rotation needed for a player to look at a specified point.
      *
-     * @param mod The instance of the main mod class.
+     * @param mod    The instance of the main mod class.
      * @param toLook The coordinates to look at.
      * @return The rotation needed to look at the specified point.
      */
@@ -608,7 +608,7 @@ public interface LookHelper {
     /**
      * Returns the rotation needed to look at a specified position.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod    The AltoClef mod instance.
      * @param toLook The position to look at, specified by its BlockPos.
      * @return The Rotation object representing the rotation needed to look at the position.
      */

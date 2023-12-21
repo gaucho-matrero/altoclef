@@ -5,7 +5,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.entity.DoToClosestEntityTask;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
-import adris.altoclef.tasks.entity.KillEntityTask;
 import adris.altoclef.tasks.movement.GetToXZTask;
 import adris.altoclef.tasks.movement.GetToYTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
@@ -45,8 +44,8 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
     private static final int CLOSE_ENOUGH_DISTANCE = 15;
 
     private static final double DRAGON_FIREBALL_TOO_CLOSE_RANGE = 40;
-    private final Task _buildingMaterialsTask = new GetBuildingMaterialsTask(HEIGHT + 10);
     private static boolean inCenter;
+    private final Task _buildingMaterialsTask = new GetBuildingMaterialsTask(HEIGHT + 10);
     private Task _heightPillarTask;
     private Task _throwPearlTask;
     private BlockPos _targetToPearl;
