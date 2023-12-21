@@ -1,4 +1,5 @@
 # altoclef
+
 Plays block game.
 
 Powered by Baritone.
@@ -31,7 +32,7 @@ Take a look at this [Guide from the wiki](https://github.com/gaucho-matrero/alto
 
 If you are looking for 1.19.2 - 1.19.4 support, check out this [gist](https://gist.github.com/JustaSqu1d/171df3ff386859da31d37534122d3b10). Note that these projects are forks of this original project and not directly affliated with Alto Clef. It is also more up-to-date with bug fixes and features.
 
-### Nightly Release (has the latest bug fixes)
+#### (old) Nightly Release
 
 Start by downloading [the Latest Long Term Release](https://github.com/gaucho-matrero/altoclef/releases), then [Download the Nightly](https://nightly.link/gaucho-matrero/altoclef/workflows/gradle/main/Artifacts.zip) & replace `altoclef-4.0-SNAPSHOT.jar`.
 
@@ -41,11 +42,11 @@ Then, copy `altoclef-4.0-SNAPSHOT.jar` from `Artifacts.zip` to `./mods`.
 
 Then, copy the `baritone-unoptimized-fabric-1.XX.X.jar` from the long term release zip file to `./mods`
 
-### Long Term Release
+#### (old) Long Term Release
 
 [Check releases](https://github.com/gaucho-matrero/altoclef/releases). Note you will need to copy over both jar files for the mod to work.
 
-### Meloweh's Extra Features Release (Unofficial)
+#### (old) Meloweh's Extra Features Release (Unofficial)
 
 Has some schematic support, command macros and a few utility features. Will eventually be merged, but if you can try it out now if you'd like:
 
