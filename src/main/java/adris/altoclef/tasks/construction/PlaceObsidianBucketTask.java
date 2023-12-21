@@ -22,6 +22,10 @@ public class PlaceObsidianBucketTask extends Task {
 
     public static final Vec3i[] CAST_FRAME = new Vec3i[]{
             new Vec3i(0, -1, 0),
+            new Vec3i(0, -1, -1),
+            new Vec3i(0, -1, 1),
+            new Vec3i(-1, -1, 0),
+            new Vec3i(1, -1, 0),
             new Vec3i(0, 0, -1),
             new Vec3i(0, 0, 1),
             new Vec3i(-1, 0, 0),
