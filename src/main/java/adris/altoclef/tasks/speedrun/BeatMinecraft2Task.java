@@ -651,6 +651,11 @@ public class BeatMinecraft2Task extends Task {
                     return _gearTask;
                 }
 
+                if (!mod.getItemStorage().hasItem(Items.FURNACE)) {
+                    setDebugState("Going back for furnace after making iron gear.");
+                    return new MineAndCollectTask(Items.FURNACE, 1, new Block[]{Blocks.FURNACE}, MiningRequirement.WOOD);
+                }
+                    
                 // If we happen to find beds...
                 if (needsBeds(mod) && anyBedsFound(mod)) {
                     setDebugState("A bed was found, grabbing that first.");
@@ -662,6 +667,11 @@ public class BeatMinecraft2Task extends Task {
                     _foodTask = new CollectFoodTask(_config.foodUnits);
                     return _foodTask;
                 }
+
+                if (!mod.getItemStorage().hasItem(Items.FURNACE)) {
+                    setDebugState("Going back for furnace after cooking food.");
+                    return new MineAndCollectTask(Items.FURNACE, 1, new Block[]{Blocks.FURNACE}, MiningRequirement.WOOD);
+                }                                 
 
                 // Then get diamond
                 if (!eyeGearSatisfied) {
