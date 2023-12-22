@@ -5,10 +5,8 @@ import net.minecraft.util.hit.BlockHitResult;
 
 public class BlockInteractEvent {
     public BlockHitResult hitResult;
-    public ClientWorld world;
 
-    public BlockInteractEvent(BlockHitResult hitResult, ClientWorld world) {
+    public BlockInteractEvent(BlockHitResult hitResult) {
         this.hitResult = hitResult;
-        this.world = world;
     }
 }

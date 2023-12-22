@@ -7,7 +7,7 @@ import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
@@ -47,7 +47,7 @@ public class Butler {
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
             boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.message.getString();
+            String message = evt.message.toString();
             if (debug) {
                 Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
             }
