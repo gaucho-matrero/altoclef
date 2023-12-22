@@ -220,6 +220,7 @@ fence_gate
 fermented_spider_eye
 fern
 fire_charge
+firework_rocket
 fishing_rod
 fletching_table
 flint

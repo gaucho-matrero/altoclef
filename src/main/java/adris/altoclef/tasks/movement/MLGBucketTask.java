@@ -490,7 +490,7 @@ public class MLGBucketTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing();
+        return EntityHelper.isGrounded(mod);
     }
 
     @Override

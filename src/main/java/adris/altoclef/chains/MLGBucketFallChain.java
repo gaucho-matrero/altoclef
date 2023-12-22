@@ -7,6 +7,7 @@ import adris.altoclef.tasksystem.ITaskOverridesGrounded;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.EntityHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.effect.StatusEffects;
@@ -119,10 +120,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     }
 
     public boolean isFallingOhNo(AltoClef mod) {
-        if (!mod.getModSettings().shouldAutoMLGBucket()) {
+        if (!mod.getModSettings().shouldAutoMLGBucket() || mod.getBehaviour().isDefenseDisabled()) {
             return false;
         }
-        if (mod.getPlayer().isSwimming() || mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround() || mod.getPlayer().isClimbing()) {
+        if (EntityHelper.isGrounded(mod)) {
             // We're grounded.
             return false;
         }

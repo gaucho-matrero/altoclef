@@ -22,9 +22,9 @@ Commands are prefixed with `@`. Here's a list along with their functions:
 | `deposit [items... = <Everything>]` | Deposit a list of items in the nearest container, making a chest if we can't find one. Will only deposit items present in the bot's inventory (at the time of running this command). Leave out the list to deposit every non-tool/armor item in the bot's inventory. Useful with command chaining. | `@deposit diamond 3` `@deposit [cobblestone 1000, raw_iron 100]` `@deposit` |
 | `stash {x0} {y0} {z0} {x1} {y0} {z1} [items... = <Everything>]` | Same as `@deposit`, but you specify an area from `(x0, y0, z0)` to `(x1, y1, z1)` where the bot stores the item list (these coordinates being a chest stash). Just like `@deposit`, providing no items simply deposits everything in the bots inventory. | `@stash 100 64 100 200 70 100 diamond 3` |
 | `goto {x} {y} {z} {dimension=<current>}` | Goes to (`x`,`y`, `z`) in a given `dimension`. Travels to `dimension` if not there already. Can also omit coordinates to just go to a dimension. Passing 2 values as coordinates goes to X Z coordinates instead. | `@goto 100 64 100 overworld` `@goto nether` `@goto 100 100` |
+| `elytra [x] [z]` | Goes to (`[x]`, `[z]`) using an elytra, it will do the same thing as `goto [x] [z]` if we don't have one| `@elytra 1000 500` |
 | `inventory {item=<Entire Inventory>}` | Prints the bots inventory, OR how many items of a specific type the bot has. Mostly useful when running through `/msg`. | `/msg Bot inventory` `/msg Bot inventory cobblestone` |
 | `locate_structure {structure_type}` | Attempts to locate a `structure_type` structure. Can find strongholds or desert temples. | `@locate_structure stronghold`, `@locate_structure desert_temple` |
-| `punk {player}` | Attacks `player`. | |
 | `reload_settings` | Reloads the local settings file. Run this every time you want your settings to be updated. | |
 | `gamma {brightness=1}` | Sets the game's gamma. Useful for testing. 0 is "Moody" and 1 is "Bright", and you can go beyond to enable fullbright. | `@gamma 1000` |
 | `status` | Prints the status of the currently executing command. Mostly useful when running through `/msg`. | |

@@ -80,7 +80,7 @@ public class MobDefenseChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
-        if (!mod.getModSettings().isMobDefense()) {
+        if (!mod.getModSettings().isMobDefense() || mod.getBehaviour().isDefenseDisabled()) {
             return Float.NEGATIVE_INFINITY;
         }
 

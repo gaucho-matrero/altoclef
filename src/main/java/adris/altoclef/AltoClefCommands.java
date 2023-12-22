@@ -19,6 +19,7 @@ public class AltoClefCommands {
                 new DepositCommand(),
                 new StashCommand(),
                 new GotoCommand(),
+                new GotoWithElytraCommand(),
                 new IdleCommand(),
                 new CoordsCommand(),
                 new StatusCommand(),

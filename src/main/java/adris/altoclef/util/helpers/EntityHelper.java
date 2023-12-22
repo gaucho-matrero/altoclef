@@ -63,6 +63,16 @@ public class EntityHelper {
     }
 
     /**
+     * Return true if the entity is on ground (or in water)
+     */
+    public static boolean isGrounded(AltoClef mod, Entity entity) {
+        return entity.isSwimming() || entity.isTouchingWater() || entity.isOnGround();
+    }
+    public static boolean isGrounded(AltoClef mod) {
+        return isGrounded(mod,mod.getPlayer());
+    }
+
+    /**
      * Calculate the resulting damage dealt to a player as a result of some damage.
      * If this player were to receive this damage, the player's health will be subtracted by the resulting value.
      */
