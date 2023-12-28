@@ -89,12 +89,10 @@ public class DeathMenuChain extends TaskChain {
                         String command = i.replace("{deathmessage}", deathMessage);
                         String prefix = mod.getModSettings().getCommandPrefix();
                         while (MinecraftClient.getInstance().player.isAlive()) ;
-                        if (command != "") {
+                        if (!command.isEmpty()) {
                             if (command.startsWith(prefix)) {
                                 AltoClef.getCommandExecutor().execute(command, () -> {
-                                }, e -> {
-                                    e.printStackTrace();
-                                });
+                                }, Throwable::printStackTrace);
                             } else if (command.startsWith("/")) {
                                 MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
                             } else {
