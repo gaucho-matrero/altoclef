@@ -26,8 +26,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.DragonFireballEntity;
-import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.projectile.*;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,6 +37,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
+
+import static java.lang.Math.abs;
 
 public class MobDefenseChain extends SingleTaskChain {
     private static final double DANGER_KEEP_DISTANCE = 30;
@@ -516,6 +517,17 @@ public class MobDefenseChain extends SingleTaskChain {
                             // Ignore dragon fireballs
                             return false;
                         }
+                        if (projectile.projectileType == ArrowEntity.class || projectile.projectileType == SpectralArrowEntity.class || projectile.projectileType == SmallFireballEntity.class) {
+                            // check if the velocity of the projectile is going away from us
+                            // oh no fancy math
+                            Vec3d velocity = projectile.velocity;
+                            Vec3d delta = mod.getPlayer().getPos().subtract(projectile.position);
+                            double epsilon = 0.25;
+                            if (abs(velocity.dotProduct(delta)) <= epsilon) {
+                                // Arrow is going away from us, ignore it.
+                                continue;
+                            }
+                        }
 
                         Vec3d expectedHit = ProjectileHelper.calculateArrowClosestApproach(projectile, mod.getPlayer());
 
@@ -524,7 +536,7 @@ public class MobDefenseChain extends SingleTaskChain {
                         //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
                         double horizontalDistanceSq = delta.x * delta.x + delta.z * delta.z;
-                        double verticalDistance = Math.abs(delta.y);
+                        double verticalDistance = abs(delta.y);
                         if (horizontalDistanceSq < ARROW_KEEP_DISTANCE_HORIZONTAL * ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) {
                             if (_runAwayTask == null && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 mod.getClientBaritone().getPathingBehavior().requestPause();
