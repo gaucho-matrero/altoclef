@@ -8,7 +8,7 @@ import adris.altoclef.tasks.entity.HeroTask;
 
 public class HeroCommand extends Command {
     public HeroCommand() {
-        super("hero", "Kill all hostile mobs.");
+        super("hero", "Kill all hostile mobs");
     }
 
     @Override
