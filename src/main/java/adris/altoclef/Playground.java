@@ -10,6 +10,7 @@ import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianT
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.StoreInAnyContainerTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
+import adris.altoclef.tasks.entity.ShootArrowSimpleProjectileTask;
 import adris.altoclef.tasks.examples.ExampleTask2;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
@@ -31,7 +32,9 @@ import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -43,6 +46,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -334,6 +338,18 @@ public class Playground {
                         new ItemTarget("netherite_chestplate", 1),
                         new ItemTarget("netherite_leggings", 1),
                         new ItemTarget("netherite_boots", 1)));
+                break;
+            case "arrow":
+
+                List<GhastEntity> ghasts = mod.getEntityTracker().getTrackedEntities(GhastEntity.class);
+
+                if (ghasts.size() == 0) {
+                    Debug.logWarning("No ghasts found.");
+                    break;
+                }
+
+                GhastEntity ghast = ghasts.get(0);
+                mod.runUserTask(new ShootArrowSimpleProjectileTask(ghast));
                 break;
             case "whisper": {
                 File check = new File("whisper.txt");
