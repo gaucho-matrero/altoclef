@@ -9,7 +9,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -20,8 +19,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
-
-import static adris.altoclef.util.helpers.LookHelper.getLookRotation;
 
 public class KillEnderDragonWithBedsTask extends Task {
     private final Task _whenNotPerchingTask;
@@ -94,6 +91,9 @@ public class KillEnderDragonWithBedsTask extends Task {
 
                 if (dragonPhase.getType() == PhaseType.DYING) {
                     Debug.logMessage("Dragon is dead.");
+                    if (mod.getPlayer().getPitch() != -90) {
+                        mod.getPlayer().setPitch(-90);
+                    }
                     _isDragonDead = true;
                     return null;
                 }
@@ -164,16 +164,6 @@ public class KillEnderDragonWithBedsTask extends Task {
                         Vec3d headPos = dragon.head.getBoundingBox().getCenter(); // dragon.head.getPos();
                         double dist = headPos.distanceTo(WorldHelper.toVec3d(bedfoot));
                         Debug.logMessage("Dist: " + dist + " Health: " + dragon.getHealth());
-
-                        Vec3d target = new Vec3d(bedfoot.getX() + 0.5, bedfoot.getY() + 0.5, bedfoot.getZ() + 0.5);
-                        target.add(Direction.UP.getVector().getX() * 0.5, Direction.UP.getVector().getY() * 0.5, Direction.UP.getVector().getZ() * 0.5);
-                        Rotation targetRotation = getLookRotation(mod, target);
-
-                        if (dist + 10 < BeatMinecraft2Task.getConfig().dragonHeadCloseEnoughClickBedRange) {
-                            LookHelper.lookAt(mod, targetRotation, true);
-                        } else {
-                            LookHelper.lookAt(mod, targetRotation, false);
-                        }
 
                         if (dist < BeatMinecraft2Task.getConfig().dragonHeadCloseEnoughClickBedRange) {
                             // Interact with the bed.
