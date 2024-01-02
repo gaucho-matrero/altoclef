@@ -34,7 +34,6 @@ import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.item.*;
@@ -1402,13 +1401,6 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (mod.getEntityTracker().itemDropped(armorCheck)) {
                         return new PickupDroppedItemTask(armorCheck, 1);
                     }
-                }
-            }
-            if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
-                if (mod.getPlayer().getBlockPos().getX() == 0 &&
-                        mod.getPlayer().getBlockPos().getZ() == 0 &&
-                        mod.getPlayer().getPitch() != -90) {
-                    mod.getPlayer().setPitch(-90);
                 }
             }
             // Dragons breath avoidance
