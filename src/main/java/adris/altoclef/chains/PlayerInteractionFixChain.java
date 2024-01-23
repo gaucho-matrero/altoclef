@@ -119,7 +119,7 @@ public class PlayerInteractionFixChain extends TaskChain {
         if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
             Debug.logMessage("Cursor stack is held for too long, will move back to inventory.");
             Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
-            if (moveTo.isPresent()) {
+            if (moveTo.isPresent() && !Slot.isCursor(moveTo.get())) {
                 mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
             } else {
                 // Try throwing away cursor slot if it's garbage
