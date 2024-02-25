@@ -31,6 +31,7 @@ import net.minecraft.screen.SmokerScreenHandler;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class CollectMeatTask extends Task {
     private static final CookableFoodTarget[] COOKABLE_FOODS = new CookableFoodTarget[]{
@@ -153,10 +154,6 @@ public class CollectMeatTask extends Task {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
                 if (nearest.isEmpty()) continue; // ?? This crashed once?
-                if (nearest.get() instanceof LivingEntity livingEntity) {
-                    // Peta
-                    if (livingEntity.isBaby()) continue;
-                }
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.get().squaredDistanceTo(mod.getPlayer());
                 double score = (double) 100 * hungerPerformance / (sqDistance);
@@ -168,7 +165,8 @@ public class CollectMeatTask extends Task {
             }
             if (bestEntity != null) {
                 setDebugState("Killing " + bestEntity.getType().getTranslationKey());
-                _currentResourceTask = killTaskOrNull(bestEntity, bestRawFood);
+                Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
+                _currentResourceTask = killTaskOrNull(bestEntity, notBaby, bestRawFood);
                 return _currentResourceTask;
             }
         }
@@ -187,8 +185,8 @@ public class CollectMeatTask extends Task {
         return new TimeoutWanderTask();
     }
 
-    private Task killTaskOrNull(Entity entity, Item itemToGrab) {
-        return new KillAndLootTask(entity.getClass(), new ItemTarget(itemToGrab, 1));
+    private Task killTaskOrNull(Entity entity, Predicate<Entity> entityPredicate, Item itemToGrab) {
+        return new KillAndLootTask(entity.getClass(), entityPredicate, new ItemTarget(itemToGrab, 1));
     }
 
     private Task pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {

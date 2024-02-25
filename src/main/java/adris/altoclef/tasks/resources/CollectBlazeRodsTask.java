@@ -22,6 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class CollectBlazeRodsTask extends ResourceTask {
 
@@ -89,14 +90,10 @@ public class CollectBlazeRodsTask extends ResourceTask {
                 }
             }
         }
-        if (toKill.isPresent() && toKill.get().isAlive()) {
-            if (isHoveringAboveLavaOrTooHigh(mod, toKill.get())) {
-                toKill = Optional.empty();
-            }
+        if (toKill.isPresent() && toKill.get().isAlive() && !isHoveringAboveLavaOrTooHigh(mod, toKill.get())) {
             setDebugState("Killing blaze");
-            if (toKill.isPresent()) {
-                return new KillEntitiesTask(toKill.get().getClass());
-            }
+            Predicate<Entity> safeToPursue = entity -> !isHoveringAboveLavaOrTooHigh(mod, entity);
+            return new KillEntitiesTask(safeToPursue, toKill.get().getClass());
         }
 
 

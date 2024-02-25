@@ -7,7 +7,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 
 public class CoordsCommand extends Command {
     public CoordsCommand() {
-        super("coords", "Get bot's current coordinates");
+        super("coords", "Get the bot's current coordinates");
     }
 
     @Override

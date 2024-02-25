@@ -11,6 +11,7 @@
     "ClientInteractWithBlockMixin",
     "ClientPlayerInteractionAccessor",
     "ClientUIMixin",
+    "DeathScreenAccessor",
     "EntityAccessor",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",

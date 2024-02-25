@@ -7,7 +7,7 @@ import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
 
 public class MarvionCommand extends Command {
     public MarvionCommand() {
-        super("marvion", "Beats the game (Marvion version).");
+        super("marvion", "Beats the game (Marvion version)");
     }
 
     @Override

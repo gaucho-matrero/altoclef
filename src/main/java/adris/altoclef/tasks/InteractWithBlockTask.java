@@ -61,7 +61,7 @@ public class InteractWithBlockTask extends Task {
             Blocks.BIG_DRIPLEAF_STEM,
             Blocks.SMALL_DRIPLEAF,
             Blocks.TALL_GRASS,
-            Blocks.GRASS,
+            Blocks.GRASS_BLOCK,
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;
@@ -110,8 +110,20 @@ public class InteractWithBlockTask extends Task {
         this(new ItemTarget(toUse, 1), direction, target, walkInto);
     }
 
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target) {
+        this(new ItemTarget(toUse, 1), direction, target, Input.CLICK_RIGHT, false, false);
+    }
+
     public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto, Vec3i interactOffset) {
         this(new ItemTarget(toUse, 1), target, walkInto, interactOffset);
+    }
+
+    public InteractWithBlockTask(Item toUse, Direction direction, BlockPos target, Vec3i interactOffset) {
+        this(new ItemTarget(toUse, 1), direction, target, Input.CLICK_RIGHT, false, interactOffset, false);
+    }
+
+    public InteractWithBlockTask(Item toUse, BlockPos target, Vec3i interactOffset) {
+        this(new ItemTarget(toUse, 1), null, target, Input.CLICK_RIGHT, false, interactOffset, false);
     }
 
     public InteractWithBlockTask(Item toUse, BlockPos target, boolean walkInto) {
@@ -120,6 +132,10 @@ public class InteractWithBlockTask extends Task {
 
     public InteractWithBlockTask(Item toUse, BlockPos target) {
         this(new ItemTarget(toUse, 1), target);
+    }
+
+    public InteractWithBlockTask(BlockPos target, boolean shiftClick) {
+        this(ItemTarget.EMPTY, null, target, Input.CLICK_RIGHT, false, shiftClick);
     }
 
     public InteractWithBlockTask(BlockPos target) {
@@ -380,8 +396,7 @@ public class InteractWithBlockTask extends Task {
 
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
-            LookHelper.lookAt(mod, reachable.get());
-            if (mod.getClientBaritone().getPlayerContext().isLookingAt(_target)) {
+            if (LookHelper.isLookingAt(mod, _target)) {
                 if (_toUse != null) {
                     mod.getSlotHandler().forceEquipItem(_toUse, false);
                 } else {
@@ -395,6 +410,8 @@ public class InteractWithBlockTask extends Task {
                     return ClickResponse.CLICK_ATTEMPTED;
                 }
                 //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(_interactInput, true);
+            } else {
+                LookHelper.lookAt(mod, reachable.get());
             }
             return ClickResponse.WAIT_FOR_CLICK;
         }

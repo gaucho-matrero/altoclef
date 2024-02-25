@@ -24,13 +24,13 @@ import java.util.Optional;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class FoodChain extends SingleTaskChain {
     private static FoodChainConfig _config;
+    private static boolean _hasFood;
 
     static {
         ConfigHelper.loadConfig("configs/food_chain_settings.json", FoodChainConfig::new, FoodChainConfig.class, newConfig -> _config = newConfig);
     }
 
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
-    boolean _hasFood;
     private boolean _isTryingToEat = false;
     private boolean _requestFillup = false;
     private boolean _needsFood = false;
@@ -54,6 +54,7 @@ public class FoodChain extends SingleTaskChain {
         mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
     }
+
     private void stopEat(AltoClef mod) {
         if (_isTryingToEat) {
             if (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) {
@@ -93,12 +94,6 @@ public class FoodChain extends SingleTaskChain {
                 return Float.NEGATIVE_INFINITY;
             }
         }
-
-        if (!AltoClef.inGame()) {
-            stopEat(mod);
-            return Float.NEGATIVE_INFINITY;
-        }
-
         if (!mod.getModSettings().isAutoEat()) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
@@ -126,19 +121,16 @@ public class FoodChain extends SingleTaskChain {
         Pair<Integer, Optional<Item>> calculation = calculateFood(mod);
         int _cachedFoodScore = calculation.getLeft();
         _cachedPerfectFood = calculation.getRight();
-
-        boolean hasFood = _cachedFoodScore > 0;
-        _hasFood = hasFood;
-
+        _hasFood = _cachedFoodScore > 0;
         // If we requested a fillup but we're full, stop.
         if (_requestFillup && mod.getPlayer().getHungerManager().getFoodLevel() >= 20) {
             _requestFillup = false;
         }
         // If we no longer have food, we no longer can eat.
-        if (!hasFood) {
+        if (!_hasFood) {
             _requestFillup = false;
         }
-        if (hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
+        if (_hasFood && (needsToEat() || _requestFillup) && _cachedPerfectFood.isPresent() &&
                 !mod.getMLGBucketChain().isChorusFruiting() && !mod.getPlayer().isBlocking()) {
             Item toUse = _cachedPerfectFood.get();
             // Make sure we're not facing a container

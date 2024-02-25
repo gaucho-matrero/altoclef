@@ -31,6 +31,7 @@ public class CollectIronIngotTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBehaviour().push();
+        mod.getBlockTracker().trackBlock(Blocks.FURNACE, Blocks.BLAST_FURNACE);
     }
 
     @Override
@@ -44,7 +45,6 @@ public class CollectIronIngotTask extends ResourceTask {
             if (_count < 5) {
                 return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, _count), new ItemTarget(Items.RAW_IRON, _count)));
             }
-            mod.getBehaviour().addProtectedItems(Items.COBBLESTONE, Items.STONE, Items.SMOOTH_STONE);
             Optional<BlockPos> furnacePos = mod.getBlockTracker().getNearestTracking(Blocks.FURNACE);
             furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
             if (mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 5) {
@@ -58,6 +58,7 @@ public class CollectIronIngotTask extends ResourceTask {
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
+        mod.getBlockTracker().stopTracking(Blocks.FURNACE, Blocks.BLAST_FURNACE);
     }
 
     @Override

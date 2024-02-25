@@ -145,9 +145,11 @@ public class CollectObsidianTask extends ResourceTask {
             return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[]{Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
         }
 
-        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
-            setDebugState("We can't place water, so we're wandering.");
-            return new TimeoutWanderTask();
+        if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
+            final double AVERAGE_GOLD_PER_OBSIDIAN = 11.475;
+            int gold_buffer = (int) (AVERAGE_GOLD_PER_OBSIDIAN * _count);
+            setDebugState("We can't place water, so we're trading for obsidian");
+            return new TradeWithPiglinsTask(gold_buffer, Items.OBSIDIAN, _count);
         }
 
         if (_placeObsidianTask == null) {

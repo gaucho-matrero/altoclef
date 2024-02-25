@@ -56,7 +56,7 @@ public class BeeMovieTask extends Task {
         _textParser = new StreamedSignStringParser(input);
 
         _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
-        _structureMaterialsTask = new MineAndCollectTask(new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[]{Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
+        _structureMaterialsTask = new MineAndCollectTask(new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[]{Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
     }
 
     private static int sign(int num) {

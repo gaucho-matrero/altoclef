@@ -5,6 +5,7 @@ import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
@@ -114,7 +115,22 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
                 // Pick the best slot to grab from.
                 Optional<Slot> bestPotential = getBestSlotToTransfer(mod, target, count, potentials, stack -> mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false).isPresent());
-
+                ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+                if (!cursorStack.isEmpty()) {
+                    Optional<Slot> toPlace = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
+                    if (toPlace.isPresent() && target.matches(cursorStack.getItem())) {
+                        mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    if (toPlace.isPresent()) {
+                        mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                }
                 if (bestPotential.isPresent()) {
                     // Just pick it up, it's now ours.
                     mod.getSlotHandler().clickSlot(bestPotential.get(), 0, SlotActionType.PICKUP);

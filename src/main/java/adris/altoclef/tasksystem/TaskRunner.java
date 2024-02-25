@@ -19,7 +19,7 @@ public class TaskRunner {
     }
 
     public void tick() {
-        if (!_active) return;
+        if (!_active || !AltoClef.inGame()) return;
         // Get highest priority chain and run
         TaskChain maxChain = null;
         float maxPriority = Float.NEGATIVE_INFINITY;

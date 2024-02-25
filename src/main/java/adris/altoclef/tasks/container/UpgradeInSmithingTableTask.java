@@ -25,6 +25,7 @@ import java.util.Optional;
 public class UpgradeInSmithingTableTask extends ResourceTask {
 
     private final ItemTarget _tool;
+    private final ItemTarget _template;
     private final ItemTarget _material;
     private final ItemTarget _output;
 
@@ -34,6 +35,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         super(output);
         _tool = new ItemTarget(tool, output.getTargetCount());
         _material = new ItemTarget(material, output.getTargetCount());
+        _template = new ItemTarget("netherite_upgrade_smithing_template", output.getTargetCount());
         _output = output;
         _innerTask = new UpgradeInSmithingTableInternalTask();
     }
@@ -61,6 +63,7 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
 
         boolean inSmithingTable = (mod.getPlayer().currentScreenHandler instanceof SmithingScreenHandler);
 
+        int templatesInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.INPUT_SLOT_TEMPLATE, _template) : 0;
         int materialsInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.INPUT_SLOT_MATERIALS, _material) : 0;
         int toolsInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.INPUT_SLOT_TOOL, _tool) : 0;
         int ouputInSlot = inSmithingTable ? getItemsInSlot(SmithingTableSlot.OUTPUT_SLOT, _output) : 0;
@@ -68,9 +71,10 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
         int desiredOutput = _output.getTargetCount() - ouputInSlot;
 
         if (mod.getItemStorage().getItemCount(_tool) + toolsInSlot < desiredOutput ||
-                mod.getItemStorage().getItemCount(_material) + materialsInSlot < desiredOutput) {
+                mod.getItemStorage().getItemCount(_material) + materialsInSlot < desiredOutput ||
+                mod.getItemStorage().getItemCount(_template) + templatesInSlot < desiredOutput) {
             setDebugState("Getting materials + tools");
-            return TaskCatalogue.getSquashedItemTask(_tool, _material);
+            return TaskCatalogue.getSquashedItemTask(_tool, _material, _template);
         }
 
         // Edge case: We are wearing the armor we want to upgrade. If so, remove it.
@@ -175,10 +179,12 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             }
             _invTimer.reset();
 
+            Slot templateSlot = SmithingTableSlot.INPUT_SLOT_TEMPLATE;
             Slot materialSlot = SmithingTableSlot.INPUT_SLOT_MATERIALS;
             Slot toolSlot = SmithingTableSlot.INPUT_SLOT_TOOL;
             Slot outputSlot = SmithingTableSlot.OUTPUT_SLOT;
 
+            ItemStack currentTemplates = StorageHelper.getItemStackInSlot(templateSlot);
             ItemStack currentMaterials = StorageHelper.getItemStackInSlot(materialSlot);
             ItemStack currentTools = StorageHelper.getItemStackInSlot(toolSlot);
             ItemStack currentOutput = StorageHelper.getItemStackInSlot(outputSlot);
@@ -194,6 +200,10 @@ public class UpgradeInSmithingTableTask extends ResourceTask {
             // Put tool in slot
             if (currentTools.isEmpty() || !_tool.matches(currentTools.getItem())) {
                 return new MoveItemToSlotFromInventoryTask(new ItemTarget(_tool, 1), toolSlot);
+            }
+
+            if (currentTemplates.isEmpty() || !_template.matches(currentTemplates.getItem())) {
+                return new MoveItemToSlotFromInventoryTask(new ItemTarget(_template, 1), templateSlot);
             }
 
             setDebugState("PROBLEM: Nothing to do!");

@@ -16,6 +16,7 @@ import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.Baritone;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
@@ -25,8 +26,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.DragonFireballEntity;
-import net.minecraft.entity.projectile.FireballEntity;
+import net.minecraft.entity.projectile.*;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,17 +38,19 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
+import static java.lang.Math.abs;
+
 public class MobDefenseChain extends SingleTaskChain {
     private static final double DANGER_KEEP_DISTANCE = 30;
     private static final double CREEPER_KEEP_DISTANCE = 10;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;//4;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;//15;
     private static final double SAFE_KEEP_DISTANCE = 8;
+    private static boolean _shielding = false;
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
     private final KillAura _killAura = new KillAura();
     private final HashMap<Entity, TimerGame> _closeAnnoyingEntities = new HashMap<>();
     private Entity _targetEntity;
-    private boolean _shielding = false;
     private boolean _doingFunkyStuff = false;
     private boolean _wasPuttingOutFire = false;
     private CustomBaritoneGoalTask _runAwayTask;
@@ -68,17 +70,11 @@ public class MobDefenseChain extends SingleTaskChain {
         return distance * 0.2; // less is WORSE
     }
 
-    @Override
-    public float getPriority(AltoClef mod) {
-        _cachedLastPriority = getPriorityInner(mod);
-        return _cachedLastPriority;
-    }
-
-    private void startShielding(AltoClef mod) {
+    private static void startShielding(AltoClef mod) {
         _shielding = true;
         mod.getInputControls().hold(Input.SNEAK);
         mod.getInputControls().hold(Input.CLICK_RIGHT);
-        mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
+        mod.getClientBaritone().getPathingBehavior().requestPause();
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
@@ -96,6 +92,12 @@ public class MobDefenseChain extends SingleTaskChain {
                 garbage.ifPresent(slot -> mod.getSlotHandler().forceEquipItem(StorageHelper.getItemStackInSlot(slot).getItem()));
             }
         }
+    }
+
+    @Override
+    public float getPriority(AltoClef mod) {
+        _cachedLastPriority = getPriorityInner(mod);
+        return _cachedLastPriority;
     }
 
     private void stopShielding(AltoClef mod) {
@@ -170,19 +172,23 @@ public class MobDefenseChain extends SingleTaskChain {
 
         // Run away if a weird mob is close by.
         Optional<Entity> universallyDangerous = getUniversallyDangerousMob(mod);
-        if (universallyDangerous.isPresent()) {
+        if (universallyDangerous.isPresent() && mod.getPlayer().getHealth() <= 10) {
             _runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE, true);
             setTask(_runAwayTask);
             return 70;
         }
 
         _doingFunkyStuff = false;
+        PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
+        Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
         // Run away from creepers
         CreeperEntity blowingUp = getClosestFusingCreeper(mod);
         if (blowingUp != null) {
             if (!mod.getFoodChain().needsToEat() && (mod.getItemStorage().hasItem(Items.SHIELD) ||
                     mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
-                    !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null) {
+                    !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null
+                    && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)
+                    && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                 _doingFunkyStuff = true;
                 LookHelper.lookAt(mod, blowingUp.getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
@@ -204,12 +210,11 @@ public class MobDefenseChain extends SingleTaskChain {
             }
         }
         // Block projectiles with shield
-        PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
-        Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
         if (!mod.getFoodChain().needsToEat() && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod) &&
                 (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) &&
-                !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null &&
-                !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
+                !mod.getEntityTracker().entityFound(PotionEntity.class) && _runAwayTask == null
+                && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)
+                && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
             if (shieldSlot.getItem() != Items.SHIELD) {
                 mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
@@ -280,8 +285,9 @@ public class MobDefenseChain extends SingleTaskChain {
                                 boolean hoglinAttacking = hostile instanceof HoglinEntity;
                                 boolean zoglinAttacking = hostile instanceof ZoglinEntity;
                                 boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
+                                boolean vindicatorAttacking = hostile instanceof VindicatorEntity;
                                 if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking ||
-                                        piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking) {
+                                        piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking || vindicatorAttacking) {
                                     if (mod.getPlayer().getHealth() <= 10) {
                                         _closeAnnoyingEntities.put(hostile, new TimerGame(0));
                                     } else {
@@ -408,11 +414,15 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void putOutFire(AltoClef mod, BlockPos pos) {
-        LookHelper.lookAt(mod, pos);
-        Baritone b = mod.getClientBaritone();
-        if (LookHelper.isLookingAt(mod, pos)) {
-            b.getPathingBehavior().requestPause();
-            b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+        Optional<Rotation> reach = LookHelper.getReach(pos);
+        if (reach.isPresent()) {
+            Baritone b = mod.getClientBaritone();
+            if (LookHelper.isLookingAt(mod, pos)) {
+                b.getPathingBehavior().requestPause();
+                b.getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+                return;
+            }
+            LookHelper.lookAt(mod, reach.get());
         }
     }
 
@@ -495,8 +505,9 @@ public class MobDefenseChain extends SingleTaskChain {
                         if (isGhastBall) {
                             Optional<Entity> ghastBall = mod.getEntityTracker().getClosestEntity(FireballEntity.class);
                             Optional<Entity> ghast = mod.getEntityTracker().getClosestEntity(GhastEntity.class);
-                            if (ghastBall.isPresent() && ghast.isPresent() && _runAwayTask == null) {
-                                mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
+                            if (ghastBall.isPresent() && ghast.isPresent() && _runAwayTask == null
+                                    && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                                mod.getClientBaritone().getPathingBehavior().requestPause();
                                 LookHelper.lookAt(mod, ghast.get().getEyePos());
                             }
                             return false;
@@ -506,6 +517,17 @@ public class MobDefenseChain extends SingleTaskChain {
                             // Ignore dragon fireballs
                             return false;
                         }
+                        if (projectile.projectileType == ArrowEntity.class || projectile.projectileType == SpectralArrowEntity.class || projectile.projectileType == SmallFireballEntity.class) {
+                            // check if the velocity of the projectile is going away from us
+                            // oh no fancy math
+                            Vec3d velocity = projectile.velocity;
+                            Vec3d delta = mod.getPlayer().getPos().subtract(projectile.position);
+                            double epsilon = 0.25;
+                            if (abs(velocity.dotProduct(delta)) <= epsilon) {
+                                // Arrow is going away from us, ignore it.
+                                continue;
+                            }
+                        }
 
                         Vec3d expectedHit = ProjectileHelper.calculateArrowClosestApproach(projectile, mod.getPlayer());
 
@@ -514,10 +536,10 @@ public class MobDefenseChain extends SingleTaskChain {
                         //Debug.logMessage("EXPECTED HIT OFFSET: " + delta + " ( " + projectile.gravity + ")");
 
                         double horizontalDistanceSq = delta.x * delta.x + delta.z * delta.z;
-                        double verticalDistance = Math.abs(delta.y);
+                        double verticalDistance = abs(delta.y);
                         if (horizontalDistanceSq < ARROW_KEEP_DISTANCE_HORIZONTAL * ARROW_KEEP_DISTANCE_HORIZONTAL && verticalDistance < ARROW_KEEP_DISTANCE_VERTICAL) {
-                            if (_runAwayTask == null) {
-                                mod.getClientBaritone().getPathingBehavior().softCancelIfSafe();
+                            if (_runAwayTask == null && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                                mod.getClientBaritone().getPathingBehavior().requestPause();
                                 LookHelper.lookAt(mod, projectile.position);
                             }
                             return true;
@@ -575,6 +597,13 @@ public class MobDefenseChain extends SingleTaskChain {
             double range = SAFE_KEEP_DISTANCE - 2;
             if (piglinBrute.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, piglinBrute.get())) {
                 return piglinBrute;
+            }
+        }
+        Optional<Entity> vindicator = mod.getEntityTracker().getClosestEntity(VindicatorEntity.class);
+        if (vindicator.isPresent()) {
+            double range = SAFE_KEEP_DISTANCE - 2;
+            if (vindicator.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, vindicator.get())) {
+                return vindicator;
             }
         }
         return Optional.empty();

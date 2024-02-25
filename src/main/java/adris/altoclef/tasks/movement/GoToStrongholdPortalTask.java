@@ -13,6 +13,7 @@ public class GoToStrongholdPortalTask extends Task {
 
     private final LocateStrongholdCoordinatesTask _locateCoordsTask;
     private final int _targetEyes;
+    private final int MINIMUM_EYES = 12;
     private BlockPos _strongholdCoordinates;
 
     public GoToStrongholdPortalTask(int targetEyes) {
@@ -36,9 +37,9 @@ public class GoToStrongholdPortalTask extends Task {
         if (_strongholdCoordinates == null) {
             _strongholdCoordinates = _locateCoordsTask.getStrongholdCoordinates().orElse(null);
             if (_strongholdCoordinates == null) {
-                if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
+                if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < MINIMUM_EYES && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
                     setDebugState("Picking up dropped eye");
-                    return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
+                    return new PickupDroppedItemTask(Items.ENDER_EYE, MINIMUM_EYES);
                 }
                 setDebugState("Triangulating stronghold...");
                 return _locateCoordsTask;

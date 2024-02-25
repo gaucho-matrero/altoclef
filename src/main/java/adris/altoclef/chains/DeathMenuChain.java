@@ -2,15 +2,21 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.mixins.DeathScreenAccessor;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.time.TimerReal;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.screen.DeathScreen;
+import net.minecraft.client.gui.screen.DisconnectedScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.text.Text;
 
 public class DeathMenuChain extends TaskChain {
 
@@ -22,6 +28,7 @@ public class DeathMenuChain extends TaskChain {
     private boolean _reconnecting = false;
     private int _deathCount = 0;
     private Class _prevScreen = null;
+
 
     public DeathMenuChain(TaskRunner runner) {
         super(runner);
@@ -78,8 +85,25 @@ public class DeathMenuChain extends TaskChain {
                     _deathCount++;
                     Debug.logMessage("RESPAWNING... (this is death #" + _deathCount + ")");
                     assert MinecraftClient.getInstance().player != null;
+                    Text screenMessage = ((DeathScreenAccessor) screen).getMessage();
+                    String deathMessage = screenMessage != null ? screenMessage.getString() : "Unknown"; //"(not implemented yet)"; //screen.children().toString();
                     MinecraftClient.getInstance().player.requestRespawn();
                     MinecraftClient.getInstance().setScreen(null);
+                    for (String i : mod.getModSettings().getDeathCommand().split(" & ")) {
+                        String command = i.replace("{deathmessage}", deathMessage);
+                        String prefix = mod.getModSettings().getCommandPrefix();
+                        while (MinecraftClient.getInstance().player.isAlive()) ;
+                        if (!command.isEmpty()) {
+                            if (command.startsWith(prefix)) {
+                                AltoClef.getCommandExecutor().execute(command, () -> {
+                                }, Throwable::printStackTrace);
+                            } else if (command.startsWith("/")) {
+                                MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
+                            } else {
+                                MinecraftClient.getInstance().player.networkHandler.sendChatMessage(command);
+                            }
+                        }
+                    }
                 } else {
                     // Cancel if we die and are not auto-respawning.
                     mod.cancelUserTask();
@@ -107,7 +131,8 @@ public class DeathMenuChain extends TaskChain {
                     Debug.logWarning("Failed to re-connect to server, no server entry cached.");
                 } else {
                     MinecraftClient client = MinecraftClient.getInstance();
-                    ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
+                    ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry, false);
+                    //ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
                     //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
                 }
             }

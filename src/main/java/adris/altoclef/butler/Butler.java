@@ -6,7 +6,9 @@ import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.message.MessageType;
+
+import java.util.Objects;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
@@ -46,19 +48,26 @@ public class Butler {
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
             boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.toString();
-            if (debug) {
-                Debug.logMessage("RECEIVED WHISPER: \"" + message + "\".");
+            String message = evt.messageContent();
+            String sender = evt.senderName();
+            MessageType messageType = evt.messageType();
+            String receiver = mod.getPlayer().getName().getString();
+            if (sender != null && !Objects.equals(sender, receiver) && messageType.chat().style().isItalic()
+                    && messageType.chat().style().getColor() != null
+                    && Objects.equals(messageType.chat().style().getColor().getName(), "gray")) {
+                String wholeMessage = sender + " " + receiver + " " + message;
+                if (debug) {
+                    Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");
+                }
+                _mod.getButler().receiveMessage(wholeMessage, receiver);
             }
-            _mod.getButler().receiveMessage(message);
         });
     }
 
-    private void receiveMessage(String msg) {
+    private void receiveMessage(String msg, String receiver) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
-        String ourName = MinecraftClient.getInstance().getName();
-        WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, ourName, msg);
+        WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, receiver, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
         } else if (ButlerConfig.getInstance().whisperFormatDebug) {

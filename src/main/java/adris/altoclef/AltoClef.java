@@ -231,9 +231,10 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().blocksToAvoid.value = List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
-                Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.GRASS, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
+                Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
                 Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
-                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN);
+                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN, Blocks.SUNFLOWER, Blocks.LILAC,
+                Blocks.ROSE_BUSH, Blocks.PEONY);
         // Let baritone move items to hotbar to use them
         // Reduces a bit of far rendering to save FPS
         getClientBaritoneSettings().fadePath.value = true;

@@ -1,12 +1,12 @@
 package adris.altoclef.util;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.DynamicRegistryManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,42 +15,62 @@ import java.util.stream.Collectors;
  * For crafting table/inventory recipe book crafting, we need to figure out identifiers given a recipe.
  */
 public class JankCraftingRecipeMapping {
-    private static final HashMap<Item, List<Recipe<?>>> _recipeMapping = new HashMap<>();
+    private static final HashMap<Item, List<RecipeEntry<?>>> _recipeMapping = new HashMap<>();
 
+    /**
+     * Reloads the recipe mapping.
+     */
     private static void reloadRecipeMapping() {
-        if (MinecraftClient.getInstance().getNetworkHandler() != null) {
-            RecipeManager recipes = MinecraftClient.getInstance().getNetworkHandler().getRecipeManager();
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        // Check if the network handler is available
+        if (client.getNetworkHandler() != null) {
+            RecipeManager recipes = client.getNetworkHandler().getRecipeManager();
+            ClientWorld world = client.world;
+
+            // Check if the recipe manager is available
             if (recipes != null) {
-                for (Recipe<?> recipe : recipes.values()) {
-                    Item output = recipe.getOutput(DynamicRegistryManager.EMPTY).getItem();
-                    if (!_recipeMapping.containsKey(output)) {
-                        _recipeMapping.put(output, new ArrayList<>());
-                    }
-                    _recipeMapping.get(output).add(recipe);
+                for (RecipeEntry<?> recipe : recipes.values()) {
+                    assert world != null;
+                    Item output = recipe.value().getResult(world.getRegistryManager()).getItem();
+                    _recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);
                 }
             }
         }
     }
 
-    public static Optional<Recipe<?>> getMinecraftMappedRecipe(CraftingRecipe recipe, Item output) {
-        if (_recipeMapping.isEmpty()) {
-            reloadRecipeMapping();
-        }
+    /**
+     * Retrieves the mapped recipe for a given output item from the Minecraft crafting recipe.
+     *
+     * @param recipe The crafting recipe to check against.
+     * @param output The output item of the recipe.
+     * @return An Optional containing the mapped recipe entry if found, or an empty Optional if not found.
+     */
+    public static Optional<RecipeEntry<?>> getMinecraftMappedRecipe(CraftingRecipe recipe, Item output) {
+        reloadRecipeMapping();
+        // Check if the output item is present in the recipe mapping
         if (_recipeMapping.containsKey(output)) {
-            for (Recipe<?> checkRecipe : _recipeMapping.get(output)) {
-                // Check for item count/satisfiability and not shape satisfiability (that would be annoying)
-                // Assumes there are no 2 recipes with the same output and same inputs in a different order.
-                List<ItemTarget> toSatisfy = Arrays.stream(recipe.getSlots()).filter(itemTarget -> itemTarget != null && !itemTarget.isEmpty()).collect(Collectors.toList());
-                if (!checkRecipe.getIngredients().isEmpty()) {
-                    for (Ingredient ingredientObj : checkRecipe.getIngredients()) {
-                        if (ingredientObj.isEmpty())
+            // Iterate through all the recipes mapped to the output item
+            for (RecipeEntry<?> checkRecipe : _recipeMapping.get(output)) {
+                // Create a list of item targets to satisfy
+                List<ItemTarget> toSatisfy = Arrays.stream(recipe.getSlots())
+                        .filter(itemTarget -> itemTarget != null && !itemTarget.isEmpty())
+                        .collect(Collectors.toList());
+                // Check if the recipe has ingredients
+                if (!checkRecipe.value().getIngredients().isEmpty()) {
+                    // Iterate through the ingredients of the recipe
+                    for (Ingredient ingredient : checkRecipe.value().getIngredients()) {
+                        // Skip empty ingredients
+                        if (ingredient.isEmpty()) {
                             continue;
-                        // Remove from "toSatisfy" if we find something that fits
+                        }
+                        // Iterate through the items to satisfy
                         outer:
                         for (int i = 0; i < toSatisfy.size(); ++i) {
-                            ItemTarget check = toSatisfy.get(i);
-                            for (ItemStack match : ingredientObj.getMatchingStacks()) {
-                                if (check.matches(match.getItem())) {
+                            ItemTarget target = toSatisfy.get(i);
+                            // Check if any of the ingredient's matching stacks matches the item target
+                            for (ItemStack stack : ingredient.getMatchingStacks()) {
+                                if (target.matches(stack.getItem())) {
                                     toSatisfy.remove(i);
                                     break outer;
                                 }
@@ -58,34 +78,7 @@ public class JankCraftingRecipeMapping {
                         }
                     }
                 }
-                /*int i = -1; // ++i first
-                boolean found = true;
-                for (Object ingredientObj : checkRecipe.getIngredients()) {
-                    ++i;
-                    // Out of range
-                    if (i >= recipe.getSlotCount()) {
-                        found = false;
-                        break;
-                    }
-                    ItemTarget ourIngredient = recipe.getSlot(i);
-                    Ingredient checkIngredient = (Ingredient) ingredientObj;
-                    // If our ingredient is null, our check ingredient MUST be empty (Empty = null)
-                    if (ourIngredient == null || ourIngredient.isEmpty()) {
-                        if (checkIngredient.isEmpty())
-                            continue;
-                        found = false;
-                        break;
-                    }
-                    // At least one item must satisfy to move on.
-                    if (Arrays.stream(checkIngredient.getMatchingStacks()).noneMatch(itemStack -> ourIngredient.matches(itemStack.getItem()))) {
-                        found = false;
-                        break;
-                    }
-                }
-                if (found)
-                    return Optional.of(checkRecipe);
-                 */
-                // We satisfied every material, so assume it's the right recipe.
+                // Check if all the item targets have been satisfied
                 if (toSatisfy.isEmpty()) {
                     return Optional.of(checkRecipe);
                 }

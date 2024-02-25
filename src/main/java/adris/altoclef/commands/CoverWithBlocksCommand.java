@@ -8,7 +8,7 @@ import adris.altoclef.tasks.construction.CoverWithBlocksTask;
 
 public class CoverWithBlocksCommand extends Command {
     public CoverWithBlocksCommand() {
-        super("coverwithblocks", "Cover nether lava with blocks.");
+        super("coverwithblocks", "Cover nether lava with blocks");
     }
 
     @Override
