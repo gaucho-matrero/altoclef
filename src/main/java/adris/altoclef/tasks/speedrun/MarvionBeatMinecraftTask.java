@@ -41,7 +41,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.biome.BiomeKeys;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -147,7 +146,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private final TimerGame _timer2 = new TimerGame(35);
     private final TimerGame _timer3 = new TimerGame(60);
     boolean _weHaveEyes;
-    private boolean _dragonIsDead = false;
+    private static boolean dragonIsDead;
     private BlockPos _endPortalCenterLocation;
     private boolean _isEquippingDiamondArmor;
     private boolean _ranStrongholdLocator;
@@ -156,7 +155,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
     private int _cachedFilledPortalFrames = 0;
     // Controls whether we CAN walk on the end portal.
-    private boolean _enterindEndPortal = false;
+    private static boolean enteringEndPortal;
     private Task _foodTask;
     private Task _gearTask;
     private Task _lootTask;
@@ -181,14 +180,11 @@ public class MarvionBeatMinecraftTask extends Task {
     }
 
     /**
-     * Returns the BeatMinecraftConfig instance.
-     * If it is not already initialized, it initializes and returns a new instance.
-     *
+     * Retrieves the BeatMinecraftConfig instance, creating a new one if it doesn't exist.
      * @return the BeatMinecraftConfig instance
      */
     public static BeatMinecraftConfig getConfig() {
         if (_config == null) {
-            Debug.logInternal("Initializing BeatMinecraftConfig");
             _config = new BeatMinecraftConfig();
         }
         return _config;
@@ -196,9 +192,8 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Retrieves the frame blocks surrounding the end portal center.
-     *
      * @param endPortalCenter the center position of the end portal
-     * @return a list of block positions representing the frame blocks
+     * @return the list of frame blocks
      */
     private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
         // Create a list to store the frame blocks
@@ -232,51 +227,32 @@ public class MarvionBeatMinecraftTask extends Task {
             }
         }
 
-        // Log the frame blocks for debugging
-        Debug.logInternal("Frame blocks: " + frameBlocks);
-
         // Return the list of frame blocks
         return frameBlocks;
     }
 
     /**
-     * Converts an array of `Item` objects into an array of `ItemTarget` objects.
+     * Converts an array of Item objects to an array of ItemTarget objects.
      *
-     * @param items the array of `Item` objects to convert
-     * @return the array of `ItemTarget` objects
+     * @param items the array of Item objects to convert
+     * @return an array of ItemTarget objects
      */
     private static ItemTarget[] toItemTargets(Item... items) {
-        // Use the `Arrays.stream()` method to create a stream of `Item` objects
         return Arrays.stream(items)
-                // Use the `map()` method to convert each `Item` object into an `ItemTarget` object
-                .map(item -> {
-                    // Add logging statement to print the item being converted
-                    Debug.logInternal("Converting item: " + item);
-                    return new ItemTarget(item);
-                })
-                // Use the `toArray()` method to convert the stream of `ItemTarget` objects into an array
+                .map(ItemTarget::new)
                 .toArray(ItemTarget[]::new);
     }
 
     /**
-     * Convert an item and count into an array of ItemTargets.
+     * Converts an Item and count into an array of ItemTargets.
      *
-     * @param item  The item to be converted.
-     * @param count The count of the item.
-     * @return An array of ItemTargets containing the item and count.
+     * @param item The item to convert
+     * @param count The count of the item
+     * @return An array of ItemTargets
      */
     private static ItemTarget[] toItemTargets(Item item, int count) {
-        // Add a logging statement to indicate the start of the method.
-        Debug.logInternal("Converting item to ItemTargets...");
-
         // Create a new array of ItemTargets with a length of 1.
-        ItemTarget[] itemTargets = new ItemTarget[1];
-
-        // Create a new ItemTarget with the given item and count.
-        itemTargets[0] = new ItemTarget(item, count);
-
-        // Add a logging statement to indicate the completion of the method.
-        Debug.logInternal("Conversion to ItemTargets complete.");
+        ItemTarget[] itemTargets = {new ItemTarget(item, count)};
 
         // Return the array of ItemTargets.
         return itemTargets;
@@ -285,156 +261,107 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Combines multiple arrays of ItemTarget objects into a single array.
      *
-     * @param targets The arrays of ItemTarget objects to combine.
-     * @return The combined array of ItemTarget objects.
+     * @param targets The arrays of ItemTarget objects to be combined
+     * @return The combined array of ItemTarget objects
      */
     private static ItemTarget[] combine(ItemTarget[]... targets) {
         List<ItemTarget> combinedTargets = new ArrayList<>();
 
         // Iterate over each array of ItemTarget objects
         for (ItemTarget[] targetArray : targets) {
-            // Add all elements of the array to the combinedTargets list
-            combinedTargets.addAll(Arrays.asList(targetArray));
+            if (targetArray != null) {
+                // Add all elements of the array to the combinedTargets list
+                combinedTargets.addAll(Arrays.asList(targetArray));
+            }
         }
 
-        // Log the combinedTargets list
-        Debug.logInternal("Combined Targets: " + combinedTargets);
-
         // Convert the combinedTargets list to an array and log it
-        ItemTarget[] combinedArray = combinedTargets.toArray(new ItemTarget[combinedTargets.size()]);
-        Debug.logInternal("Combined Array: " + Arrays.toString(combinedArray));
+        ItemTarget[] combinedArray = combinedTargets.toArray(new ItemTarget[0]);
 
         // Return the combined array
         return combinedArray;
     }
 
     /**
-     * Checks if the End Portal Frame at the given position is filled with an Eye of Ender.
-     *
-     * @param mod The AltoClef mod instance.
-     * @param pos The position of the End Portal Frame.
-     * @return True if the End Portal Frame is filled, false otherwise.
+     * Check if the end portal frame at the specified position is filled with an eye of ender.
+     * @param mod the AltoClef mod
+     * @param pos the position of the end portal frame
+     * @return true if the end portal frame is filled with an eye of ender, false otherwise
      */
     private static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
-        // Check if the chunk is loaded
+        // Check if the chunk at the specified position is loaded
         if (!mod.getChunkTracker().isChunkLoaded(pos)) {
-            Debug.logInternal("Chunk is not loaded");
             return false;
         }
 
-        // Check the block state at the given position
+        // Get the block state at the specified position
         BlockState blockState = mod.getWorld().getBlockState(pos);
+
+        // Check if the block at the specified position is an end portal frame
         if (blockState.getBlock() != Blocks.END_PORTAL_FRAME) {
-            Debug.logInternal("Block is not an End Portal Frame");
             return false;
         }
 
-        // Check if the End Portal Frame is filled
-        boolean isFilled = blockState.get(EndPortalFrameBlock.EYE);
-        Debug.logInternal("End Portal Frame is " + (isFilled ? "filled" : "not filled"));
-        return isFilled;
+        // Return true if the end portal frame is filled with an eye of ender, false otherwise
+        return blockState.get(EndPortalFrameBlock.EYE);
     }
 
     /**
-     * Checks if a task should be forced.
-     *
-     * @param mod  The AltoClef mod.
-     * @param task The task to check.
-     * @return True if the task should be forced, false otherwise.
+     * Check if the task should be forced for the given alto clef mod.
+     * @param mod the alto clef mod
+     * @param task the task to check
+     * @return true if the task should be forced, false otherwise
      */
     private static boolean shouldForce(AltoClef mod, Task task) {
-        // Check if the task is not null
-        boolean isTaskNotNull = task != null;
-
-        // Check if the task is active
-        boolean isTaskActive = isTaskNotNull && task.isActive();
-
-        // Check if the task is not finished
-        boolean isTaskNotFinished = isTaskNotNull && !task.isFinished(mod);
-
-        // Print task status for debugging purposes
-        if (isTaskNotNull) {
-            Debug.logInternal("Task is not null");
-        } else {
-            Debug.logInternal("Task is null");
-        }
-
-        if (isTaskActive) {
-            Debug.logInternal("Task is active");
-        } else {
-            Debug.logInternal("Task is not active");
-        }
-
-        if (isTaskNotFinished) {
-            Debug.logInternal("Task is not finished");
-        } else {
-            Debug.logInternal("Task is finished");
-        }
-
-        return isTaskNotNull && isTaskActive && isTaskNotFinished;
+        // Task must not be null, must be active, and must not be finished for the given mod
+        return task != null && task.isActive() && !task.isFinished(mod);
     }
 
     /**
-     * Checks if the task is finished.
+     * Check if the condition for finishing the game is met.
      *
-     * @param mod The instance of the AltoClef mod.
-     * @return True if the task is finished, false otherwise.
+     * @param mod the AltoClef object
+     * @return true if the game is finished, false otherwise
      */
     @Override
     public boolean isFinished(AltoClef mod) {
         // Check if the current screen is the CreditsScreen
         if (getInstance().currentScreen instanceof CreditsScreen) {
-            Debug.logInternal("isFinished - Current screen is CreditsScreen");
             return true;
         }
 
         // Check if the dragon is dead in the Overworld
-        if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && _dragonIsDead) {
-            Debug.logInternal("isFinished - Dragon is dead in the Overworld");
+        if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && dragonIsDead) {
             return true;
         }
-
-        // The task is not finished
-        Debug.logInternal("isFinished - Returning false");
         return false;
     }
 
     /**
-     * Checks if the mod needs building materials.
+     * Check if the bot needs more building materials to start building.
      *
-     * @param mod The AltoClef mod instance.
-     * @return True if building materials are needed, false otherwise.
+     * @param mod the AltoClef mod instance
+     * @return true if the bot needs more building materials, false otherwise
      */
     private boolean needsBuildingMaterials(AltoClef mod) {
+        // Get the count of building materials in storage
         int materialCount = StorageHelper.getBuildingMaterialCount(mod);
+
+        // Check if the bot should force building or if the material count is below the minimum required
         boolean shouldForce = shouldForce(mod, _buildMaterialsTask);
 
-        // Check if the material count is below the minimum required count
-        // or if the build materials task should be forced.
-        if (materialCount < _config.minBuildMaterialCount || shouldForce) {
-            Debug.logInternal("Building materials needed: " + materialCount);
-            Debug.logInternal("Force build materials: " + shouldForce);
-            return true;
-        } else {
-            Debug.logInternal("Building materials not needed");
-            return false;
-        }
+        // Return true if the material count is below the minimum required or if the bot should force building
+        return materialCount < _config.minBuildMaterialCount || shouldForce;
     }
 
     /**
-     * Updates the cached end items based on the dropped items in the entity tracker.
+     * Update the cached end items based on the dropped items from the entity tracker.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod The AltoClef mod
      */
     private void updateCachedEndItems(AltoClef mod) {
         // Get the list of dropped items from the entity tracker.
         List<ItemEntity> droppedItems = mod.getEntityTracker().getDroppedItems();
-
-        // If there are no dropped items and the cache wait time has not elapsed, return.
-        if (droppedItems.isEmpty() && !_cachedEndItemNothingWaitTime.elapsed()) {
-            Debug.logInternal("No dropped items and cache wait time not elapsed.");
-            return;
-        }
 
         // Reset the cache wait time and clear the cached end item drops.
         _cachedEndItemNothingWaitTime.reset();
@@ -442,90 +369,86 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Iterate over the dropped items to update the cached end item drops.
         for (ItemEntity entity : droppedItems) {
+            if (entity.getStack().isEmpty()) {
+                continue;
+            }
             Item item = entity.getStack().getItem();
             int count = entity.getStack().getCount();
 
             // Add the dropped item to the cached end item drops.
             _cachedEndItemDrops.put(item, _cachedEndItemDrops.getOrDefault(item, 0) + count);
-            Debug.logInternal("Added dropped item: " + item + " with count: " + count);
         }
     }
 
     /**
-     * Retrieves the cached count of the given item in the end.
+     * Retrieves the count of a specific item from the cached end item drops.
+     * If the item does not exist in the cache, it returns 0.
      *
-     * @param item The item to retrieve the count for.
-     * @return The cached count of the item.
+     * @param item The item to retrieve the count for
+     * @return The count of the specified item in the cached end item drops
      */
     private int getEndCachedCount(Item item) {
-        // Retrieve the count of the item from the cachedEndItemDrops map
-        int count = _cachedEndItemDrops.getOrDefault(item, 0);
-
-        // Log the retrieved count for debugging purposes
-        Debug.logInternal("EndCachedCount: " + count);
-
-        // Return the retrieved count
-        return count;
+        // Check if the item exists in the cachedEndItemDrops map before retrieving the count
+        if (_cachedEndItemDrops.containsKey(item)) {
+            return _cachedEndItemDrops.get(item);
+        } else {
+            return 0; // Return 0 if the item is not found in the map
+        }
     }
 
     /**
-     * Checks if an item is dropped in the end.
+     * Checks if the given item has been dropped in the end.
      *
-     * @param item The item to check.
-     * @return True if the item is dropped in the end, false otherwise.
+     * @param item The item to check
+     * @return True if the item has been dropped in the end, false otherwise
      */
     private boolean droppedInEnd(Item item) {
         // Get the cached count from the end.
-        int cachedCount = getEndCachedCount(item);
+        Integer cachedCount = getEndCachedCount(item);
 
-        if (cachedCount > 0) {
-            // Log the cached count when the item is dropped in the end.
-            Debug.logInternal("Item dropped in end. Cached count: " + cachedCount);
-            return true;
-        } else {
-            // Log the cached count when the item is not dropped in the end.
-            Debug.logInternal("Item not dropped in end. Cached count: 0");
-            return false;
-        }
+        return cachedCount != null && cachedCount > 0;
     }
 
     /**
-     * Checks if the given item is present in the item storage or if it has been dropped in the end.
+     * Check if the item is present in the item storage or if it has been dropped in the end.
      *
-     * @param mod  The AltoClef mod instance.
-     * @param item The item to check.
-     * @return True if the item is present in the item storage or if it has been dropped in the end, false otherwise.
+     * @param mod the AltoClef object
+     * @param item the Item object
+     * @return true if the item is present in the item storage or if it has been dropped in the end, false otherwise
+     * @throws IllegalArgumentException if mod or item is null
      */
     private boolean hasItemOrDroppedInEnd(AltoClef mod, Item item) {
+        if (mod == null || item == null) {
+            throw new IllegalArgumentException("mod and item must not be null");
+        }
+
         // Check if the item is present in the item storage.
         boolean hasItem = mod.getItemStorage().hasItem(item);
 
         // Check if the item has been dropped in the end.
         boolean droppedInEnd = droppedInEnd(item);
 
-        // Log the values for debugging purposes.
-        Debug.logInternal("hasItem: " + hasItem);
-        Debug.logInternal("droppedInEnd: " + droppedInEnd);
-
         // Return true if the item is present in the item storage or if it has been dropped in the end.
         return hasItem || droppedInEnd;
     }
 
     /**
-     * Retrieves a list of lootable items based on certain conditions.
+     * Generates a list of lootable items based on certain conditions.
      *
-     * @param mod The AltoClef mod instance.
-     * @return The list of lootable items.
+     * @param mod the AltoClef mod
+     * @return a list of lootable items
      */
     private List<Item> lootableItems(AltoClef mod) {
         List<Item> lootable = new ArrayList<>();
 
         // Add initial lootable items
-        lootable.add(Items.GOLDEN_APPLE);
-        lootable.add(Items.ENCHANTED_GOLDEN_APPLE);
-        lootable.add(Items.GLISTERING_MELON_SLICE);
-        lootable.add(Items.GOLDEN_CARROT);
-        lootable.add(Items.OBSIDIAN);
+        lootable.addAll(Arrays.asList(
+                Items.GOLDEN_APPLE,
+                Items.ENCHANTED_GOLDEN_APPLE,
+                Items.GLISTERING_MELON_SLICE,
+                Items.GOLDEN_CARROT,
+                Items.OBSIDIAN
+        ));
 
         // Check if golden helmet is equipped or available in inventory
         boolean isGoldenHelmetEquipped = StorageHelper.isArmorEquipped(mod, Items.GOLDEN_HELMET);
@@ -547,9 +470,9 @@ public class MarvionBeatMinecraftTask extends Task {
         // Add flint and steel and fire charge if not available in inventory
         if (!mod.getItemStorage().hasItemInventoryOnly(Items.FLINT_AND_STEEL)) {
             lootable.add(Items.FLINT_AND_STEEL);
-            if (!mod.getItemStorage().hasItemInventoryOnly(Items.FIRE_CHARGE)) {
-                lootable.add(Items.FIRE_CHARGE);
-            }
+        }
+        if (!mod.getItemStorage().hasItemInventoryOnly(Items.FIRE_CHARGE)) {
+            lootable.add(Items.FIRE_CHARGE);
         }
 
         // Add iron ingot if neither bucket nor water bucket is available in inventory
@@ -567,17 +490,14 @@ public class MarvionBeatMinecraftTask extends Task {
             lootable.add(Items.FLINT);
         }
 
-        Debug.logInternal("Lootable items: " + lootable); // Logging statement
-
         return lootable;
     }
 
     /**
-     * Overrides the onStop method.
-     * Performs necessary cleanup and logging when the task is interrupted or stopped.
+     * This method is called when the task is interrupted
      *
-     * @param mod           The AltoClef mod instance.
-     * @param interruptTask The task that interrupted the current task.
+     * @param mod The AltoClef mod instance
+     * @param interruptTask The task that is interrupting the current task
      */
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
@@ -588,147 +508,108 @@ public class MarvionBeatMinecraftTask extends Task {
         mod.getBehaviour().pop();
 
         // Stop tracking bed blocks
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        if (mod.getBlockTracker() != null) {
+            mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        }
 
         // Stop tracking custom blocks
-        mod.getBlockTracker().stopTracking(TRACK_BLOCKS);
-
-        // Log method stop
-        Debug.logInternal("Stopped onStop method");
-
-        // Log canWalkOnEndPortal status
-        Debug.logInternal("canWalkOnEndPortal set to false");
-
-        // Log behaviour pop
-        Debug.logInternal("Behaviour popped");
-
-        // Log stop tracking bed blocks
-        Debug.logInternal("Stopped tracking BED blocks");
-
-        // Log stop tracking custom blocks
-        Debug.logInternal("Stopped tracking TRACK_BLOCKS");
+        if (mod.getBlockTracker() != null) {
+            mod.getBlockTracker().stopTracking(TRACK_BLOCKS);
+        }
     }
 
     /**
-     * Check if the given task is equal to this MarvionBeatMinecraftTask.
-     *
-     * @param other The task to compare.
-     * @return True if the tasks are equal, false otherwise.
+     * Checks if the given task is equal to this MarvionBeatMinecraftTask.
+     * @param other the task to compare
+     * @return true if the tasks are equal, false otherwise
      */
     @Override
     protected boolean isEqual(Task other) {
-        // Check if the given task is of type MarvionBeatMinecraftTask
-        boolean isSameTask = other != null && other instanceof MarvionBeatMinecraftTask;
-        if (!isSameTask) {
-            // Log a message if the given task is not of type MarvionBeatMinecraftTask
-            Debug.logInternal("The 'other' task is not of type MarvionBeatMinecraftTask");
+        if (other == null || !(other instanceof MarvionBeatMinecraftTask)) {
+            return false;
         }
-        return isSameTask;
+        return true;
     }
 
     /**
-     * Returns a debug string for the object.
-     *
-     * @return The debug string.
+     * Returns a debug string representing the action of beating the game in the Marvion version.
      */
     @Override
     protected String toDebugString() {
-        return "Beating the game (Marvion version).";
+        return "Beating the game (Marvion version)";
     }
 
     /**
-     * Checks if the end portal has been found.
+     * Checks if the end portal is found at the specified center position.
      *
-     * @param mod             The instance of the AltoClef mod.
-     * @param endPortalCenter The center position of the end portal.
-     * @return True if the end portal has been found, false otherwise.
+     * @param mod The AltoClef mod instance
+     * @param endPortalCenter The center position of the end portal
+     * @return true if the end portal is found, false otherwise
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
-        // Check if the end portal center is null
         if (endPortalCenter == null) {
-            Debug.logInternal("End portal center is null");
             return false;
         }
 
-        // Check if the end portal is already opened
         if (endPortalOpened(mod, endPortalCenter)) {
-            Debug.logInternal("End portal is already opened");
             return true;
         }
 
         // Get the frame blocks of the end portal
         List<BlockPos> frameBlocks = getFrameBlocks(endPortalCenter);
-        for (BlockPos frame : frameBlocks) {
-            // Check if the frame block is a valid end portal frame
-            if (mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME)) {
-                Debug.logInternal("Found valid end portal frame at " + frame.toString());
-                return true;
-            }
-        }
 
-        // No valid end portal frame found
-        Debug.logInternal("No valid end portal frame found");
-        return false;
+        // Check if any of the frame blocks is a valid end portal frame block
+        return frameBlocks.stream()
+                .anyMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
     }
 
     /**
-     * Checks if the end portal is opened.
+     * Check if the end portal is already opened and the center position is provided
      *
-     * @param mod             The AltoClef mod instance.
-     * @param endPortalCenter The center position of the end portal.
-     * @return True if the end portal is opened, false otherwise.
+     * @param mod The AltoClef mod instance
+     * @param endPortalCenter The center position of the end portal
+     * @return Whether the end portal is opened at the provided center position
      */
     private boolean endPortalOpened(AltoClef mod, BlockPos endPortalCenter) {
         // Check if the end portal is already opened and the center position is provided
         if (_endPortalOpened && endPortalCenter != null) {
             // Get the block tracker from the mod instance
             BlockTracker blockTracker = mod.getBlockTracker();
-            // Check if the block tracker is available
-            if (blockTracker != null) {
-                // Check if the end portal block at the center position is valid
-                boolean isValid = blockTracker.blockIsValid(endPortalCenter, Blocks.END_PORTAL);
-                // Log the result of the end portal validity
-                Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
-                return isValid;
-            }
+            // Check if the block tracker is available and the end portal block at the center position is valid
+            return blockTracker != null && blockTracker.blockIsValid(endPortalCenter, Blocks.END_PORTAL);
         }
-        // Log that the end portal is not opened yet
-        Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
     /**
-     * Checks if the bed spawn location is near the given end portal center.
+     * Checks if the bed spawn location is near the end portal.
      *
-     * @param mod             The AltoClef mod instance.
-     * @param endPortalCenter The center position of the end portal.
-     * @return True if the bed spawn location is near the end portal, false otherwise.
+     * @param mod the AltoClef mod
+     * @param endPortalCenter the BlockPos of the end portal center
+     * @return true if the bed spawn location is near the end portal, false otherwise
      */
     private boolean spawnSetNearPortal(AltoClef mod, BlockPos endPortalCenter) {
-        // Check if the bed spawn location is null
         if (_bedSpawnLocation == null) {
-            Debug.logInternal("Bed spawn location is null");
             return false;
         }
 
-        // Get the block tracker instance
         BlockTracker blockTracker = mod.getBlockTracker();
 
-        // Check if the bed spawn location is valid by comparing it with the bed block
-        boolean isValid = blockTracker.blockIsValid(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
-
-        // Log the result of the spawn set near portal check
-        Debug.logInternal("Spawn set near portal: " + isValid);
-
-        // Return the result of the check
-        return isValid;
+        try {
+            // Check if the bed spawn location is a valid bed block
+            return blockTracker.blockIsValid(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
+        } catch (Exception e) {
+            // Handle the exception here, for example log it or return a default value
+            return false;
+        }
     }
 
     /**
-     * Finds the closest unopened ruined portal chest.
+     * Locates the closest unopened ruined portal chest in the overworld.
+     * If not in the overworld, returns an empty optional.
      *
-     * @param mod The AltoClef mod instance.
-     * @return An Optional containing the closest BlockPos of the unopened ruined portal chest, or empty if not found.
+     * @param mod The game modification instance
+     * @return Optional<BlockPos> The position of the closest unopened ruined portal chest, or empty if not found
      */
     private Optional<BlockPos> locateClosestUnopenedRuinedPortalChest(AltoClef mod) {
         // Check if the current dimension is not the overworld
@@ -737,87 +618,99 @@ public class MarvionBeatMinecraftTask extends Task {
         }
 
         // Find the nearest tracking block position
-        return mod.getBlockTracker().getNearestTracking(blockPos -> {
-            boolean isNotRuinedPortalChest = !_notRuinedPortalChests.contains(blockPos);
-            boolean isUnopenedChest = WorldHelper.isUnopenedChest(mod, blockPos);
-            boolean isWithinDistance = mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150);
-            boolean isLootablePortalChest = canBeLootablePortalChest(mod, blockPos);
+        try {
+            return mod.getBlockTracker().getNearestTracking(blockPos -> {
+                boolean isNotRuinedPortalChest = !_notRuinedPortalChests.contains(blockPos);
+                boolean isUnopenedChest = WorldHelper.isUnopenedChest(mod, blockPos);
+                boolean isWithinDistance = mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150);
+                boolean isLootablePortalChest = canBeLootablePortalChest(mod, blockPos);
 
-            Debug.logInternal("isNotRuinedPortalChest: " + isNotRuinedPortalChest);
-            Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
-            Debug.logInternal("isWithinDistance: " + isWithinDistance);
-            Debug.logInternal("isLootablePortalChest: " + isLootablePortalChest);
-
-            // Return true if all conditions are met
-            return isNotRuinedPortalChest && isUnopenedChest && isWithinDistance && isLootablePortalChest;
-        }, Blocks.CHEST);
+                // Return true if all conditions are met
+                return isNotRuinedPortalChest && isUnopenedChest && isWithinDistance && isLootablePortalChest;
+            }, Blocks.CHEST);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     /**
-     * This method is called when the mod starts.
-     * It performs several tasks to set up the mod.
+     * This method is called when the bot starts.
+     * It resets timers, pushes initial behavior onto the stack,
+     * adds warning for throwaway items, tracks blocks in the world,
+     * adds protected items, allows walking on the end portal,
+     * avoids dragon breath, and avoids breaking the bed.
+     * Any exceptions are caught and printed.
      */
     @Override
     protected void onStart(AltoClef mod) {
-        // Reset all timers
-        resetTimers();
+        try {
+            dragonIsDead = false;
+            enteringEndPortal = false;
+            // Reset all timers
+            resetTimers();
 
-        // Push the initial behaviour onto the stack
-        pushBehaviour(mod);
+            // Push the initial behaviour onto the stack
+            pushBehaviour(mod);
 
-        // Add warning for throwaway items
-        addThrowawayItemsWarning(mod);
+            // Add warning for throwaway items
+            addThrowawayItemsWarning(mod);
 
-        // Track blocks in the world
-        trackBlocks(mod);
+            // Track blocks in the world
+            trackBlocks(mod);
 
-        // Add protected items
-        addProtectedItems(mod);
+            // Add protected items
+            addProtectedItems(mod);
 
-        // Allow walking on the end portal
-        allowWalkingOnEndPortal(mod);
+            // Allow walking on the end portal
+            allowWalkingOnEndPortal(mod);
 
-        // Avoid dragon breath
-        avoidDragonBreath(mod);
+            // Avoid dragon breath
+            avoidDragonBreath(mod);
 
-        // Avoid breaking the bed
-        avoidBreakingBed(mod);
+            // Avoid breaking the bed
+            avoidBreakingBed(mod);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle the exception here
+        }
     }
 
     /**
-     * Resets the timers.
+     * Resets all timers to their initial state.
      */
     private void resetTimers() {
-        // Reset timer 1
-        _timer1.reset();
+        try {
+            // Reset timer 1
+            _timer1.reset();
 
-        // Reset timer 2
-        _timer2.reset();
+            // Reset timer 2
+            _timer2.reset();
 
-        // Reset timer 3
-        _timer3.reset();
+            // Reset timer 3
+            _timer3.reset();
+        } catch (Exception e) {
+            // Handle any unanticipated exceptions
+            e.printStackTrace();
+        }
     }
 
     /**
-     * Pushes the current behaviour onto the behaviour stack.
-     * Logs the process for internal debugging.
+     * Pushes the behaviour of the given AltoClef object.
      *
-     * @param mod The AltoClef instance.
+     * @param mod the AltoClef object
      */
     private void pushBehaviour(AltoClef mod) {
-        // Log the start of the push process
-        Debug.logInternal("Pushing behaviour...");
-
-        // Push the current behaviour onto the stack
-        mod.getBehaviour().push();
-
-        // Log the successful push process
-        Debug.logInternal("Behaviour pushed successfully.");
+        // Check if the behaviour is not null and push it
+        if (mod.getBehaviour() != null) {
+            mod.getBehaviour().push();
+        } else {
+            // Handle the case where the behaviour is null
+        }
     }
 
     /**
-     * Adds a warning message if certain conditions are not met.
-     *
+     * Adds warning messages for missing configuration settings.
      * @param mod The AltoClef mod instance.
      */
     private void addThrowawayItemsWarning(AltoClef mod) {
@@ -836,26 +729,27 @@ public class MarvionBeatMinecraftTask extends Task {
     }
 
     /**
-     * Tracks specific blocks using the BlockTracker.
+     * Tracks specific blocks using the provided mod's BlockTracker.
      *
      * @param mod The AltoClef mod instance.
      */
     private void trackBlocks(AltoClef mod) {
+        // Get the BlockTracker from the mod
         BlockTracker blockTracker = mod.getBlockTracker();
-        blockTracker.trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
-        blockTracker.trackBlock(TRACK_BLOCKS);
 
-        // Add logging statements
-        Debug.logInternal("Tracking blocks...");
-        Debug.logInternal("BlockTracker: " + blockTracker);
-        Debug.logInternal("Bed block: " + ItemHelper.itemsToBlocks(ItemHelper.BED));
-        Debug.logInternal("TRACK_BLOCKS: " + TRACK_BLOCKS);
+        // Track the BED block
+        if (blockTracker != null) {
+            blockTracker.trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
+            blockTracker.trackBlock(TRACK_BLOCKS);
+        } else {
+            // Handle the case when blockTracker is null
+        }
     }
 
     /**
-     * Adds protected items to the behaviour of the given AltoClef instance.
+     * Adds protected items to the specified AltoClef mod.
      *
-     * @param mod The AltoClef instance.
+     * @param mod the AltoClef mod to add protected items to
      */
     private void addProtectedItems(AltoClef mod) {
         // Add individual protected items
@@ -877,38 +771,30 @@ public class MarvionBeatMinecraftTask extends Task {
         );
 
         // Add protected items using helper classes
-        mod.getBehaviour().addProtectedItems(ItemHelper.BED);
-        mod.getBehaviour().addProtectedItems(ItemHelper.IRON_ARMORS);
-        mod.getBehaviour().addProtectedItems(ItemHelper.LOG);
-
-        Debug.logInternal("Protected items added successfully.");
+        mod.getBehaviour().addProtectedItems(ItemHelper.BED); // Bed
+        mod.getBehaviour().addProtectedItems(ItemHelper.IRON_ARMORS); // Iron Armors
+        mod.getBehaviour().addProtectedItems(ItemHelper.LOG); // Log
     }
 
     /**
-     * Allows the player to walk on an end portal block.
+     * Allows walking on the end portal if entering the end portal and the chunk at the block position is loaded.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod The AltoClef mod instance
      */
     private void allowWalkingOnEndPortal(AltoClef mod) {
         mod.getBehaviour().allowWalkingOn(blockPos -> {
-            if (_enterindEndPortal) {
-                if (mod.getChunkTracker().isChunkLoaded(blockPos)) {
-                    BlockState blockState = mod.getWorld().getBlockState(blockPos);
-                    boolean isEndPortal = blockState.getBlock() == Blocks.END_PORTAL;
-                    if (isEndPortal) {
-                        Debug.logInternal("Walking on End Portal at " + blockPos.toString());
-                    }
-                    return isEndPortal;
-                }
+            if (enteringEndPortal && mod.getChunkTracker().isChunkLoaded(blockPos)) {
+                BlockState blockState = mod.getWorld().getBlockState(blockPos);
+                return blockState.getBlock() == Blocks.END_PORTAL;
             }
             return false;
         });
     }
 
     /**
-     * Avoids walking through dragon breath in the End dimension.
+     * Prevents the player from walking through dragon breath in the specified dimension.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod the AltoClef mod instance
      */
     private void avoidDragonBreath(AltoClef mod) {
         mod.getBehaviour().avoidWalkingThrough(blockPos -> {
@@ -916,42 +802,25 @@ public class MarvionBeatMinecraftTask extends Task {
             boolean isEndDimension = currentDimension == Dimension.END;
             boolean isTouchingDragonBreath = _dragonBreathTracker.isTouchingDragonBreath(blockPos);
 
-            if (isEndDimension && !_escapingDragonsBreath && isTouchingDragonBreath) {
-                Debug.logInternal("Avoiding dragon breath at blockPos: " + blockPos);
-                return true;
-            } else {
-                return false;
-            }
+            return isEndDimension && !_escapingDragonsBreath && isTouchingDragonBreath;
         });
     }
 
     /**
-     * Avoid breaking the bed by adding a behavior to avoid breaking specific block positions.
+     * Avoid breaking the bed by preventing block breaking at the bed location.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod The AltoClef mod instance
      */
     private void avoidBreakingBed(AltoClef mod) {
-        mod.getBehaviour().avoidBlockBreaking(blockPos -> {
-            // Check if the bed spawn location is set
-            if (_bedSpawnLocation != null) {
-                // Get the head and foot positions of the bed
-                BlockPos bedHead = WorldHelper.getBedHead(mod, _bedSpawnLocation);
-                BlockPos bedFoot = WorldHelper.getBedFoot(mod, _bedSpawnLocation);
+        // Check if the bed spawn location is not null
+        if (_bedSpawnLocation != null) {
+            // Get the head and foot position of the bed
+            BlockPos bedHead = WorldHelper.getBedHead(mod, _bedSpawnLocation);
+            BlockPos bedFoot = WorldHelper.getBedFoot(mod, _bedSpawnLocation);
 
-                // Check if the current block position is either the head or the foot of the bed
-                boolean shouldAvoidBreaking = blockPos.equals(bedHead) || blockPos.equals(bedFoot);
-
-                // Log a debug message if the block position should be avoided
-                if (shouldAvoidBreaking) {
-                    Debug.logInternal("Avoiding breaking bed at block position: " + blockPos);
-                }
-
-                return shouldAvoidBreaking;
-            }
-
-            // Return false if the bed spawn location is not set
-            return false;
-        });
+            // Prevent block breaking at the bed location
+            mod.getBehaviour().avoidBlockBreaking(blockPos -> blockPos.equals(bedHead) || blockPos.equals(bedFoot));
+        }
     }
 
     @Override
@@ -1364,7 +1233,7 @@ public class MarvionBeatMinecraftTask extends Task {
          */
 
         // By default, don't walk over end portals.
-        _enterindEndPortal = false;
+        enteringEndPortal = false;
 
         // End stuff.
         if (WorldHelper.getCurrentDimension() == Dimension.END) {
@@ -1417,8 +1286,8 @@ public class MarvionBeatMinecraftTask extends Task {
             // If we find an ender portal, just GO to it!!!
             if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
-                _dragonIsDead = true;
-                _enterindEndPortal = true;
+                dragonIsDead = true;
+                enteringEndPortal = true;
                 if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
                     mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
                 }
@@ -1644,7 +1513,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         }
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
-                        _enterindEndPortal = true;
+                        enteringEndPortal = true;
                         if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
                             mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
                         }
@@ -1744,24 +1613,24 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Sets the spawn point near the portal.
      *
-     * @param mod The AltoClef mod instance.
-     * @return The task to set the spawn point near the portal.
+     * @param mod the AltoClef mod
+     * @return the task for setting the spawn point near the portal
      */
     private Task setSpawnNearPortalTask(AltoClef mod) {
-        // Check if the bed spawn is set
+        // Check if bed spawn is set
         if (_setBedSpawnTask.isSpawnSet()) {
             _bedSpawnLocation = _setBedSpawnTask.getBedSleptPos();
         } else {
             _bedSpawnLocation = null;
         }
 
-        // Check if the spawn point should be forced
+        // Check if spawn should be forced
         if (shouldForce(mod, _setBedSpawnTask)) {
             setDebugState("Setting spawnpoint now.");
             return _setBedSpawnTask;
         }
 
-        // Check if the player is within range of the portal
+        // Check if player is near the end portal
         if (WorldHelper.inRangeXZ(mod.getPlayer(), WorldHelper.toVec3d(_endPortalCenterLocation), END_PORTAL_BED_SPAWN_RANGE)) {
             return _setBedSpawnTask;
         } else {
@@ -1771,33 +1640,32 @@ public class MarvionBeatMinecraftTask extends Task {
     }
 
     /**
-     * Returns a Task to handle Blaze Rods based on the given count.
+     * Retrieves a task related to collecting blaze rods.
      *
-     * @param mod   The AltoClef mod instance.
-     * @param count The desired count of Blaze Rods.
-     * @return A Task to handle Blaze Rods.
+     * @param mod The AltoClef mod instance
+     * @param count The count of blaze rods to collect
+     * @return The task related to collecting blaze rods
      */
     private Task getBlazeRodsTask(AltoClef mod, int count) {
         EntityTracker entityTracker = mod.getEntityTracker();
 
+        // Check if blaze rods are dropped, if so, pick them up
         if (entityTracker.itemDropped(Items.BLAZE_ROD)) {
-            Debug.logInternal("Blaze Rod dropped, picking it up.");
             return new PickupDroppedItemTask(Items.BLAZE_ROD, 1);
         } else if (entityTracker.itemDropped(Items.BLAZE_POWDER)) {
-            Debug.logInternal("Blaze Powder dropped, picking it up.");
+            // Check if blaze powder is dropped, if so, pick it up
             return new PickupDroppedItemTask(Items.BLAZE_POWDER, 1);
         } else {
-            Debug.logInternal("No Blaze Rod or Blaze Powder dropped, collecting Blaze Rods.");
+            // If no blaze rods or powder is dropped, collect blaze rods
             return new CollectBlazeRodsTask(count);
         }
     }
 
     /**
-     * Returns a Task to obtain Ender Pearls.
-     *
-     * @param mod   The mod instance.
-     * @param count The desired number of Ender Pearls.
-     * @return The Task to obtain Ender Pearls.
+     * This method retrieves a task for obtaining Ender Pearls.
+     * @param mod the AltoClef mod instance
+     * @param count the number of Ender Pearls to obtain
+     * @return the task for obtaining Ender Pearls
      */
     private Task getEnderPearlTask(AltoClef mod, int count) {
         isGettingEnderPearls = true;
@@ -1857,13 +1725,13 @@ public class MarvionBeatMinecraftTask extends Task {
     }
 
     /**
-     * Calculates the target number of beds based on the configuration settings.
+     * Calculates the target number of beds based on the current configuration and the number of beds in the end.
      *
-     * @param mod The AltoClef mod instance.
+     * @param mod The AltoClef instance.
      * @return The target number of beds.
      */
     private int getTargetBeds(AltoClef mod) {
-        // Check if spawn needs to be set near the end portal
+        // Check if the spawn needs to be set near the end portal
         boolean needsToSetSpawn = _config.placeSpawnNearEndPortal
                 && (!spawnSetNearPortal(mod, _endPortalCenterLocation)
                 && !shouldForce(mod, _setBedSpawnTask));
@@ -1876,69 +1744,57 @@ public class MarvionBeatMinecraftTask extends Task {
         // Calculate the target number of beds
         int targetBeds = _config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
 
-        // Output debug information
-        Debug.logInternal("needsToSetSpawn: " + needsToSetSpawn);
-        Debug.logInternal("bedsInEnd: " + bedsInEnd);
-        Debug.logInternal("targetBeds: " + targetBeds);
-
         return targetBeds;
     }
 
     /**
-     * Checks if the player needs to acquire more beds.
+     * Check if the given AltoClef mod needs more beds based on the item count and cached end item drops.
      *
-     * @param mod The instance of the AltoClef mod.
-     * @return True if the player needs more beds, false otherwise.
+     * @param mod The AltoClef mod to check.
+     * @return True if more beds are needed, false otherwise.
      */
     private boolean needsBeds(AltoClef mod) {
-        // Calculate the total number of end items obtained from breaking beds
+        // Calculate the total end items dropped
         int totalEndItems = 0;
         for (Item bed : ItemHelper.BED) {
             totalEndItems += _cachedEndItemDrops.getOrDefault(bed, 0);
         }
 
-        // Get the current number of beds in the player's inventory
+        // Get the current count of beds in the item storage
         int itemCount = mod.getItemStorage().getItemCount(ItemHelper.BED);
 
-        // Get the target number of beds to have
+        // Get the target number of beds needed
         int targetBeds = getTargetBeds(mod);
 
-        // Log the values for debugging purposes
-        Debug.logInternal("Total End Items: " + totalEndItems);
-        Debug.logInternal("Item Count: " + itemCount);
-        Debug.logInternal("Target Beds: " + targetBeds);
-
-        // Check if the player needs to acquire more beds
-        boolean needsBeds = (itemCount + totalEndItems) < targetBeds;
-
-        // Log the result for debugging purposes
-        Debug.logInternal("Needs Beds: " + needsBeds);
-
-        // Return whether the player needs more beds
-        return needsBeds;
+        // Check if more beds are needed
+        return (itemCount + totalEndItems) < targetBeds;
     }
 
     /**
-     * Retrieves a task to obtain the desired number of beds.
+     * Get the task related to obtaining beds.
      *
-     * @param mod The AltoClef mod instance.
-     * @return The task to obtain the beds.
+     * @param mod The AltoClef instance
+     * @return The task related to obtaining beds
      */
     private Task getBedTask(AltoClef mod) {
+        // Get the target number of beds
         int targetBeds = getTargetBeds(mod);
+
+        // Check if shears are not available and no beds are found
         if (!mod.getItemStorage().hasItem(Items.SHEARS) && !anyBedsFound(mod)) {
-            Debug.logInternal("Getting shears.");
+            // Return the task to obtain shears
             return TaskCatalogue.getItemTask(Items.SHEARS, 1);
         }
-        Debug.logInternal("Getting beds.");
+
+        // Return the task to obtain the target number of beds
         return TaskCatalogue.getItemTask("bed", targetBeds);
     }
 
     /**
-     * Checks if any beds are found in the game.
+     * Checks if any beds are found in the world.
      *
-     * @param mod The AltoClef mod instance.
-     * @return true if beds are found either in blocks or entities, false otherwise.
+     * @param mod The AltoClef mod instance
+     * @return true if beds are found either in blocks or entities
      */
     private boolean anyBedsFound(AltoClef mod) {
         // Get the block and entity trackers from the mod instance.
@@ -1951,57 +1807,37 @@ public class MarvionBeatMinecraftTask extends Task {
         // Check if any beds are dropped by entities.
         boolean bedsFoundInEntities = entityTracker.itemDropped(ItemHelper.BED);
 
-        // Log a message if beds are found in blocks.
-        if (bedsFoundInBlocks) {
-            Debug.logInternal("Beds found in blocks");
-        }
-
-        // Log a message if beds are found in entities.
-        if (bedsFoundInEntities) {
-            Debug.logInternal("Beds found in entities");
-        }
-
         // Return true if beds are found either in blocks or entities.
         return bedsFoundInBlocks || bedsFoundInEntities;
     }
 
     /**
-     * Searches for the position of an end portal frame by averaging the known locations of the frames.
-     * Returns the center position of the frames if enough frames are found, otherwise returns null.
-     *
-     * @param mod The AltoClef instance.
-     * @return The position of the end portal frame, or null if not enough frames are found.
+     * Perform a simple search for the end portal.
+     * @param mod The AltoClef mod instance
+     * @return The average position of the end portal frames, or null if not found
      */
     private BlockPos doSimpleSearchForEndPortal(AltoClef mod) {
+        // Get the locations of the end portal frames
         List<BlockPos> frames = mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME);
 
+        // Check if enough frames are found
         if (frames.size() >= END_PORTAL_FRAME_COUNT) {
-            // Calculate the average position of the frames.
-            Vec3i average = frames.stream()
-                    .reduce(Vec3i.ZERO, (accum, bpos) -> accum.add((int) Math.round(bpos.getX() + 0.5), (int) Math.round(bpos.getY() + 0.5), (int) Math.round(bpos.getZ() + 0.5)), Vec3i::add)
-                    .multiply(1 / frames.size());
+            // Calculate the average position of the frames
+            Optional<BlockPos> average = frames.stream()
+                    .reduce((bpos1, bpos2) -> new BlockPos((bpos1.getX() + bpos2.getX()) / 2, (bpos1.getY() + bpos2.getY()) / 2, (bpos1.getZ() + bpos2.getZ()) / 2));
 
-            // Log the average position.
-            Debug.logInternal("Average Position: " + average);
-
-            return new BlockPos(average);
+            return average.orElse(null);
         }
-
-        // Log that there are not enough frames.
-        Debug.logInternal("Not enough frames");
 
         return null;
     }
 
     /**
-     * Returns the number of filled portal frames around the end portal center.
-     * If the end portal is found, it returns the constant END_PORTAL_FRAME_COUNT.
-     * Otherwise, it checks each frame block around the end portal center and counts the filled frames.
-     * The count is cached for subsequent calls.
+     * Get the count of filled portal frames around the end portal center.
      *
-     * @param mod             The AltoClef mod instance.
-     * @param endPortalCenter The center position of the end portal.
-     * @return The number of filled portal frames.
+     * @param mod the AltoClef mod
+     * @param endPortalCenter the center of the end portal
+     * @return the count of filled portal frames, or 0 if the end portal is not found or the frame blocks are not loaded
      */
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
         // If the end portal is found, return the constant count.
@@ -2015,56 +1851,49 @@ public class MarvionBeatMinecraftTask extends Task {
         // Check if all the frame blocks are loaded.
         if (frameBlocks.stream().allMatch(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos))) {
             // Calculate the sum of filled frames using a stream and mapToInt.
-            _cachedFilledPortalFrames = frameBlocks.stream()
+            int filledFramesCount = frameBlocks.stream()
                     .mapToInt(blockPos -> {
                         boolean isFilled = isEndPortalFrameFilled(mod, blockPos);
-                        // Log whether the frame is filled or not.
-                        if (isFilled) {
-                            Debug.logInternal("Portal frame at " + blockPos + " is filled.");
-                        } else {
-                            Debug.logInternal("Portal frame at " + blockPos + " is not filled.");
-                        }
                         return isFilled ? 1 : 0;
                     })
                     .sum();
+            return filledFramesCount;
         }
 
-        return _cachedFilledPortalFrames;
+        return 0;
     }
 
     /**
-     * Checks if a chest at the given block position can be looted as a portal chest.
-     *
-     * @param mod      The instance of the mod.
-     * @param blockPos The block position of the chest to check.
-     * @return True if the chest can be looted as a portal chest, false otherwise.
+     * Checks if a chest at the specified position can be looted from a portal
+     * @param mod The game mod
+     * @param blockPos The position of the chest
+     * @return true if the chest is lootable, false otherwise
      */
     private boolean canBeLootablePortalChest(AltoClef mod, BlockPos blockPos) {
-        // Check if the block above is water or if the y-coordinate is below 50
+        // Check if the chest is under water or below y level 50
         if (mod.getWorld().getBlockState(blockPos.up()).getBlock() == Blocks.WATER ||
                 blockPos.getY() < 50) {
             return false;
         }
 
-        // Define the minimum and maximum positions to scan for NETHERRACK blocks
+        // Define the minimum and maximum positions for scanning
         BlockPos minPos = blockPos.add(-4, -2, -4);
         BlockPos maxPos = blockPos.add(4, 2, 4);
 
-        // Log the scanning region
-        Debug.logInternal("Scanning region from " + minPos + " to " + maxPos);
-
-        // Scan the region defined by minPos and maxPos
-        for (BlockPos checkPos : WorldHelper.scanRegion(mod, minPos, maxPos)) {
-            // Check if the block at checkPos is NETHERRACK
-            if (mod.getWorld().getBlockState(checkPos).getBlock() == Blocks.NETHERRACK) {
-                return true;
+        try {
+            // Scan the region around the chest
+            for (BlockPos checkPos : WorldHelper.scanRegion(mod, minPos, maxPos)) {
+                // Check if the chest is on netherrack
+                if (mod.getWorld().getBlockState(checkPos).getBlock() == Blocks.NETHERRACK) {
+                    return true;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle the exception or log it as needed
         }
 
-        // Log that the blockPos is added to the list of not ruined portal chests
-        Debug.logInternal("Adding blockPos " + blockPos + " to the list of not ruined portal chests");
-
-        // Add the blockPos to the list of not ruined portal chests
+        // Add the chest to the list of non-ruined portal chests
         _notRuinedPortalChests.add(blockPos);
 
         return false;
@@ -2265,7 +2094,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
                 // Then starter gear
                 if (!StorageHelper.itemTargetsMet(mod, IRON_GEAR_MIN) && !eyeGearSatisfied &&
-                        !ironGearSatisfied) {
+                        !ironGearSatisfied && !StorageHelper.isArmorEquipped(mod, Items.SHIELD)) {
                     _starterGearTask = TaskCatalogue.getSquashedItemTask(IRON_GEAR);
                     return _starterGearTask;
                 } else {

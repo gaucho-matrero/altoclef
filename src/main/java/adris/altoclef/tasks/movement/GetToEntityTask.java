@@ -30,7 +30,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
             Blocks.BIG_DRIPLEAF_STEM,
             Blocks.SMALL_DRIPLEAF,
             Blocks.TALL_GRASS,
-            Blocks.GRASS,
+            Blocks.GRASS_BLOCK,
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;

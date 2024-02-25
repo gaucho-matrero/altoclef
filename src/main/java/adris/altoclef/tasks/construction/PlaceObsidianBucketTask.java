@@ -1,7 +1,6 @@
 package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
@@ -16,8 +15,6 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-
-import java.util.Arrays;
 
 /**
  * Places obsidian at a position using buckets and a cast.
@@ -48,48 +45,24 @@ public class PlaceObsidianBucketTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        // Push the behaviour onto the behaviour stack
         mod.getBehaviour().push();
+        // Don't break cast
+        mod.getBehaviour().avoidBlockBreaking(block -> {
+            for (Vec3i castPosRelativeToLava : PlaceObsidianBucketTask.CAST_FRAME) {
+                BlockPos castPos = _pos.add(castPosRelativeToLava);
+                if (block.equals(castPos)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        // Don't place blocks inside our cast water/lava
+        mod.getBehaviour().avoidBlockPlacing(block -> {
+            BlockPos waterTarget = _pos.up();
+            return block.equals(_pos) || block.equals(waterTarget);
+        });
 
-        // Avoid breaking blocks within the specified conditions
-        mod.getBehaviour().avoidBlockBreaking(this::isBlockInCastFrame);
-
-        // Avoid placing blocks within the specified conditions
-        mod.getBehaviour().avoidBlockPlacing(this::isBlockInCastWaterOrLava);
-
-        // Reset the progress checker
         _progressChecker.reset();
-
-        // Logging statements for debugging
-        Debug.logInternal("Started onStart method");
-        Debug.logInternal("Behaviour pushed");
-        Debug.logInternal("Avoiding block breaking");
-        Debug.logInternal("Avoiding block placing");
-        Debug.logInternal("Progress checker reset");
-    }
-
-    private boolean isBlockInCastFrame(BlockPos block) {
-        return Arrays.stream(PlaceObsidianBucketTask.CAST_FRAME)
-                .map(_pos::add)
-                .anyMatch(block::equals);
-    }
-
-    /**
-     * Checks if a given block position is either the same as the current position or the position above it.
-     *
-     * @param blockPos The block position to check
-     * @return True if the block position is the same as the current position or the position above it, false otherwise
-     */
-    private boolean isBlockInCastWaterOrLava(BlockPos blockPos) {
-        // Calculate the position above the current position
-        BlockPos waterTarget = _pos.up();
-
-        // Logging statement for debugging
-        Debug.logInternal("blockPos: " + blockPos);
-        Debug.logInternal("waterTarget: " + waterTarget);
-
-        // Check if the block position is either the same as the current position or the position above it
-        return blockPos.equals(_pos) || blockPos.equals(waterTarget);
     }
 
     /**
@@ -161,7 +134,6 @@ public class PlaceObsidianBucketTask extends Task {
             BlockPos castPos = _pos.add(castPosRelative);
             if (!WorldHelper.isSolid(mod, castPos)) {
                 _currentCastTarget = castPos;
-                Debug.logInternal("Building cast frame...");
                 return null;
             }
         }
@@ -172,36 +144,29 @@ public class PlaceObsidianBucketTask extends Task {
             // Would lead to an embarrassing death.
             BlockPos targetPos = _pos.add(-1, 1, 0);
             if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
-                Debug.logInternal("Positioning player before placing lava...");
                 return new GetToBlockTask(targetPos, false);
             }
             if (WorldHelper.isSolid(mod, _pos)) {
-                Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos;
                 return null;
             }
             // Clear the upper two as well, to make placing more reliable.
             if (WorldHelper.isSolid(mod, _pos.up())) {
-                Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos.up();
                 return null;
             }
             if (WorldHelper.isSolid(mod, _pos.up(2))) {
-                Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos.up(2);
                 return null;
             }
-            Debug.logInternal("Placing lava for cast...");
             return new InteractWithBlockTask(new ItemTarget(Items.LAVA_BUCKET, 1), Direction.WEST, _pos.add(1, 0, 0), false);
         }
         // Lava placed, Now, place water.
         BlockPos waterCheck = _pos.up();
         if (mod.getWorld().getBlockState(waterCheck).getBlock() != Blocks.WATER) {
-            Debug.logInternal("Placing water for cast...");
             // Get to position to avoid weird stuck scenario
             BlockPos targetPos = _pos.add(-1, 1, 0);
             if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                Debug.logInternal("Positioning player before placing water...");
                 return new GetToBlockTask(targetPos, false);
             }
             if (WorldHelper.isSolid(mod, waterCheck)) {
@@ -229,8 +194,6 @@ public class PlaceObsidianBucketTask extends Task {
         if (mod.getBehaviour() != null) {
             // Pop the behaviour from the stack
             mod.getBehaviour().pop();
-            // Log a message indicating that the behaviour was popped
-            Debug.logInternal("Behaviour popped.");
         }
     }
 
@@ -252,15 +215,12 @@ public class PlaceObsidianBucketTask extends Task {
 
         // Check if the block at the specified position is obsidian
         boolean isObsidian = blockTracker.blockIsValid(pos, Blocks.OBSIDIAN);
-        Debug.logInternal("isObsidian: " + isObsidian);
 
         // Check if there is no water block above the specified position
         boolean isNotWaterAbove = !blockTracker.blockIsValid(pos.up(), Blocks.WATER);
-        Debug.logInternal("isNotWaterAbove: " + isNotWaterAbove);
 
         // The task is considered finished if the block is obsidian and there is no water above
         boolean isFinished = isObsidian && isNotWaterAbove;
-        Debug.logInternal("isFinished: " + isFinished);
 
         return isFinished;
     }
@@ -279,13 +239,9 @@ public class PlaceObsidianBucketTask extends Task {
         if (other instanceof PlaceObsidianBucketTask task) {
             // Check if the positions are equal
             boolean isEqual = task.getPos().equals(getPos());
-            // Log the result of the comparison
-            Debug.logInternal("isEqual: " + isEqual);
             // Return the result
             return isEqual;
         }
-        // Log that the tasks are not equal
-        Debug.logInternal("isEqual: false");
         // Return false
         return false;
     }
@@ -301,8 +257,6 @@ public class PlaceObsidianBucketTask extends Task {
      * @return The position of the object.
      */
     public BlockPos getPos() {
-        // Added logging statement for debugging
-        Debug.logInternal("Entering getPos()");
 
         return _pos;
     }

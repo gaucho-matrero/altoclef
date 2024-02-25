@@ -26,7 +26,8 @@ public class KillEnderDragonWithBedsTask extends Task {
     private BlockPos _endPortalTop;
     private Task _positionTask;
 
-    private boolean _isDragonDead = false;
+    private static boolean isDragonDead;
+    private static boolean isDragonPresent;
 
     public KillEnderDragonWithBedsTask(IDragonWaiter notPerchingOverride) {
         _whenNotPerchingTask = (Task) notPerchingOverride;
@@ -41,7 +42,8 @@ public class KillEnderDragonWithBedsTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-
+        isDragonDead = false;
+        isDragonPresent = false;
     }
 
     @Override
@@ -59,6 +61,14 @@ public class KillEnderDragonWithBedsTask extends Task {
             Else:
                 // Perform "Default Wander" mode and avoid dragon breath.
          */
+        List<EnderDragonEntity> dragons = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class);
+        if (dragons.isEmpty() && !isDragonPresent) {
+            setDebugState("Waiting for dragon to spawn.");
+            return null;
+        }
+        if (!isDragonPresent) {
+            isDragonPresent = true;
+        }
         if (_endPortalTop == null) {
             _endPortalTop = locateExitPortalTop(mod);
             if (_endPortalTop != null) {
@@ -71,32 +81,26 @@ public class KillEnderDragonWithBedsTask extends Task {
             return new GetToXZTask(0, 0);
         }
 
-        if (_isDragonDead) {
+        if (isDragonDead) {
             setDebugState("Waiting for overworld portal to spawn.");
+            if (mod.getPlayer().getPitch() != -90) {
+                mod.getPlayer().setPitch(-90);
+            }
             return null;
         }
 
-        if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class) || _isDragonDead) {
+        if (!mod.getEntityTracker().entityFound(EnderDragonEntity.class)) {
             setDebugState("No dragon found.");
 
-            if (!WorldHelper.inRangeXZ(mod.getPlayer(), _endPortalTop, 1)) {
-                setDebugState("Going to end portal top at" + _endPortalTop.toString() + ".");
-                return new GetToBlockTask(_endPortalTop);
+            if (!WorldHelper.inRangeXZ(mod.getPlayer(), _endPortalTop, 0.25)) {
+                setDebugState("Going to end portal top at " + _endPortalTop.toString() + ".");
+                return new GetToXZTask(_endPortalTop.getX(), _endPortalTop.getZ());
             }
+            isDragonDead = true;
         }
-        List<EnderDragonEntity> dragons = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class);
         if (!dragons.isEmpty()) {
             for (EnderDragonEntity dragon : dragons) {
                 Phase dragonPhase = dragon.getPhaseManager().getCurrent();
-
-                if (dragonPhase.getType() == PhaseType.DYING) {
-                    Debug.logMessage("Dragon is dead.");
-                    if (mod.getPlayer().getPitch() != -90) {
-                        mod.getPlayer().setPitch(-90);
-                    }
-                    _isDragonDead = true;
-                    return null;
-                }
 
                 boolean perching = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering() || dragonPhase.getType() == PhaseType.LANDING_APPROACH;
                 if (dragon.getY() < _endPortalTop.getY() + 2) {
@@ -118,7 +122,7 @@ public class KillEnderDragonWithBedsTask extends Task {
                         setDebugState("Going to position for bed cycle...");
                         return _positionTask;
                     }
-                    if ((!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 0.75))
+                    if ((!WorldHelper.inRangeXZ(WorldHelper.toVec3d(targetStandPosition), mod.getPlayer().getPos(), 0.50))
 //                            && mod.getPlayer().getVelocity().getX() == 0 && mod.getPlayer().getVelocity().getY() == 0 && mod.getPlayer().getVelocity().getZ() == 0
                     ) {
                         _positionTask = new GetToBlockTask(targetStandPosition);

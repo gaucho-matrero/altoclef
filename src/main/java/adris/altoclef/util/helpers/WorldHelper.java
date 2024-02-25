@@ -20,7 +20,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.*;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -369,7 +368,7 @@ public interface WorldHelper {
         if (state.getBlock() instanceof SpawnerBlock) {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);
             if (be instanceof MobSpawnerBlockEntity blockEntity) {
-                return blockEntity.getLogic().getRenderedEntity(mod.getWorld(), Random.create(), pos);
+                return blockEntity.getLogic().getRenderedEntity(mod.getWorld(), pos);
             }
         }
         return null;

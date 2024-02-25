@@ -1,5 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.4-SNAPSHOT"
+    id "fabric-loom" version "1.5-SNAPSHOT"
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
@@ -16,7 +16,6 @@ repositories {
     maven {
         name = "MarvionKiritoRepo"
         url = "https://marvionkirito.github.io/maven/"
-        artifactUrls("https://marvionkirito.github.io/maven/cabaletta/baritone-unoptimized/1.20.2-beta1")
     }
     maven {
         name = 'babbaj-repo'
@@ -37,27 +36,27 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
 
     // Nether pathfinder
     implementation 'dev.babbaj:nether-pathfinder:1.5'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.16.0')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.16.0')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.16.0')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.16.1')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.16.1')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.16.1')
 
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric-1.20.2-beta1'
-        include "baritone-api-fabric:baritone-unoptimized-fabric-1.20.2-beta1"
+        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric-1.20.4-beta1'
+        include "baritone-api-fabric:baritone-unoptimized-fabric-1.20.4-beta1"
     } else {
-        modImplementation "cabaletta:baritone-unoptimized:1.20.2-beta1"
-        include "cabaletta:baritone-unoptimized:1.20.2-beta1"
+        modImplementation "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1"
+        include "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1"
     }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')

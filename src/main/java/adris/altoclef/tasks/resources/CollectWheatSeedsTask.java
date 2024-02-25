@@ -34,7 +34,7 @@ public class CollectWheatSeedsTask extends ResourceTask {
             return new CollectCropTask(Items.AIR, 999, Blocks.WHEAT, Items.WHEAT_SEEDS);
         }
         // Otherwise, break grass blocks.
-        return new MineAndCollectTask(Items.WHEAT_SEEDS, _count, new Block[]{Blocks.GRASS, Blocks.TALL_GRASS}, MiningRequirement.HAND);
+        return new MineAndCollectTask(Items.WHEAT_SEEDS, _count, new Block[]{Blocks.GRASS_BLOCK, Blocks.TALL_GRASS}, MiningRequirement.HAND);
     }
 
     @Override
