@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class CollectWoodenDoorTask extends CraftWithMatchingPlanksTask {
 
     public CollectWoodenDoorTask(Item[] targets, ItemTarget planks, int count) {
-        super(targets,  woodItems -> woodItems.door, createRecipe(planks), new boolean[]{true, true, false, true, true, false, true, true, false}, count);
+        super(targets, woodItems -> woodItems.door, createRecipe(planks), new boolean[]{true, true, false, true, true, false, true, true, false}, count);
     }
 
     public CollectWoodenDoorTask(Item target, String plankCatalogueName, int count) {

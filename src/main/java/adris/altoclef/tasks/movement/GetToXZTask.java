@@ -16,11 +16,13 @@ public class GetToXZTask extends CustomBaritoneGoalTask {
     public GetToXZTask(int x, int z) {
         this(x, z, null);
     }
+
     public GetToXZTask(int x, int z, Dimension dimension) {
         _x = x;
         _z = z;
         _dimension = dimension;
     }
+
     @Override
     protected Task onTick(AltoClef mod) {
         if (_dimension != null && WorldHelper.getCurrentDimension() != _dimension) {

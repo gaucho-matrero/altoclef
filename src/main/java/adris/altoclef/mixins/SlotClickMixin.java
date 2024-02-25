@@ -20,7 +20,7 @@ public class SlotClickMixin {
 
     @Redirect(
             method = "internalOnSlotClick",
-            at = @At(value="INVOKE", target="Lnet/minecraft/screen/ScreenHandler;internalOnSlotClick(IILnet/minecraft/screen/slot/SlotActionType;Lnet/minecraft/entity/player/PlayerEntity;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/ScreenHandler;internalOnSlotClick(IILnet/minecraft/screen/slot/SlotActionType;Lnet/minecraft/entity/player/PlayerEntity;)V")
     )
     private void slotClick(ScreenHandler self, int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
         // TODO: "self" is misleading, reread Mixin docs to understand the implications here.

@@ -1,14 +1,18 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.slot.ClickSlotTask;
 import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.slots.FurnaceSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.FurnaceScreenHandler;
+import net.minecraft.screen.SmokerScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
@@ -27,39 +31,6 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
     public PickupFromContainerTask(BlockPos targetContainer, ItemTarget... targets) {
         _targets = targets;
         _targetContainer = targetContainer;
-    }
-
-    @Override
-    protected boolean isEqual(Task other) {
-        if (other instanceof PickupFromContainerTask task) {
-            return Objects.equals(_targetContainer, task._targetContainer) && Arrays.equals(_targets, task._targets);
-        }
-        return false;
-    }
-
-    @Override
-    protected String toDebugString() {
-        return "Picking up from container at (" + _targetContainer.toShortString() + "): " + Arrays.toString(_targets);
-    }
-
-    @Override
-    protected Optional<BlockPos> getContainerTarget() {
-        return Optional.of(_targetContainer);
-    }
-
-    @Override
-    protected Task onTick(AltoClef mod) {
-        // Free inventory while we're doing it.
-        if (_freeInventoryTask.isActive() && !_freeInventoryTask.isFinished(mod) && !mod.getItemStorage().hasEmptyInventorySlot()) {
-            setDebugState("Freeing inventory.");
-            return _freeInventoryTask;
-        }
-        return super.onTick(mod);
-    }
-
-    @Override
-    public boolean isFinished(AltoClef mod) {
-        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
     }
 
     public static Optional<Slot> getBestSlotToTransfer(AltoClef mod, ItemTarget itemToMove, int currentItemQuantity, List<Slot> grabPotentials, Function<ItemStack, Boolean> canStackFit) {
@@ -98,6 +69,39 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
     }
 
     @Override
+    protected boolean isEqual(Task other) {
+        if (other instanceof PickupFromContainerTask task) {
+            return Objects.equals(_targetContainer, task._targetContainer) && Arrays.equals(_targets, task._targets);
+        }
+        return false;
+    }
+
+    @Override
+    protected String toDebugString() {
+        return "Picking up from container at (" + _targetContainer.toShortString() + "): " + Arrays.toString(_targets);
+    }
+
+    @Override
+    protected Optional<BlockPos> getContainerTarget() {
+        return Optional.of(_targetContainer);
+    }
+
+    @Override
+    protected Task onTick(AltoClef mod) {
+        // Free inventory while we're doing it.
+        if (_freeInventoryTask.isActive() && !_freeInventoryTask.isFinished(mod) && !mod.getItemStorage().hasEmptyInventorySlot()) {
+            setDebugState("Freeing inventory.");
+            return _freeInventoryTask;
+        }
+        return super.onTick(mod);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        return Arrays.stream(_targets).allMatch(target -> mod.getItemStorage().getItemCountInventoryOnly(target.getMatches()) >= target.getTargetCount());
+    }
+
+    @Override
     protected Task onContainerOpenSubtask(AltoClef mod, ContainerCache containerCache) {
         for (ItemTarget target : _targets) {
             // Go through each item
@@ -111,10 +115,26 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
                 // Pick the best slot to grab from.
                 Optional<Slot> bestPotential = getBestSlotToTransfer(mod, target, count, potentials, stack -> mod.getItemStorage().getSlotThatCanFitInPlayerInventory(stack, false).isPresent());
-
+                ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+                if (!cursorStack.isEmpty()) {
+                    Optional<Slot> toPlace = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false).or(() -> StorageHelper.getGarbageSlot(mod));
+                    if (toPlace.isPresent() && target.matches(cursorStack.getItem())) {
+                        mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                    if (toPlace.isPresent()) {
+                        mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
+                        return null;
+                    }
+                }
                 if (bestPotential.isPresent()) {
                     // Just pick it up, it's now ours.
-                    return new ClickSlotTask(bestPotential.get());
+                    mod.getSlotHandler().clickSlot(bestPotential.get(), 0, SlotActionType.PICKUP);
+                    return null;
                 }
                 setDebugState("SHOULD NOT HAPPEN! No valid items detected.");
             }
@@ -122,6 +142,11 @@ public class PickupFromContainerTask extends AbstractDoToStorageContainerTask {
 
         // We're done.
         setDebugState("Done");
+        if (mod.getPlayer().currentScreenHandler instanceof SmokerScreenHandler || mod.getPlayer().currentScreenHandler
+                instanceof FurnaceScreenHandler) {
+            mod.getSlotHandler().clickSlot(FurnaceSlot.INPUT_SLOT_MATERIALS, 0, SlotActionType.PICKUP);
+            return null;
+        }
         return null;
     }
 }

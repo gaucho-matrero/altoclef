@@ -6,6 +6,7 @@ import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 
 public class EnsureFreePlayerCraftingGridTask extends Task {
     @Override
@@ -16,14 +17,15 @@ public class EnsureFreePlayerCraftingGridTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         setDebugState("Clearing the 2x2 crafting grid");
-        for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
+        for (Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
             ItemStack items = StorageHelper.getItemStackInSlot(slot);
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-            if(!cursor.isEmpty()){
+            if (!cursor.isEmpty()) {
                 return new EnsureFreeCursorSlotTask();
             }
-            if(!items.isEmpty()){
-                return new ClickSlotTask(slot);
+            if (!items.isEmpty()) {
+                mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP);
+                return null;
             }
         }
         return null;

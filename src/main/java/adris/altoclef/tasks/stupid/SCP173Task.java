@@ -73,11 +73,11 @@ public class SCP173Task extends Task {
         }
 
         return new DoToClosestEntityTask(
-            target -> {
-                _lastTarget = (PlayerEntity) target;
-                return new GetToEntityTask(target);
-            },
-            PlayerEntity.class
+                target -> {
+                    _lastTarget = (PlayerEntity) target;
+                    return new GetToEntityTask(target);
+                },
+                PlayerEntity.class
         );
     }
 

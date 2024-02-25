@@ -9,8 +9,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class ItemDeserializer extends StdDeserializer<Object> {
         List<Item> result = new ArrayList<>();
 
         if (p.getCurrentToken() != JsonToken.START_ARRAY) {
-            throw new JsonParseException("Start array expected", p.getCurrentLocation());
+            throw new JsonParseException(p, "Start array expected");
         }
         while (p.nextToken() != JsonToken.END_ARRAY) {
             Item item = null;
@@ -43,8 +43,8 @@ public class ItemDeserializer extends StdDeserializer<Object> {
                 String itemKey = p.getText();
                 itemKey = ItemHelper.trimItemName(itemKey);
                 Identifier identifier = new Identifier(itemKey);
-                if (Registry.ITEM.containsId(identifier)) {
-                    item = Registry.ITEM.get(identifier);
+                if (Registries.ITEM.containsId(identifier)) {
+                    item = Registries.ITEM.get(identifier);
                 } else {
                     Debug.logWarning("Invalid item name:" + itemKey + " at " + p.getCurrentLocation().toString());
                 }

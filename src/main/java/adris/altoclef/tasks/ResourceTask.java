@@ -5,7 +5,8 @@ import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
-import adris.altoclef.tasks.slot.*;
+import adris.altoclef.tasks.slot.EnsureFreePlayerCraftingGridTask;
+import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.ITaskCanForce;
 import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
@@ -13,6 +14,7 @@ import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -21,6 +23,7 @@ import adris.altoclef.util.slots.Slot;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -31,7 +34,7 @@ import java.util.Optional;
 
 /**
  * The parent for all "collect an item" tasks.
- *
+ * <p>
  * If the target item is on the ground or in a chest, will grab from those sources first.
  */
 public abstract class ResourceTask extends Task implements ITaskCanForce {
@@ -39,8 +42,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     protected final ItemTarget[] _itemTargets;
 
     private final PickupDroppedItemTask _pickupTask;
-    private ContainerCache _currentContainer;
     private final EnsureFreePlayerCraftingGridTask _ensureFreeCraftingGridTask = new EnsureFreePlayerCraftingGridTask();
+    private ContainerCache _currentContainer;
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
@@ -76,7 +79,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBehaviour().addProtectedItems(ItemTarget.getMatches(_itemTargets));//removeThrowawayItems(_itemTargets);
+        //removeThrowawayItems(_itemTargets);
         if (_mineIfPresent != null) {
             mod.getBlockTracker().trackBlock(_mineIfPresent);
         }
@@ -85,24 +88,36 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        mod.getBehaviour().addProtectedItems(ItemTarget.getMatches(_itemTargets));
         // If we have an item in an INACCESSIBLE inventory slot
-
-        for (ItemTarget target : _itemTargets) {
-            if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
-                setDebugState("Moving from SPECIAL inventory slot");
-                return new MoveInaccessibleItemToInventoryTask(target);
+        if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()) {
+            for (ItemTarget target : _itemTargets) {
+                if (StorageHelper.isItemInaccessibleToContainer(mod, target)) {
+                    setDebugState("Moving from SPECIAL inventory slot");
+                    return new MoveInaccessibleItemToInventoryTask(target);
+                }
             }
         }
-
         // We have enough items COUNTING the cursor slot, we just need to move an item from our cursor.
         if (StorageHelper.itemTargetsMetInventory(mod, _itemTargets) && Arrays.stream(_itemTargets).anyMatch(target -> target.matches(StorageHelper.getItemStackInCursorSlot().getItem()))) {
-            Optional<Slot> toMove = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), true).or(() -> StorageHelper.getGarbageSlot(mod));
-            if (toMove.isEmpty()) {
-                setDebugState("STUCK! No slot can fit our item.");
+            setDebugState("Moving from cursor");
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(StorageHelper.getItemStackInCursorSlot(), false);
+            if (moveTo.isPresent()) {
+                mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
                 return null;
             }
-            setDebugState("Moving from cursor");
-            return new ClickSlotTask(toMove.get());
+            if (ItemHelper.canThrowAwayStack(mod, StorageHelper.getItemStackInCursorSlot())) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                return null;
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            if (garbage.isPresent()) {
+                mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
+                return null;
+            }
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            return null;
         }
 
         if (!shouldAvoidPickingUp(mod)) {
@@ -175,18 +190,16 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                 }
             }
         }
-
         // Make sure that items don't get stuck in the player crafting grid. May be an issue if a future task isn't a resource task.
-        if(StorageHelper.isPlayerInventoryOpen()){
-            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()){
-                for(Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS){
-                    if(!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
+        if (StorageHelper.isPlayerInventoryOpen()) {
+            if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()) {
+                for (Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
+                    if (!StorageHelper.getItemStackInSlot(slot).isEmpty()) {
                         return _ensureFreeCraftingGridTask;
                     }
                 }
             }
         }
-
         return onResourceTick(mod);
     }
 
@@ -214,10 +227,12 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         StringBuilder result = new StringBuilder();
         result.append(toDebugStringName()).append(": [");
         int c = 0;
-        for (ItemTarget target : _itemTargets) {
-            result.append(target != null? target.toString() : "(null)");
-            if (++c != _itemTargets.length) {
-                result.append(", ");
+        if (_itemTargets != null) {
+            for (ItemTarget target : _itemTargets) {
+                result.append(target != null ? target.toString() : "(null)");
+                if (++c != _itemTargets.length) {
+                    result.append(", ");
+                }
             }
         }
         result.append("]");

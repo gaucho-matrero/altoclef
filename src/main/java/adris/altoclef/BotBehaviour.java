@@ -20,15 +20,15 @@ import java.util.function.Predicate;
 
 /**
  * Represents the current behaviour/"on the fly settings" of the bot.
- *
+ * <p>
  * Use this to change how the bot works for the duration of a task.
- *
+ * <p>
  * (for example, "Build this bridge and avoid mining any blocks nearby")
  */
 public class BotBehaviour {
 
-    Deque<State> _states = new ArrayDeque<>();
     private final AltoClef _mod;
+    Deque<State> _states = new ArrayDeque<>();
 
     public BotBehaviour(AltoClef mod) {
         _mod = mod;
@@ -38,8 +38,10 @@ public class BotBehaviour {
     }
 
     // Getter(s)
+
     /**
      * Returns the current state of Behaviour for escapeLava
+     *
      * @return The current state of Behaviour for escapeLava
      */
     public boolean shouldEscapeLava() {
@@ -50,6 +52,7 @@ public class BotBehaviour {
 
     /**
      * If the bot should escape lava or not, part of WorldSurvivalChain
+     *
      * @param allow True if the bot should escape lava
      */
     public void setEscapeLava(boolean allow) {
@@ -78,8 +81,10 @@ public class BotBehaviour {
     }
 
     public boolean shouldExcludeFromForcefield(Entity entity) {
-        for (Predicate<Entity> pred : current().excludeFromForceField) {
-            if (pred.test(entity)) return true;
+        if (!current().excludeFromForceField.isEmpty()) {
+            for (Predicate<Entity> pred : current().excludeFromForceField) {
+                if (pred.test(entity)) return true;
+            }
         }
         return false;
     }
@@ -190,6 +195,7 @@ public class BotBehaviour {
         current().blockPlacePenalty = penalty;
         current().applyState();
     }
+
     public void setBlockBreakAdditionalPenalty(double penalty) {
         current().blockBreakAdditionalPenalty = penalty;
         current().applyState();
@@ -207,8 +213,10 @@ public class BotBehaviour {
     }
 
     public boolean shouldAvoidDodgingProjectile(Entity entity) {
-        for (Predicate<Entity> test : current().avoidDodgingProjectile) {
-            if (test.test(entity)) return true;
+        if (!current().avoidDodgingProjectile.isEmpty()) {
+            for (Predicate<Entity> test : current().avoidDodgingProjectile) {
+                if (test.test(entity)) return true;
+            }
         }
         return false;
     }

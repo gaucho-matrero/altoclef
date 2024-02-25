@@ -3,8 +3,8 @@ package adris.altoclef.tasks.movement;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 
 /**
@@ -16,8 +16,9 @@ public class SafeRandomShimmyTask extends Task {
     private final TimerGame _lookTimer;
 
     public SafeRandomShimmyTask(float randomLookInterval) {
-        _lookTimer  = new TimerGame(randomLookInterval);
+        _lookTimer = new TimerGame(randomLookInterval);
     }
+
     public SafeRandomShimmyTask() {
         this(5);
     }
@@ -38,6 +39,7 @@ public class SafeRandomShimmyTask extends Task {
 
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, true);
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, true);
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         return null;
     }
 
@@ -45,6 +47,7 @@ public class SafeRandomShimmyTask extends Task {
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.MOVE_FORWARD, false);
         mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.SNEAK, false);
+        mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, false);
     }
 
     @Override

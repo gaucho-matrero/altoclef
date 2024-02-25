@@ -14,7 +14,6 @@ import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.resources.CollectBedTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -39,26 +38,50 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
-    private boolean _stayInBed;
-
-    private static final Block[] BEDS = CollectBedTask.BEDS;
-
     private final TimerGame _regionScanTimer = new TimerGame(9);
-
-    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 1);
+    private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 3);
     private final Vec3i[] BED_BOTTOM_PLATFORM = new Vec3i[]{
             new Vec3i(0, -1, 0),
             new Vec3i(1, -1, 0),
             new Vec3i(2, -1, 0),
+            new Vec3i(0, -1, -1),
+            new Vec3i(1, -1, -1),
+            new Vec3i(2, -1, -1),
+            new Vec3i(0, -1, 1),
+            new Vec3i(1, -1, 1),
+            new Vec3i(2, -1, 1)
     };
     // Kinda silly but who knows if we ever want to change it.
-    private final Vec3i BED_PLACE_STAND_POS = new Vec3i(0, 0, 0);
-    private final Vec3i BED_PLACE_POS = new Vec3i(1, 0, 0);
+    private final Vec3i BED_PLACE_STAND_POS = new Vec3i(0, 0, 1);
+    private final Vec3i BED_PLACE_POS = new Vec3i(1, 0, 1);
+    private final Vec3i[] BED_PLACE_POS_OFFSET = new Vec3i[]{
+            BED_PLACE_POS,
+            BED_PLACE_POS.north(),
+            BED_PLACE_POS.south(),
+            BED_PLACE_POS.east(),
+            BED_PLACE_POS.west(),
+            BED_PLACE_POS.add(-1, 0, 1),
+            BED_PLACE_POS.add(1, 0, 1),
+            BED_PLACE_POS.add(-1, 0, -1),
+            BED_PLACE_POS.add(1, 0, -1),
+            BED_PLACE_POS.north(2),
+            BED_PLACE_POS.south(2),
+            BED_PLACE_POS.east(2),
+            BED_PLACE_POS.west(2),
+            BED_PLACE_POS.add(-2, 0, 1),
+            BED_PLACE_POS.add(-2, 0, 2),
+            BED_PLACE_POS.add(2, 0, 1),
+            BED_PLACE_POS.add(2, 0, 2),
+            BED_PLACE_POS.add(-2, 0, -1),
+            BED_PLACE_POS.add(-2, 0, -2),
+            BED_PLACE_POS.add(2, 0, -1),
+            BED_PLACE_POS.add(2, 0, -2)
+    };
     private final Direction BED_PLACE_DIRECTION = Direction.UP;
     private final TimerGame _bedInteractTimeout = new TimerGame(5);
     private final TimerGame _inBedTimer = new TimerGame(1);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(4, true);
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker(2);
+    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
+    private boolean _stayInBed;
     private BlockPos _currentBedRegion;
     private BlockPos _currentStructure, _currentBreak;
     private boolean _spawnSet;
@@ -72,62 +95,96 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
     }
 
+    /**
+     * Sets the _stayInBed flag to true and returns the current instance.
+     *
+     * @return the current instance
+     */
     public PlaceBedAndSetSpawnTask stayInBed() {
-        _stayInBed = true;
+        this._stayInBed = true;
         return this;
     }
 
+    /**
+     * This method is called when the bot is started.
+     * It tracks bed blocks, resets progress checkers, and sets up behaviors for placing and breaking blocks near beds.
+     * It also resets variables for sleep handling and subscribes to events for respawn point and failure messages.
+     */
     @Override
     protected void onStart(AltoClef mod) {
-        _currentBedRegion = null;
+        try {
+            // Track bed blocks
+            mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
 
-        // Don't break our bed thing.
-        mod.getBehaviour().push();
-        mod.getBehaviour().avoidBlockPlacing(pos -> {
-            if (_currentBedRegion != null) {
-                BlockPos start = _currentBedRegion,
-                        end = _currentBedRegion.add(BED_CLEAR_SIZE);
-                return start.getX() <= pos.getX() && pos.getX() < end.getX()
-                        && start.getZ() <= pos.getZ() && pos.getZ() < end.getZ()
-                        && start.getY() <= pos.getY() && pos.getY() < end.getY();
-            }
-            return false;
-        });
-        mod.getBehaviour().avoidBlockBreaking(pos -> {
-            if (_currentBedRegion != null) {
-                for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
-                    BlockPos base = _currentBedRegion.add(baseOffs);
-                    if (base.equals(pos)) return true;
+            // Push the current behaviour
+            mod.getBehaviour().push();
+
+            // Reset progress checker
+            _progressChecker.reset();
+
+            // Reset current bed region
+            _currentBedRegion = null;
+
+            // Avoid placing blocks near bed
+            mod.getBehaviour().avoidBlockPlacing(pos -> {
+                if (_currentBedRegion != null) {
+                    BlockPos start = _currentBedRegion;
+                    BlockPos end = _currentBedRegion.add(BED_CLEAR_SIZE);
+                    return start.getX() <= pos.getX() && pos.getX() < end.getX()
+                            && start.getZ() <= pos.getZ() && pos.getZ() < end.getZ()
+                            && start.getY() <= pos.getY() && pos.getY() < end.getY();
                 }
-            }
-            // Don't ever break beds. If one exists, we will sleep in it.
-            return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
-        });
+                return false;
+            });
 
-        mod.getBlockTracker().trackBlock(BEDS);
-
-        _spawnSet = false;
-        _sleepAttemptMade = false;
-        _wasSleeping = false;
-
-        _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            String msg = evt.message.asString();
-            if (msg.contains("Respawn point set")) {
-                _spawnSet = true;
-                _inBedTimer.reset();
-            }
-        });
-        _respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
-            final String[] NEUTRAL_MESSAGES = new String[]{"You can sleep only at night", "You can only sleep at night", "You may not rest now; there are monsters nearby"};
-            for (String checkMessage : NEUTRAL_MESSAGES) {
-                if (evt.message.contains(checkMessage)) {
-                    if (!_sleepAttemptMade) {
-                        _bedInteractTimeout.reset();
+            // Avoid breaking blocks near bed
+            mod.getBehaviour().avoidBlockBreaking(pos -> {
+                if (_currentBedRegion != null) {
+                    for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
+                        BlockPos base = _currentBedRegion.add(baseOffs);
+                        if (base.equals(pos)) return true;
                     }
-                    _sleepAttemptMade = true;
                 }
-            }
-        });
+                // Don't ever break beds. If one exists, we will sleep in it.
+                if (mod.getWorld() != null) {
+                    return mod.getWorld().getBlockState(pos).getBlock() instanceof BedBlock;
+                }
+                return false;
+            });
+
+            // Reset variables for sleep handling
+            _spawnSet = false;
+            _sleepAttemptMade = false;
+            _wasSleeping = false;
+
+            // Subscribe to respawn point set message event
+            _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
+                String msg = evt.toString();
+                if (msg.contains("Respawn point set")) {
+                    _spawnSet = true;
+                    _inBedTimer.reset();
+                }
+            });
+
+            // Subscribe to respawn failure message event
+            _respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
+                final String[] NEUTRAL_MESSAGES = new String[]{
+                        "You can sleep only at night",
+                        "You can only sleep at night",
+                        "You may not rest now; there are monsters nearby"
+                };
+                for (String checkMessage : NEUTRAL_MESSAGES) {
+                    if (evt.message.contains(checkMessage)) {
+                        if (!_sleepAttemptMade) {
+                            _bedInteractTimeout.reset();
+                        }
+                        _sleepAttemptMade = true;
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void resetSleep() {
@@ -145,33 +202,47 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Find a 3x2x1 region and clear it
         //      Stand on the edge of the long (3) side
         //      Place on the middle block, reliably placing the bed.
-
+        if (!_progressChecker.check(mod) && _currentBedRegion != null) {
+            _progressChecker.reset();
+            Debug.logMessage("Searching new bed region.");
+            _currentBedRegion = null;
+        }
+        if (mod.getPlayer().isTouchingWater() && mod.getItemStorage().hasItem(ItemHelper.BED)) {
+            setDebugState("We are in water. Wandering");
+            _currentBedRegion = null;
+            return new TimeoutWanderTask();
+        }
+        if (WorldHelper.isInNetherPortal(mod)) {
+            setDebugState("We are in nether portal. Wandering");
+            _currentBedRegion = null;
+            return new TimeoutWanderTask();
+        }
         // We cannot do this anywhere but the overworld.
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             setDebugState("Going to the overworld first.");
             return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
-
         Screen screen = MinecraftClient.getInstance().currentScreen;
-        if (!_stayInBed && _inBedTimer.elapsed() && screen instanceof SleepingChatScreen) {
+        if (screen instanceof SleepingChatScreen) {
             _progressChecker.reset();
             setDebugState("Sleeping...");
             _wasSleeping = true;
             //Debug.logMessage("Closing sleeping thing");
             _spawnSet = true;
-            screen.close(); // may be chat empty ??
             return null;
         }
 
-        if (_sleepAttemptMade && !_stayInBed) {
+        if (_sleepAttemptMade) {
             if (_bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
                 _spawnSet = true;
                 return null;
             }
         }
-
-        if (mod.getBlockTracker().anyFound(BEDS)) {
+        if (mod.getBlockTracker().anyFound(blockPos -> (WorldHelper.canReach(mod, blockPos) &&
+                blockPos.isWithinDistance(mod.getPlayer().getPos(), 40) &&
+                mod.getItemStorage().hasItem(ItemHelper.BED)) || (WorldHelper.canReach(mod, blockPos) &&
+                !mod.getItemStorage().hasItem(ItemHelper.BED)), ItemHelper.itemsToBlocks(ItemHelper.BED))) {
             // Sleep in the nearest bed
             setDebugState("Going to bed to sleep...");
             return new DoToClosestBlockTask(toSleepIn -> {
@@ -183,7 +254,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                     // TODO: Kinda ugly, but I'm tired and fixing for the 2nd attempt speedrun so I will fix this block later
                     closeEnough = false;
                     if (hit.getType() != HitResult.Type.MISS) {
-                        // At this point, if we miss, we probably are close enough.
+                        // At this poinAt, if we miss, we probably are close enough.
                         BlockPos p = hit.getBlockPos();
                         if (ArrayUtils.contains(ItemHelper.itemsToBlocks(ItemHelper.BED), mod.getWorld().getBlockState(p).getBlock())) {
                             // We have a bed!
@@ -215,9 +286,17 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 // Keep track of where our spawn point is
                 _progressChecker.reset();
                 return new InteractWithBlockTask(_bedForSpawnPoint);
-            }, BEDS);
+            }, ItemHelper.itemsToBlocks(ItemHelper.BED));
         }
-
+        if (_currentBedRegion != null) {
+            for (Vec3i BedPlacePos : BED_PLACE_POS_OFFSET) {
+                Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BedPlacePos)).getBlock();
+                if (getBlock instanceof BedBlock) {
+                    mod.getBlockTracker().addBlock(getBlock, _currentBedRegion.add(BedPlacePos));
+                    break;
+                }
+            }
+        }
         // Get a bed if we don't have one.
         if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
             setDebugState("Getting a bed first");
@@ -292,8 +371,11 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
         setDebugState("Filling in Portal");
         if (!_progressChecker.check(mod)) {
+            mod.getClientBaritone().getPathingBehavior().cancelEverything();
+            mod.getClientBaritone().getPathingBehavior().forceCancel();
+            mod.getClientBaritone().getExploreProcess().onLostControl();
+            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             _progressChecker.reset();
-            return _wanderTask;
         }
 
         // Scoot backwards if we're trying to place and fail
@@ -304,79 +386,183 @@ public class PlaceBedAndSetSpawnTask extends Task {
         })) {
             mod.getInputControls().tryPress(Input.MOVE_BACK);
         }
-
         return new InteractWithBlockTask(new ItemTarget("bed", 1), BED_PLACE_DIRECTION, toPlace.offset(BED_PLACE_DIRECTION.getOpposite()), false);
     }
 
+    /**
+     * Perform cleanup tasks when the task is stopped.
+     *
+     * @param mod The AltoClef mod instance
+     * @param interruptTask The task that caused the interruption
+     */
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBehaviour().pop();
-        mod.getBlockTracker().stopTracking(BEDS);
-        EventBus.unsubscribe(_respawnPointSetMessageCheck);
-        EventBus.unsubscribe(_respawnFailureMessageCheck);
+        // Stop tracking beds
+        if (mod.getBlockTracker() != null) {
+            mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        }
+
+        // Pop the behaviour stack
+        if (mod.getBehaviour() != null) {
+            mod.getBehaviour().pop();
+        }
+
+        // Unsubscribe from respawn point set message
+        if (_respawnPointSetMessageCheck != null) {
+            EventBus.unsubscribe(_respawnPointSetMessageCheck);
+        }
+
+        // Unsubscribe from respawn failure message
+        if (_respawnFailureMessageCheck != null) {
+            EventBus.unsubscribe(_respawnFailureMessageCheck);
+        }
     }
 
+    /**
+     * Check if the given task is equal to this task.
+     *
+     * @param other The other task to compare with
+     * @return True if the other task is equal to this task, false otherwise
+     */
     @Override
     protected boolean isEqual(Task other) {
+        if (other == null) {
+            return false;
+        }
+        // Check if the other task is an instance of PlaceBedAndSetSpawnTask
         return other instanceof PlaceBedAndSetSpawnTask;
     }
 
+    /**
+     * Returns a debug string representing the action of placing a bed nearby and resetting the spawn point.
+     *
+     * @return the debug string
+     */
     @Override
     protected String toDebugString() {
-        return "Placing a bed nearby + resetting spawn point";
+        try {
+            // Place a bed nearby and reset spawn point
+            return "Placing a bed nearby + resetting spawn point";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error generating debug string";
+        }
     }
 
+    /**
+     * Check if the player is finished with the sleeping task.
+     *
+     * @param mod the AltoClef mod
+     * @return true if the player is finished, false otherwise
+     */
     @Override
     public boolean isFinished(AltoClef mod) {
+        // Check if we are in the overworld
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
-            Debug.logWarning("Can't place spawnpoint/sleep in a bed unless we're in the overworld!");
-            return true;
+            return true; // If not in the overworld, the player is considered finished
         }
-        return _spawnSet && !mod.getPlayer().isSleeping() && _inBedTimer.elapsed();
+
+        // Check if player is sleeping
+        boolean isSleeping = mod.getPlayer() != null && mod.getPlayer().isSleeping();
+
+        // Check if timer has elapsed
+        boolean timerElapsed = _inBedTimer != null && _inBedTimer.elapsed();
+
+        // Check if spawnpoint is set, player is not sleeping, and timer has elapsed
+        boolean isFinished = _spawnSet && !isSleeping && timerElapsed;
+
+        return isFinished;
     }
 
+    /**
+     * Returns the position of the bed where the player last slept.
+     * @return the position of the bed where the player last slept
+     * @throws IllegalStateException if the bed position has not been set
+     */
     public BlockPos getBedSleptPos() {
-        return _bedForSpawnPoint;
+        if (_bedForSpawnPoint != null) {
+            return _bedForSpawnPoint;
+        } else {
+            throw new IllegalStateException("Bed position has not been set");
+        }
     }
 
+    /**
+     * Check if the spawn point is set.
+     * @return true if the spawn point is set, false otherwise
+     */
     public boolean isSpawnSet() {
         return _spawnSet;
     }
 
+    /**
+     * Locates the closest good position within a certain range of the origin.
+     *
+     * @param mod the mod instance
+     * @param origin the origin position
+     * @return the closest good position within the range of the origin
+     */
     private BlockPos locateBedRegion(AltoClef mod, BlockPos origin) {
         final int SCAN_RANGE = 10;
 
-        BlockPos closestGood = null;
-        double closestDist = Double.POSITIVE_INFINITY;
-        for (int dx = origin.getX() - SCAN_RANGE; dx < origin.getX() + SCAN_RANGE; ++dx) {
-            for (int dz = origin.getZ() - SCAN_RANGE; dz < origin.getZ() + SCAN_RANGE; ++dz) {
-                outer:
-                for (int dy = origin.getY() - SCAN_RANGE; dy < origin.getY() + SCAN_RANGE; ++dy) {
-                    // Test range
-                    BlockPos attemptStandPos = new BlockPos(dx, dy, dz);
-                    double distance = attemptStandPos.getSquaredDistance(mod.getPlayer().getPos());
-                    if (distance > closestDist) continue;
-                    // Everything from here on out is checking for a BETTER pos.
-                    for (int checkX = 0; checkX < BED_CLEAR_SIZE.getX(); ++checkX) {
-                        for (int checkY = 0; checkY < BED_CLEAR_SIZE.getY(); ++checkY) {
-                            for (int checkZ = 0; checkZ < BED_CLEAR_SIZE.getZ(); ++checkZ) {
-                                BlockPos checkAsGoodArea = attemptStandPos.add(checkX, checkY, checkZ);
-                                if (!isGoodToPlaceInsideOrClear(mod, checkAsGoodArea)) {
-                                    continue outer;
-                                }
-                            }
-                        }
+        BlockPos closestGood = null; // The closest good position found so far
+        double closestDist = Double.POSITIVE_INFINITY; // The closest distance found so far
+
+        for (int x = origin.getX() - SCAN_RANGE; x < origin.getX() + SCAN_RANGE; ++x) {
+            for (int z = origin.getZ() - SCAN_RANGE; z < origin.getZ() + SCAN_RANGE; ++z) {
+                for (int y = origin.getY() - SCAN_RANGE; y < origin.getY() + SCAN_RANGE; ++y) {
+                    BlockPos attemptPos = new BlockPos(x, y, z);
+                    double distance = attemptPos.getSquaredDistance(mod.getPlayer().getPos());
+
+                    if (distance > closestDist) {
+                        continue; // Skip if the distance is greater than the closest distance found so far
                     }
-                    closestGood = attemptStandPos;
-                    closestDist = distance;
+
+                    if (isGoodPosition(mod, attemptPos)) {
+                        closestGood = attemptPos;
+                        closestDist = distance;
+                    }
                 }
             }
         }
+
         return closestGood;
     }
 
+    /**
+     * Checks if the position is suitable for placing an object.
+     *
+     * @param mod the AltoClef object
+     * @param pos the position to check
+     * @return true if the position is suitable, false otherwise
+     */
+    private boolean isGoodPosition(AltoClef mod, BlockPos pos) {
+        final BlockPos BED_CLEAR_SIZE = new BlockPos(2, 1, 2);
+
+        // Iterate over the area around the position
+        for (int x = 0; x < BED_CLEAR_SIZE.getX(); ++x) {
+            for (int y = 0; y < BED_CLEAR_SIZE.getY(); ++y) {
+                for (int z = 0; z < BED_CLEAR_SIZE.getZ(); ++z) {
+                    BlockPos checkPos = pos.add(x, y, z);
+                    if (!isGoodToPlaceInsideOrClear(mod, checkPos)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if it is good to place inside or clear at the given position
+     * @param mod the AltoClef object
+     * @param pos the position to check
+     * @return true if it is good to place inside or clear, false otherwise
+     */
     private boolean isGoodToPlaceInsideOrClear(AltoClef mod, BlockPos pos) {
-        final Vec3i[] CHECK = new Vec3i[]{
+        // Define the offsets to check around the position
+        final Vec3i[] CHECK = {
                 new Vec3i(0, 0, 0),
                 new Vec3i(-1, 0, 0),
                 new Vec3i(1, 0, 0),
@@ -385,15 +571,33 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 new Vec3i(0, 0, 1),
                 new Vec3i(0, 0, -1)
         };
-        for (Vec3i offs : CHECK) {
-            if (!isGoodAsBorder(mod, pos.add(offs))) return false;
+
+        // Check each offset
+        for (Vec3i offset : CHECK) {
+            BlockPos newPos = pos.add(offset);
+            if (!isGoodAsBorder(mod, newPos)) {
+                return false;
+            }
         }
+
         return true;
     }
 
+    /**
+     * Check if the given position is suitable as a border.
+     *
+     * @param mod The AltoClef object
+     * @param pos The position to check
+     * @return true if the position is suitable as a border, false otherwise
+     */
     private boolean isGoodAsBorder(AltoClef mod, BlockPos pos) {
+        // Check if the position is solid
         if (WorldHelper.isSolid(mod, pos)) {
+            // If solid, check if it can be broken
             return WorldHelper.canBreak(mod, pos);
-        } else return (WorldHelper.isAir(mod, pos));
+        } else {
+            // If not solid, check if it is air
+            return WorldHelper.isAir(mod, pos);
+        }
     }
 }

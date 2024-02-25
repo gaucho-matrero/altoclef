@@ -6,11 +6,16 @@ import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Crafts an item within the 2x2 inventory crafting grid.
@@ -40,16 +45,21 @@ public class CraftInInventoryTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBehaviour().push();
-        // Our inventory slots are here for conversion
-        int recSlot = 0;
-        for (Slot slot : PlayerSlot.CRAFT_INPUT_SLOTS) {
-            ItemTarget valid = _target.getRecipe().getSlot(recSlot++);
-            mod.getBehaviour().markSlotAsConversionSlot(slot, stack -> valid.matches(stack.getItem()));
-        }
-
         _fullCheckFailed = false;
-        StorageHelper.closeScreen(); // Just to be safe I guess
+        ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if (!cursorStack.isEmpty()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+            moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        } else {
+            StorageHelper.closeScreen();
+        } // Just to be safe I guess
     }
 
     @Override
@@ -58,9 +68,11 @@ public class CraftInInventoryTask extends ResourceTask {
         if (StorageHelper.isPlayerInventoryOpen()) {
             if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
                 Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
-                for (ItemTarget target : _itemTargets) {
-                    if (target.matches(outputItem)) {
-                        return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                if (_itemTargets != null) {
+                    for (ItemTarget target : _itemTargets) {
+                        if (target.matches(outputItem)) {
+                            return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
+                        }
                     }
                 }
             }
@@ -76,15 +88,30 @@ public class CraftInInventoryTask extends ResourceTask {
 
         // No need to free inventory, output gets picked up.
 
-            setDebugState("Crafting in inventory... for " + toGet);
-            return mod.getModSettings().shouldUseCraftingBookToCraft() ? new CraftGenericWithRecipeBooksTask(_target) : new CraftGenericManuallyTask(_target);
-
-
+        setDebugState("Crafting in inventory... for " + toGet);
+        return mod.getModSettings().shouldUseCraftingBookToCraft()
+                ? new CraftGenericWithRecipeBooksTask(_target)
+                : new CraftGenericManuallyTask(_target);
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBehaviour().pop();
+        ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if (!cursorStack.isEmpty()) {
+            List<Slot> moveTo = mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(cursorStack, false);
+            if (!moveTo.isEmpty()) {
+                for (Slot MoveTo : moveTo) {
+                    mod.getSlotHandler().clickSlot(MoveTo, 0, SlotActionType.PICKUP);
+                }
+            } else {
+                Optional<Slot> garbageSlot = StorageHelper.getGarbageSlot(mod);
+                if (garbageSlot.isPresent()) {
+                    mod.getSlotHandler().clickSlot(garbageSlot.get(), 0, SlotActionType.PICKUP);
+                } else {
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                }
+            }
+        }
     }
 
     @Override

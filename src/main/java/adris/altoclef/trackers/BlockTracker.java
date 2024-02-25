@@ -7,10 +7,10 @@ import adris.altoclef.eventbus.events.BlockPlaceEvent;
 import adris.altoclef.trackers.blacklisting.WorldLocateBlacklist;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.BaritoneHelper;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.ConfigHelper;
-import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.helpers.StlHelper;
+import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.Baritone;
 import baritone.api.utils.BlockOptionalMetaLookup;
 import baritone.pathing.movement.CalculationContext;
@@ -29,23 +29,23 @@ import java.util.stream.Collectors;
 
 /**
  * Tracks blocks the way we want it, when we want it.
- *
+ * <p>
  * Gives you a "Check and don't care" interface where you can check for blocks and their locations over and over again
  * without scanning the world over and over again.
- *
+ * <p>
  * Also keeps track of blacklists for unreachable blocks
  */
 public class BlockTracker extends Tracker {
-
-    private static BlockTrackerConfig _config = new BlockTrackerConfig();
-    static {
-        ConfigHelper.loadConfig("configs/block_tracker.json", BlockTrackerConfig::new, BlockTrackerConfig.class, newConfig -> _config = newConfig);
-    }
 
     // This should be moved to an instance variable
     // but if set to true, block scanning will happen
     // asynchronously to spread out the expensive cost of scanning.
     private static final boolean ASYNC_SCANNING = true;
+    private static BlockTrackerConfig _config = new BlockTrackerConfig();
+
+    static {
+        ConfigHelper.loadConfig("configs/block_tracker.json", BlockTrackerConfig::new, BlockTrackerConfig.class, newConfig -> _config = newConfig);
+    }
 
     private final HashMap<Dimension, PosCache> _caches = new HashMap<>();
 
@@ -61,14 +61,11 @@ public class BlockTracker extends Tracker {
     private final Map<Block, Integer> _trackingBlocks = new HashMap<>();
 
     private final Object _scanMutex = new Object();
-
-    private boolean _scanning = false;
-
     // Only perform scans at the END of our frame
     private final Semaphore _endOfFrameMutex = new Semaphore(1);
-
     //private Block _currentlyTracking = null;
     private final AltoClef _mod;
+    private boolean _scanning = false;
 
     public BlockTracker(AltoClef mod, TrackerManager manager) {
         super(manager);
@@ -97,6 +94,7 @@ public class BlockTracker extends Tracker {
             e.printStackTrace();
         }
     }
+
     public void postTickTask() {
         _endOfFrameMutex.release();
     }
@@ -104,8 +102,10 @@ public class BlockTracker extends Tracker {
     @Override
     protected void reset() {
         // Tasks will handle de-tracking blocks.
-        for (PosCache cache : _caches.values()) {
-            cache.clear();
+        if (!_caches.values().isEmpty()) {
+            for (PosCache cache : _caches.values()) {
+                cache.clear();
+            }
         }
     }
 
@@ -141,7 +141,7 @@ public class BlockTracker extends Tracker {
 
     /**
      * Stops tracking some blocks, after calling {@link #trackBlock(Block...) trackBlock}.
-     *
+     * <p>
      * Only call this once for every {@link #trackBlock(Block...) trackBlock}.
      */
     public void stopTracking(Block... blocks) {
@@ -184,8 +184,9 @@ public class BlockTracker extends Tracker {
 
     /**
      * Checks whether any blocks of a type have been found.
+     *
      * @param isValidTest A filter predicate, returns true if a block at a position should be included.
-     * @param blocks The blocks to check for
+     * @param blocks      The blocks to check for
      */
     public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
         updateState();
@@ -198,18 +199,21 @@ public class BlockTracker extends Tracker {
         // Add juuust a little, to prevent digging down all the time/bias towards blocks BELOW the player
         return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), blocks);
     }
+
     public Optional<BlockPos> getNearestTracking(Vec3d pos, Block... blocks) {
         return getNearestTracking(pos, p -> true, blocks);
     }
+
     public Optional<BlockPos> getNearestTracking(Predicate<BlockPos> isValidTest, Block... blocks) {
-        return getNearestTracking(_mod.getPlayer().getPos(), isValidTest, blocks);
+        return getNearestTracking(_mod.getPlayer().getPos().add(0, 0.6f, 0), isValidTest, blocks);
     }
 
     /**
      * Gets the nearest tracked block.
-     * @param pos From what position? (defaults to the player's position)
+     *
+     * @param pos         From what position? (defaults to the player's position)
      * @param isValidTest Filter predicate
-     * @param blocks The blocks to check for
+     * @param blocks      The blocks to check for
      * @return Optional.of(block position) if found, otherwise Optional.empty
      */
     public Optional<BlockPos> getNearestTracking(Vec3d pos, Predicate<BlockPos> isValidTest, Block... blocks) {
@@ -244,8 +248,9 @@ public class BlockTracker extends Tracker {
 
     /**
      * Scans a radius for the closest block of a given type .
-     * @param pos The center of this radius
-     * @param range Radius to scan for
+     *
+     * @param pos    The center of this radius
+     * @param range  Radius to scan for
      * @param blocks What blocks to check for
      */
     public Optional<BlockPos> getNearestWithinRange(Vec3d pos, double range, Block... blocks) {
@@ -342,11 +347,13 @@ public class BlockTracker extends Tracker {
         }
 
         // Clear invalid block pos before rescan
-        for (BlockPos check : knownBlocks) {
-            if (!blockIsValid(check, blocksToScan)) {
-                //Debug.logInternal("Removed at " + check);
-                synchronized (_scanMutex) {
-                    currentCache().removeBlock(check, blocksToScan);
+        if (!knownBlocks.isEmpty()) {
+            for (BlockPos check : knownBlocks) {
+                if (!blockIsValid(check, blocksToScan)) {
+                    //Debug.logInternal("Removed at " + check);
+                    synchronized (_scanMutex) {
+                        currentCache().removeBlock(check, blocksToScan);
+                    }
                 }
             }
         }
@@ -357,12 +364,14 @@ public class BlockTracker extends Tracker {
 
         synchronized (_scanMutex) {
             if (MinecraftClient.getInstance().world != null) {
-                for (BlockPos pos : found) {
-                    Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
-                    synchronized (_trackingBlocks) {
-                        if (_trackingBlocks.containsKey(block)) {
-                            //Debug.logInternal("Good: " + block + " at " + pos);
-                            currentCache().addBlock(block, pos);
+                if (!found.isEmpty()) {
+                    for (BlockPos pos : found) {
+                        Block block = MinecraftClient.getInstance().world.getBlockState(pos).getBlock();
+                        synchronized (_trackingBlocks) {
+                            if (_trackingBlocks.containsKey(block)) {
+                                //Debug.logInternal("Good: " + block + " at " + pos);
+                                currentCache().addBlock(block, pos);
+                            }
                         }
                     }
                 }
@@ -423,7 +432,8 @@ public class BlockTracker extends Tracker {
 
     /**
      * Inform the block tracker that the bot was NOT able to reach a block.
-     * @param pos block that we were unable to reach
+     *
+     * @param pos             block that we were unable to reach
      * @param allowedFailures how many times we can try reaching before we finally declare this block "unreachable"
      */
     public void requestBlockUnreachable(BlockPos pos, int allowedFailures) {
@@ -523,8 +533,10 @@ public class BlockTracker extends Tracker {
 
         public int getBlockTrackCount() {
             int count = 0;
-            for (List<BlockPos> list : _cachedBlocks.values()) {
-                count += list.size();
+            if (!_cachedBlocks.values().isEmpty()) {
+                for (List<BlockPos> list : _cachedBlocks.values()) {
+                    count += list.size();
+                }
             }
             return count;
         }
@@ -552,42 +564,43 @@ public class BlockTracker extends Tracker {
             int toPurge = blockList.size() - _config.maxCacheSizePerBlockType;
 
             boolean closestPurged = false;
-
-            for (BlockPos pos : blockList) {
-                // If our current block isn't valid, fix it up. This cleans while we're iterating.
-                if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
-                    removeBlock(pos, blocks);
-                    continue;
-                }
-                if (!isValid.test(pos)) continue;
-
-                double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
-
-                boolean currentlyClosest = false;
-                boolean purged = false;
-
-                if (score < minScore) {
-                    minScore = score;
-                    closest = pos;
-                    currentlyClosest = true;
-                }
-
-                if (toPurge > 0) {
-                    double sqDist = position.squaredDistanceTo(WorldHelper.toVec3d(pos));
-                    if (sqDist > _config.cutoffDistance * _config.cutoffDistance) {
-                        // cut this one off.
-                        for (Block block : blocks) {
-                            if (_cachedBlocks.containsKey(block)) {
-                                removeBlock(pos, block);
-                            }
-                        }
-                        toPurge--;
-                        purged = true;
+            if (!blockList.isEmpty()) {
+                for (BlockPos pos : blockList) {
+                    // If our current block isn't valid, fix it up. This cleans while we're iterating.
+                    if (!mod.getBlockTracker().blockIsValid(pos, blocks)) {
+                        removeBlock(pos, blocks);
+                        continue;
                     }
-                }
+                    if (!isValid.test(pos)) continue;
 
-                if (currentlyClosest) {
-                    closestPurged = purged;
+                    double score = BaritoneHelper.calculateGenericHeuristic(position, WorldHelper.toVec3d(pos));
+
+                    boolean currentlyClosest = false;
+                    boolean purged = false;
+
+                    if (score < minScore) {
+                        minScore = score;
+                        closest = pos;
+                        currentlyClosest = true;
+                    }
+
+                    if (toPurge > 0) {
+                        double sqDist = position.squaredDistanceTo(WorldHelper.toVec3d(pos));
+                        if (sqDist > _config.cutoffDistance * _config.cutoffDistance) {
+                            // cut this one off.
+                            for (Block block : blocks) {
+                                if (_cachedBlocks.containsKey(block)) {
+                                    removeBlock(pos, block);
+                                }
+                            }
+                            toPurge--;
+                            purged = true;
+                        }
+                    }
+
+                    if (currentlyClosest) {
+                        closestPurged = purged;
+                    }
                 }
             }
 
@@ -621,14 +634,18 @@ public class BlockTracker extends Tracker {
                 if (_cachedByPosition.size() > MAX_CACHE_SIZE) {
                     List<BlockPos> toRemoveList = new ArrayList<>(_cachedByPosition.size() - MAX_CACHE_SIZE);
                     // Just purge randomly.
-                    for (BlockPos pos : _cachedByPosition.keySet()) {
-                        if (_cachedByPosition.size() - toRemoveList.size() < MAX_CACHE_SIZE) {
-                            break;
+                    if (!_cachedByPosition.keySet().isEmpty()) {
+                        for (BlockPos pos : _cachedByPosition.keySet()) {
+                            if (_cachedByPosition.size() - toRemoveList.size() < MAX_CACHE_SIZE) {
+                                break;
+                            }
+                            toRemoveList.add(pos);
                         }
-                        toRemoveList.add(pos);
                     }
-                    for (BlockPos toDelete : toRemoveList) {
-                        _cachedByPosition.remove(toDelete);
+                    if (!toRemoveList.isEmpty()) {
+                        for (BlockPos toDelete : toRemoveList) {
+                            _cachedByPosition.remove(toDelete);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -637,29 +654,30 @@ public class BlockTracker extends Tracker {
 
             // ^^^ TODO: Something about that feels fishy, particularly how it's disconnected from the _cachedBlocks purging.
             // I smell a dangerous edge case bug.
+            if (!_cachedBlocks.keySet().isEmpty()) {
+                for (Block block : _cachedBlocks.keySet()) {
+                    List<BlockPos> tracking = _cachedBlocks.get(block);
 
-            for (Block block : _cachedBlocks.keySet()) {
-                List<BlockPos> tracking = _cachedBlocks.get(block);
-
-                // Clear blacklisted blocks
-                try {
-                    // Untrack the blocks further away
-                    tracking = tracking.stream()
-                            .filter(pos -> !_blacklist.unreachable(pos))
-                            // This is invalid, because some blocks we may want to GO TO not BREAK.
-                            //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
-                            .distinct()
-                            .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos)))
-                            .collect(Collectors.toList());
-                    tracking = tracking.stream()
-                            .limit(_config.maxCacheSizePerBlockType)
-                            .collect(Collectors.toList());
-                    // This won't update otherwise.
-                    _cachedBlocks.put(block, tracking);
-                } catch (IllegalArgumentException e) {
-                    // Comparison method violates its general contract: Sometimes transitivity breaks.
-                    // In which case, ignore it.
-                    Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
+                    // Clear blacklisted blocks
+                    try {
+                        // Untrack the blocks further away
+                        tracking = tracking.stream()
+                                .filter(pos -> !_blacklist.unreachable(pos))
+                                // This is invalid, because some blocks we may want to GO TO not BREAK.
+                                //.filter(pos -> !mod.getExtraBaritoneSettings().shouldAvoidBreaking(pos))
+                                .distinct()
+                                .sorted(StlHelper.compareValues((BlockPos blockpos) -> blockpos.getSquaredDistance(playerPos)))
+                                .collect(Collectors.toList());
+                        tracking = tracking.stream()
+                                .limit(_config.maxCacheSizePerBlockType)
+                                .collect(Collectors.toList());
+                        // This won't update otherwise.
+                        _cachedBlocks.put(block, tracking);
+                    } catch (IllegalArgumentException e) {
+                        // Comparison method violates its general contract: Sometimes transitivity breaks.
+                        // In which case, ignore it.
+                        Debug.logWarning("Failed to purge/reduce block search count for " + block + ": It remains at " + tracking.size());
+                    }
                 }
             }
         }
@@ -669,9 +687,9 @@ public class BlockTracker extends Tracker {
         public double scanInterval = 7;
         public double scanIntervalWhenNewBlocksFound = 2;
         public boolean scanAsynchronously = true;
-        public int maxTotalCacheSize = 10000;
-        public int maxCacheSizePerBlockType = 100;
-        public double cutoffDistance = 64*2;
+        public int maxTotalCacheSize = 2500;
+        public int maxCacheSizePerBlockType = 25;
+        public double cutoffDistance = 128;
         public int defaultUnreachableAttemptsAllowed = 4;
     }
 }

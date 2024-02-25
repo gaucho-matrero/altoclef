@@ -12,7 +12,8 @@ public class BlockRange {
     public Dimension dimension = Dimension.OVERWORLD;
 
     // For deserialization
-    private BlockRange() {}
+    private BlockRange() {
+    }
 
     public BlockRange(BlockPos start, BlockPos end, Dimension dimension) {
         this.start = start;
@@ -23,6 +24,7 @@ public class BlockRange {
     public boolean contains(BlockPos pos) {
         return contains(pos, WorldHelper.getCurrentDimension());
     }
+
     public boolean contains(BlockPos pos, Dimension dimension) {
         if (this.dimension != dimension)
             return false;

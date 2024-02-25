@@ -9,7 +9,7 @@ import adris.altoclef.tasks.resources.CollectFoodTask;
 
 public class FoodCommand extends Command {
     public FoodCommand() throws CommandException {
-        super("food", "Collects a certain amount of food", new Arg(Integer.class, "count"));
+        super("food", "Collects a certain amount of food", new Arg<>(Integer.class, "count"));
     }
 
     @Override

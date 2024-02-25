@@ -12,10 +12,11 @@ import net.minecraft.util.math.BlockPos;
 public class GoToStrongholdPortalTask extends Task {
 
     private final LocateStrongholdCoordinatesTask _locateCoordsTask;
-    private BlockPos _strongholdCoordinates;
     private final int _targetEyes;
+    private final int MINIMUM_EYES = 12;
+    private BlockPos _strongholdCoordinates;
 
-    public GoToStrongholdPortalTask(int targetEyes){
+    public GoToStrongholdPortalTask(int targetEyes) {
         _targetEyes = targetEyes;
         _strongholdCoordinates = null;
         _locateCoordsTask = new LocateStrongholdCoordinatesTask(targetEyes);
@@ -36,9 +37,9 @@ public class GoToStrongholdPortalTask extends Task {
         if (_strongholdCoordinates == null) {
             _strongholdCoordinates = _locateCoordsTask.getStrongholdCoordinates().orElse(null);
             if (_strongholdCoordinates == null) {
-                if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < _targetEyes && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
+                if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < MINIMUM_EYES && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
                     setDebugState("Picking up dropped eye");
-                    return new PickupDroppedItemTask(Items.ENDER_EYE, _targetEyes);
+                    return new PickupDroppedItemTask(Items.ENDER_EYE, MINIMUM_EYES);
                 }
                 setDebugState("Triangulating stronghold...");
                 return _locateCoordsTask;
@@ -57,7 +58,7 @@ public class GoToStrongholdPortalTask extends Task {
 
             @Override
             protected Task getWanderTask(AltoClef mod) {
-                return new FastTravelTask(_strongholdCoordinates, 300,true);
+                return new FastTravelTask(_strongholdCoordinates, 300, true);
             }
         };
     }

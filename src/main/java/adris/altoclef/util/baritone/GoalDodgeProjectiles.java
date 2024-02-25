@@ -40,22 +40,24 @@ public class GoalDodgeProjectiles implements Goal {
         Vec3d p = new Vec3d(x, y, z);
         //Debug.logMessage("SIZE: " + projectiles.size());
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            for (CachedProjectile projectile : projectiles) {
-                if (isInvalidProjectile(projectile)) continue;
-                try {
-                    if (projectile.needsToRecache()) {
-                        projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
-                    }
-                    Vec3d hit = projectile.getCachedHit();
-                    //Debug.logMessage("Hit Delta: " + p.subtract(hit));
+            if (!projectiles.isEmpty()) {
+                for (CachedProjectile projectile : projectiles) {
+                    if (isInvalidProjectile(projectile)) continue;
+                    try {
+                        if (projectile.needsToRecache()) {
+                            projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
+                        }
+                        Vec3d hit = projectile.getCachedHit();
+                        //Debug.logMessage("Hit Delta: " + p.subtract(hit));
 
-                    if (isHitCloseEnough(hit, p)) return false;
-                } catch (Exception e) {
-                    Debug.logWarning("Weird exception caught while checking for goal: " + e.getMessage());
-                    /// ????? No clue why a nullptrexception happens here.
+                        if (isHitCloseEnough(hit, p)) return false;
+                    } catch (Exception e) {
+                        Debug.logWarning("Weird exception caught while checking for goal: " + e.getMessage());
+                        /// ????? No clue why a nullptrexception happens here.
+                    }
+                    //double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
+                    //if (sqFromMob < _distance*_distance) return false;
                 }
-                //double sqFromMob = creepuh.squaredDistanceTo(x, y, z);
-                //if (sqFromMob < _distance*_distance) return false;
             }
         }
         //Debug.logMessage("COMFY: " + p.subtract(MinecraftClient.getInstance().player.getPos()));
@@ -70,19 +72,21 @@ public class GoalDodgeProjectiles implements Goal {
 
         List<CachedProjectile> projectiles = getProjectiles();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            for (CachedProjectile projectile : projectiles) {
-                if (isInvalidProjectile(projectile)) continue;
+            if (!projectiles.isEmpty()) {
+                for (CachedProjectile projectile : projectiles) {
+                    if (isInvalidProjectile(projectile)) continue;
 
-                if (projectile.needsToRecache()) {
-                    projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
-                }
-                Vec3d hit = projectile.getCachedHit();
+                    if (projectile.needsToRecache()) {
+                        projectile.setCacheHit(ProjectileHelper.calculateArrowClosestApproach(projectile, p));
+                    }
+                    Vec3d hit = projectile.getCachedHit();
 
-                double arrowPenalty = ProjectileHelper.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
-                //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
+                    double arrowPenalty = ProjectileHelper.getFlatDistanceSqr(projectile.position.x, projectile.position.z, projectile.velocity.x, projectile.velocity.z, p.x, p.z);
+                    //double arrowCost = hit.squaredDistanceTo(p); //Math.pow(p.x - hit.x, 2) + Math.pow(p.z - hit.z, 2);
 
-                if (isHitCloseEnough(hit, p)) {
-                    costFactor += arrowPenalty;
+                    if (isHitCloseEnough(hit, p)) {
+                        costFactor += arrowPenalty;
+                    }
                 }
             }
         }

@@ -93,9 +93,9 @@ public abstract class Task {
 
     /**
      * Lets the task know it's execution has been "suspended"
-     *
+     * <p>
      * STILL RUNS `onStop`
-     *
+     * <p>
      * Doesn't stop it all-together (meaning `isActive` still returns true)
      */
     public void interrupt(AltoClef mod, Task interruptTask) {

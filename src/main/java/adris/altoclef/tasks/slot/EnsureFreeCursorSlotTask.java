@@ -6,15 +6,15 @@ import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class EnsureFreeCursorSlotTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-         // YEET
+        // YEET
     }
 
     @Override
@@ -25,25 +25,26 @@ public class EnsureFreeCursorSlotTask extends Task {
 
 
         if (!cursor.isEmpty()) {
-        Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false);
             if (moveTo.isPresent()) {
                 setDebugState("Moving cursor stack back");
-                return new ClickSlotTask(moveTo.get());
-        }
-        if (ItemHelper.canThrowAwayStack(mod, cursor)) {
+                mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
+                return null;
+            }
+            if (ItemHelper.canThrowAwayStack(mod, cursor)) {
                 setDebugState("Incompatible cursor stack, throwing");
-                return new ThrowCursorTask();
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
             } else {
                 Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
                 if (garbage.isPresent()) {
                     // Pick up garbage so we throw it out next frame
                     setDebugState("Picking up garbage");
-                    return new ClickSlotTask(garbage.get());
+                    mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
                 } else {
-                    setDebugState("STUCK! Everything's protected.");
-                    return null;
+                    mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
                 }
             }
+            return null;
         }
         return null;
     }

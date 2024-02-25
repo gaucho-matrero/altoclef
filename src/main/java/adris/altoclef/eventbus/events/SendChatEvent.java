@@ -11,6 +11,7 @@ public class SendChatEvent {
     public void cancel() {
         _cancelled = true;
     }
+
     public boolean isCancelled() {
         return _cancelled;
     }

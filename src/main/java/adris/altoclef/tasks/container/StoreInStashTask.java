@@ -20,17 +20,14 @@ import java.util.stream.Stream;
 
 public class StoreInStashTask extends Task {
 
-    private final ItemTarget[] _toStore;
-    private final boolean _getIfNotPresent;
-
-    private final BlockRange _stashRange;
-
-    private ContainerStoredTracker _storedItems;
-
     // There's a lot of code duplication here...
     private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);
+    private final ItemTarget[] _toStore;
+    private final boolean _getIfNotPresent;
+    private final BlockRange _stashRange;
+    private ContainerStoredTracker _storedItems;
 
-    public StoreInStashTask(boolean getIfNotPresent, BlockRange stashRange, ItemTarget ...toStore) {
+    public StoreInStashTask(boolean getIfNotPresent, BlockRange stashRange, ItemTarget... toStore) {
         _getIfNotPresent = getIfNotPresent;
         _stashRange = stashRange;
         _toStore = toStore;

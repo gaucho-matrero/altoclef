@@ -46,7 +46,7 @@ public class CraftingRecipe {
         CraftingRecipe result = new CraftingRecipe();
         result._shortName = shortName;
         // Remove null
-        result._slots = Arrays.stream(slots).map(target -> target == null? ItemTarget.EMPTY : target).toArray(ItemTarget[]::new);
+        result._slots = Arrays.stream(slots).map(target -> target == null ? ItemTarget.EMPTY : target).toArray(ItemTarget[]::new);
         result._outputCount = outputCount;
         if (slots.length == 4) {
             result._width = 2;
@@ -80,7 +80,7 @@ public class CraftingRecipe {
 
     public ItemTarget getSlot(int index) {
         ItemTarget result = _slots[index];
-        return result != null? result : ItemTarget.EMPTY;
+        return result != null ? result : ItemTarget.EMPTY;
     }
 
     public int getSlotCount() {

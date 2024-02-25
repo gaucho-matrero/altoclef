@@ -12,7 +12,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.baritone.GoalAnd;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-
 import baritone.api.pathing.goals.GoalComposite;
 import baritone.api.pathing.goals.GoalGetToBlock;
 import baritone.api.pathing.goals.GoalYLevel;
@@ -23,7 +22,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
 public class GetToOuterEndIslandsTask extends Task {
-    private Task _beatTheGame;
     public final int END_ISLAND_START_RADIUS = 800;
     public final Vec3i[] OFFSETS = {
             new Vec3i(1, -1, 1),
@@ -35,6 +33,8 @@ public class GetToOuterEndIslandsTask extends Task {
             new Vec3i(-2, -1, 0),
             new Vec3i(0, -1, -2)
     };
+    private Task _beatTheGame;
+
     public GetToOuterEndIslandsTask() {
 
     }

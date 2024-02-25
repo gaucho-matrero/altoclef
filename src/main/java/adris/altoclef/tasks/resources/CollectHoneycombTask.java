@@ -21,6 +21,7 @@ public class CollectHoneycombTask extends ResourceTask {
     private final boolean _campfire;
     private final int _count;
     private BlockPos _nest;
+
     public CollectHoneycombTask(int targetCount) {
         super(Items.HONEYCOMB, targetCount);
         _campfire = true;
@@ -100,7 +101,7 @@ public class CollectHoneycombTask extends ResourceTask {
     }
 
     private boolean isCampfireUnderNest(AltoClef mod, BlockPos pos) {
-        for(BlockPos underPos : WorldHelper.scanRegion(mod, pos.down(6), pos.down())) {
+        for (BlockPos underPos : WorldHelper.scanRegion(mod, pos.down(6), pos.down())) {
             if (mod.getWorld().getBlockState(underPos).getBlock() == Blocks.CAMPFIRE)
                 return true;
         }

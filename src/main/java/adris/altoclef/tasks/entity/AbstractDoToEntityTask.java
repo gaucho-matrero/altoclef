@@ -6,11 +6,15 @@ import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.slots.Slot;
 import baritone.api.pathing.goals.GoalRunAway;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
@@ -18,15 +22,14 @@ import java.util.Optional;
 
 /**
  * Interacts with an entity while maintaining distance.
- *
+ * <p>
  * The interaction is abstract.
  */
 public abstract class AbstractDoToEntityTask extends Task implements ITaskRequiresGrounded {
-    protected final MovementProgressChecker _progress = new MovementProgressChecker(5, 0.1, 5, 0.001, 2);
+    protected final MovementProgressChecker _progress = new MovementProgressChecker();
     private final double _maintainDistance;
     private final double _combatGuardLowerRange;
     private final double _combatGuardLowerFieldRadius;
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
 
     public AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         _maintainDistance = maintainDistance;
@@ -41,24 +44,30 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     public AbstractDoToEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         this(-1, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
-    public AbstractDoToEntityTask() {
-        this(-1);
-    }
 
     @Override
     protected void onStart(AltoClef mod) {
-        _wanderTask.resetWander();
         _progress.reset();
-        StorageHelper.closeScreen(); // Kinda duct tape but it should be future proof ish
+        ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if (!cursorStack.isEmpty()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+            moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            }
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            // Try throwing away cursor slot if it's garbage
+            garbage.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+        } else {
+            StorageHelper.closeScreen();
+        } // Kinda duct tape but it should be future proof ish
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+        if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
             _progress.reset();
-            setDebugState("Failed to get to target, wandering for a bit.");
-            return _wanderTask;
         }
 
         Optional<Entity> checkEntity = getEntityTarget(mod);
@@ -68,55 +77,61 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
         if (checkEntity.isEmpty()) {
             mod.getMobDefenseChain().resetTargetEntity();
             mod.getMobDefenseChain().resetForceField();
-            return _wanderTask;
         } else {
             mod.getMobDefenseChain().setTargetEntity(checkEntity.get());
         }
-        Entity entity = checkEntity.get();
+        if (checkEntity.isPresent()) {
+            Entity entity = checkEntity.get();
 
-        double playerReach = mod.getModSettings().getEntityReachRange();
+            double playerReach = mod.getModSettings().getEntityReachRange();
 
-        // TODO: This is basically useless.
-        EntityHitResult result = LookHelper.raycast(mod.getPlayer(), entity, playerReach);
+            // TODO: This is basically useless.
+            EntityHitResult result = LookHelper.raycast(mod.getPlayer(), entity, playerReach);
 
-        double sqDist = entity.squaredDistanceTo(mod.getPlayer());
+            double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
-        if (sqDist < _combatGuardLowerRange * _combatGuardLowerRange) {
-            mod.getMobDefenseChain().setForceFieldRange(_combatGuardLowerFieldRadius);
-        } else {
-            mod.getMobDefenseChain().resetForceField();
-        }
-
-        // If we don't specify a maintain distance, default to within 1 block of our reach.
-        double maintainDistance = _maintainDistance >= 0? _maintainDistance : playerReach - 1;
-
-        boolean tooClose = sqDist < maintainDistance * maintainDistance;
-
-        // Step away if we're too close
-        if (tooClose) {
-            //setDebugState("Maintaining distance");
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
-            }
-        }
-
-        if (entity.squaredDistanceTo(mod.getPlayer()) < playerReach * playerReach && result != null && result.getType() == HitResult.Type.ENTITY) {
-            _progress.reset();
-            return onEntityInteract(mod, entity);
-        } else if (!tooClose) {
-            setDebugState("Approaching target");
-
-            if (!_progress.check(mod)) {
-                Debug.logMessage("Failed to get to target, wandering.");
-                return _wanderTask;
+            if (sqDist < _combatGuardLowerRange * _combatGuardLowerRange) {
+                mod.getMobDefenseChain().setForceFieldRange(_combatGuardLowerFieldRadius);
+            } else {
+                mod.getMobDefenseChain().resetForceField();
             }
 
-            // Move to target
+            // If we don't specify a maintain distance, default to within 1 block of our reach.
+            double maintainDistance = _maintainDistance >= 0 ? _maintainDistance : playerReach - 1;
 
-            return new GetToEntityTask(entity, maintainDistance);
+            boolean tooClose = sqDist < maintainDistance * maintainDistance;
+
+            // Step away if we're too close
+            if (tooClose) {
+                //setDebugState("Maintaining distance");
+                if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+                    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
+                }
+            }
+
+            if (mod.getControllerExtras().inRange(entity) && result != null &&
+                    result.getType() == HitResult.Type.ENTITY && !mod.getFoodChain().needsToEat() &&
+                    !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
+                    !mod.getMLGBucketChain().isChorusFruiting() &&
+                    mod.getClientBaritone().getPathingBehavior().isSafeToCancel() &&
+                    mod.getPlayer().isOnGround()) {
+                _progress.reset();
+                return onEntityInteract(mod, entity);
+            } else if (!tooClose) {
+                setDebugState("Approaching target");
+                if (!_progress.check(mod)) {
+                    _progress.reset();
+                    Debug.logMessage("Failed to get to target, blacklisting.");
+                    mod.getEntityTracker().requestEntityUnreachable(entity);
+                }
+                // Move to target
+                return new GetToEntityTask(entity, maintainDistance);
+            }
         }
-
-        return _wanderTask;
+        if (!mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+            return null;
+        }
+        return new TimeoutWanderTask();
     }
 
     @Override

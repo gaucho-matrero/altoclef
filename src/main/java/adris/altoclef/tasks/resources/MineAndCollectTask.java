@@ -6,16 +6,15 @@ import adris.altoclef.tasks.AbstractDoToClosestObjectTask;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.slots.PlayerSlot;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.CursorSlot;
+import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.ItemEntity;
@@ -89,7 +88,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-
         if (!StorageHelper.miningRequirementMet(mod, _requirement)) {
             return new SatisfyMiningRequirementTask(_requirement);
         }
@@ -99,7 +97,7 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         // Wrong dimension check.
-        if (_subtask.wasWandering() && isInWrongDimension(mod)) {
+        if (_subtask.wasWandering() && isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(_blocksToMine)) {
             return getToCorrectDimensionTask(mod);
         }
 
@@ -126,7 +124,7 @@ public class MineAndCollectTask extends ResourceTask {
     }
 
     private void makeSureToolIsEquipped(AltoClef mod) {
-        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().isTryingToEat()) {
+        if (_cursorStackTimer.elapsed() && !mod.getFoodChain().needsToEat()) {
             assert MinecraftClient.getInstance().player != null;
             ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
             if (cursorStack != null && !cursorStack.isEmpty()) {
@@ -158,10 +156,9 @@ public class MineAndCollectTask extends ResourceTask {
         private final Block[] _blocks;
         private final ItemTarget[] _targets;
         private final Set<BlockPos> _blacklist = new HashSet<>();
-        private final MovementProgressChecker _progressChecker = new MovementProgressChecker(1);
+        private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
         private final Task _pickupTask;
         private BlockPos _miningPos;
-        private AltoClef _mod;
 
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
             _blocks = blocks;
@@ -184,6 +181,7 @@ public class MineAndCollectTask extends ResourceTask {
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
             Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
                 if (_blacklist.contains(check)) return false;
+                if (mod.getBlockTracker().unreachable(check)) return false;
                 return WorldHelper.canBreak(mod, check);
             }, _blocks);
 
@@ -193,7 +191,7 @@ public class MineAndCollectTask extends ResourceTask {
             }
 
             double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos);
-            double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
+            double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 10; // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
@@ -214,8 +212,11 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Task onTick(AltoClef mod) {
-            _mod = mod;
+            if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                _progressChecker.reset();
+            }
             if (_miningPos != null && !_progressChecker.check(mod)) {
+                mod.getClientBaritone().getPathingBehavior().forceCancel();
                 Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
                 mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);
@@ -234,13 +235,8 @@ public class MineAndCollectTask extends ResourceTask {
                 _miningPos = newPos;
                 return new DestroyBlockTask(_miningPos);
             }
-            if (obj instanceof ItemEntity itemEntity) {
+            if (obj instanceof ItemEntity) {
                 _miningPos = null;
-
-                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).or(() -> StorageHelper.getGarbageSlot(_mod)).isEmpty()) {
-                    return new EnsureFreeInventorySlotTask();
-                }
-
                 return _pickupTask;
             }
             throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
@@ -253,8 +249,10 @@ public class MineAndCollectTask extends ResourceTask {
             }
             if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();
-                for (ItemTarget target : _targets) {
-                    if (target.matches(item)) return true;
+                if (_targets != null) {
+                    for (ItemTarget target : _targets) {
+                        if (target.matches(item)) return true;
+                    }
                 }
                 return false;
             }

@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 public class CollectWoodenButtonTask extends CraftWithMatchingPlanksTask {
 
     public CollectWoodenButtonTask(Item[] targets, ItemTarget planks, int count) {
-        super(targets,  woodItems -> woodItems.button, createRecipe(planks), new boolean[]{true, true, false, false}, count);
+        super(targets, woodItems -> woodItems.button, createRecipe(planks), new boolean[]{true, true, false, false}, count);
     }
 
     public CollectWoodenButtonTask(Item target, String plankCatalogueName, int count) {

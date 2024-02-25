@@ -12,17 +12,17 @@ import java.util.function.Predicate;
 
 public class KillAndLootTask extends ResourceTask {
 
-    private final Class _toKill;
+    private final Class<?> _toKill;
 
     private final Task _killTask;
 
-    public KillAndLootTask(Class toKill, Predicate<Entity> shouldKill, ItemTarget... itemTargets) {
+    public KillAndLootTask(Class<?> toKill, Predicate<Entity> shouldKill, ItemTarget... itemTargets) {
         super(itemTargets.clone());
         _toKill = toKill;
         _killTask = new KillEntitiesTask(shouldKill, _toKill);
     }
 
-    public KillAndLootTask(Class toKill, ItemTarget... itemTargets) {
+    public KillAndLootTask(Class<?> toKill, ItemTarget... itemTargets) {
         super(itemTargets.clone());
         _toKill = toKill;
         _killTask = new KillEntitiesTask(_toKill);
@@ -46,7 +46,7 @@ public class KillAndLootTask extends ResourceTask {
                 return getToCorrectDimensionTask(mod);
             }
             setDebugState("Searching for mob...");
-            return new TimeoutWanderTask(9999999);
+            return new TimeoutWanderTask();
         }
         // We found the mob!
         return _killTask;

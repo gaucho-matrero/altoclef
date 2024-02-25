@@ -13,7 +13,7 @@ public class ChunkPosDeserializer extends AbstractVectorDeserializer<ChunkPos, I
 
     @Override
     protected String[] getComponents() {
-        return new String[]{"x","z"};
+        return new String[]{"x", "z"};
     }
 
     @Override

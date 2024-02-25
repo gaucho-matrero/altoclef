@@ -24,7 +24,7 @@ public final class ClientBlockBreakMixin {
             at = @At("HEAD")
     )
     private void onBreakUpdate(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> ci) {
-        ClientBlockBreakAccessor breakAccessor = (ClientBlockBreakAccessor)(MinecraftClient.getInstance().interactionManager);
+        ClientBlockBreakAccessor breakAccessor = (ClientBlockBreakAccessor) (MinecraftClient.getInstance().interactionManager);
         if (breakAccessor != null) {
             _breakCancelFrames = 2;
             EventBus.publish(new BlockBreakingEvent(pos, breakAccessor.getCurrentBreakingProgress()));

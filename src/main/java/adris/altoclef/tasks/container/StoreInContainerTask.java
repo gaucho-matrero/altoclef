@@ -26,7 +26,7 @@ public class StoreInContainerTask extends AbstractDoToStorageContainerTask {
 
     private ContainerStoredTracker _storedItems;
 
-    public StoreInContainerTask(BlockPos targetContainer, boolean getIfNotPresent, ItemTarget ...toStore) {
+    public StoreInContainerTask(BlockPos targetContainer, boolean getIfNotPresent, ItemTarget... toStore) {
         _targetContainer = targetContainer;
         _getIfNotPresent = getIfNotPresent;
         _toStore = toStore;
@@ -74,28 +74,28 @@ public class StoreInContainerTask extends AbstractDoToStorageContainerTask {
     protected Task onContainerOpenSubtask(AltoClef mod, ContainerCache containerCache) {
         // Move all items that aren't in the container
         for (ItemTarget target : _storedItems.getUnstoredItemTargetsYouCanStore(mod, _toStore)) {
-                setDebugState("Dumping " + target);
-                // Grab the item from the current chest that most closely matches our requirements
-                List<Slot> potentials = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
+            setDebugState("Dumping " + target);
+            // Grab the item from the current chest that most closely matches our requirements
+            List<Slot> potentials = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches());
 
-                // Pick the best slot to grab from.
-                Optional<Slot> bestPotential = PickupFromContainerTask.getBestSlotToTransfer(
-                        mod,
-                        target,
-                        mod.getItemStorage().getItemCountContainer(target.getMatches()),
-                        potentials,
-                        stack -> mod.getItemStorage().getSlotThatCanFitInOpenContainer(stack, false).isPresent());
-                if (bestPotential.isPresent()) {
-                    ItemStack stackIn = StorageHelper.getItemStackInSlot(bestPotential.get());
-                    Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInOpenContainer(stackIn, false);
-                    if (toMoveTo.isEmpty()) {
-                        setDebugState("CONTAINER FULL!");
-                        return null;
-                    }
-                    setDebugState("Moving to slot...");
-                    return new MoveItemToSlotFromInventoryTask(target, toMoveTo.get());
+            // Pick the best slot to grab from.
+            Optional<Slot> bestPotential = PickupFromContainerTask.getBestSlotToTransfer(
+                    mod,
+                    target,
+                    mod.getItemStorage().getItemCountContainer(target.getMatches()),
+                    potentials,
+                    stack -> mod.getItemStorage().getSlotThatCanFitInOpenContainer(stack, false).isPresent());
+            if (bestPotential.isPresent()) {
+                ItemStack stackIn = StorageHelper.getItemStackInSlot(bestPotential.get());
+                Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInOpenContainer(stackIn, false);
+                if (toMoveTo.isEmpty()) {
+                    setDebugState("CONTAINER FULL!");
+                    return null;
                 }
-                setDebugState("SHOULD NOT HAPPEN! No valid items detected.");
+                setDebugState("Moving to slot...");
+                return new MoveItemToSlotFromInventoryTask(target, toMoveTo.get());
+            }
+            setDebugState("SHOULD NOT HAPPEN! No valid items detected.");
         }
         setDebugState("SHOULD NOT HAPPEN! All items stored but we're still trying.");
         return null;

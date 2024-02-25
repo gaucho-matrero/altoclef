@@ -72,22 +72,22 @@ public class ProjectileHelper {
     public static double[] calculateAnglesForSimpleProjectileMotion(double launchHeight, double launchTargetDistance, double launchVelocity, double gravity) {
         // Thanks wikipedia https://en.wikipedia.org/wiki/Projectile_motion#Angle_%CE%B8_required_to_hit_coordinate_(x,_y)
         double v = launchVelocity,
-              g = gravity,
-              x = launchTargetDistance,
-              y = -1 * launchHeight;
-        double root = v*v*v*v - g * (g*x*x + 2*y*v*v);
+                g = gravity,
+                x = launchTargetDistance,
+                y = -1 * launchHeight;
+        double root = v * v * v * v - g * (g * x * x + 2 * y * v * v);
         if (root < 0) {
             // Imaginary root means not enough power, return 45 as the best/furthest angle.
             Debug.logMessage("Not enough velocity, returning 45 degrees.");
             return new double[]{45, 45};
         }
 
-        double tanTheta0 = (v*v + Math.sqrt(root)) / (g*x);
-        double tanTheta1 = (v*v - Math.sqrt(root)) / (g*x);
+        double tanTheta0 = (v * v + Math.sqrt(root)) / (g * x);
+        double tanTheta1 = (v * v - Math.sqrt(root)) / (g * x);
 
         // Return the smaller + bigger calculated angles
         double[] angles = new double[]{Math.toDegrees(Math.atan(tanTheta0)), Math.toDegrees(Math.atan(tanTheta1))};
-        return new double[] {Math.min(angles[0], angles[1]), Math.max(angles[0], angles[1])};
+        return new double[]{Math.min(angles[0], angles[1]), Math.max(angles[0], angles[1])};
     }
 
     public static Vec3d getThrowOrigin(Entity entity) {

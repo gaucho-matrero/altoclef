@@ -51,14 +51,7 @@ import java.util.stream.Stream;
 @SuppressWarnings("ALL")
 public class BeatMinecraft2Task extends Task {
 
-    private static BeatMinecraftConfig _config;
-    static {
-        ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
-    }
-    public static BeatMinecraftConfig getConfig() {
-        return _config;
-    }
-    private static final Block[] TRACK_BLOCKS = new Block[] {
+    private static final Block[] TRACK_BLOCKS = new Block[]{
             Blocks.END_PORTAL_FRAME,
             Blocks.END_PORTAL,
             Blocks.CRAFTING_TABLE, // For pearl trading + gold crafting
@@ -66,8 +59,7 @@ public class BeatMinecraft2Task extends Task {
             Blocks.SPAWNER, // For silverfish,
             Blocks.STONE_PRESSURE_PLATE // For desert temples
     };
-
-    private static final Item[] COLLECT_EYE_ARMOR = new Item[] {
+    private static final Item[] COLLECT_EYE_ARMOR = new Item[]{
             Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS,
             Items.GOLDEN_BOOTS
     };
@@ -88,28 +80,8 @@ public class BeatMinecraft2Task extends Task {
     private static final ItemTarget[] IRON_GEAR_MIN = combine(
             toItemTargets(Items.IRON_SWORD)
     );
-
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
-
-
-    private BlockPos _endPortalCenterLocation;
-    private boolean _ranStrongholdLocator;
-    private boolean _endPortalOpened;
-    private BlockPos _bedSpawnLocation;
-
-    private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
-
-    private int _cachedFilledPortalFrames = 0;
-
-    private final HashMap<Item, Integer> _cachedEndItemDrops = new HashMap<>();
-
-    // Controls whether we CAN walk on the end portal.
-    private boolean _enterindEndPortal = false;
-
-    // For some reason, after death there's a frame where the game thinks there are NO items in the end.
-    private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(2);
-
     // We don't want curse of binding
     private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
         boolean hasBinding = false;
@@ -121,26 +93,95 @@ public class BeatMinecraft2Task extends Task {
         }
         return true;
     };
+    private static BeatMinecraftConfig _config;
 
-    private Task _foodTask;
-    private Task _gearTask;
-    private Task _lootTask;
+    static {
+        ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
+    }
+
+    private final HashMap<Item, Integer> _cachedEndItemDrops = new HashMap<>();
+    // For some reason, after death there's a frame where the game thinks there are NO items in the end.
+    private final TimerGame _cachedEndItemNothingWaitTime = new TimerGame(2);
     private final Task _buildMaterialsTask;
     private final PlaceBedAndSetSpawnTask _setBedSpawnTask = new PlaceBedAndSetSpawnTask();
     private final GoToStrongholdPortalTask _locateStrongholdTask;
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
-    private boolean _collectingEyes;
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();
     private final Task _killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
-
     // End specific dragon breath avoidance
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
+    private BlockPos _endPortalCenterLocation;
+    private boolean _ranStrongholdLocator;
+    private boolean _endPortalOpened;
+    private BlockPos _bedSpawnLocation;
+    private List<BlockPos> _notRuinedPortalChests = new ArrayList<>();
+    private int _cachedFilledPortalFrames = 0;
+    // Controls whether we CAN walk on the end portal.
+    private boolean _enterindEndPortal = false;
+    private Task _foodTask;
+    private Task _gearTask;
+    private Task _lootTask;
+    private boolean _collectingEyes;
     private boolean _escapingDragonsBreath;
 
     public BeatMinecraft2Task() {
         _locateStrongholdTask = new GoToStrongholdPortalTask(_config.targetEyes);
         _buildMaterialsTask = new GetBuildingMaterialsTask(_config.buildMaterialCount);
+    }
+
+    public static BeatMinecraftConfig getConfig() {
+        return _config;
+    }
+
+    private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
+        Vec3i[] frameOffsets = new Vec3i[]{
+                new Vec3i(2, 0, 1),
+                new Vec3i(2, 0, 0),
+                new Vec3i(2, 0, -1),
+                new Vec3i(-2, 0, 1),
+                new Vec3i(-2, 0, 0),
+                new Vec3i(-2, 0, -1),
+                new Vec3i(1, 0, 2),
+                new Vec3i(0, 0, 2),
+                new Vec3i(-1, 0, 2),
+                new Vec3i(1, 0, -2),
+                new Vec3i(0, 0, -2),
+                new Vec3i(-1, 0, -2)
+        };
+        return Arrays.stream(frameOffsets).map(endPortalCenter::add).toList();
+    }
+
+    private static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
+        if (!mod.getChunkTracker().isChunkLoaded(pos))
+            return false;
+        BlockState state = mod.getWorld().getBlockState(pos);
+        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
+            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
+            return false;
+        }
+        return state.get(EndPortalFrameBlock.EYE);
+    }
+
+    // Just a helpful utility to reduce reuse recycle.
+    private static boolean shouldForce(AltoClef mod, Task task) {
+        return task != null && task.isActive() && !task.isFinished(mod);
+    }
+
+    private static ItemTarget[] toItemTargets(Item... items) {
+        return Arrays.stream(items).map(item -> new ItemTarget(item, 1)).toArray(ItemTarget[]::new);
+    }
+
+    private static ItemTarget[] toItemTargets(Item item, int count) {
+        return new ItemTarget[]{new ItemTarget(item, count)};
+    }
+
+    private static ItemTarget[] combine(ItemTarget[]... targets) {
+        List<ItemTarget> result = new ArrayList<>();
+        for (ItemTarget[] ts : targets) {
+            result.addAll(Arrays.asList(ts));
+        }
+        return result.toArray(ItemTarget[]::new);
     }
 
     @Override
@@ -223,7 +264,7 @@ public class BeatMinecraft2Task extends Task {
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
         if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
                 && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
-                || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE) )) {
+                || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE))) {
             setDebugState("Pick up crafting table while we're at it");
             return new MineAndCollectTask(Items.CRAFTING_TABLE, 1, new Block[]{Blocks.CRAFTING_TABLE}, MiningRequirement.HAND);
         }
@@ -319,7 +360,7 @@ public class BeatMinecraft2Task extends Task {
         boolean noEyesPlease = (endPortalOpened(mod, _endPortalCenterLocation) || WorldHelper.getCurrentDimension() == Dimension.END);
         int filledPortalFrames = getFilledPortalFrames(mod, _endPortalCenterLocation);
         int eyesNeededMin = noEyesPlease ? 0 : _config.minimumEyes - filledPortalFrames;
-        int eyesNeeded    = noEyesPlease ? 0 : _config.targetEyes  - filledPortalFrames;
+        int eyesNeeded = noEyesPlease ? 0 : _config.targetEyes - filledPortalFrames;
         int eyes = mod.getItemStorage().getItemCount(Items.ENDER_EYE);
         if (eyes < eyesNeededMin || (!_ranStrongholdLocator && _collectingEyes && eyes < eyesNeeded)) {
             _collectingEyes = true;
@@ -435,12 +476,15 @@ public class BeatMinecraft2Task extends Task {
             _cachedEndItemDrops.put(item, _cachedEndItemDrops.getOrDefault(item, 0) + count);
         }
     }
+
     private int getEndCachedCount(Item item) {
         return _cachedEndItemDrops.getOrDefault(item, 0);
     }
+
     private boolean droppedInEnd(Item item) {
         return getEndCachedCount(item) > 0;
     }
+
     private boolean hasItemOrDroppedInEnd(AltoClef mod, Item item) {
         return mod.getItemStorage().hasItem(item) || droppedInEnd(item);
     }
@@ -502,12 +546,15 @@ public class BeatMinecraft2Task extends Task {
         }
         return getFrameBlocks(endPortalCenter).stream().allMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
     }
+
     private boolean endPortalOpened(AltoClef mod, BlockPos endPortalCenter) {
         return _endPortalOpened && endPortalCenter != null && mod.getBlockTracker().blockIsValid(endPortalCenter, Blocks.END_PORTAL);
     }
+
     private boolean spawnSetNearPortal(AltoClef mod, BlockPos endPortalCenter) {
         return _bedSpawnLocation != null && mod.getBlockTracker().blockIsValid(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
     }
+
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
         // If we have our end portal, this doesn't matter.
         if (endPortalFound(mod, endPortalCenter)) {
@@ -518,7 +565,7 @@ public class BeatMinecraft2Task extends Task {
             // If EVERY portal frame is loaded, consider updating our cached filled portal count.
             if (frameBlocks.stream().allMatch(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos))) {
                 _cachedFilledPortalFrames = frameBlocks.stream().reduce(0, (count, blockPos) ->
-                        count + (isEndPortalFrameFilled(mod, blockPos) ? 1 : 0),
+                                count + (isEndPortalFrameFilled(mod, blockPos) ? 1 : 0),
                         Integer::sum);
             }
             return _cachedFilledPortalFrames;
@@ -546,24 +593,6 @@ public class BeatMinecraft2Task extends Task {
         return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 
-    private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
-        Vec3i[] frameOffsets = new Vec3i[] {
-                new Vec3i(2, 0, 1),
-                new Vec3i(2, 0, 0),
-                new Vec3i(2, 0, -1),
-                new Vec3i(-2, 0, 1),
-                new Vec3i(-2, 0, 0),
-                new Vec3i(-2, 0, -1),
-                new Vec3i(1, 0, 2),
-                new Vec3i(0, 0, 2),
-                new Vec3i(-1, 0, 2),
-                new Vec3i(1, 0, -2),
-                new Vec3i(0, 0, -2),
-                new Vec3i(-1, 0, -2)
-        };
-        return Arrays.stream(frameOffsets).map(endPortalCenter::add).toList();
-    }
-
     private Task getEyesOfEnderTask(AltoClef mod, int targetEyes) {
         if (mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
             setDebugState("Picking up Dropped Eyes");
@@ -574,7 +603,7 @@ public class BeatMinecraft2Task extends Task {
 
         int blazePowderCount = mod.getItemStorage().getItemCount(Items.BLAZE_POWDER);
         int blazeRodCount = mod.getItemStorage().getItemCount(Items.BLAZE_ROD);
-        int blazeRodTarget = (int)Math.ceil(((double)targetEyes - eyeCount - blazePowderCount) / 2.0);
+        int blazeRodTarget = (int) Math.ceil(((double) targetEyes - eyeCount - blazePowderCount) / 2.0);
         int enderPearlTarget = targetEyes - eyeCount;
         boolean needsBlazeRods = blazeRodCount < blazeRodTarget;
         boolean needsBlazePowder = eyeCount + blazePowderCount < targetEyes;
@@ -601,7 +630,7 @@ public class BeatMinecraft2Task extends Task {
                         return new EquipArmorTask(COLLECT_EYE_ARMOR);
                     }
                 }
-                if(shouldForce(mod, _lootTask)) {
+                if (shouldForce(mod, _lootTask)) {
                     return _lootTask;
                 }
                 if (_config.searchRuinedPortals) {
@@ -711,6 +740,7 @@ public class BeatMinecraft2Task extends Task {
         }
         return new CollectBlazeRodsTask(count);
     }
+
     private Task getEnderPearlTask(AltoClef mod, int count) {
         if (_config.barterPearlsInsteadOfEndermanHunt) {
             // Equip golden boots before trading...
@@ -741,6 +771,7 @@ public class BeatMinecraft2Task extends Task {
 
         return _config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
     }
+
     private boolean needsBeds(AltoClef mod) {
         int inEnd = 0;
         for (Item item : ItemHelper.BED) {
@@ -748,6 +779,7 @@ public class BeatMinecraft2Task extends Task {
         }
         return (mod.getItemStorage().getItemCount(ItemHelper.BED) + inEnd) < getTargetBeds(mod);
     }
+
     private Task getBedTask(AltoClef mod) {
         int targetBeds = getTargetBeds(mod);
         // Collect beds. If we want to set our spawn, collect 1 more.
@@ -757,6 +789,7 @@ public class BeatMinecraft2Task extends Task {
         }
         return TaskCatalogue.getItemTask("bed", targetBeds);
     }
+
     private boolean anyBedsFound(AltoClef mod) {
         return mod.getBlockTracker().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED));
     }
@@ -768,42 +801,13 @@ public class BeatMinecraft2Task extends Task {
             Vec3d average = frames.stream()
                     .reduce(Vec3d.ZERO, (accum, bpos) -> accum.add(bpos.getX() + 0.5, bpos.getY() + 0.5, bpos.getZ() + 0.5), Vec3d::add)
                     .multiply(1.0f / frames.size());
-            return new BlockPos(average.x, average.y, average.z);
+            return new BlockPos((int) average.x, (int) average.y, (int) average.z);
         }
         return null;
-    }
-
-    private static boolean isEndPortalFrameFilled(AltoClef mod, BlockPos pos) {
-        if (!mod.getChunkTracker().isChunkLoaded(pos))
-            return false;
-        BlockState state = mod.getWorld().getBlockState(pos);
-        if (state.getBlock() != Blocks.END_PORTAL_FRAME) {
-            Debug.logWarning("BLOCK POS " + pos + " DOES NOT CONTAIN END PORTAL FRAME! This is probably due to a bug/incorrect assumption.");
-            return false;
-        }
-        return state.get(EndPortalFrameBlock.EYE);
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
         return MinecraftClient.getInstance().currentScreen instanceof CreditsScreen;
-    }
-
-    // Just a helpful utility to reduce reuse recycle.
-    private static boolean shouldForce(AltoClef mod, Task task) {
-        return task != null && task.isActive() && !task.isFinished(mod);
-    }
-    private static ItemTarget[] toItemTargets(Item ...items) {
-        return Arrays.stream(items).map(item -> new ItemTarget(item, 1)).toArray(ItemTarget[]::new);
-    }
-    private static ItemTarget[] toItemTargets(Item item, int count) {
-        return new ItemTarget[] {new ItemTarget(item, count)};
-    }
-    private static ItemTarget[] combine(ItemTarget[] ...targets) {
-        List<ItemTarget> result = new ArrayList<>();
-        for (ItemTarget[] ts : targets) {
-            result.addAll(Arrays.asList(ts));
-        }
-        return result.toArray(ItemTarget[]::new);
     }
 }

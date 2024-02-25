@@ -14,9 +14,9 @@ import java.util.Set;
 
 /**
  * Searches/explores a continuous "blob" of chunks, attempting to load in ALL nearby chunks that are part of this "blob"
- *
+ * <p>
  * You must define a function that determines whether a chunk is to be included within this "blob".
- *
+ * <p>
  * For instance, if you wish to explore an entire desert, this function will return whether a chunk is a desert chunk.
  */
 public abstract class SearchChunksExploreTask extends Task {

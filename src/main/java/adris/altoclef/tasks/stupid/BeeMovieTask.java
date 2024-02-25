@@ -3,11 +3,10 @@ package adris.altoclef.tasks.stupid;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.PlaceSignTask;
+import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
-import adris.altoclef.tasks.stupid.BeeMovieTask.StreamedSignStringParser;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -45,11 +44,11 @@ public class BeeMovieTask extends Task {
     private final String _uniqueId;
     private final Task _extraSignAcquireTask;
     private final Task _structureMaterialsTask;
-    private boolean _finished = false;
     private final List<String> _cachedStrings = new ArrayList<>();
-    private PlaceSignTask _currentPlace = null;
     // Grab extra resources and acquire extra tools for speed
     private final boolean _sharpenTheAxe = true;
+    private boolean _finished = false;
+    private PlaceSignTask _currentPlace = null;
 
     public BeeMovieTask(String uniqueId, BlockPos start, InputStreamReader input) {
         _uniqueId = uniqueId;
@@ -57,7 +56,7 @@ public class BeeMovieTask extends Task {
         _textParser = new StreamedSignStringParser(input);
 
         _extraSignAcquireTask = new CataloguedResourceTask(new ItemTarget("sign", 256));//TaskCatalogue.getItemTask("sign", 32);
-        _structureMaterialsTask = new MineAndCollectTask(new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[]{Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
+        _structureMaterialsTask = new MineAndCollectTask(new ItemTarget(new Item[]{Items.DIRT, Items.COBBLESTONE}, STRUCTURE_MATERIALS_BUFFER), new Block[]{Blocks.STONE, Blocks.COBBLESTONE, Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRASS_BLOCK}, MiningRequirement.WOOD);
     }
 
     private static int sign(int num) {

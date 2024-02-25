@@ -6,12 +6,13 @@ import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -46,6 +47,17 @@ public class CollectObsidianTask extends ResourceTask {
         return lavaPos.up();
     }
 
+    private static BlockPos getGoodObsidianPosition(AltoClef mod) {
+        BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
+        BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
+        for (BlockPos pos : WorldHelper.scanRegion(mod, start, end)) {
+            if (!WorldHelper.canBreak(mod, pos) || !WorldHelper.canPlace(mod, pos)) {
+                return null;
+            }
+        }
+        return mod.getPlayer().getBlockPos();
+    }
+
     @Override
     protected boolean shouldAvoidPickingUp(AltoClef mod) {
         return false;
@@ -76,17 +88,6 @@ public class CollectObsidianTask extends ResourceTask {
         });
     }
 
-    private static BlockPos getGoodObsidianPosition(AltoClef mod) {
-        BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
-        BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
-        for (BlockPos pos : WorldHelper.scanRegion(mod, start, end)) {
-            if (!WorldHelper.canBreak(mod, pos) || !WorldHelper.canPlace(mod, pos)) {
-                return null;
-            }
-        }
-        return mod.getPlayer().getBlockPos();
-    }
-
     @Override
     protected adris.altoclef.tasksystem.Task onResourceTick(AltoClef mod) {
 
@@ -107,7 +108,7 @@ public class CollectObsidianTask extends ResourceTask {
 
         Predicate<BlockPos> goodObsidian = (blockPos ->
                 blockPos.isWithinDistance(mod.getPlayer().getPos(), 800)
-                && WorldHelper.canBreak(mod, blockPos)
+                        && WorldHelper.canBreak(mod, blockPos)
         );
 
         /*
@@ -144,9 +145,11 @@ public class CollectObsidianTask extends ResourceTask {
             return new MineAndCollectTask(new ItemTarget(Items.OBSIDIAN, _count), new Block[]{Blocks.OBSIDIAN}, MiningRequirement.DIAMOND);
         }
 
-        if (!mod.getWorld().getDimension().isUltrawarm()) {
-            setDebugState("We can't place water, so we're wandering.");
-            return new TimeoutWanderTask();
+        if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
+            final double AVERAGE_GOLD_PER_OBSIDIAN = 11.475;
+            int gold_buffer = (int) (AVERAGE_GOLD_PER_OBSIDIAN * _count);
+            setDebugState("We can't place water, so we're trading for obsidian");
+            return new TradeWithPiglinsTask(gold_buffer, Items.OBSIDIAN, _count);
         }
 
         if (_placeObsidianTask == null) {

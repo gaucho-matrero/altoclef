@@ -1,8 +1,8 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;

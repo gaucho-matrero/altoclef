@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArgParser {
+    private final ArgBase[] _args;
     int argCounter;
     int unitCounter;
     String[] argUnits;
-    private final ArgBase[] _args;
 
     public ArgParser(ArgBase... args) {
         this._args = args;
@@ -116,5 +116,7 @@ public class ArgParser {
     }
 
     // Dear god kill this system already
-    public String[] getArgUnits() { return argUnits; }
+    public String[] getArgUnits() {
+        return argUnits;
+    }
 }

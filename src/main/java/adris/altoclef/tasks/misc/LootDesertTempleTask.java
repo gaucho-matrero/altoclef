@@ -12,16 +12,16 @@ import net.minecraft.util.math.Vec3i;
 import java.util.List;
 
 public class LootDesertTempleTask extends Task {
-    private final BlockPos _temple;
-    private final List<Item> _wanted;
-    private Task _lootTask;
-    private short _looted = 0;
     public final Vec3i[] CHEST_POSITIONS_RELATIVE = {
             new Vec3i(2, 0, 0),
             new Vec3i(-2, 0, 0),
             new Vec3i(0, 0, 2),
             new Vec3i(0, 0, -2)
     };
+    private final BlockPos _temple;
+    private final List<Item> _wanted;
+    private Task _lootTask;
+    private short _looted = 0;
 
     public LootDesertTempleTask(BlockPos temple, List<Item> wanted) {
         _temple = temple;

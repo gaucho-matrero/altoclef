@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 /**
  * The settings file, loaded and used across the codebase.
- *
+ * <p>
  * Each setting is documented.
  */
 @SuppressWarnings("ALL")
@@ -53,7 +53,7 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * If true, all warning logs will be disabled.
-     *
+     * <p>
      * NOT RECOMMENDED, as it will make debugging more difficult.
      * But if you know what you're doing, go nuts.
      */
@@ -82,7 +82,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If true, use Minecraft's crafting recipe book to place items into
      * the crafting table (should be much faster as it's almost instant)
-     *
+     * <p>
      * If false, will place items in each slot manually (the original way)
      */
     private boolean useCraftingBookToCraft = true;
@@ -96,7 +96,7 @@ public class Settings implements IFailableConfigFile {
 
 
     /**
-     * minumum amount of food to have in the inventory.
+     * minimum amount of food to have in the inventory.
      * if we have less food than this value the bot will go pickup some more.
      */
     private int minimumFoodAllowed = 0;
@@ -118,7 +118,7 @@ public class Settings implements IFailableConfigFile {
      * Set this to 0 to disable chest pickups.
      * <p>
      * Don't set this too high, as the bot will prioritize chests even if the resource
-     * is easily accesible now.
+     * is easily accessible now.
      */
     private float resourceChestLocateRange = 500;
 
@@ -149,7 +149,7 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * Will ignore mining/interacting with blocks that are BELOW an ocean (in an ocean biome and below y = 64)
-     *
+     * <p>
      * This is mainly here because alto-clef does NOT know how to deal with oceans
      */
     private boolean avoidOceanBlocks = true;
@@ -205,16 +205,6 @@ public class Settings implements IFailableConfigFile {
     private boolean dodgeProjectiles = true;
 
     /**
-     * If any hostile mob is "close" to our bot for this long,
-     * consider it a nuissance and defeat it if we have enough gear.
-     *
-     * Skeletons + Witches get a much larger range.
-     *
-     * Set to zero to make the bot always kill/run away from any nearby hostiles.
-     */
-    private double killAnnoyingHostileWhenCloseForSeconds = 12;
-
-    /**
      * Skeletons and large groups of mobs are a huge pain.
      * <p>
      * With this set to true, the bot may either
@@ -234,7 +224,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If enabled, the bot will close the open screen (furnace/crafting/chest/whatever) when the bot detects
      * that its look direction has changed OR that it is mining something.
-     *
+     * <p>
      * This is here to stop the bot from getting stuck in a screen container.
      */
     private boolean autoCloseScreenWhenLookingOrMining = true;
@@ -286,12 +276,25 @@ public class Settings implements IFailableConfigFile {
 
     /**
      * If set, will run this command by default when no other commands are running.
-     *
+     * <p>
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
      * Or "follow <Your Username>" to follow you when not doing anything.
      * Or "goto <Home base coords>" to return to home base when the bot finishes its work.
      */
     private String idleCommand = "";
+
+
+    /**
+     * If set, will run this command after death.
+     * Also {deathmessage} will be replaced with the death message.
+     * <p>
+     * For example, try setting this to "@goto <Your base coords>" to make the bot go to the base before continuing the task it was given.
+     * Or setting it to "I died!" will send the i died message
+     * Or setting it to "/back" will execute /back on the server
+     * When running altoclef commands, if the prefix is not @, the set prefix should be used for the command and not @
+     * You may run multiple commands even commands of differet type by splitting them with " & ". Example: /home & i died with message: {deathmessage} & @get diamond
+     */
+    private String deathCommand = "";
 
     /**
      * If we need to throw away something, throw away these items first.
@@ -300,13 +303,16 @@ public class Settings implements IFailableConfigFile {
     @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> throwawayItems = Arrays.asList(
             // Overworld junk
+            Items.DRIPSTONE_BLOCK,
+            Items.ROOTED_DIRT,
+            Items.GRAVEL,
+            Items.SAND,
             Items.DIORITE,
             Items.ANDESITE,
             Items.GRANITE,
             Items.TUFF,
             Items.COBBLESTONE,
             Items.DIRT,
-            Items.GRAVEL,
             Items.COBBLED_DEEPSLATE,
             Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES, Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES,
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
@@ -318,7 +324,9 @@ public class Settings implements IFailableConfigFile {
             Items.NETHER_BRICK,
             Items.BASALT,
             Items.BLACKSTONE,
-            Items.END_STONE
+            Items.END_STONE,
+            Items.SANDSTONE,
+            Items.STONE_BRICKS
     );
 
     /**
@@ -331,6 +339,7 @@ public class Settings implements IFailableConfigFile {
      * so they won't be thrown away.
      */
     private boolean dontThrowAwayCustomNameItems = true;
+    private boolean dontThrowAwayEnchantedItems = true;
 
     /**
      * If we need to throw away something but we don't have any "throwaway Items",
@@ -348,6 +357,7 @@ public class Settings implements IFailableConfigFile {
     @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> importantItems = Streams.concat(
             Stream.of(
+                    Items.TOTEM_OF_UNDYING,
                     Items.ENCHANTED_GOLDEN_APPLE,
                     Items.ENDER_EYE,
                     Items.TRIDENT,
@@ -366,8 +376,13 @@ public class Settings implements IFailableConfigFile {
     ).toList();
 
     /**
+     * If true, a blast furnace will be used in smelting if an item to smelt is applicable.
+     */
+    private boolean useBlastFurnace = true;
+
+    /**
      * If true, will only accept items found in `supportedFuels` as fuel when smelting.
-     *
+     * <p>
      * Be careful when setting this to false, as ALL burnable items are liable to be burned
      * if they're not protected (blaze rods, beds, wooden tools, crafting tables etc.)
      */
@@ -379,11 +394,10 @@ public class Settings implements IFailableConfigFile {
     @JsonSerialize(using = ItemSerializer.class)
     @JsonDeserialize(using = ItemDeserializer.class)
     private List<Item> supportedFuels = Streams.concat(
-        Stream.of(
-            Items.COAL,
-            Items.CHARCOAL
-        ),
-        Stream.of(ItemHelper.PLANKS)
+            Stream.of(
+                    Items.COAL,
+                    Items.CHARCOAL
+            )
     ).toList();
 
     /**
@@ -397,20 +411,18 @@ public class Settings implements IFailableConfigFile {
      * These areas will not be mined.
      * Used to prevent griefing, or to define a "spawn protection" zone so
      * the bot doesn't keep trying to break spawn protected blocks.
-     *
+     * <p>
      * Example: protects two areas. A "spawn" area from (x=-10 z=-10) to (x=10 z=10) and a home base at around (x = 1100, y = 2050)
-     *
+     * <p>
      * areasToProtect : [
-     *      {
-     *          "start": "-10, 0, -10",
-     *          "end": "10, 255, 10",
-     *          "dimension" : "OVERWORLD"
-     *      },
-     *      {
-     *          "start": "1000, 50, 2000",
-     *          "end": "1200, 255, 2100",
-     *          "dimension" : "OVERWORLD"
-     *      },
+     * {
+     * start: "-10, 0, -10",
+     * end: "10, 255, 10"
+     * },
+     * {
+     * start: "1000, 50, 2000",
+     * end: "1200, 255, 2100"
+     * },
      * ],
      */
     private List<BlockRange> areasToProtect = Collections.emptyList();
@@ -420,14 +432,8 @@ public class Settings implements IFailableConfigFile {
     ////////** END SETTINGS w/ COMMENTS **////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-    private static boolean idArrayContainsItem(Item item, int[] ids) {
-        int id = Item.getRawId(item);
-        for (int check : ids) {
-            if (check == id) return true;
-        }
-        return false;
+    public static void load(Consumer<Settings> onReload) {
+        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
     }
 
     public boolean shouldShowTaskChain() {
@@ -441,6 +447,7 @@ public class Settings implements IFailableConfigFile {
     public String getCommandPrefix() {
         return commandPrefix;
     }
+
     public String getChatLogPrefix() {
         return chatLogPrefix;
     }
@@ -485,10 +492,6 @@ public class Settings implements IFailableConfigFile {
         return dodgeProjectiles;
     }
 
-    public double getKillHostileWhenCloseForSeconds() {
-        return killAnnoyingHostileWhenCloseForSeconds;
-    }
-
     public boolean isAutoEat() {
         return autoEat;
     }
@@ -516,6 +519,11 @@ public class Settings implements IFailableConfigFile {
     public String getIdleCommand() {
         return idleCommand;
     }
+
+    public String getDeathCommand() {
+        return deathCommand;
+    }
+
     public boolean shouldRunIdleCommandWhenNotActive() {
         return idleCommand != null && !idleCommand.isBlank();
     }
@@ -568,6 +576,10 @@ public class Settings implements IFailableConfigFile {
         return this.dontThrowAwayCustomNameItems;
     }
 
+    public boolean getDontThrowAwayEnchantedItems() {
+        return this.dontThrowAwayEnchantedItems;
+    }
+
     public float getEntityReachRange() {
         return entityReachRange;
     }
@@ -575,6 +587,7 @@ public class Settings implements IFailableConfigFile {
     public Item[] getThrowawayItems(AltoClef mod, boolean includeProtected) {
         return throwawayItems.stream().filter(item -> includeProtected || !mod.getBehaviour().isProtected(item)).toArray(Item[]::new);
     }
+
     public Item[] getThrowawayItems(AltoClef mod) {
         return getThrowawayItems(mod, false);
     }
@@ -583,17 +596,24 @@ public class Settings implements IFailableConfigFile {
         return limitFuelsToSupportedFuels;
     }
 
+    public boolean shouldUseBlastFurnace() {
+        return useBlastFurnace;
+    }
+
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
     }
+
     @JsonIgnore
     public Item[] getSupportedFuelItems() {
         return supportedFuels.toArray(Item[]::new);
     }
 
-    public boolean isPositionExplicitelyProtected(BlockPos pos) {
-        for (BlockRange protection : areasToProtect) {
-            if (protection.contains(pos)) return true;
+    public boolean isPositionExplicitlyProtected(BlockPos pos) {
+        if (!areasToProtect.isEmpty()) {
+            for (BlockRange protection : areasToProtect) {
+                if (protection.contains(pos)) return true;
+            }
         }
         return false;
     }
@@ -618,9 +638,5 @@ public class Settings implements IFailableConfigFile {
     @Override
     public boolean failedToLoad() {
         return _failedToLoad;
-    }
-
-    public static void load(Consumer<Settings> onReload) {
-        ConfigHelper.loadConfig(SETTINGS_PATH, Settings::new, Settings.class, onReload);
     }
 }
